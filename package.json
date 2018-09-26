@@ -1,0 +1,56 @@
+{
+    "name": "first",
+    "displayName": "first",
+    "description": "its my first extension",
+    "version": "0.0.1",
+    "publisher": "no",
+    "engines": {
+        "vscode": "^1.27.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onView:ext.mc.projectExplorer"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "views": {
+            "explorer": [
+                {
+                    "id": "ext.mc.projectExplorer",
+                    "name": "Microclimate Projects"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "ext.mc.newConnection",
+                "title": "New Microclimate Connection",
+                "description": "Connect to a Microclimate instance",
+                "category": "Microclimate"
+            }
+
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^8.10.25",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.8.0",
+        "typescript": "^2.9.2",
+        "vscode": "^1.1.21"
+    },
+    "dependencies": {
+        "@types/request-promise-native": "^1.0.15",
+        "request": "^2.88.0",
+        "request-promise-native": "^1.0.5"
+    }
+}

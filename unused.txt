@@ -1,0 +1,21 @@
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "microclimateViewContainer",
+                    "title": "Microclimate",
+                    "icon": "res/blank-cloud.svg"
+                }
+            ]
+        },
+
+
+    "activationEvents": [
+        "workspaceContains:**/microclimate-workspace/*"
+    ],
+
+                {
+                "command": "ext.mc.openProject",
+                "title": "Open Microclimate Project",
+                "description": "Open a Microclimate Project in your workspace",
+                "category": "Microclimate"
+            }
