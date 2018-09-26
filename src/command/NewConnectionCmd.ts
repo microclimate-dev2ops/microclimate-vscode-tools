@@ -1,7 +1,8 @@
-import { window, Uri } from "vscode";
+import { window, Uri, TextEditorCursorStyle } from "vscode";
 import ConnectionManager from "../microclimate/connections/ConnectionManager";
-import * as request from "request-promise-native";
-
+//import * as request from 'request';
+import * as request from 'request-promise-native';
+import * as reqErrors from 'request-promise-native/errors';
 
 export default async function newConnectionCmd() {
     console.log("New connection command invoked");
@@ -38,7 +39,7 @@ export default async function newConnectionCmd() {
         if (isNaN(port) || !Number.isInteger(port) || port > 65535 || port < 1024) {
             const tryAgainMsg = "Enter a different port number";
     
-            const result = await window.showErrorMessage(`Invalid port ${portStr} - Must be a positive integer between 1024 and 65536`, tryAgainMsg);
+            const result = await window.showErrorMessage(`Invalid port ${portStr} - Must be an integer between 1024 and 65536`, tryAgainMsg);
             tryAgain = result === tryAgainMsg;
         }
         else {
@@ -52,6 +53,7 @@ export default async function newConnectionCmd() {
         testConnection(hostname, port)
             .then( (s) => window.showInformationMessage(s))
             .catch((s) => {
+                console.error("Connection test failed with message " + s);
                 window.showErrorMessage(s, tryAgainMsg)
                 .then((s) => {
                     if (s === tryAgainMsg) {
@@ -62,40 +64,66 @@ export default async function newConnectionCmd() {
     }
 }
 
+// Resolved promises contain a user-friendly message, ie "connection to $url succeeded"
 async function testConnection(host: string, port: number): Promise<string> {
     
     const uri = ConnectionManager.buildUrl(host, port);
     const ENV_APIPATH = "api/v1/environment";
-    const envUri: Uri = uri.with( { path: ENV_APIPATH });
+    const envUri: Uri = uri.with({ path: ENV_APIPATH });
 
-    const result = await request.get(envUri.toString(), { json : true });    
+    const connectTimeout = 2500;
 
     return new Promise<string>( (resolve, reject) => {
+        request.get(envUri.toString(), { json: true, timeout: connectTimeout })
+            .then( (microclimateData) => {
+                // Connected successfully
+                return onSuccessfulConnection(microclimateData);
+            })
+            .catch( (err) => {
+                console.log(`Request fail - ${err}`);
+                if (err instanceof reqErrors.RequestError) {
+                    return reject(`Connecting to Microclimate at ${uri} failed.`);
+                }
+
+                return reject(err.toString());
+            });
+    });
+
+async function onSuccessfulConnection(microclimateData: any): Promise<string> {
+
+    return new Promise<string>((resolve, reject) => {
         console.log("TEST CONNECTION RESULT:");
-        console.log(result);
+        console.log(microclimateData);
     
-        if (result == null) {
-            reject("Null test connection result");
+        if (microclimateData == null) {
+            return reject("Null test connection microclimateData");
         }
     
         // is this 'safe' enough?
-        const version = result.microclimate_version;
+        let version = microclimateData.microclimate_version;
+        version = "quack";
         if (version == null) {
-            reject("Could not determine Microclimate version");
+            return reject("Could not determine Microclimate version");
         }
         else if (version !== "latest" /* or version is not new enough */) {
-            reject(`Microclimate version ${version} is not supported`);
+            return reject(`Microclimate version "${version}" is not supported`);
         }
-
-        const workspace = result.workspace_location;
+    
+        const workspace = microclimateData.workspace_location;
         if (workspace == null) {
-            reject("Workspace location was missing from environment data");
+            return reject("Workspace location was missing from environment data");
         }
         const workspaceUri = Uri.file(workspace);
-
-        ConnectionManager.instance.addConnection(uri, workspaceUri);
-        resolve(`New connection to ${uri} succeeded.\nWorkspace path is: ${workspace}`);
+    
+        ConnectionManager.instance.addConnection(uri, workspaceUri)
+            .then( () => resolve(`New connection to ${uri} succeeded.\nWorkspace path is: ${workspace}`))
+            .catch((err) => { 
+                console.log("New connection rejected by ConnectionManager ", err); 
+                return reject(err); 
+            });
     });
+}
+
 }
 
 export {

@@ -1,16 +1,16 @@
 
 import { TreeItem, TreeDataProvider, Event, EventEmitter } from 'vscode';
 
-import { MCTreeNode, RootNode } from './MCTreeNode';
+import { TreeItemAdaptable, RootNode } from './TreeItemAdaptable';
 import ConnectionManager from '../../microclimate/connections/ConnectionManager';
 
-class ProjectTreeDataProvider implements TreeDataProvider<MCTreeNode> {
+class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
 
     public readonly treeDataProvider: TreeDataProvider<{}> = this;
     public readonly viewId: string = "ext.mc.projectExplorer";        // must match package.json
 
-    private onChangeEmitter: EventEmitter<MCTreeNode> = new EventEmitter<MCTreeNode>();
-    readonly onDidChangeTreeData: Event<MCTreeNode> = this.onChangeEmitter.event;
+    private onChangeEmitter: EventEmitter<TreeItemAdaptable> = new EventEmitter<TreeItemAdaptable>();
+    readonly onDidChangeTreeData: Event<TreeItemAdaptable> = this.onChangeEmitter.event;
 
     readonly root = new RootNode();
 
@@ -25,17 +25,17 @@ class ProjectTreeDataProvider implements TreeDataProvider<MCTreeNode> {
         this.onChangeEmitter.fire();
     }
 
-    getTreeItem(node: MCTreeNode): TreeItem {
-        return new TreeItem(node.label, node.initCollapsedState);
+    getTreeItem(node: TreeItemAdaptable): TreeItem | Promise<TreeItem> {
+        return node.toTreeItem();
     }
 
-    getChildren(node?: MCTreeNode): MCTreeNode[] | Promise<MCTreeNode[]> {
+    getChildren(node?: TreeItemAdaptable): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]> {
         if (!node) {
             return [ this.root ];
         }
 
         return node.getChildren();
-        // const childNodes: MCTreeNode[] = await node.getChildren();
+        // const childNodes: TreeItemAdaptable[] = await node.getChildren();
         /*
         
         const childTreeItems: TreeItem[] = childNodes.map((node) => {

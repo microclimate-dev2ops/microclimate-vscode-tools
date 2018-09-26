@@ -30,7 +30,6 @@
                 "description": "Connect to a Microclimate instance",
                 "category": "Microclimate"
             }
-
         ]
     },
     "scripts": {
@@ -49,6 +48,7 @@
         "vscode": "^1.1.21"
     },
     "dependencies": {
+        "@types/request": "^2.47.1",
         "@types/request-promise-native": "^1.0.15",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5"

@@ -1,18 +1,8 @@
-import { Uri, TreeItemCollapsibleState } from "vscode";
-import { MCTreeNode } from "../../view/projectExplorer/MCTreeNode";
+import { Uri, TreeItemCollapsibleState, TreeItem } from "vscode";
+import { TreeItemAdaptable } from "../../view/projectExplorer/TreeItemAdaptable";
 
 
-export class Project implements MCTreeNode {
-
-    public readonly label: string;
-    readonly initCollapsedState = TreeItemCollapsibleState.None;
-
-    getChildren(): Promise<MCTreeNode[]> {
-        return new Promise<MCTreeNode[]>((resolve, reject) => {
-            // No children
-            resolve([]);
-        });
-    }
+export class Project implements TreeItemAdaptable {
 
     constructor (
         public readonly name: string,
@@ -21,11 +11,20 @@ export class Project implements MCTreeNode {
         public readonly contextRoot: string,
         public readonly localPath: Uri,
     ) {
-        if (type == null) {
-            type = "Unknown";
+        if (!type) {
+            this.type = "unknown";
         }
-
-        this.label = this.name + ` [${type}]`;
     }
 
+    getChildren(): TreeItemAdaptable[] {
+        // Projects have no children.
+        return [];
+    }
+
+    toTreeItem(): TreeItem {
+        const ti = new TreeItem(`${this.name} [${this.type}]`, TreeItemCollapsibleState.None);
+        ti.resourceUri = this.localPath;
+        ti.tooltip = ti.resourceUri.toString();
+        return ti;
+    }
 }

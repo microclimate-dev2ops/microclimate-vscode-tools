@@ -5,7 +5,7 @@ export default class ConnectionManager {
 
     private static _instance: ConnectionManager;
 
-    private readonly connections: Connection[] = [];
+    private readonly _connections: Connection[] = [];
     private readonly listeners: Function[] = [];
 
     private constructor() {
@@ -16,8 +16,8 @@ export default class ConnectionManager {
         return ConnectionManager._instance || (ConnectionManager._instance = new this());
     }
 
-    public async getConnections(): Promise<Connection[]> {
-        return this.connections;
+    public get connections(): Connection[] {
+        return this._connections;
     }
 
     public static buildUrl(host: string, port: number): Uri {
@@ -25,11 +25,24 @@ export default class ConnectionManager {
     }
 
     public async addConnection(uri: Uri, workspace: Uri): Promise<void> {
-        const connection: Connection = new Connection(uri, workspace);
-        console.log("New Connection @" + uri);
-        this.connections.push(connection);
-        
-        this.onChange();
+        return new Promise<void>((resolve, reject) => {
+            if (this.connectionExists(uri)) {
+                return reject("Connection already exists at " + uri);
+            }
+    
+            const connection: Connection = new Connection(uri, workspace);
+            console.log("New Connection @ " + uri);
+            this._connections.push(connection);
+    
+            this.onChange();
+            return resolve();
+        });
+    }
+
+    private connectionExists(uri: Uri): Boolean {
+        return this._connections.some((conn) => {
+            return conn.mcUri.toString() === uri.toString();
+        });
     }
 
     public addOnChangeListener(callback: Function) {
