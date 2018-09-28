@@ -3,7 +3,7 @@ import * as request from "request-promise-native";
 
 import { TreeItemAdaptable, SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
 import * as MCUtil from "../../MCUtil";
-import Project from "./Project";
+import Project from "../project/Project";
 import Endpoints from "../../constants/EndpointConstants";
 import MCSocket from "./MCSocket";
 
@@ -28,10 +28,8 @@ export default class Connection implements TreeItemAdaptable {
         
         for (const project of result) {
             const projectLocStr = MCUtil.appendPathWithoutDupe(this.workspacePath.fsPath, project.locOnDisk);
-            // console.log("projectLocStr", projectLocStr);
-
             const projectLoc: vscode.Uri = vscode.Uri.file(projectLocStr);
-            projects.push(new Project(project.name, project.projectID, project.projectType, project.contextroot, projectLoc));
+            projects.push(new Project(project, projectLoc));
         }
 
         return projects;

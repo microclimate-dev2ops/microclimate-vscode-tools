@@ -1,8 +1,8 @@
-import * as vscode from 'vscode';
-import ConnectionManager from "../microclimate/connections/ConnectionManager";
+import * as vscode from "vscode";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
 //import * as request from 'request';
-import * as request from 'request-promise-native';
-import * as reqErrors from 'request-promise-native/errors';
+import * as request from "request-promise-native";
+import * as reqErrors from "request-promise-native/errors";
 
 export default async function newConnectionCmd() {
     console.log("New connection command invoked");
@@ -73,7 +73,7 @@ async function testConnection(host: string, port: number): Promise<string> {
 
     const connectTimeout = 2500;
 
-    return new Promise<string>( (resolve, reject) => {
+    return new Promise<string>( (_, reject) => {
         request.get(envUri.toString(), { json: true, timeout: connectTimeout })
             .then( (microclimateData) => {
                 // Connected successfully
@@ -116,7 +116,7 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, microclimateData: any):
     
         ConnectionManager.instance.addConnection(mcUri, workspaceUri)
             .then( () => resolve(`New connection to ${mcUri} succeeded.\nWorkspace path is: ${workspace}`))
-            .catch((err) => { 
+            .catch((err: any) => { 
                 console.log("New connection rejected by ConnectionManager ", err); 
                 return reject(err); 
             });

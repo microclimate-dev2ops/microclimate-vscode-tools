@@ -9,6 +9,7 @@
 			true,
 			"always"
 		],
+		"no-unused-variable": true,
 		"triple-equals": [ true, "allow-null-check" ],
 		"quotemark": [ true, "double" ],
 		"prefer-for-of": true,

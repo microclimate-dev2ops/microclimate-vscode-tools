@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import Project from "../microclimate/connections/Project";
-import Connection from "../microclimate/connections/Connection";
+import Project from "../microclimate/project/Project";
+import Connection from "../microclimate/connection/Connection";
 
 export default async function goToFolder(resource: Project | Connection) {
     console.log("Go to folder command invoked");

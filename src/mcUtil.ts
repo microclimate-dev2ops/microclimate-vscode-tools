@@ -1,8 +1,8 @@
-import * as path from 'path';
+import * as path from "path";
 
 // https://italonascimento.github.io/applying-a-timeout-to-your-promises/
 export function runPromiseWithTimeout(timeoutMs: number, promise: Promise<any>): Promise<any> {
-    const timeout = new Promise((resolve, reject) => {
+    const timeout = new Promise((_, reject) => {
         const id = setTimeout(() => {
             clearTimeout(id);
             reject(`Timed out after ${timeoutMs}ms`);

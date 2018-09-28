@@ -1,8 +1,8 @@
 
-import { TreeItem, TreeDataProvider, Event, EventEmitter, TreeItemCollapsibleState } from 'vscode';
+import { TreeItem, TreeDataProvider, Event, EventEmitter, TreeItemCollapsibleState } from "vscode";
 
-import { TreeItemAdaptable, SimpleTreeItem } from './TreeItemAdaptable';
-import ConnectionManager from '../../microclimate/connections/ConnectionManager';
+import { TreeItemAdaptable, SimpleTreeItem } from "./TreeItemAdaptable";
+import ConnectionManager from "../../microclimate/connection/ConnectionManager";
 
 class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
 
