@@ -29,12 +29,12 @@
                 "title": "New Microclimate Connection",
                 "description": "Connect to a Microclimate instance",
                 "category": "Microclimate"
-            }, 
+            },
             {
                 "command": "ext.mc.goToFolder",
                 "title": "Go to folder",
                 "description": "Focus on a Microclimate project in the Explorer",
-                "category": "Microclimate" 
+                "category": "Microclimate"
             }
         ],
         "menus": {
@@ -76,7 +76,9 @@
     "dependencies": {
         "@types/request": "^2.47.1",
         "@types/request-promise-native": "^1.0.15",
+        "@types/socket.io-client": "^1.4.32",
         "request": "^2.88.0",
-        "request-promise-native": "^1.0.5"
+        "request-promise-native": "^1.0.5",
+        "socket.io-client": "^2.1.1"
     }
 }

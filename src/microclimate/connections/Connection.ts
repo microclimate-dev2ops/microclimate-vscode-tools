@@ -1,23 +1,25 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
 import { TreeItemAdaptable, SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
-import * as MCUtil from '../../MCUtil';
-import { Project } from './Project';
+import * as MCUtil from "../../MCUtil";
+import Project from "./Project";
+import Endpoints from "../../constants/EndpointConstants";
+import MCSocket from "./MCSocket";
 
-export class Connection implements TreeItemAdaptable {
-
-    private static readonly PROJECTS_PATH = "api/v1/projects";
+export default class Connection implements TreeItemAdaptable {
 
     private static readonly CONTEXT_ID = "ext.mc.connectionItem";             // must match package.json
 
     private readonly projectsApiUri: vscode.Uri;
+    private readonly socket: MCSocket;
     
     constructor (
         public readonly mcUri: vscode.Uri,
         public readonly workspacePath: vscode.Uri
     ) {
-        this.projectsApiUri = vscode.Uri.parse(mcUri.toString().concat(Connection.PROJECTS_PATH));
+        this.projectsApiUri = vscode.Uri.parse(mcUri.toString().concat(Endpoints.PROJECTS));
+        this.socket = new MCSocket(mcUri.toString());
     }
 
     async getProjects(): Promise<TreeItemAdaptable[]> {
@@ -37,7 +39,7 @@ export class Connection implements TreeItemAdaptable {
 
     async getChildren(): Promise<TreeItemAdaptable[]> {
         const projects = await this.getProjects();
-        if (projects.length == 0) {
+        if (projects.length === 0) {
             return [ new SimpleTreeItem("No projects", vscode.TreeItemCollapsibleState.None, []) ];
         }
         return projects;
@@ -46,6 +48,7 @@ export class Connection implements TreeItemAdaptable {
     toTreeItem(): vscode.TreeItem {
         const ti: vscode.TreeItem = new vscode.TreeItem(this.mcUri.toString(), vscode.TreeItemCollapsibleState.Expanded);
         ti.resourceUri = this.workspacePath;
+        ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
         return ti;
     }

@@ -9,7 +9,26 @@
 			true,
 			"always"
 		],
-		"triple-equals": false
+		"triple-equals": [ true, "allow-null-check" ],
+		"quotemark": [ true, "double" ],
+		"prefer-for-of": true,
+		"await-promise": [ true, "Thenable" ],
+		"no-duplicate-super": true,
+		"no-eval": true,
+		"no-floating-promises": true,
+		"no-invalid-template-strings": true,
+		"no-invalid-this": true,
+		"no-var-keyword": true,
+		"no-use-before-declare": true,
+		"prefer-readonly": true,
+		"prefer-const": true,
+		"no-require-imports": true,
+		"max-line-length": [ true, 150 ],
+		"deprecation": true,
+		"switch-default": true,
+		"strict-boolean-expressions": true,
+		"new-parens": true,
+		"no-boolean-literal-compare": true
 	},
 	"defaultSeverity": "warning"
 }

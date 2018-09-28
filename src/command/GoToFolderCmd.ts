@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-import { Project } from '../microclimate/connections/Project';
-import { Connection } from '../microclimate/connections/Connection';
+import * as vscode from "vscode";
+import Project from "../microclimate/connections/Project";
+import Connection from "../microclimate/connections/Connection";
 
 export default async function goToFolder(resource: Project | Connection) {
     console.log("Go to folder command invoked");
@@ -11,7 +11,7 @@ export default async function goToFolder(resource: Project | Connection) {
     else if (resource instanceof Connection) {
         uri = resource.workspacePath;
     }
-    
+
     if (!uri) {
         console.error("Error getting uri from object", resource);
         return;

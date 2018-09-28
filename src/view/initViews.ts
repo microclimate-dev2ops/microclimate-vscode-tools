@@ -2,7 +2,7 @@ import { window } from 'vscode';
 
 import { ProjectTreeDataProvider } from './projectExplorer/ProjectTree';
 
-function createViews() {
+export default function createViews() {
     const treeDataProvider: ProjectTreeDataProvider = new ProjectTreeDataProvider();
     console.log("CreateViews");
 
@@ -11,7 +11,3 @@ function createViews() {
         window.registerTreeDataProvider(treeDataProvider.viewId, treeDataProvider)
     ];
 }
-
-export {
-    createViews
-};

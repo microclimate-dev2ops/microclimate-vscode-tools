@@ -1,5 +1,5 @@
 import { Uri } from "vscode";
-import { Connection } from "./Connection";
+import Connection from "./Connection";
 
 export default class ConnectionManager {
 
@@ -12,7 +12,11 @@ export default class ConnectionManager {
         ConnectionManager._instance = this;
 
             // TODO just for ease of testing
-            this.connections.push(new Connection(ConnectionManager.buildUrl("localhost", 9090), Uri.file("/Users/tim/programs/microclimate/microclimate-workspace")));
+            this.connections.push(
+                new Connection(
+                    ConnectionManager.buildUrl("localhost", 9090), 
+                    Uri.file("/Users/tim/programs/microclimate/microclimate-workspace")
+                ));
     }
 
     public static get instance(): ConnectionManager {
