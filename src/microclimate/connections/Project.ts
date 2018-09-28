@@ -4,6 +4,8 @@ import { TreeItemAdaptable } from "../../view/projectExplorer/TreeItemAdaptable"
 
 export class Project implements TreeItemAdaptable {
 
+    private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json
+
     constructor (
         public readonly name: string,
         public readonly id: string,
@@ -14,6 +16,8 @@ export class Project implements TreeItemAdaptable {
         if (!type) {
             this.type = "unknown";
         }
+
+        console.log("Create project", this);
     }
 
     getChildren(): TreeItemAdaptable[] {
@@ -25,6 +29,7 @@ export class Project implements TreeItemAdaptable {
         const ti = new TreeItem(`${this.name} [${this.type}]`, TreeItemCollapsibleState.None);
         ti.resourceUri = this.localPath;
         ti.tooltip = ti.resourceUri.toString();
+        ti.contextValue = Project.CONTEXT_ID;
         return ti;
     }
 }

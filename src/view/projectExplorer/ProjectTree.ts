@@ -1,7 +1,7 @@
 
-import { TreeItem, TreeDataProvider, Event, EventEmitter } from 'vscode';
+import { TreeItem, TreeDataProvider, Event, EventEmitter, TreeItemCollapsibleState } from 'vscode';
 
-import { TreeItemAdaptable, RootNode } from './TreeItemAdaptable';
+import { TreeItemAdaptable, SimpleTreeItem } from './TreeItemAdaptable';
 import ConnectionManager from '../../microclimate/connections/ConnectionManager';
 
 class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
@@ -12,13 +12,14 @@ class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
     private onChangeEmitter: EventEmitter<TreeItemAdaptable> = new EventEmitter<TreeItemAdaptable>();
     readonly onDidChangeTreeData: Event<TreeItemAdaptable> = this.onChangeEmitter.event;
 
-    readonly root = new RootNode();
+    private readonly root: TreeItemAdaptable;
 
     constructor() {
         ConnectionManager.instance.addOnChangeListener(this.refresh);
+        this.root = new SimpleTreeItem("Microclimate", TreeItemCollapsibleState.Expanded, ConnectionManager.instance.connections);
     }
 
-    // "instance arrow function" here ensures proper 'this' binding
+    // "instance arrow function" here ensures proper 'this' binding when used as a callback
     // "https://github.com/Microsoft/TypeScript/wiki/'this'-in-TypeScript"
     public refresh = (): void => {
         console.log("Refresh tree");
@@ -35,23 +36,7 @@ class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
         }
 
         return node.getChildren();
-        // const childNodes: TreeItemAdaptable[] = await node.getChildren();
-        /*
-        
-        const childTreeItems: TreeItem[] = childNodes.map((node) => {
-            return new TreeItem(node.label, node.initCollapsedState);
-        });
-
-        return new Promise<TreeItem[]> ((resolve, reject) => {
-            resolve(childTreeItems);
-        });*/
     }
-
-    /*
-    getParent(node: ProjectNode): ProjectNode {
-        return null;
-    }*/
-
 }
 
 export {

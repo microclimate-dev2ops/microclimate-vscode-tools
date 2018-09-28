@@ -1,4 +1,4 @@
-import { window, Uri, TextEditorCursorStyle } from "vscode";
+import * as vscode from 'vscode';
 import ConnectionManager from "../microclimate/connections/ConnectionManager";
 //import * as request from 'request';
 import * as request from 'request-promise-native';
@@ -12,7 +12,7 @@ export default async function newConnectionCmd() {
         prompt: "Enter the hostname or IP for the Microclimate instance you wish to connect to.",
         value: "localhost"
     };
-    const hostname: string | undefined = await window.showInputBox(inputOpts);
+    const hostname: string | undefined = await vscode.window.showInputBox(inputOpts);
     // validate
 
     // tslint:disable-next-line:triple-equals
@@ -27,7 +27,7 @@ export default async function newConnectionCmd() {
     let tryAgain = true;
     let port = undefined;
     while (tryAgain) {
-        const portStr = await window.showInputBox(inputOpts);
+        const portStr = await vscode.window.showInputBox(inputOpts);
 
         // tslint:disable-next-line:triple-equals
         if (portStr == null) {
@@ -39,7 +39,7 @@ export default async function newConnectionCmd() {
         if (isNaN(port) || !Number.isInteger(port) || port > 65535 || port < 1024) {
             const tryAgainMsg = "Enter a different port number";
     
-            const result = await window.showErrorMessage(`Invalid port ${portStr} - Must be an integer between 1024 and 65536`, tryAgainMsg);
+            const result = await vscode.window.showErrorMessage(`Invalid port ${portStr} - Must be an integer between 1024 and 65536`, tryAgainMsg);
             tryAgain = result === tryAgainMsg;
         }
         else {
@@ -48,13 +48,13 @@ export default async function newConnectionCmd() {
     }
 
     if (hostname && port) {
-        const tryAgainMsg = "Try Again";
+        const tryAgainMsg = "Try again";
 
         testConnection(hostname, port)
-            .then( (s) => window.showInformationMessage(s))
+            .then( (s) => vscode.window.showInformationMessage(s))
             .catch((s) => {
                 console.error("Connection test failed with message " + s);
-                window.showErrorMessage(s, tryAgainMsg)
+                vscode.window.showErrorMessage(s, tryAgainMsg)
                 .then((s) => {
                     if (s === tryAgainMsg) {
                         newConnectionCmd();
@@ -69,7 +69,7 @@ async function testConnection(host: string, port: number): Promise<string> {
     
     const uri = ConnectionManager.buildUrl(host, port);
     const ENV_APIPATH = "api/v1/environment";
-    const envUri: Uri = uri.with({ path: ENV_APIPATH });
+    const envUri: vscode.Uri = uri.with({ path: ENV_APIPATH });
 
     const connectTimeout = 2500;
 
@@ -77,7 +77,7 @@ async function testConnection(host: string, port: number): Promise<string> {
         request.get(envUri.toString(), { json: true, timeout: connectTimeout })
             .then( (microclimateData) => {
                 // Connected successfully
-                return onSuccessfulConnection(microclimateData);
+                return onSuccessfulConnection(uri, microclimateData);
             })
             .catch( (err) => {
                 console.log(`Request fail - ${err}`);
@@ -88,8 +88,9 @@ async function testConnection(host: string, port: number): Promise<string> {
                 return reject(err.toString());
             });
     });
+}
 
-async function onSuccessfulConnection(microclimateData: any): Promise<string> {
+async function onSuccessfulConnection(mcUri: vscode.Uri, microclimateData: any): Promise<string> {
 
     return new Promise<string>((resolve, reject) => {
         console.log("TEST CONNECTION RESULT:");
@@ -99,9 +100,7 @@ async function onSuccessfulConnection(microclimateData: any): Promise<string> {
             return reject("Null test connection microclimateData");
         }
     
-        // is this 'safe' enough?
-        let version = microclimateData.microclimate_version;
-        version = "quack";
+        const version = microclimateData.microclimate_version;
         if (version == null) {
             return reject("Could not determine Microclimate version");
         }
@@ -113,17 +112,15 @@ async function onSuccessfulConnection(microclimateData: any): Promise<string> {
         if (workspace == null) {
             return reject("Workspace location was missing from environment data");
         }
-        const workspaceUri = Uri.file(workspace);
+        const workspaceUri = vscode.Uri.file(workspace);
     
-        ConnectionManager.instance.addConnection(uri, workspaceUri)
-            .then( () => resolve(`New connection to ${uri} succeeded.\nWorkspace path is: ${workspace}`))
+        ConnectionManager.instance.addConnection(mcUri, workspaceUri)
+            .then( () => resolve(`New connection to ${mcUri} succeeded.\nWorkspace path is: ${workspace}`))
             .catch((err) => { 
                 console.log("New connection rejected by ConnectionManager ", err); 
                 return reject(err); 
             });
     });
-}
-
 }
 
 export {

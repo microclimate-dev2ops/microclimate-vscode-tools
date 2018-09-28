@@ -2,7 +2,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as util from 'util';
+// import * as util from 'util';
 import { createViews } from "./view/initViews";
 import { createCommands } from './command/initCommands';
 
@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
     ];
 
     subs.forEach((e) => {
-        console.log("Adding subscription " + util.inspect(e));
+        // console.log("Adding subscription " + util.inspect(e));
         context.subscriptions.push(e);
     });
 }

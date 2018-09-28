@@ -10,6 +10,9 @@ export default class ConnectionManager {
 
     private constructor() {
         ConnectionManager._instance = this;
+
+            // TODO just for ease of testing
+            this.connections.push(new Connection(ConnectionManager.buildUrl("localhost", 9090), Uri.file("/Users/tim/programs/microclimate/microclimate-workspace")));
     }
 
     public static get instance(): ConnectionManager {
@@ -45,12 +48,12 @@ export default class ConnectionManager {
         });
     }
 
-    public addOnChangeListener(callback: Function) {
+    public addOnChangeListener(callback: () => void): void {
         console.log("Adding onChangeListener " + callback.name);
         this.listeners.push(callback);
     }
 
-    private onChange() {
+    private onChange(): void {
         console.log("OnChange");
         this.listeners.forEach( (f) => f());
     }

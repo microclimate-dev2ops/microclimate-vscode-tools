@@ -1,5 +1,4 @@
 import { TreeItemCollapsibleState, TreeItem } from "vscode";
-import ConnectionManager from "../../microclimate/connections/ConnectionManager";
 
 export interface TreeItemAdaptable {
 
@@ -7,13 +6,21 @@ export interface TreeItemAdaptable {
     getChildren(): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]>;
 }
 
-export class RootNode implements TreeItemAdaptable {
-    
-    getChildren(): TreeItemAdaptable[] {
-        return ConnectionManager.instance.connections;
+export class SimpleTreeItem implements TreeItemAdaptable {
+
+    constructor(
+        public readonly label: string,
+        public readonly initCollapseState: TreeItemCollapsibleState,
+        public readonly children: TreeItemAdaptable[]
+    ) {
+
     }
 
     toTreeItem(): TreeItem {
-        return new TreeItem("Microclimate", TreeItemCollapsibleState.Expanded);
+        return new TreeItem(this.label, this.initCollapseState);
+    }
+    getChildren(): TreeItemAdaptable[] {
+        return this.children;
     }
 }
+

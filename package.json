@@ -29,8 +29,34 @@
                 "title": "New Microclimate Connection",
                 "description": "Connect to a Microclimate instance",
                 "category": "Microclimate"
+            }, 
+            {
+                "command": "ext.mc.goToFolder",
+                "title": "Go to folder",
+                "description": "Focus on a Microclimate project in the Explorer",
+                "category": "Microclimate" 
             }
-        ]
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "ext.mc.goToFolder",
+                    "when": "never"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "ext.mc.newConnection",
+                    "when": "view == ext.mc.projectExplorer"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "ext.mc.goToFolder",
+                    "when": "view == ext.mc.projectExplorer && !(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
