@@ -1,29 +1,60 @@
+export class ProjectType {
 
-export class ProjectTypes {
+    public readonly type: ProjectType.Types;
+    public readonly userFriendlyType: string;
 
-    public static getUserFriendlyType(projectType: string, language: string) {
+    constructor(
+        public readonly projectType: string,
+        public readonly language: string
+    ) {
+        this.type = ProjectType.getType(projectType);
+        this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
+    }
+
+    private static getType(projectType: string) {
         if (projectType === "liberty") {
-            return "Microprofile";
+            return ProjectType.Types.MICROPROFILE;
         }
         else if (projectType === "spring") {
-            return "Spring";
+            return ProjectType.Types.SPRING;
         }
         else if (projectType === "nodejs") {
-            return "Node.js";
+            return ProjectType.Types.NODE;
         }
         else if (projectType === "swift") {
-            return "Swift";
+            return ProjectType.Types.SWIFT;
         }
-        else if (projectType === "docker" && language != null) {
-            return this.uppercaseFirstChar(language);
+        else if (projectType === "docker") {
+            return ProjectType.Types.DOCKER;
         }
         else {
-            console.error(`Unrecognized project - type ${projectType}, language ${language}`);
-            return "Unknown";
+            console.error(`Unrecognized project - type ${projectType}`);
+            return ProjectType.Types.UNKNOWN;
         }
+    }
+
+    private static getUserFriendlyType(type: ProjectType.Types, language: string) {
+        // For docker projects, return the language, eg "Python"
+        if (type === ProjectType.Types.DOCKER && language != null) {
+            return this.uppercaseFirstChar(language);
+        }
+        // For all other types, the enum's string value is user-friendly
+        return type.toString();
     }
 
     private static uppercaseFirstChar(input: string): string {
         return input.charAt(0).toUpperCase() + input.slice(1);
+    }
+}
+
+export namespace ProjectType {
+
+    export enum Types {
+        MICROPROFILE = "Microprofile",
+        SPRING = "Spring",
+        NODE = "Node.js",
+        SWIFT = "Swift",
+        DOCKER = "Docker",
+        UNKNOWN = "Unknown"
     }
 }

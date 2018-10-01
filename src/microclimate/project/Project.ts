@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { TreeItemAdaptable } from "../../view/projectExplorer/TreeItemAdaptable";
-import { ProjectState, ProjectStates } from "./ProjectState";
-import { ProjectTypes } from "./ProjectType";
+import { ProjectState } from "./ProjectState";
+import { ProjectType } from "./ProjectType";
 
 export default class Project implements TreeItemAdaptable {
 
@@ -9,30 +9,26 @@ export default class Project implements TreeItemAdaptable {
 
     public readonly name: string;
     public readonly id: string;
-    public readonly type: string;           // should be an enum
-    public readonly language: string;
+    public readonly type: ProjectType;
     public readonly contextRoot: string;
 
-    private status: ProjectState = ProjectState.UNKNOWN;
+    private status: ProjectState = ProjectState.States.UNKNOWN;
 
     constructor (
         public readonly projectInfo: any,
         public readonly localPath: vscode.Uri
     ) {
-        console.log("Project constructor");
         this.name = projectInfo.name;
-        this.type = projectInfo.type;
-        if (!this.type) {
-            this.type = "unknown";
-        }
         this.id = projectInfo.projectID;
+
         // TODO should use projectType but it's missing sometimes
-        this.type = projectInfo.buildType;
-        this.language = projectInfo.language;
+        this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
+
         this.contextRoot = projectInfo.contextRoot;
         this.setStatus(projectInfo);
 
-        console.log("Created project:", this);
+        // console.log("Created project:", this);
+        console.log("Created project " + this.name);
     }
 
     public getChildren(): TreeItemAdaptable[] {
@@ -41,8 +37,7 @@ export default class Project implements TreeItemAdaptable {
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const displayType: string = ProjectTypes.getUserFriendlyType(this.type, this.language);
-        const ti = new vscode.TreeItem(`${this.name} (${displayType}) - [${this.status}]`, 
+        const ti = new vscode.TreeItem(`${this.name} (${this.type.userFriendlyType}) - [${this.status}]`, 
                 vscode.TreeItemCollapsibleState.None);
 
         ti.resourceUri = this.localPath;
@@ -63,11 +58,11 @@ export default class Project implements TreeItemAdaptable {
         }
 
         const oldStatus = this.status;
-        console.log(`${this.name} is having its status updated from ${oldStatus}`);
-        this.status = ProjectStates.convert(projectInfo);
+        // console.log(`${this.name} is having its status updated from ${oldStatus}`);
+        this.status = ProjectState.convert(projectInfo);
 
         if (this.status === oldStatus) {
-            console.log("Status did not change");
+            // console.log("Status did not change");
             return false;
         }
         else {

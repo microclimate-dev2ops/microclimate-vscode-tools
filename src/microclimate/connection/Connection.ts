@@ -26,7 +26,7 @@ export default class Connection implements TreeItemAdaptable {
         this.socket = new MCSocket(mcUri.toString(), this);
     }
 
-    async updateProjects(): Promise<TreeItemAdaptable[]> {
+    async getProjects(): Promise<TreeItemAdaptable[]> {
         if (!this.needProjectUpdate) {
             return this.projects;
         }
@@ -51,7 +51,7 @@ export default class Connection implements TreeItemAdaptable {
     }
 
     async getChildren(): Promise<TreeItemAdaptable[]> {
-        await this.updateProjects();
+        await this.getProjects();
         if (this.projects.length === 0) {
             return [ new SimpleTreeItem("No projects", vscode.TreeItemCollapsibleState.None, []) ];
         }
@@ -69,6 +69,6 @@ export default class Connection implements TreeItemAdaptable {
     public forceProjectUpdate() {
         console.log("ForceProjectUpdate");
         this.needProjectUpdate = true;
-        this.updateProjects();
+        this.getProjects();
     }
 }
