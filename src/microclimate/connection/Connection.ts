@@ -11,36 +11,47 @@ export default class Connection implements TreeItemAdaptable {
 
     private static readonly CONTEXT_ID = "ext.mc.connectionItem";             // must match package.json
 
-    private readonly projectsApiUri: vscode.Uri;
     private readonly socket: MCSocket;
+    private readonly projectsApiUri: vscode.Uri;
+    
+    private projects: Project[] = [];
+    private needProjectUpdate: Boolean = true;
     
     constructor (
         public readonly mcUri: vscode.Uri,
         public readonly workspacePath: vscode.Uri
     ) {
         this.projectsApiUri = vscode.Uri.parse(mcUri.toString().concat(Endpoints.PROJECTS));
-        this.socket = new MCSocket(mcUri.toString());
+        this.socket = new MCSocket(mcUri.toString(), this);
     }
 
-    async getProjects(): Promise<TreeItemAdaptable[]> {
-        const projects: TreeItemAdaptable[] = [];
-        const result = await request.get(this.projectsApiUri.toString(), { json : true });
-        
-        for (const project of result) {
-            const projectLocStr = MCUtil.appendPathWithoutDupe(this.workspacePath.fsPath, project.locOnDisk);
-            const projectLoc: vscode.Uri = vscode.Uri.file(projectLocStr);
-            projects.push(new Project(project, projectLoc));
+    async updateProjects(): Promise<TreeItemAdaptable[]> {
+        if (!this.needProjectUpdate) {
+            return this.projects;
         }
 
-        return projects;
+        const result = await request.get(this.projectsApiUri.toString(), { json : true });
+        
+        this.socket.projectStateCallbacks.clear();
+        for (const projectInfo of result) {
+            const projectLocStr = MCUtil.appendPathWithoutDupe(this.workspacePath.fsPath, projectInfo.locOnDisk);
+            const projectLoc: vscode.Uri = vscode.Uri.file(projectLocStr);
+
+            const newProject: Project = new Project(projectInfo, projectLoc);
+            this.socket.projectStateCallbacks.set(newProject.id, newProject.setStatus);
+            this.projects.push(newProject);
+        }
+
+        this.needProjectUpdate = false;
+        return this.projects;
     }
 
     async getChildren(): Promise<TreeItemAdaptable[]> {
-        const projects = await this.getProjects();
-        if (projects.length === 0) {
+        await this.updateProjects();
+        if (this.projects.length === 0) {
             return [ new SimpleTreeItem("No projects", vscode.TreeItemCollapsibleState.None, []) ];
         }
-        return projects;
+        return this.projects;
     }
 
     toTreeItem(): vscode.TreeItem {
@@ -49,5 +60,10 @@ export default class Connection implements TreeItemAdaptable {
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
         return ti;
+    }
+
+    public forceProjectUpdate() {
+        this.needProjectUpdate = true;
+        this.updateProjects();
     }
 }

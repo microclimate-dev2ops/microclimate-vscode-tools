@@ -11,12 +11,13 @@ export default class Project implements TreeItemAdaptable {
     public readonly type: string;           // should be an enum
     public readonly contextRoot: string;
 
-    private _status: ProjectState = ProjectState.UNKNOWN;
+    private status: ProjectState = ProjectState.UNKNOWN;
 
     constructor (
         public readonly projectInfo: any,
         public readonly localPath: vscode.Uri
     ) {
+        console.log("Project constructor");
         this.name = projectInfo.name;
         this.type = projectInfo.type;
         if (!this.type) {
@@ -36,14 +37,26 @@ export default class Project implements TreeItemAdaptable {
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(`${this.name} [${this.type}] - [${this._status}]`, vscode.TreeItemCollapsibleState.None);
+        const ti = new vscode.TreeItem(`${this.name} [${this.type}] - [${this.status}]`, vscode.TreeItemCollapsibleState.None);
         ti.resourceUri = this.localPath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Project.CONTEXT_ID;
         return ti;
     }
 
-    public setStatus(projectInfo: any) {
-        this._status = ProjectStates.convert(projectInfo.appStatus, projectInfo.state, projectInfo.startMode);
+    public setStatus = (projectInfo: any): void => {
+        if (this == null) {
+            console.error("Failed to bind this");
+            return;
+        }
+        else if (projectInfo.projectID !== this.id) {
+            // shouldn't happen, but just in case
+            console.log(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
+            return;
+        }
+
+        console.log(`${this.name} is having its status updated from ${this.status}`);
+        this.status = ProjectStates.convert(projectInfo);
+        console.log(`${this.name} has a new status: ${this.status}`);
     }
 }

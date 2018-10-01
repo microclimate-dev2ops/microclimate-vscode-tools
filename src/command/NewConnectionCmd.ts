@@ -4,7 +4,7 @@ import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import * as request from "request-promise-native";
 import * as reqErrors from "request-promise-native/errors";
 
-export default async function newConnectionCmd() {
+export default async function newConnectionCmd(): Promise<void> {
     console.log("New connection command invoked");
 
     const inputOpts = {
@@ -25,7 +25,7 @@ export default async function newConnectionCmd() {
     inputOpts.value = "9090";
 
     let tryAgain = true;
-    let port = undefined;
+    let port: number | undefined = undefined;
     while (tryAgain) {
         const portStr = await vscode.window.showInputBox(inputOpts);
 
@@ -47,10 +47,16 @@ export default async function newConnectionCmd() {
         }
     }
 
-    if (hostname && port) {
+    if (hostname != null && port != null) {
+        return await tryAddConnection(hostname, port);
+    }
+}
+
+export async function tryAddConnection(host: string, port: number): Promise<void> {
+    if (host && port) {
         const tryAgainMsg = "Try again";
 
-        testConnection(hostname, port)
+        testConnection(host, port)
             .then( (s) => vscode.window.showInformationMessage(s))
             .catch((s) => {
                 console.error("Connection test failed with message " + s);
@@ -122,7 +128,3 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, microclimateData: any):
             });
     });
 }
-
-export {
-    newConnectionCmd
-};

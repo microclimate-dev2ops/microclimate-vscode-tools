@@ -1,22 +1,21 @@
 import { Uri } from "vscode";
 import Connection from "./Connection";
+import MCSocket from "./MCSocket";
+import { tryAddConnection } from "../../command/NewConnectionCmd";
 
 export default class ConnectionManager {
 
     private static _instance: ConnectionManager;
 
     private readonly _connections: Connection[] = [];
-    private readonly listeners: Function[] = [];
+    private readonly listeners: ( () => void ) [] = [];
 
     private constructor() {
         ConnectionManager._instance = this;
 
-            // TODO just for ease of testing
-            this.connections.push(
-                new Connection(
-                    ConnectionManager.buildUrl("localhost", 9090), 
-                    Uri.file("/Users/tim/programs/microclimate/microclimate-workspace")
-                ));
+        // add default connection
+        // TODO just for testing
+        tryAddConnection("localhost", 9090);
     }
 
     public static get instance(): ConnectionManager {
@@ -36,7 +35,9 @@ export default class ConnectionManager {
             if (this.connectionExists(uri)) {
                 return reject("Connection already exists at " + uri);
             }
-    
+
+            // all validation that this connection is good must be done by this point
+            
             const connection: Connection = new Connection(uri, workspace);
             console.log("New Connection @ " + uri);
             this._connections.push(connection);
@@ -52,13 +53,20 @@ export default class ConnectionManager {
         });
     }
 
+    /**
+     * Pass this a function to call whenever a connection is added, removed, or changed, 
+     * eg to trigger a tree update in the UI.
+     */
     public addOnChangeListener(callback: () => void): void {
         console.log("Adding onChangeListener " + callback.name);
         this.listeners.push(callback);
     }
 
-    private onChange(): void {
-        console.log("OnChange");
+    /**
+     * Call this whenever a connection is added, removed, or changed.
+     */
+    public onChange = (): void => {
+        console.log("ConnectionManager OnChange");
         this.listeners.forEach( (f) => f());
     }
 

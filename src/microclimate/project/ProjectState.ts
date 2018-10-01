@@ -1,8 +1,13 @@
 
 // TODO rename, or figure out how to make an enum that is also a class
 export class ProjectStates {
-    public static convert(appStatus: string, closedState?: string, startMode?: string): ProjectState {
-        appStatus = appStatus.toLowerCase();
+    public static convert(projectInfoPayload: any): ProjectState {
+
+        const appStatus:   string = projectInfoPayload.appStatus.toLowerCase(); 
+        const closedState: string | undefined = projectInfoPayload.state;
+        const startMode:   string | undefined = projectInfoPayload.startMode;
+
+        console.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
     
         if (closedState !== "open") {
             return ProjectState.DISABLED;
