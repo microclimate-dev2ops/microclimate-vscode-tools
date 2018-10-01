@@ -30,7 +30,8 @@ export default class MCSocket {
             .on("projectStatusChanged", this.onProjectChanged)
             .on("projectClosed",        this.onProjectChanged)
 
-            .on("projectDeletion",       this.onProjectDeleted);
+            .on("projectDeletion",       this.onProjectDeleted)
+            .on("projectRestartResult",  this.onProjectRestarted);
 
             // We don't actually need the creation event - 
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
@@ -63,6 +64,10 @@ export default class MCSocket {
     private onProjectDeleted = (payload: any): void => {
         console.log("PROJECT DELETED", payload);
         this.connection.forceProjectUpdate();
+    }
+
+    private onProjectRestarted = (payload: any): void => {
+        console.log("PROJECT RESTARTED", payload);
     }
 
 }

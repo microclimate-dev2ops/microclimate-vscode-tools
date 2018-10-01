@@ -2,6 +2,7 @@ import { Uri } from "vscode";
 import Connection from "./Connection";
 import MCSocket from "./MCSocket";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
+import Project from "../project/Project";
 
 export default class ConnectionManager {
 
@@ -30,7 +31,7 @@ export default class ConnectionManager {
         return Uri.parse(`http://${host}:${port}`);
     }
 
-    public async addConnection(uri: Uri, workspace: Uri): Promise<void> {
+    public async addConnection(uri: Uri, host:string, workspace: Uri): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             if (this.connectionExists(uri)) {
                 return reject("Connection already exists at " + uri);
@@ -38,7 +39,7 @@ export default class ConnectionManager {
 
             // all validation that this connection is good must be done by this point
             
-            const connection: Connection = new Connection(uri, workspace);
+            const connection: Connection = new Connection(uri, host, workspace);
             console.log("New Connection @ " + uri);
             this._connections.push(connection);
     
@@ -70,4 +71,23 @@ export default class ConnectionManager {
         this.listeners.forEach( (f) => f());
     }
 
+    /*
+    // There's likely a better way to do this...
+    public async getProjectByName(projectName: string): Promise<Project[]> {
+
+        return new Promise<Project[]>( (resolve, _) => {
+
+            const matchingProjects: Project[] = [];
+            this.connections.forEach(async (conn) => {
+                const projects = await conn.getProjects();
+
+                const matchingProject = projects.find( (p) => p.name === projectName);
+                if (matchingProject != null) {
+                    matchingProjects.push(matchingProject);
+                }
+            });
+
+            return resolve(matchingProjects);
+        });
+    }*/
 }

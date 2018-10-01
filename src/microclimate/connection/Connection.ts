@@ -2,11 +2,11 @@ import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
 import { TreeItemAdaptable, SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
-import * as MCUtil from "../../MCUtil";
 import Project from "../project/Project";
 import Endpoints from "../../constants/EndpointConstants";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
+import { triggerAsyncId } from "async_hooks";
 
 export default class Connection implements TreeItemAdaptable {
 
@@ -20,13 +20,14 @@ export default class Connection implements TreeItemAdaptable {
     
     constructor (
         public readonly mcUri: vscode.Uri,
+        public readonly host: string,
         public readonly workspacePath: vscode.Uri
     ) {
-        this.projectsApiUri = vscode.Uri.parse(mcUri.toString().concat(Endpoints.PROJECTS));
+        this.projectsApiUri = Endpoints.getEndpointPath(mcUri, Endpoints.PROJECTS);
         this.socket = new MCSocket(mcUri.toString(), this);
     }
 
-    async getProjects(): Promise<TreeItemAdaptable[]> {
+    async getProjects(): Promise<Project[]> {
         if (!this.needProjectUpdate) {
             return this.projects;
         }
@@ -37,10 +38,7 @@ export default class Connection implements TreeItemAdaptable {
         this.socket.projectStateCallbacks.clear();
 
         for (const projectInfo of result) {
-            const projectLocStr = MCUtil.appendPathWithoutDupe(this.workspacePath.fsPath, projectInfo.locOnDisk);
-            const projectLoc: vscode.Uri = vscode.Uri.file(projectLocStr);
-
-            const newProject: Project = new Project(projectInfo, projectLoc);
+            const newProject: Project = new Project(projectInfo, this);
             this.socket.projectStateCallbacks.set(newProject.id, newProject.setStatus);
             this.projects.push(newProject);
         }
@@ -70,5 +68,23 @@ export default class Connection implements TreeItemAdaptable {
         console.log("ForceProjectUpdate");
         this.needProjectUpdate = true;
         this.getProjects();
+    }
+
+    public async requestProjectRestart(projectID: string, debug: Boolean): Promise<void> {
+        const uri = Endpoints.getEndpointPath(this.mcUri, Endpoints.RESTART_ACTION(projectID));  
+        const options = {
+            json: true,
+            body: {
+                "startMode": debug ? "debug": "run"
+            }
+        };
+
+        request.post(uri.toString(), options)
+            .then( (result) => {
+                console.log("Response from restart request:", result);
+            })
+            .catch( (err) => {
+                console.error("Error POSTing restart request:", err);
+            });
     }
 }

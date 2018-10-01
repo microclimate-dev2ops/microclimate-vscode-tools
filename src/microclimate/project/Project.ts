@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
+
+import * as MCUtil from "../../MCUtil";
 import { TreeItemAdaptable } from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
+import Connection from "../connection/Connection";
 
 export default class Project implements TreeItemAdaptable {
 
@@ -10,25 +13,46 @@ export default class Project implements TreeItemAdaptable {
     public readonly name: string;
     public readonly id: string;
     public readonly type: ProjectType;
-    public readonly contextRoot: string;
+    // public readonly contextRoot: string;
+    public readonly localPath: vscode.Uri;
+    public readonly appBaseUrl: vscode.Uri;
+
+    private appPort: number;
+    private debugPort: number = -1;
 
     private status: ProjectState = ProjectState.States.UNKNOWN;
 
     constructor (
         public readonly projectInfo: any,
-        public readonly localPath: vscode.Uri
+        public readonly connection: Connection,
     ) {
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
+        this.appPort = projectInfo.ports.exposedPort;
+
+
 
         // TODO should use projectType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
 
-        this.contextRoot = projectInfo.contextRoot;
+        this.localPath = vscode.Uri.file(
+            MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.locOnDisk)
+        );
+
+        const contextRoot = projectInfo.contextroot || "";
+        // The appBaseUrl is the MicroclimateConnection hostname plus our app port,
+        // plus the context root (which may be the empty string)
+        // This might have to be changed if the mcUri has anything in the path element, 
+        // but I don't think that will happen
+        this.appBaseUrl = connection.mcUri.with( { 
+            authority: `${connection.host}:${this.appPort}`,
+            path: contextRoot
+        });
+
         this.setStatus(projectInfo);
 
-        // console.log("Created project:", this);
-        console.log("Created project " + this.name);
+        console.log("Created project:", this);
+        // console.log("Created project " + this.name);
     }
 
     public getChildren(): TreeItemAdaptable[] {
@@ -44,6 +68,10 @@ export default class Project implements TreeItemAdaptable {
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Project.CONTEXT_ID;
         return ti;
+    }
+
+    public get isStarted(): Boolean {
+        return this.status === ProjectState.States.STARTED;
     }
 
     /**

@@ -26,14 +26,32 @@
         "commands": [
             {
                 "command": "ext.mc.newConnection",
-                "title": "New Microclimate Connection",
+                "title": "New Microclimate connection",
                 "description": "Connect to a Microclimate instance",
                 "category": "Microclimate"
             },
             {
                 "command": "ext.mc.goToFolder",
-                "title": "Go to folder",
-                "description": "Focus on a Microclimate project in the Explorer",
+                "title": "Open as workspace",
+                "description": "Open this item as your VSCode workspace folder",
+                "category": "Microclimate"
+            },
+            {
+                "command": "ext.mc.openInBrowser",
+                "title": "Open in browser",
+                "description": "Open this resource in the browser",
+                "category": "Microclimate"
+            },
+            {
+                "command": "ext.mc.restartProjectRun",
+                "title": "Restart in Run mode",
+                "description": "Restart a Microclimate project into Run (normal) mode",
+                "category": "Microclimate"
+            },
+            {
+                "command": "ext.mc.restartProjectDebug",
+                "title": "Restart in Debug mode",
+                "description": "Restart a Microclimate project into Debug mode",
                 "category": "Microclimate"
             }
         ],
@@ -52,8 +70,20 @@
             ],
             "view/item/context": [
                 {
+                    "command": "ext.mc.openInBrowser",
+                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)"
+                },
+                {
+                    "command": "ext.mc.restartProjectRun",
+                    "when": "viewItem == ext.mc.projectItem"
+                },
+                {
+                    "command": "ext.mc.restartProjectDebug",
+                    "when": "viewItem == ext.mc.projectItem"
+                },
+                {
                     "command": "ext.mc.goToFolder",
-                    "when": "view == ext.mc.projectExplorer && !(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)"
+                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)"
                 }
             ]
         }

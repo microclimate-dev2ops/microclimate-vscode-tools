@@ -15,7 +15,6 @@ export default async function newConnectionCmd(): Promise<void> {
     const hostname: string | undefined = await vscode.window.showInputBox(inputOpts);
     // validate
 
-    // tslint:disable-next-line:triple-equals
     if (hostname == null) {
         // user cancelled
         return;
@@ -29,7 +28,6 @@ export default async function newConnectionCmd(): Promise<void> {
     while (tryAgain) {
         const portStr = await vscode.window.showInputBox(inputOpts);
 
-        // tslint:disable-next-line:triple-equals
         if (portStr == null) {
             // user cancelled
             return;
@@ -83,7 +81,7 @@ async function testConnection(host: string, port: number): Promise<string> {
         request.get(envUri.toString(), { json: true, timeout: connectTimeout })
             .then( (microclimateData) => {
                 // Connected successfully
-                return onSuccessfulConnection(uri, microclimateData);
+                return onSuccessfulConnection(uri, host, microclimateData);
             })
             .catch( (err) => {
                 console.log(`Request fail - ${err}`);
@@ -96,7 +94,7 @@ async function testConnection(host: string, port: number): Promise<string> {
     });
 }
 
-async function onSuccessfulConnection(mcUri: vscode.Uri, microclimateData: any): Promise<string> {
+async function onSuccessfulConnection(mcUri: vscode.Uri, host:string, microclimateData: any): Promise<string> {
 
     return new Promise<string>((resolve, reject) => {
         console.log("TEST CONNECTION RESULT:");
@@ -120,7 +118,7 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, microclimateData: any):
         }
         const workspaceUri = vscode.Uri.file(workspace);
     
-        ConnectionManager.instance.addConnection(mcUri, workspaceUri)
+        ConnectionManager.instance.addConnection(mcUri, host, workspaceUri)
             .then( () => resolve(`New connection to ${mcUri} succeeded.\nWorkspace path is: ${workspace}`))
             .catch((err: any) => { 
                 console.log("New connection rejected by ConnectionManager ", err); 
