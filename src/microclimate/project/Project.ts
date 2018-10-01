@@ -9,6 +9,7 @@ export default class Project implements TreeItemAdaptable {
     public readonly name: string;
     public readonly id: string;
     public readonly type: string;           // should be an enum
+    public readonly language: string;
     public readonly contextRoot: string;
 
     private status: ProjectState = ProjectState.UNKNOWN;
@@ -24,7 +25,9 @@ export default class Project implements TreeItemAdaptable {
             this.type = "unknown";
         }
         this.id = projectInfo.projectID;
-        this.type = projectInfo.projectType;
+        // TODO should use projectType but it's missing sometimes
+        this.type = projectInfo.buildType;
+        this.language = projectInfo.language;
         this.contextRoot = projectInfo.contextRoot;
         this.setStatus(projectInfo);
 
@@ -37,7 +40,7 @@ export default class Project implements TreeItemAdaptable {
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(`${this.name} [${this.type}] - [${this.status}]`, vscode.TreeItemCollapsibleState.None);
+        const ti = new vscode.TreeItem(`${this.name} (${Project.uppercase(this.language)}) - [${this.status}]`, vscode.TreeItemCollapsibleState.None);
         ti.resourceUri = this.localPath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Project.CONTEXT_ID;
@@ -55,8 +58,19 @@ export default class Project implements TreeItemAdaptable {
             return;
         }
 
-        console.log(`${this.name} is having its status updated from ${this.status}`);
+        const oldStatus = this.status;
+        console.log(`${this.name} is having its status updated from ${oldStatus}`);
         this.status = ProjectStates.convert(projectInfo);
-        console.log(`${this.name} has a new status: ${this.status}`);
+
+        if (this.status === oldStatus) {
+            console.log("Status did not change");
+        }
+        else {
+            console.log(`${this.name} has a new status: ${this.status}`);
+        }
+    }
+
+    private static uppercase(input: string): string {
+        return input.charAt(0).toUpperCase() + input.slice(1);
     }
 }

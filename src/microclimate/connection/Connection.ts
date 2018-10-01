@@ -6,6 +6,7 @@ import * as MCUtil from "../../MCUtil";
 import Project from "../project/Project";
 import Endpoints from "../../constants/EndpointConstants";
 import MCSocket from "./MCSocket";
+import ConnectionManager from "./ConnectionManager";
 
 export default class Connection implements TreeItemAdaptable {
 
@@ -32,7 +33,9 @@ export default class Connection implements TreeItemAdaptable {
 
         const result = await request.get(this.projectsApiUri.toString(), { json : true });
         
+        this.projects = [];
         this.socket.projectStateCallbacks.clear();
+
         for (const projectInfo of result) {
             const projectLocStr = MCUtil.appendPathWithoutDupe(this.workspacePath.fsPath, projectInfo.locOnDisk);
             const projectLoc: vscode.Uri = vscode.Uri.file(projectLocStr);
@@ -42,6 +45,7 @@ export default class Connection implements TreeItemAdaptable {
             this.projects.push(newProject);
         }
 
+        ConnectionManager.instance.onChange();
         this.needProjectUpdate = false;
         return this.projects;
     }
@@ -63,6 +67,7 @@ export default class Connection implements TreeItemAdaptable {
     }
 
     public forceProjectUpdate() {
+        console.log("ForceProjectUpdate");
         this.needProjectUpdate = true;
         this.updateProjects();
     }

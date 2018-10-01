@@ -3,7 +3,9 @@
 export class ProjectStates {
     public static convert(projectInfoPayload: any): ProjectState {
 
-        const appStatus:   string = projectInfoPayload.appStatus.toLowerCase(); 
+        let appStatus: string = projectInfoPayload.appStatus || ""; 
+        appStatus = appStatus.toLowerCase();
+
         const closedState: string | undefined = projectInfoPayload.state;
         const startMode:   string | undefined = projectInfoPayload.startMode;
 

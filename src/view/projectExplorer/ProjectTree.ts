@@ -4,7 +4,7 @@ import { TreeItem, TreeDataProvider, Event, EventEmitter, TreeItemCollapsibleSta
 import { TreeItemAdaptable, SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../../microclimate/connection/ConnectionManager";
 
-class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
+export default class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
 
     public readonly treeDataProvider: TreeDataProvider<{}> = this;
     public readonly viewId: string = "ext.mc.projectExplorer";        // must match package.json
@@ -38,7 +38,3 @@ class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
         return node.getChildren();
     }
 }
-
-export {
-    ProjectTreeDataProvider
-};

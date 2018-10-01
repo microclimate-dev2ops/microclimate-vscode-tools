@@ -27,11 +27,12 @@ export default class MCSocket {
             .on("projectChanged",       this.onProjectChanged)
             .on("projectStatusChanged", this.onProjectChanged)
             .on("projectClosed",        this.onProjectChanged)
-            .on("projectDeleted",       this.onProjectChanged)
-            .on("projectCreated",       this.onProjectCreated);
 
-            //.on("projectClosed",        this.onProjectClosed)
-            //.on("projectDeleted",       this.onProjectDeleted);
+            .on("projectDeletion",       this.onProjectDeleted);
+
+            // We don't actually need the creation event - 
+            // we can create the project as needed if we get a 'changed' event for a project we don't recognize
+            // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
 
     private onProjectChanged = (payload: any): void => {
@@ -45,7 +46,9 @@ export default class MCSocket {
 
         const setStateFunc = this.projectStateCallbacks.get(projectID);
         if (setStateFunc == null) {
-            console.error("No setState callback registered for project " + payload.projectID);
+            console.log("No setState callback registered for project " + payload.projectID);
+            // This means we've got a new project - refresh everything
+            this.connection.forceProjectUpdate();
             return;
         }
         
@@ -53,21 +56,9 @@ export default class MCSocket {
         ConnectionManager.instance.onChange();
     }
 
-    private onProjectCreated = (payload: any): void => {
-        console.log("PROJECT CREATED", payload);
+    private onProjectDeleted = (payload: any): void => {
+        console.log("PROJECT DELETED", payload);
         this.connection.forceProjectUpdate();
     }
 
-    /*
-    private onProjectStatusChanged(payload: JSON) {
-        console.log("onProjectStatusChanged", payload);
-    }
-
-    private onProjectClosed(payload: JSON) {
-        console.log("onProjectClosed", payload);
-    }
-
-    private onProjectDeleted(payload: JSON) {
-        console.log("onProjectDeleted", payload); 
-    }*/
 }
