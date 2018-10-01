@@ -6,7 +6,9 @@ export default class MCSocket {
 
     private readonly socket: SocketIOClient.Socket;
 
-    public readonly projectStateCallbacks: Map<string, Function> = new Map<string, Function>();
+    // Stores a list of Project.setState functions to call with the update event's payload every time a project's state changed
+    // The callback function must match the given signature - accepts one any, and returns boolean indicating if a change was made
+    public readonly projectStateCallbacks: Map<string, ( (payload: any) => Boolean )> = new Map<string, ( (payload: any) => Boolean )>();
 
     constructor(
         public readonly uri: string,
@@ -52,8 +54,10 @@ export default class MCSocket {
             return;
         }
         
-        setStateFunc(payload);
-        ConnectionManager.instance.onChange();
+        const changed: Boolean = setStateFunc(payload);
+        if (changed) {
+            ConnectionManager.instance.onChange();
+        }
     }
 
     private onProjectDeleted = (payload: any): void => {

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { TreeItemAdaptable } from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState, ProjectStates } from "./ProjectState";
+import { ProjectTypes } from "./ProjectType";
 
 export default class Project implements TreeItemAdaptable {
 
@@ -40,22 +41,25 @@ export default class Project implements TreeItemAdaptable {
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(`${this.name} (${Project.uppercase(this.language)}) - [${this.status}]`, vscode.TreeItemCollapsibleState.None);
+        const displayType: string = ProjectTypes.getUserFriendlyType(this.type, this.language);
+        const ti = new vscode.TreeItem(`${this.name} (${displayType}) - [${this.status}]`, 
+                vscode.TreeItemCollapsibleState.None);
+
         ti.resourceUri = this.localPath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Project.CONTEXT_ID;
         return ti;
     }
 
-    public setStatus = (projectInfo: any): void => {
-        if (this == null) {
-            console.error("Failed to bind this");
-            return;
-        }
-        else if (projectInfo.projectID !== this.id) {
+    /**
+     * Set this project's status based on the project info event payload passed
+     * @return If a change was made, and therefore a refresh of the project tree is required
+     */
+    public setStatus = (projectInfo: any): Boolean => {
+        if (projectInfo.projectID !== this.id) {
             // shouldn't happen, but just in case
             console.log(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
-            return;
+            return false;
         }
 
         const oldStatus = this.status;
@@ -64,13 +68,11 @@ export default class Project implements TreeItemAdaptable {
 
         if (this.status === oldStatus) {
             console.log("Status did not change");
+            return false;
         }
         else {
             console.log(`${this.name} has a new status: ${this.status}`);
+            return true;
         }
-    }
-
-    private static uppercase(input: string): string {
-        return input.charAt(0).toUpperCase() + input.slice(1);
     }
 }
