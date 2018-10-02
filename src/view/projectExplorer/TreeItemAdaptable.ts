@@ -21,7 +21,6 @@ export class SimpleTreeItem implements TreeItemAdaptable {
     toTreeItem(): vscode.TreeItem {
         const ti = new vscode.TreeItem(this.label, this.initCollapseState);
         ti.iconPath = getIconObj("microclimate.svg");
-
         return ti;
     }
 

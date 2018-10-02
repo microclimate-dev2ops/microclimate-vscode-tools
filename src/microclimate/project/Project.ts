@@ -24,7 +24,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private appPort: number;
     private debugPort: number = -1;
 
-    private status: ProjectState = ProjectState.States.UNKNOWN;
+    private state: ProjectState = new ProjectState(undefined);
 
     constructor (
         public readonly projectInfo: any,
@@ -68,7 +68,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(`${this.name} (${this.type.userFriendlyType}) - [${this.status}]`,
+
+        const ti = new vscode.TreeItem(`${this.state.statusEmoji}  ${this.name} (${this.type.userFriendlyType})`,
                 vscode.TreeItemCollapsibleState.None);
 
         ti.resourceUri = this.localPath;
@@ -80,7 +81,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     public get isStarted(): Boolean {
-        return this.status === ProjectState.States.STARTED;
+        return this.state.state === ProjectState.States.STARTED;
     }
 
     /**
@@ -94,16 +95,16 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return false;
         }
 
-        const oldStatus = this.status;
+        const oldStatus = this.state;
         // console.log(`${this.name} is having its status updated from ${oldStatus}`);
-        this.status = ProjectState.convert(projectInfo);
+        this.state = new ProjectState(projectInfo);
 
-        if (this.status === oldStatus) {
+        if (this.state === oldStatus) {
             // console.log("Status did not change");
             return false;
         }
         else {
-            console.log(`${this.name} has a new status: ${this.status}`);
+            console.log(`${this.name} has a new status:`, this.state);
             return true;
         }
     }
