@@ -1,7 +1,7 @@
 {
-    "name": "first",
-    "displayName": "first",
-    "description": "its my first extension",
+    "name": "com.ibm.microclimate.vscode",
+    "displayName": "%displayName%",
+    "description": "%description%",
     "version": "0.0.1",
     "publisher": "no",
     "engines": {
@@ -19,7 +19,7 @@
             "explorer": [
                 {
                     "id": "ext.mc.projectExplorer",
-                    "name": "Microclimate Projects"
+                    "name": "%viewName%"
                 }
             ]
         },
@@ -28,12 +28,16 @@
                 "command": "ext.mc.newConnection",
                 "title": "New Microclimate connection",
                 "description": "Connect to a Microclimate instance",
-                "category": "Microclimate"
+                "category": "Microclimate",
+                "icon": {
+                    "light": "./res/blank-cloud.svg",
+                    "dark": "./res/blank-cloud.svg"
+                }
             },
             {
                 "command": "ext.mc.goToFolder",
-                "title": "Open as workspace",
-                "description": "Open this item as your VSCode workspace folder",
+                "title": "Open folder as workspace",
+                "description": "Open this item's folder as your VSCode workspace",
                 "category": "Microclimate"
             },
             {
@@ -71,19 +75,23 @@
             "view/item/context": [
                 {
                     "command": "ext.mc.openInBrowser",
-                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)"
-                },
-                {
-                    "command": "ext.mc.restartProjectRun",
-                    "when": "viewItem == ext.mc.projectItem"
-                },
-                {
-                    "command": "ext.mc.restartProjectDebug",
-                    "when": "viewItem == ext.mc.projectItem"
+                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)",
+                    "group": "ext.mc.1"
                 },
                 {
                     "command": "ext.mc.goToFolder",
-                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)"
+                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)",
+                    "group": "ext.mc.2"
+                },
+                {
+                    "command": "ext.mc.restartProjectRun",
+                    "when": "viewItem == ext.mc.projectItem",
+                    "group": "ext.mc.3"
+                },
+                {
+                    "command": "ext.mc.restartProjectDebug",
+                    "when": "viewItem == ext.mc.projectItem",
+                    "group": "ext.mc.3"
                 }
             ]
         }

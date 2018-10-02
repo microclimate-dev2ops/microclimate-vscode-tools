@@ -11,6 +11,10 @@ export class ProjectType {
         this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
     }
 
+    public toString(): string {
+        return this.userFriendlyType;
+    }
+
     private static getType(projectType: string) {
         if (projectType === "liberty") {
             return ProjectType.Types.MICROPROFILE;

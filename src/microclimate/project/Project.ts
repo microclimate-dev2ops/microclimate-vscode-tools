@@ -6,8 +6,7 @@ import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
 
-export default class Project implements TreeItemAdaptable {
-
+export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json
 
     public readonly name: string;
@@ -16,6 +15,11 @@ export default class Project implements TreeItemAdaptable {
     // public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
     public readonly appBaseUrl: vscode.Uri;
+
+    // QuickPickItem
+    public readonly label: string;
+    public readonly description?: string;
+    public readonly detail?: string;
 
     private appPort: number;
     private debugPort: number = -1;
@@ -29,8 +33,6 @@ export default class Project implements TreeItemAdaptable {
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
         this.appPort = projectInfo.ports.exposedPort;
-
-
 
         // TODO should use projectType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
@@ -50,6 +52,11 @@ export default class Project implements TreeItemAdaptable {
         });
 
         this.setStatus(projectInfo);
+        
+        // QuickPickItem
+        this.label = `${this.name} (${this.type} project)`;
+        this.description = this.appBaseUrl.toString();
+        // this.detail = this.id;
 
         console.log("Created project:", this);
         // console.log("Created project " + this.name);

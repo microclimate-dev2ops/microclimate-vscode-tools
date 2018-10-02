@@ -1,8 +1,6 @@
 import { Uri } from "vscode";
 import Connection from "./Connection";
-import MCSocket from "./MCSocket";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
-import Project from "../project/Project";
 
 export default class ConnectionManager {
 
