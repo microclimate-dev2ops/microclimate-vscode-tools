@@ -7,7 +7,7 @@ import ConnectionManager from "../../microclimate/connection/ConnectionManager";
 export default class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
 
     public readonly treeDataProvider: TreeDataProvider<{}> = this;
-    public readonly viewId: string = "ext.mc.projectExplorer";        // must match package.json
+    public readonly VIEW_ID: string = "ext.mc.projectExplorer";        // must match package.json
 
     private onChangeEmitter: EventEmitter<TreeItemAdaptable> = new EventEmitter<TreeItemAdaptable>();
     readonly onDidChangeTreeData: Event<TreeItemAdaptable> = this.onChangeEmitter.event;

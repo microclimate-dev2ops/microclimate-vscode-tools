@@ -1,8 +1,10 @@
-import { TreeItemCollapsibleState, TreeItem } from "vscode";
+import * as vscode from "vscode";
+import * as path from "path";
+import { getIconObj } from "../../MCUtil";
 
 export interface TreeItemAdaptable {
 
-    toTreeItem(): TreeItem | Promise<TreeItem>;
+    toTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem>;
     getChildren(): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]>;
 }
 
@@ -10,15 +12,19 @@ export class SimpleTreeItem implements TreeItemAdaptable {
 
     constructor(
         public readonly label: string,
-        public readonly initCollapseState: TreeItemCollapsibleState,
+        public readonly initCollapseState: vscode.TreeItemCollapsibleState,
         public readonly children: TreeItemAdaptable[]
     ) {
 
     }
 
-    toTreeItem(): TreeItem {
-        return new TreeItem(this.label, this.initCollapseState);
+    toTreeItem(): vscode.TreeItem {
+        const ti = new vscode.TreeItem(this.label, this.initCollapseState);
+        ti.iconPath = getIconObj("microclimate.svg");
+
+        return ti;
     }
+
     getChildren(): TreeItemAdaptable[] {
         return this.children;
     }

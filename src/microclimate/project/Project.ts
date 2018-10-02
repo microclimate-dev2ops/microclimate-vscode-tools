@@ -44,15 +44,15 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         const contextRoot = projectInfo.contextroot || "";
         // The appBaseUrl is the MicroclimateConnection hostname plus our app port,
         // plus the context root (which may be the empty string)
-        // This might have to be changed if the mcUri has anything in the path element, 
+        // This might have to be changed if the mcUri has anything in the path element,
         // but I don't think that will happen
-        this.appBaseUrl = connection.mcUri.with( { 
+        this.appBaseUrl = connection.mcUri.with( {
             authority: `${connection.host}:${this.appPort}`,
             path: contextRoot
         });
 
         this.setStatus(projectInfo);
-        
+
         // QuickPickItem
         this.label = `${this.name} (${this.type} project)`;
         this.description = this.appBaseUrl.toString();
@@ -68,12 +68,14 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(`${this.name} (${this.type.userFriendlyType}) - [${this.status}]`, 
+        const ti = new vscode.TreeItem(`${this.name} (${this.type.userFriendlyType}) - [${this.status}]`,
                 vscode.TreeItemCollapsibleState.None);
 
         ti.resourceUri = this.localPath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Project.CONTEXT_ID;
+        ti.iconPath = this.type.icon;
+        // console.log(`Created TreeItem`, ti);
         return ti;
     }
 

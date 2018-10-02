@@ -30,8 +30,8 @@
                 "description": "Connect to a Microclimate instance",
                 "category": "Microclimate",
                 "icon": {
-                    "light": "./res/blank-cloud.svg",
-                    "dark": "./res/blank-cloud.svg"
+                    "light": "res/img/light/microclimate.svg",
+                    "dark": "res/img/light/microclimate.svg"
                 }
             },
             {
@@ -69,7 +69,8 @@
             "view/title": [
                 {
                     "command": "ext.mc.newConnection",
-                    "when": "view == ext.mc.projectExplorer"
+                    "when": "view == ext.mc.projectExplorer",
+                    "group": "navigation"
                 }
             ],
             "view/item/context": [

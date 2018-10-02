@@ -8,6 +8,7 @@ import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import { triggerAsyncId } from "async_hooks";
 import { ProjectType } from "../project/ProjectType";
+import { getIconObj } from "../../MCUtil";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -71,6 +72,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         ti.resourceUri = this.workspacePath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
+        ti.iconPath = getIconObj("connection.svg");
         return ti;
     }
 
@@ -89,7 +91,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             }
         };
 
-        // TODO remove, Portal should tell us instead of it's invalid.
+        // TODO remove, Portal should tell us instead if it's invalid.
         if (project.type.type !== ProjectType.Types.MICROPROFILE) {
             vscode.window.showErrorMessage(`You can't restart ${project.type} projects yet`);
             return;

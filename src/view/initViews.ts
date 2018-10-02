@@ -7,7 +7,7 @@ export default function createViews() {
     console.log("CreateViews");
 
     return [
-        window.createTreeView(treeDataProvider.viewId, treeDataProvider),
-        window.registerTreeDataProvider(treeDataProvider.viewId, treeDataProvider)
+        window.createTreeView(treeDataProvider.VIEW_ID, treeDataProvider),
+        window.registerTreeDataProvider(treeDataProvider.VIEW_ID, treeDataProvider)
     ];
 }

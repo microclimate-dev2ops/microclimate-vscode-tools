@@ -1,14 +1,18 @@
+import { uppercaseFirstChar, IconPaths, getIconObj } from "../../MCUtil";
+
 export class ProjectType {
 
     public readonly type: ProjectType.Types;
     public readonly userFriendlyType: string;
+    public readonly icon: IconPaths;
 
     constructor(
         public readonly projectType: string,
-        public readonly language: string
+        public readonly language: string,
     ) {
         this.type = ProjectType.getType(projectType);
         this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
+        this.icon = ProjectType.getIconName(language);
     }
 
     public toString(): string {
@@ -37,17 +41,18 @@ export class ProjectType {
         }
     }
 
+    private static getIconName(language: string): IconPaths {
+        // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
+        return getIconObj(language + ".png", false);
+    }
+
     private static getUserFriendlyType(type: ProjectType.Types, language: string) {
         // For docker projects, return the language, eg "Python"
         if (type === ProjectType.Types.DOCKER && language != null) {
-            return this.uppercaseFirstChar(language);
+            return uppercaseFirstChar(language);
         }
         // For all other types, the enum's string value is user-friendly
         return type.toString();
-    }
-
-    private static uppercaseFirstChar(input: string): string {
-        return input.charAt(0).toUpperCase() + input.slice(1);
     }
 }
 
