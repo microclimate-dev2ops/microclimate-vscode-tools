@@ -22,7 +22,7 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
     // but this will be considerably more work and less performant.
     if (resource instanceof Project) {
         const project: Project = resource as Project;
-        if (!project.isStarted) {
+        if (!project.state.isStarted) {
             vscode.window.showErrorMessage("You can only open projects that are Started");
             return;
         }

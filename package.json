@@ -57,6 +57,11 @@
                 "title": "Restart in Debug mode",
                 "description": "Restart a Microclimate project into Debug mode",
                 "category": "Microclimate"
+            },
+            {
+                "command": "ext.mc.requestBuild",
+                "title": "Request build",
+                "category": "Microclimate"
             }
         ],
         "menus": {
@@ -77,22 +82,27 @@
                 {
                     "command": "ext.mc.openInBrowser",
                     "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)",
-                    "group": "ext.mc.1"
+                    "group": "ext.mc.a"
                 },
                 {
                     "command": "ext.mc.goToFolder",
                     "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)",
-                    "group": "ext.mc.2"
+                    "group": "ext.mc.b"
+                },
+                {
+                    "command": "ext.mc.requestBuild",
+                    "when": "viewItem == ext.mc.projectItem",
+                    "group": "ext.mc.c"
                 },
                 {
                     "command": "ext.mc.restartProjectRun",
                     "when": "viewItem == ext.mc.projectItem",
-                    "group": "ext.mc.3"
+                    "group": "ext.mc.z"
                 },
                 {
                     "command": "ext.mc.restartProjectDebug",
                     "when": "viewItem == ext.mc.projectItem",
-                    "group": "ext.mc.3"
+                    "group": "ext.mc.z"
                 }
             ]
         }

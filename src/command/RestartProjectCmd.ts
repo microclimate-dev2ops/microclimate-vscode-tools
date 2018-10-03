@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
-import { promptForResource, promptForProject } from "./CommandUtil";
+import { promptForProject } from "./CommandUtil";
 
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
     console.log("RestartProjectCmd invoked");
@@ -16,7 +16,7 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
     }
 
     // TODO validate this project has the restart capability using the caps endpoint
-    if (!project.isStarted) {
+    if (!project.state.isStarted) {
         vscode.window.showErrorMessage("You can only restart projects that are already Started");
         return;
     }
@@ -28,5 +28,5 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
 
     console.log(`RestartProject on project ${project.name} into debug mode? ${debug}`);
 
-    await project.connection.requestProjectRestart(project, debug);
+    project.connection.requestProjectRestart(project, debug);
 }

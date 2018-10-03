@@ -24,7 +24,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private appPort: number;
     private debugPort: number = -1;
 
-    private state: ProjectState = new ProjectState(undefined);
+    private _state: ProjectState = new ProjectState(undefined);
 
     constructor (
         public readonly projectInfo: any,
@@ -46,7 +46,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         // plus the context root (which may be the empty string)
         // This might have to be changed if the mcUri has anything in the path element,
         // but I don't think that will happen
-        this.appBaseUrl = connection.mcUri.with( {
+        this.appBaseUrl = connection.mcUri.with({
             authority: `${connection.host}:${this.appPort}`,
             path: contextRoot
         });
@@ -63,14 +63,13 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     public getChildren(): TreeItemAdaptable[] {
-        // Projects have no children.
-        return [];
+        return [ this._state ];
     }
 
     public toTreeItem(): vscode.TreeItem {
 
-        const ti = new vscode.TreeItem(`${this.state.statusEmoji}  ${this.name} (${this.type.userFriendlyType})`,
-                vscode.TreeItemCollapsibleState.None);
+        const ti = new vscode.TreeItem(`${this.name} (${this.type.userFriendlyType})`,
+                vscode.TreeItemCollapsibleState.Expanded);
 
         ti.resourceUri = this.localPath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
@@ -80,8 +79,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return ti;
     }
 
-    public get isStarted(): Boolean {
-        return this.state.state === ProjectState.States.STARTED;
+    public get state(): ProjectState {
+        return this._state;
     }
 
     /**
@@ -95,16 +94,16 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return false;
         }
 
-        const oldStatus = this.state;
+        const oldState = this._state;
         // console.log(`${this.name} is having its status updated from ${oldStatus}`);
-        this.state = new ProjectState(projectInfo);
+        this._state = new ProjectState(projectInfo);
 
-        if (this.state === oldStatus) {
+        if (this._state === oldState) {
             // console.log("Status did not change");
             return false;
         }
         else {
-            console.log(`${this.name} has a new status:`, this.state);
+            console.log(`${this.name} has a new status:`, this._state);
             return true;
         }
     }

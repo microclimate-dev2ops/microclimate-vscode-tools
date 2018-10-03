@@ -83,6 +83,12 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {
+        // TODO remove, Portal should tell us instead if it's invalid.
+        if (project.type.type !== ProjectType.Types.MICROPROFILE) {
+            vscode.window.showErrorMessage(`You can't restart ${project.type} projects yet`);
+            return;
+        }
+
         const uri = Endpoints.getEndpointPath(this.mcUri, Endpoints.RESTART_ACTION(project.id));
         const options = {
             json: true,
@@ -91,14 +97,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             }
         };
 
-        // TODO remove, Portal should tell us instead if it's invalid.
-        if (project.type.type !== ProjectType.Types.MICROPROFILE) {
-            vscode.window.showErrorMessage(`You can't restart ${project.type} projects yet`);
-            return;
-        }
-
         // TODO this will always appear to succeed because https://github.ibm.com/dev-ex/portal/issues/523
-        request.post(uri.toString(), options)
+        return request.post(uri.toString(), options)
             .then( (result) => {
                 console.log("Response from restart request:", result);
                 vscode.window.showInformationMessage(`Restarting ${project.name} into ${options.body.startMode} mode`);
@@ -106,6 +106,26 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             .catch( (err) => {
                 console.error("Error POSTing restart request:", err);
                 vscode.window.showInformationMessage(`Restart failed: ${err}`);
+            });
+    }
+
+    public async requestBuild(project: Project): Promise<void> {
+        const uri = Endpoints.getEndpointPath(this.mcUri, Endpoints.BUILD_ACTION(project.id));
+        const options = {
+            json: true,
+            body: {
+                action: "build"
+            }
+        };
+
+        return request.post(uri.toString(), options)
+            .then( (result) => {
+                console.log(`Response from build request for ${project.name}:`, result);
+                vscode.window.showInformationMessage(`Build requested for ${project.name}`);
+            })
+            .catch( (err) => {
+                console.log(`Error POSTing build request`, err);
+                vscode.window.showErrorMessage(`Build request failed: ${err}`);
             });
     }
 }

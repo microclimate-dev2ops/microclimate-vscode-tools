@@ -12,7 +12,7 @@ export class ProjectType {
     ) {
         this.type = ProjectType.getType(projectType);
         this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
-        this.icon = ProjectType.getIconName(language);
+        this.icon = ProjectType.getIcons(language);
     }
 
     public toString(): string {
@@ -41,7 +41,7 @@ export class ProjectType {
         }
     }
 
-    private static getIconName(language: string): IconPaths {
+    private static getIcons(language: string): IconPaths {
         // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
         return getIconObj(language + ".png", false);
     }

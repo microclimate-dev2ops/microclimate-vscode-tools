@@ -12,4 +12,6 @@ export default class Endpoints {
     public static readonly PROJECTS: string = "api/v1/projects";
 
     public static readonly RESTART_ACTION = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/restart`;
+
+    public static readonly BUILD_ACTION = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/build`;
 }

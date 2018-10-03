@@ -3,11 +3,11 @@ import * as vscode from "vscode";
 import newConnectionCmd from "./NewConnectionCmd";
 import goToFolder from "./GoToFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
-import openInBrowserCmd from "./OpenInBrowser";
+import openInBrowserCmd from "./OpenInBrowserCmd";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import { QuickPickItem } from "vscode";
+import requestBuildCmd from "./RequestBuildCmd";
 
 export function createCommands() {
 
@@ -18,7 +18,8 @@ export function createCommands() {
         vscode.commands.registerCommand("ext.mc.restartProjectRun", (args) => restartProjectCmd(args, false)),
         vscode.commands.registerCommand("ext.mc.restartProjectDebug", (args) => restartProjectCmd(args, true)),
 
-        vscode.commands.registerCommand("ext.mc.openInBrowser", (args) => openInBrowserCmd(args))
+        vscode.commands.registerCommand("ext.mc.openInBrowser", (args) => openInBrowserCmd(args)),
+        vscode.commands.registerCommand("ext.mc.requestBuild", (args) => requestBuildCmd(args))
 
     ];
 }
@@ -51,11 +52,11 @@ async function promptForResourceInner(includeConnections: Boolean, startedProjec
         choices.push(...connections);
     }
 
-    await new Promise<QuickPickItem[]>( (resolve, _) => {
+    await new Promise<vscode.QuickPickItem[]>( (resolve, _) => {
         connections.forEach( async (conn) => {
             let projects = await conn.getProjects();
             if (startedProjectsOnly) {
-                projects = projects.filter( (p) => p.isStarted );
+                projects = projects.filter( (p) => p.state.isStarted );
             }
             choices.push(...projects);
             return resolve(choices);
