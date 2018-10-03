@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import * as MCUtil from "../../MCUtil";
-import { TreeItemAdaptable } from "../../view/projectExplorer/TreeItemAdaptable";
+import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
@@ -27,7 +27,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private _state: ProjectState = new ProjectState(undefined);
 
     constructor (
-        public readonly projectInfo: any,
+        projectInfo: any,
         public readonly connection: Connection,
     ) {
         this.name = projectInfo.name;
@@ -63,13 +63,11 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     public getChildren(): TreeItemAdaptable[] {
-        return [ this._state ];
+        return [];
     }
 
     public toTreeItem(): vscode.TreeItem {
-
-        const ti = new vscode.TreeItem(`${this.name} (${this.type.userFriendlyType})`,
-                vscode.TreeItemCollapsibleState.Expanded);
+        const ti = new vscode.TreeItem(`${this.name} ${this.state}`, vscode.TreeItemCollapsibleState.None);
 
         ti.resourceUri = this.localPath;
         ti.tooltip = ti.resourceUri.fsPath.toString();

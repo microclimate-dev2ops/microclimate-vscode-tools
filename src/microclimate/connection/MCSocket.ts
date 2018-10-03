@@ -33,7 +33,7 @@ export default class MCSocket {
             .on("projectDeletion",       this.onProjectDeleted)
             .on("projectRestartResult",  this.onProjectRestarted);
 
-            // We don't actually need the creation event - 
+            // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
             // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
@@ -41,7 +41,7 @@ export default class MCSocket {
     private onProjectChanged = (payload: any): void => {
         console.log("onProjectChanged", payload);
 
-        const projectID = payload.projectID;        
+        const projectID = payload.projectID;
         if (projectID == null) {
             console.error("No projectID in socket event!");
             return;
@@ -54,7 +54,7 @@ export default class MCSocket {
             this.connection.forceProjectUpdate();
             return;
         }
-        
+
         const changed: Boolean = setStateFunc(payload);
         if (changed) {
             ConnectionManager.instance.onChange();

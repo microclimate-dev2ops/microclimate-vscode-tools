@@ -1,12 +1,11 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import { TreeItemAdaptable, SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
+import TreeItemAdaptable, { SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
 import Project from "../project/Project";
 import Endpoints from "../../constants/EndpointConstants";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
-import { triggerAsyncId } from "async_hooks";
 import { ProjectType } from "../project/ProjectType";
 import { getIconObj } from "../../MCUtil";
 
@@ -42,6 +41,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         if (!this.needProjectUpdate) {
             return this.projects;
         }
+        console.log(`Updating projects list for ${this.mcUri}`);
 
         const result = await request.get(this.projectsApiUri.toString(), { json : true });
 
@@ -56,13 +56,15 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
         ConnectionManager.instance.onChange();
         this.needProjectUpdate = false;
+        console.log("Done projects update");
         return this.projects;
     }
 
     async getChildren(): Promise<TreeItemAdaptable[]> {
         await this.getProjects();
+        console.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
         if (this.projects.length === 0) {
-            return [ new SimpleTreeItem("No projects", vscode.TreeItemCollapsibleState.None, []) ];
+            return [ new SimpleTreeItem("No projects") ];
         }
         return this.projects;
     }
@@ -76,10 +78,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return ti;
     }
 
-    public forceProjectUpdate() {
+    public async forceProjectUpdate(): Promise<void> {
         console.log("ForceProjectUpdate");
         this.needProjectUpdate = true;
-        this.getProjects();
+        await this.getProjects();
     }
 
     public async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {

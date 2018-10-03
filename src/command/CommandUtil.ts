@@ -44,6 +44,7 @@ export async function promptForResource(startedProjectsOnly: Boolean): Promise<P
 
 async function promptForResourceInner(includeConnections: Boolean, startedProjectsOnly: Boolean): Promise<Project | Connection | undefined> {
 
+    // TODO Try to get the name of †he selected project, and have it selected initially
     const choices: vscode.QuickPickItem[] = [];
 
     const connections = ConnectionManager.instance.connections;

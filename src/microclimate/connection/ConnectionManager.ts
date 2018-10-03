@@ -36,11 +36,11 @@ export default class ConnectionManager {
             }
 
             // all validation that this connection is good must be done by this point
-            
+
             const connection: Connection = new Connection(uri, host, workspace);
             console.log("New Connection @ " + uri);
             this._connections.push(connection);
-    
+
             this.onChange();
             return resolve();
         });
@@ -53,7 +53,7 @@ export default class ConnectionManager {
     }
 
     /**
-     * Pass this a function to call whenever a connection is added, removed, or changed, 
+     * Pass this a function to call whenever a connection is added, removed, or changed,
      * eg to trigger a tree update in the UI.
      */
     public addOnChangeListener(callback: () => void): void {
@@ -68,24 +68,4 @@ export default class ConnectionManager {
         console.log("ConnectionManager OnChange");
         this.listeners.forEach( (f) => f());
     }
-
-    /*
-    // There's likely a better way to do this...
-    public async getProjectByName(projectName: string): Promise<Project[]> {
-
-        return new Promise<Project[]>( (resolve, _) => {
-
-            const matchingProjects: Project[] = [];
-            this.connections.forEach(async (conn) => {
-                const projects = await conn.getProjects();
-
-                const matchingProject = projects.find( (p) => p.name === projectName);
-                if (matchingProject != null) {
-                    matchingProjects.push(matchingProject);
-                }
-            });
-
-            return resolve(matchingProjects);
-        });
-    }*/
 }

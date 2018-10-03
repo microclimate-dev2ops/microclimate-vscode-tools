@@ -1,83 +1,81 @@
-import * as vscode from "vscode";
-import { TreeItemAdaptable } from "../../view/projectExplorer/TreeItemAdaptable";
 
-export class ProjectState implements TreeItemAdaptable {
-
-    private static readonly CONTEXT_ID = "ext.mc.projectStateItem";
-
-    private readonly state: ProjectState.States;
+export class ProjectState {
+    private readonly state: ProjectState.AppStates;
+    private readonly buildState: ProjectState.BuildStates;
     private readonly buildDetail: string;
-    private readonly statusEmoji: string;
 
     constructor (
         projectInfoPayload: any
     ) {
         if (projectInfoPayload == null) {
             // console.error("Passed null project info to ProjectState");
-            this.state = ProjectState.States.UNKNOWN;
+            this.state = ProjectState.AppStates.UNKNOWN;
+            this.buildState = ProjectState.BuildStates.UNKNOWN;
             this.buildDetail = "";
         }
         else {
-            this.state = ProjectState.convert(projectInfoPayload);
-            this.buildDetail = projectInfoPayload.detailedBuildStatus;
+            this.state = ProjectState.getAppState(projectInfoPayload);
+            this.buildState = ProjectState.getBuildState(projectInfoPayload);
+            this.buildDetail = projectInfoPayload.detailedBuildStatus || "";
         }
-
-        this.statusEmoji = ProjectState.getStatusEmoji(this.state);
     }
 
     public get isStarted(): Boolean {
-        return this.state === ProjectState.States.STARTED;
+        return this.state === ProjectState.AppStates.STARTED;
     }
 
     public get isBuilding(): Boolean {
-        return ProjectState.BUILD_STATES.indexOf(this.state) >= 0 ;
+        const buildingStates = [
+            ProjectState.BuildStates.BUILDING,
+            ProjectState.BuildStates.BUILD_QUEUED
+        ];
+
+        return buildingStates.indexOf(this.buildState) >= 0;
     }
 
-    toTreeItem(): vscode.TreeItem {
-        let statusStr;
-        // If this is a building state, and we have a detailed build status, display the detail too
-        if (this.isBuilding && this.buildDetail.trim().length > 0) {
-            statusStr = `[${this.state} - ${this.buildDetail}]`;
+    public toString(): string {
+        const appState = this.state.toString();
+
+        let buildStateStr = "";
+        if (this.buildDetail != null && this.buildDetail.trim() !== "") {
+            // a detailed status is available
+            buildStateStr = `[${this.buildState} - ${this.buildDetail}]`;
         }
-        else {
-            statusStr = `[${this.state}]`;
+        // Don't display the build state if it's unknown
+        else if (this.buildState !== ProjectState.BuildStates.UNKNOWN) {
+            buildStateStr = `[${this.buildState}]`;
         }
 
-        const label = `${this.statusEmoji}  ${statusStr}`;
-        const ti = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
-        ti.contextValue = ProjectState.CONTEXT_ID;
-        ti.tooltip = statusStr;
-        return ti;
-    }
-
-    getChildren(): TreeItemAdaptable[] {
-        return [];
+        return `[${appState}] ${buildStateStr}`;
     }
 }
 
 export namespace ProjectState {
 
-    export enum States {
+    export enum AppStates {
         STARTED = "Started",        // maybe should be "Running" to match web UI
         STARTING = "Starting",
         STOPPING = "Stopping",
         STOPPED = "Stopped",
         DEBUGGING = "Debugging",
 
-        BUILDING = "Building",
-        BUILD_FAILED = "Build Failed",
-        BUILD_QUEUED = "Build Queued",
-
         DISABLED = "Disabled",
         UNKNOWN = "Unknown"
     }
 
-    export const BUILD_STATES = [ States.BUILDING, States.BUILD_QUEUED, States.BUILD_FAILED ];
+    export enum BuildStates {
+        BUILD_SUCCESS = "Build Succeeded",
+        BUILDING = "Building",
+        BUILD_FAILED = "Build Failed",
+        BUILD_QUEUED = "Build Queued",
+
+        UNKNOWN = "Unknown"
+    }
 
     /**
      * Convert portal's project info object into a ProjectState.
      */
-    export function convert(projectInfoPayload: any): ProjectState.States {
+    export function getAppState(projectInfoPayload: any): ProjectState.AppStates {
 
         // console.log("PIP", projectInfoPayload);
         let appStatus: string = projectInfoPayload.appStatus || "";
@@ -85,67 +83,81 @@ export namespace ProjectState {
 
         const closedState: string | undefined = projectInfoPayload.state;
         const startMode:   string | undefined = projectInfoPayload.startMode;
-        const buildStatus: string | undefined = projectInfoPayload.buildStatus;
 
         // console.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
 
         // First, check if the project is open. If it's not, it's disabled.
         if (closedState !== "open") {
-            return ProjectState.States.DISABLED;
+            return ProjectState.AppStates.DISABLED;
         }
-        // Now, check the build states. If it's still building, the project is 'stopped'.
-        else if (buildStatus === "failed") {
-            return ProjectState.States.BUILD_FAILED;
-        }
-        else if (buildStatus === "inProgress") {
-            return ProjectState.States.BUILDING;
-        }
-        else if (buildStatus === "queued") {
-            return ProjectState.States.BUILD_QUEUED;
-        }
-        // else, build succeeded
         // Now, check the app states.
         else if (appStatus === "started") {
             if (startMode === "debug") {
-                return ProjectState.States.DEBUGGING;
+                return ProjectState.AppStates.DEBUGGING;
             }
-            return ProjectState.States.STARTED;
+            return ProjectState.AppStates.STARTED;
         }
         else if (appStatus === "starting") {
-            return ProjectState.States.STARTING;
+            return ProjectState.AppStates.STARTING;
         }
         else if (appStatus === "stopping") {
-            return ProjectState.States.STOPPING;
+            return ProjectState.AppStates.STOPPING;
         }
         else if (appStatus === "stopped") {
-            return ProjectState.States.STOPPED;
+            return ProjectState.AppStates.STOPPED;
         }
-
-        return ProjectState.States.UNKNOWN;
+        console.error("Unknown app state " + appStatus);
+        return ProjectState.AppStates.UNKNOWN;
     }
 
-    export function getStatusEmoji(state: ProjectState.States): string {
-        // ⚠ ▶ ⏹ ❌ ❓ ❗ ✅ 🐞
-        // tslint:disable-next-line:switch-default
-        switch (state) {
-            case ProjectState.States.DISABLED:
-                return "🚫";
-            case ProjectState.States.STARTED:
-                return "🔵";
-            case ProjectState.States.STOPPED:
-                return "🔴";
-            case ProjectState.States.STARTING:
-            case ProjectState.States.STOPPING:
-                return "⚪";
-            case ProjectState.States.BUILDING:
-            case ProjectState.States.BUILD_QUEUED:
-                return "🔨";
-            case ProjectState.States.BUILD_FAILED:
-                return "❌";
-            case ProjectState.States.DEBUGGING:
-                return "🐞";
+    export function getBuildState(projectInfoPayload: any): BuildStates {
+        const buildStatus: string | undefined = projectInfoPayload.buildStatus;
+
+        if (buildStatus === "success") {
+            return BuildStates.BUILD_SUCCESS;
         }
-        return "❓";
+        else if (buildStatus === "inProgress") {
+            return BuildStates.BUILDING;
+        }
+        else if (buildStatus === "queued") {
+            return BuildStates.BUILD_QUEUED;
+        }
+        else if (buildStatus === "failed") {
+            return BuildStates.BUILD_FAILED;
+        }
+        console.error("Unknown build state " + buildStatus);
+        return BuildStates.UNKNOWN;
+    }
+
+    export function getAppStatusEmoji(state: ProjectState.AppStates): string {
+        // ⚠ ▶ ⏹ ❌ ❓ ❗ ✅ 🐞
+        switch (state) {
+            case ProjectState.AppStates.DISABLED:
+                return "🚫";
+            case ProjectState.AppStates.STARTED:
+                return "🔵";
+            case ProjectState.AppStates.STOPPED:
+                return "🔴";
+            case ProjectState.AppStates.STARTING:
+            case ProjectState.AppStates.STOPPING:
+                return "⚪";
+            case ProjectState.AppStates.DEBUGGING:
+                return "🐞";
+            default:
+                return "❓";
+        }
+    }
+
+    export function getBuildStatusEmoji(state: ProjectState.BuildStates): string {
+        switch(state) {
+            case ProjectState.BuildStates.BUILDING:
+            case ProjectState.BuildStates.BUILD_QUEUED:
+                return "🔨";
+            case ProjectState.BuildStates.BUILD_FAILED:
+                return "❌";
+            default:
+                return "❓";
+        }
     }
 }
 

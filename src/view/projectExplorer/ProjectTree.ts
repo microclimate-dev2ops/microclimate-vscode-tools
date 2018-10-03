@@ -1,8 +1,10 @@
 
 import { TreeItem, TreeDataProvider, Event, EventEmitter, TreeItemCollapsibleState } from "vscode";
 
-import { TreeItemAdaptable, SimpleTreeItem } from "./TreeItemAdaptable";
+import  TreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../../microclimate/connection/ConnectionManager";
+import Connection from "../../microclimate/connection/Connection";
+import { getIconObj } from "../../MCUtil";
 
 export default class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
 
@@ -12,11 +14,11 @@ export default class ProjectTreeDataProvider implements TreeDataProvider<TreeIte
     private onChangeEmitter: EventEmitter<TreeItemAdaptable> = new EventEmitter<TreeItemAdaptable>();
     readonly onDidChangeTreeData: Event<TreeItemAdaptable> = this.onChangeEmitter.event;
 
-    private readonly root: TreeItemAdaptable;
+    // private readonly root: TreeItemAdaptable;
 
     constructor() {
         ConnectionManager.instance.addOnChangeListener(this.refresh);
-        this.root = new SimpleTreeItem("Microclimate", TreeItemCollapsibleState.Expanded, ConnectionManager.instance.connections);
+        // this.root = new SimpleTreeItem("Microclimate", TreeItemCollapsibleState.Expanded, ConnectionManager.instance.connections);
     }
 
     // "instance arrow function" here ensures proper 'this' binding when used as a callback
@@ -32,7 +34,16 @@ export default class ProjectTreeDataProvider implements TreeDataProvider<TreeIte
 
     getChildren(node?: TreeItemAdaptable): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]> {
         if (!node) {
-            return [ this.root ];
+            const connections = ConnectionManager.instance.connections;
+            if (connections.length > 0) {
+                return connections;
+            }
+            else {
+                const noConnectionsRoot = new SimpleTreeItem("No Microclimate connections", TreeItemCollapsibleState.None);
+                noConnectionsRoot.treeItem.iconPath = getIconObj("connection.svg");
+                noConnectionsRoot.treeItem.tooltip = "Click the New Microclimate connection button above";
+                return [ noConnectionsRoot ];
+            }
         }
 
         return node.getChildren();
