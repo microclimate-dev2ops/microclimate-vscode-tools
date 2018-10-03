@@ -1,6 +1,7 @@
 import * as io from "socket.io-client";
 import ConnectionManager from "./ConnectionManager";
 import Connection from "./Connection";
+import AppLog from "../logs/AppLog";
 
 export default class MCSocket {
 
@@ -31,7 +32,9 @@ export default class MCSocket {
             .on("projectClosed",        this.onProjectChanged)
 
             .on("projectDeletion",       this.onProjectDeleted)
-            .on("projectRestartResult",  this.onProjectRestarted);
+            .on("projectRestartResult",  this.onProjectRestarted)
+
+            .on("container-logs", this.onContainerLogs);
 
             // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
@@ -68,6 +71,20 @@ export default class MCSocket {
 
     private onProjectRestarted = (payload: any): void => {
         console.log("PROJECT RESTARTED", payload);
+        // TODO update debug and app ports on the relevant project
+    }
+
+    private onContainerLogs = (payload: any): void => {
+        const projectID = payload.projectID;
+        const projectName = payload.projectName;
+        const logContents = payload.logs;
+
+        let log = AppLog.logMap.get(projectID);
+        if (log == null) {
+            log = new AppLog(projectID, projectName);
+            AppLog.logMap.set(projectID, log);
+        }
+        log.update(logContents);
     }
 
 }

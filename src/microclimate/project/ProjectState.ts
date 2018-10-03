@@ -41,7 +41,7 @@ export class ProjectState {
             // a detailed status is available
             buildStateStr = `[${this.buildState} - ${this.buildDetail}]`;
         }
-        // Don't display the build state if it's unknown
+        // Don't display the build state if it's unknown (or could add a case above for disabled projs)
         else if (this.buildState !== ProjectState.BuildStates.UNKNOWN) {
             buildStateStr = `[${this.buildState}]`;
         }
@@ -124,6 +124,10 @@ export namespace ProjectState {
         }
         else if (buildStatus === "failed") {
             return BuildStates.BUILD_FAILED;
+        }
+        else if (buildStatus == null) {
+            // This happens with disabled projects
+            return BuildStates.UNKNOWN;
         }
         console.error("Unknown build state " + buildStatus);
         return BuildStates.UNKNOWN;
