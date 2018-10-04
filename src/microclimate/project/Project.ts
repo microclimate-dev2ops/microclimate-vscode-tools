@@ -15,6 +15,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     // public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
     public readonly appBaseUrl: vscode.Uri;
+    public readonly buildLogPath: vscode.Uri | undefined;
 
     // QuickPickItem
     public readonly label: string;
@@ -50,6 +51,15 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             authority: `${connection.host}:${this.appPort}`,
             path: contextRoot
         });
+
+        if (projectInfo.logs && projectInfo.logs.build) {
+            this.buildLogPath = vscode.Uri.file(
+                MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.logs.build.file)
+            );
+        }
+        else {
+            console.error(`Couldn't get build logs for project ${this.name}, the logs object is: ${projectInfo.logs}`);
+        }
 
         this.setStatus(projectInfo);
 

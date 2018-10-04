@@ -61,6 +61,17 @@
             {
                 "command": "ext.mc.requestBuild",
                 "title": "Request build",
+                "description": "Manually kick off a project build in Microclimate",
+                "category": "Microclimate"
+            },
+            {
+                "command": "ext.mc.openBuildLog",
+                "title": "Open build log",
+                "category": "Microclimate"
+            },
+            {
+                "command": "ext.mc.openAppLog",
+                "title": "Open application log",
                 "category": "Microclimate"
             }
         ],
@@ -88,6 +99,16 @@
                     "command": "ext.mc.goToFolder",
                     "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)",
                     "group": "ext.mc.b"
+                },
+                {
+                    "command": "ext.mc.openAppLog",
+                    "when": "viewItem == ext.mc.projectItem",
+                    "group": "ext.mc.c"
+                },
+                {
+                    "command": "ext.mc.openBuildLog",
+                    "when": "viewItem == ext.mc.projectItem",
+                    "group": "ext.mc.c"
                 },
                 {
                     "command": "ext.mc.requestBuild",

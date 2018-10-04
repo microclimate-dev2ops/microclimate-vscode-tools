@@ -5,7 +5,7 @@ export default class AppLog {
     // Maps projectIDs to AppLog instances
     public static readonly logMap: Map<string, AppLog> = new Map<string, AppLog>();
 
-    private readonly outputChannel: vscode.OutputChannel;
+    public readonly outputChannel: vscode.OutputChannel;
 
     private initialized: Boolean = false;
     private previousLength: number = 0;

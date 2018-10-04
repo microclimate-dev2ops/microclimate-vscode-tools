@@ -8,6 +8,8 @@ import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import requestBuildCmd from "./RequestBuildCmd";
+import openBuildLogCmd from "./OpenBuildLogCmd";
+import openAppLogCmd from "./OpenAppLogCmd";
 
 export function createCommands() {
 
@@ -19,7 +21,10 @@ export function createCommands() {
         vscode.commands.registerCommand("ext.mc.restartProjectDebug", (args) => restartProjectCmd(args, true)),
 
         vscode.commands.registerCommand("ext.mc.openInBrowser", (args) => openInBrowserCmd(args)),
-        vscode.commands.registerCommand("ext.mc.requestBuild", (args) => requestBuildCmd(args))
+        vscode.commands.registerCommand("ext.mc.requestBuild", (args) => requestBuildCmd(args)),
+
+        vscode.commands.registerCommand("ext.mc.openBuildLog", (args) => openBuildLogCmd(args)),
+        vscode.commands.registerCommand("ext.mc.openAppLog", (args) => openAppLogCmd(args))
 
     ];
 }

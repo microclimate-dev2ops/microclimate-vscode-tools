@@ -20,6 +20,10 @@ export class ProjectState {
         }
     }
 
+    public get isEnabled(): Boolean {
+        return this.state !== ProjectState.AppStates.DISABLED;
+    }
+
     public get isStarted(): Boolean {
         return this.state === ProjectState.AppStates.STARTED;
     }
