@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
+import * as MCUtil from "../../MCUtil";
 import TreeItemAdaptable, { SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
 import Project from "../project/Project";
 import Endpoints from "../../constants/EndpointConstants";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import { ProjectType } from "../project/ProjectType";
-import { getIconObj } from "../../MCUtil";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -46,11 +46,9 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         const result = await request.get(this.projectsApiUri.toString(), { json : true });
 
         this.projects = [];
-        this.socket.projectStateCallbacks.clear();
 
         for (const projectInfo of result) {
             const newProject: Project = new Project(projectInfo, this);
-            this.socket.projectStateCallbacks.set(newProject.id, newProject.setStatus);
             this.projects.push(newProject);
         }
 
@@ -60,9 +58,17 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return this.projects;
     }
 
+    async getProjectByID(projectID: string): Promise<Project | undefined> {
+        const result = (await this.getProjects()).find( (project) => project.id === projectID);
+        if (result == null) {
+            // console.error(`Couldn't find project with ID ${projectID} on connection ${this.mcUri}`);
+        }
+        return result;
+    }
+
     async getChildren(): Promise<TreeItemAdaptable[]> {
         await this.getProjects();
-        console.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
+        // console.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
         if (this.projects.length === 0) {
             return [ new SimpleTreeItem("No projects") ];
         }
@@ -74,7 +80,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         ti.resourceUri = this.workspacePath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
-        ti.iconPath = getIconObj("connection.svg");
+        ti.iconPath = MCUtil.getIconObj("connection.svg");
         return ti;
     }
 

@@ -4,6 +4,8 @@ export class ProjectType {
 
     public readonly type: ProjectType.Types;
     public readonly userFriendlyType: string;
+    public readonly debugType: string | undefined;
+
     public readonly icon: IconPaths;
 
     constructor(
@@ -12,6 +14,8 @@ export class ProjectType {
     ) {
         this.type = ProjectType.getType(projectType);
         this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
+        this.debugType = ProjectType.getDebugType(this.type);
+
         this.icon = ProjectType.getIcons(language);
     }
 
@@ -38,6 +42,20 @@ export class ProjectType {
         else {
             console.error(`Unrecognized project - type ${projectType}`);
             return ProjectType.Types.UNKNOWN;
+        }
+    }
+
+    /**
+     * Get the corresponding VSCode debug configuration "type" value.
+     * Returns undefined if we don't know how to debug this project type.
+     */
+    private static getDebugType(type: ProjectType.Types): string | undefined {
+        switch(type) {
+            case ProjectType.Types.MICROPROFILE:
+            case ProjectType.Types.SPRING:
+                return "java";
+            default:
+                return undefined;
         }
     }
 

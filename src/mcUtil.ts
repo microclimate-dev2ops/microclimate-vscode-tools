@@ -82,6 +82,10 @@ export function uppercaseFirstChar(input: string): string {
     return input.charAt(0).toUpperCase() + input.slice(1);
 }
 
+export function isGoodPort(port: number): Boolean {
+    return !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
+}
+
 
 // https://italonascimento.github.io/applying-a-timeout-to-your-promises/
 /*

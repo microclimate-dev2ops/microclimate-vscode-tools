@@ -24,7 +24,7 @@ export default class ProjectTreeDataProvider implements TreeDataProvider<TreeIte
     // "instance arrow function" here ensures proper 'this' binding when used as a callback
     // "https://github.com/Microsoft/TypeScript/wiki/'this'-in-TypeScript"
     public refresh = (): void => {
-        console.log("Refresh tree");
+        // console.log("Refresh tree");
         this.onChangeEmitter.fire();
     }
 

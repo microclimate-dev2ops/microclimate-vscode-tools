@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 export default class AppLog {
 
     // Maps projectIDs to AppLog instances
-    public static readonly logMap: Map<string, AppLog> = new Map<string, AppLog>();
+    private static readonly logMap: Map<string, AppLog> = new Map<string, AppLog>();
 
     public readonly outputChannel: vscode.OutputChannel;
 
@@ -16,7 +16,7 @@ export default class AppLog {
     ) {
         this.outputChannel = vscode.window.createOutputChannel(projectName);
         this.outputChannel.appendLine("Waiting for Microclimate to send application logs...");
-        this.outputChannel.show();
+        // this.outputChannel.show();
     }
 
     public async update(contents: string): Promise<void> {
@@ -43,5 +43,19 @@ export default class AppLog {
 
         this.outputChannel.append(newContents);
         this.previousLength = contents.length;
+    }
+
+    public static getOrCreateLog(projectID: string, projectName: string): AppLog {
+        let log = this.logMap.get(projectID);
+        if (log == null) {
+            // we have to create it
+            log = new AppLog(projectID, projectName);
+            AppLog.logMap.set(projectID, log);
+        }
+        return log;
+    }
+
+    public static getLogByProjectID(projectID: string): AppLog | undefined {
+        return this.logMap.get(projectID);
     }
 }

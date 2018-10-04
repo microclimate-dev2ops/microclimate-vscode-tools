@@ -1,6 +1,6 @@
 
 export class ProjectState {
-    private readonly state: ProjectState.AppStates;
+    private readonly appState: ProjectState.AppStates;
     private readonly buildState: ProjectState.BuildStates;
     private readonly buildDetail: string;
 
@@ -9,36 +9,31 @@ export class ProjectState {
     ) {
         if (projectInfoPayload == null) {
             // console.error("Passed null project info to ProjectState");
-            this.state = ProjectState.AppStates.UNKNOWN;
+            this.appState = ProjectState.AppStates.UNKNOWN;
             this.buildState = ProjectState.BuildStates.UNKNOWN;
             this.buildDetail = "";
         }
         else {
-            this.state = ProjectState.getAppState(projectInfoPayload);
+            this.appState = ProjectState.getAppState(projectInfoPayload);
             this.buildState = ProjectState.getBuildState(projectInfoPayload);
             this.buildDetail = projectInfoPayload.detailedBuildStatus || "";
         }
     }
 
     public get isEnabled(): Boolean {
-        return this.state !== ProjectState.AppStates.DISABLED;
+        return this.appState !== ProjectState.AppStates.DISABLED;
     }
 
     public get isStarted(): Boolean {
-        return this.state === ProjectState.AppStates.STARTED;
+        return this.appState === ProjectState.AppStates.STARTED;
     }
 
     public get isBuilding(): Boolean {
-        const buildingStates = [
-            ProjectState.BuildStates.BUILDING,
-            ProjectState.BuildStates.BUILD_QUEUED
-        ];
-
-        return buildingStates.indexOf(this.buildState) >= 0;
+        return this.buildState === ProjectState.BuildStates.BUILDING;
     }
 
     public toString(): string {
-        const appState = this.state.toString();
+        const appState = this.appState.toString();
 
         let buildStateStr = "";
         if (this.buildDetail != null && this.buildDetail.trim() !== "") {

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as request from "request-promise-native";
 import * as reqErrors from "request-promise-native/errors";
 
+import * as MCUtil from "../MCUtil";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 
 export default async function newConnectionCmd(): Promise<void> {
@@ -34,7 +35,7 @@ export default async function newConnectionCmd(): Promise<void> {
         }
 
         port = Number(portStr);
-        if (isNaN(port) || !Number.isInteger(port) || port > 65535 || port < 1024) {
+        if (!MCUtil.isGoodPort(port)) {
             const tryAgainMsg = "Enter a different port number";
 
             const result = await vscode.window.showErrorMessage(`Invalid port ${portStr} - Must be an integer between 1024 and 65536`, tryAgainMsg);

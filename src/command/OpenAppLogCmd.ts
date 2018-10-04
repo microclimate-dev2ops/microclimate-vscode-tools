@@ -16,12 +16,14 @@ export default async function openAppLogCmd(project: Project): Promise<void> {
         project = selected;
     }
 
-    const appLogOutput = AppLog.logMap.get(project.id);
+    const appLogOutput = AppLog.getLogByProjectID(project.id);
     if (!project.state.isEnabled) {
         vscode.window.showErrorMessage("App logs are not available for Disabled projects.");
         return;
     }
     else if (!appLogOutput) {
+        // TODO this can happen if the server just hasn't sent the logs yet, which is not acceptable.
+        // Find a workaround for the logs not being sent often enough - eg create the console here with a "waiting" message
         vscode.window.showErrorMessage(`Failed to get app log for ${project.name}.`);
         return;
     }

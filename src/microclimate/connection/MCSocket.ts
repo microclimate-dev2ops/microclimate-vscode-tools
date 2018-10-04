@@ -1,15 +1,17 @@
 import * as io from "socket.io-client";
+import * as vscode from "vscode";
+
 import ConnectionManager from "./ConnectionManager";
 import Connection from "./Connection";
 import AppLog from "../logs/AppLog";
+import Project from "../project/Project";
+import * as restartProjectCmd from "../../command/RestartProjectCmd";
 
 export default class MCSocket {
 
-    private readonly socket: SocketIOClient.Socket;
+    private static readonly STATUS_SUCCESS = "success";
 
-    // Stores a list of Project.setState functions to call with the update event's payload every time a project's state changed
-    // The callback function must match the given signature - accepts one any, and returns boolean indicating if a change was made
-    public readonly projectStateCallbacks: Map<string, ( (payload: any) => Boolean )> = new Map<string, ( (payload: any) => Boolean )>();
+    private readonly socket: SocketIOClient.Socket;
 
     constructor(
         public readonly uri: string,
@@ -41,24 +43,26 @@ export default class MCSocket {
             // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
 
-    private onProjectChanged = (payload: any): void => {
+    private onProjectChanged = async (payload: any): Promise<void> => {
         console.log("onProjectChanged", payload);
 
         const projectID = payload.projectID;
         if (projectID == null) {
-            console.error("No projectID in socket event!");
+            console.error("No projectID in socket event!", payload);
             return;
         }
 
-        const setStateFunc = this.projectStateCallbacks.get(projectID);
-        if (setStateFunc == null) {
-            console.log("No setState callback registered for project " + payload.projectID);
+        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        if (project == null) {
+            console.log("No project with ID " + payload.projectID);
             // This means we've got a new project - refresh everything
             this.connection.forceProjectUpdate();
             return;
         }
 
-        const changed: Boolean = setStateFunc(payload);
+        // TODO update application, debug ports, run/debug mode
+
+        const changed: Boolean = project.setStatus(payload);
         if (changed) {
             ConnectionManager.instance.onChange();
         }
@@ -69,9 +73,50 @@ export default class MCSocket {
         this.connection.forceProjectUpdate();
     }
 
-    private onProjectRestarted = (payload: any): void => {
+    private onProjectRestarted = async (payload: any): Promise<void> => {
         console.log("PROJECT RESTARTED", payload);
-        // TODO update debug and app ports on the relevant project
+
+        const projectID: string = payload.projectID;
+        if (MCSocket.STATUS_SUCCESS !== payload.status) {
+            console.error(`Restart failed on project ${projectID}, response is`, payload);
+            if (payload.error != null) {
+                // TODO decide if these messages are user-friendly enough
+                vscode.window.showErrorMessage(payload.error);
+            }
+            return;
+        }
+        else if (payload.ports == null) {
+            console.error("No ports were provided by supposedly successful restart event", payload);
+            return;
+        }
+
+        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        if (project == null) {
+            console.error("Failed to get project associated with restart event, ID is ", projectID);
+            return;
+        }
+
+        project.appPort = Number(payload.ports.exposedPort);
+
+        const isDebug = payload.ports.exposedDebugPort != null;
+
+        if (isDebug) {
+            project.debugPort = Number(payload.ports.exposedDebugPort);
+            try {
+                const successMsg = await restartProjectCmd.startDebugSession(project);
+                console.log("Debugger attach success", successMsg);
+                vscode.window.showInformationMessage(successMsg);
+            }
+            catch (err) {
+                console.error("Debugger attach failure", err);
+                vscode.window.showErrorMessage(err);
+            }
+        }
+        else {
+            const doneRestartMsg = `Finished restarting ${project.name} in run mode.`;
+            console.log(doneRestartMsg);
+            vscode.window.showInformationMessage(doneRestartMsg);
+        }
     }
 
     private onContainerLogs = (payload: any): void => {
@@ -79,11 +124,7 @@ export default class MCSocket {
         const projectName = payload.projectName;
         const logContents = payload.logs;
 
-        let log = AppLog.logMap.get(projectID);
-        if (log == null) {
-            log = new AppLog(projectID, projectName);
-            AppLog.logMap.set(projectID, log);
-        }
+        const log = AppLog.getOrCreateLog(projectID, projectName);
         log.update(logContents);
     }
 

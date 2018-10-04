@@ -113,7 +113,7 @@
                 {
                     "command": "ext.mc.requestBuild",
                     "when": "viewItem == ext.mc.projectItem",
-                    "group": "ext.mc.c"
+                    "group": "ext.mc.d"
                 },
                 {
                     "command": "ext.mc.restartProjectRun",

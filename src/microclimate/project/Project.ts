@@ -12,18 +12,17 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly name: string;
     public readonly id: string;
     public readonly type: ProjectType;
-    // public readonly contextRoot: string;
+    public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
-    public readonly appBaseUrl: vscode.Uri;
     public readonly buildLogPath: vscode.Uri | undefined;
+
+    private _appPort: number;
+    private _debugPort: number = -1;
 
     // QuickPickItem
     public readonly label: string;
     public readonly description?: string;
     public readonly detail?: string;
-
-    private appPort: number;
-    private debugPort: number = -1;
 
     private _state: ProjectState = new ProjectState(undefined);
 
@@ -33,7 +32,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     ) {
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
-        this.appPort = projectInfo.ports.exposedPort;
+        this._appPort = projectInfo.ports.exposedPort;
 
         // TODO should use projectType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
@@ -42,15 +41,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.locOnDisk)
         );
 
-        const contextRoot = projectInfo.contextroot || "";
-        // The appBaseUrl is the MicroclimateConnection hostname plus our app port,
-        // plus the context root (which may be the empty string)
-        // This might have to be changed if the mcUri has anything in the path element,
-        // but I don't think that will happen
-        this.appBaseUrl = connection.mcUri.with({
-            authority: `${connection.host}:${this.appPort}`,
-            path: contextRoot
-        });
+        this.contextRoot = projectInfo.contextroot || "";
 
         if (projectInfo.logs && projectInfo.logs.build) {
             this.buildLogPath = vscode.Uri.file(
@@ -80,11 +71,19 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         const ti = new vscode.TreeItem(`${this.name} ${this.state}`, vscode.TreeItemCollapsibleState.None);
 
         ti.resourceUri = this.localPath;
-        ti.tooltip = ti.resourceUri.fsPath.toString();
+        ti.tooltip = this.state.toString();
         ti.contextValue = Project.CONTEXT_ID;
         ti.iconPath = this.type.icon;
         // console.log(`Created TreeItem`, ti);
         return ti;
+    }
+
+    public get appBaseUrl(): vscode.Uri {
+        // TODO decide how this should behave when the app is not started
+        return this.connection.mcUri.with({
+            authority: `${this.connection.host}:${this._appPort}`,
+            path: this.contextRoot
+        });
     }
 
     public get state(): ProjectState {
@@ -111,8 +110,35 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return false;
         }
         else {
-            console.log(`${this.name} has a new status:`, this._state);
+            // console.log(`${this.name} has a new status:`, this._state);
             return true;
         }
+    }
+
+    public get appPort() {
+        return this._appPort;
+    }
+
+    public set appPort(appPort: number) {
+        if (!MCUtil.isGoodPort(appPort)) {
+            console.error(`Invalid app port ${appPort} given to project ${this.id}`);
+            return;
+        }
+        this._appPort = appPort;
+        console.log(`New app port for ${this.name} is ${appPort}`);
+    }
+
+    public get debugPort() {
+        return this._debugPort;
+    }
+
+    public set debugPort(debugPort: number) {
+        if (!MCUtil.isGoodPort(debugPort)) {
+            console.error(`Invalid debug port ${debugPort} given to project ${this.id}`);
+            debugPort = -1;
+            return;
+        }
+        this._debugPort = debugPort;
+        console.log(`New debug port for ${this.name} is ${debugPort}`);
     }
 }

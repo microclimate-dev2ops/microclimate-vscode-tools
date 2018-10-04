@@ -38,6 +38,6 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
         return;
     }
 
-    vscode.window.showInformationMessage("Opening " + uriToOpen);
+    // vscode.window.showInformationMessage("Opening " + uriToOpen);
     vscode.commands.executeCommand("vscode.open", uriToOpen);
 }

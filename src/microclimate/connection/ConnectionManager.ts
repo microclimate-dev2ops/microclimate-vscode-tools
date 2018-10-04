@@ -65,7 +65,7 @@ export default class ConnectionManager {
      * Call this whenever a connection is added, removed, or changed.
      */
     public onChange = (): void => {
-        console.log("ConnectionManager OnChange");
+        // console.log("ConnectionManager OnChange");
         this.listeners.forEach( (f) => f());
     }
 }
