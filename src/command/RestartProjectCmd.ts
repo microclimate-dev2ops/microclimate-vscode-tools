@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
+import { ProjectState } from "../microclimate/project/ProjectState";
 
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
     console.log("RestartProjectCmd invoked");
@@ -34,6 +35,7 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
  *  or throws an Error with a user-friendly error message.
  */
 export async function startDebugSession(project: Project): Promise<string> {
+    console.log("startDebugSession for project " + project.name);
     if (project.type.debugType == null) {
         // Just in case.
         throw new Error(`Failed to attach debugger to ${project.name}: No debug type available for project of type ${project.type}`);
@@ -42,23 +44,17 @@ export async function startDebugSession(project: Project): Promise<string> {
         throw new Error(`No debug port set for project ${project.name}`);
     }
 
-    // vscode.workspace.getConfiguration("launch", )
+    // Wait for the server to be Starting before we try to connect the debugger, or it may connect before the server is ready
 
-    // TODO consider dropping this config into the launch.json
-    // so the user understands how this works, and they can reproduce it themselves.
-    const debugConfig: vscode.DebugConfiguration = {
-        type: project.type.debugType,
-        name: `Debug ${project.name}`,
-        request: "attach",
-        hostName: project.connection.host,
-        port: project.debugPort,
-        // sourcePaths: project.localPath + "/src/"
-        projectName: project.name
-    };
+    await project.waitForState(ProjectState.AppStates.STARTING, 30000);
 
-    // const projectFolder = vscode.workspace.getWorkspaceFolder(project.localPath);
-    console.log("Starting debug session now with config", debugConfig);
-    const success = await vscode.debug.startDebugging(undefined, debugConfig);
+    const debugConfig: vscode.DebugConfiguration = await getDebugConfig(project);
+
+    console.log("Running debug launch:", debugConfig);
+
+    const projectFolder = vscode.workspace.getWorkspaceFolder(project.localPath);
+    const success = await vscode.debug.startDebugging(projectFolder, debugConfig);
+
     console.log("Debugger should have connected");
 
     if (success) {
@@ -70,4 +66,49 @@ export async function startDebugSession(project: Project): Promise<string> {
         // though it does log some stuff to the console
         throw new Error("Failed to start debug session for " + project.name);
     }
+}
+
+const LAUNCH = "launch";
+const CONFIGURATIONS = "configurations";
+/**
+ * Generates the
+ * @return The new debug configuration which can then be passed to startDebugging
+ */
+async function getDebugConfig(project: Project): Promise<vscode.DebugConfiguration> {
+    const launchConfig = vscode.workspace.getConfiguration(LAUNCH, project.localPath);
+    const config = launchConfig.get(CONFIGURATIONS, [{}]) as Array<{}>;
+    // console.log("Old config:", config);
+
+    const debugName = `Debug ${project.name} - ${project.id}`;
+
+    // See if we already have a debug launch for this project, so we can replace it.
+    let existingIndex = -1;
+    for (let i = 0; i < config.length; i++) {
+        const item: any = config[i];
+        if (item != null && item.name === debugName) {
+            existingIndex = i;
+            break;
+        }
+    }
+
+    const debugConfig: vscode.DebugConfiguration = {
+        type: project.type.debugType || "",
+        name: debugName,
+        request: "attach",
+        hostName: project.connection.host,
+        port: project.debugPort,
+        // sourcePaths: project.localPath + "/src/"
+        projectName: project.name
+    };
+
+    if (existingIndex !== -1) {
+        config[existingIndex] = debugConfig;
+    }
+    else {
+        config.push(debugConfig);
+    }
+
+    await launchConfig.update(CONFIGURATIONS, config, vscode.ConfigurationTarget.WorkspaceFolder);
+    // console.log("New config", launchConfig.get(CONFIGURATIONS));
+    return debugConfig;
 }

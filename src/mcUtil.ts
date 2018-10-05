@@ -85,17 +85,3 @@ export function uppercaseFirstChar(input: string): string {
 export function isGoodPort(port: number): Boolean {
     return !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
 }
-
-
-// https://italonascimento.github.io/applying-a-timeout-to-your-promises/
-/*
-export function runPromiseWithTimeout(timeoutMs: number, promise: Promise<any>): Promise<any> {
-    const timeout = new Promise((_, reject) => {
-        const id = setTimeout(() => {
-            clearTimeout(id);
-            reject(`Timed out after ${timeoutMs}ms`);
-        }, timeoutMs);
-    });
-
-    return Promise.race([ promise, timeout ]);
-}*/

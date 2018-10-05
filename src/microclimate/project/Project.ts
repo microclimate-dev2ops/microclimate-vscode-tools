@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 
 import * as MCUtil from "../../MCUtil";
 import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
@@ -25,6 +26,9 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly detail?: string;
 
     private _state: ProjectState = new ProjectState(undefined);
+
+    private pendingState: ProjectState.AppStates | undefined;
+    private onReachPendingState: Function | undefined;
 
     constructor (
         projectInfo: any,
@@ -110,9 +114,42 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return false;
         }
         else {
+            if (this.pendingState != null && this._state.appState === this.pendingState) {
+                if (this.onReachPendingState != null) {
+                    console.log("Reached pending state", this.pendingState);
+                    this.onReachPendingState();
+                    this.pendingState = undefined;
+                    this.onReachPendingState = undefined;
+                }
+                else {
+                    console.error("PendingState was set but no resolve function was");
+                }
+            }
+
             // console.log(`${this.name} has a new status:`, this._state);
             return true;
         }
+    }
+
+    public async waitForState(state: ProjectState.AppStates, timeoutMs: number = 60000): Promise<void> {
+        if (this._state.appState === state) {
+            console.log("No need to wait, already in state " + state);
+            return;
+        }
+
+        this.pendingState = state;
+        console.log(this.name + " is waiting for state",  state);
+
+        const pendingStatePromise = new Promise<void>( (resolve, reject) => {
+            setTimeout(
+                () => reject(`${this.name} did not reach state ${state} within ${timeoutMs}ms`),
+                timeoutMs);
+
+            this.onReachPendingState = resolve;
+            return;
+        });
+
+        return pendingStatePromise;
     }
 
     public get appPort() {

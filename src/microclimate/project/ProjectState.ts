@@ -1,6 +1,6 @@
 
 export class ProjectState {
-    private readonly appState: ProjectState.AppStates;
+    public readonly appState: ProjectState.AppStates;
     private readonly buildState: ProjectState.BuildStates;
     private readonly buildDetail: string;
 

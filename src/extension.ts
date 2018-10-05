@@ -3,6 +3,8 @@ import * as vscode from "vscode";
 
 import { createCommands } from "./command/CommandUtil";
 import createViews from "./view/InitViews";
+import JavaDebugConfigProvider from "./debug/JavaDebugConfigProvider";
+import createDebug from "./debug/InitDebug";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -16,7 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     const subscriptions: any[] = [
         ...createViews(),
-        ...createCommands()
+        ...createCommands(),
+        ...createDebug()
     ];
 
     subscriptions.forEach((e) => {

@@ -6,6 +6,7 @@ import Connection from "./Connection";
 import AppLog from "../logs/AppLog";
 import Project from "../project/Project";
 import * as restartProjectCmd from "../../command/RestartProjectCmd";
+import { ProjectState } from "../project/ProjectState";
 
 export default class MCSocket {
 
@@ -43,6 +44,11 @@ export default class MCSocket {
             // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
 
+    private onProjectStatusChanged = async (payload: any): Promise<void> => {
+        console.log("onProjectStatusChanged", payload);
+        this.onProjectChanged(payload);
+    }
+
     private onProjectChanged = async (payload: any): Promise<void> => {
         console.log("onProjectChanged", payload);
 
@@ -68,7 +74,7 @@ export default class MCSocket {
         }
     }
 
-    private onProjectDeleted = (payload: any): void => {
+    private onProjectDeleted = async (payload: any): Promise<void> => {
         console.log("PROJECT DELETED", payload);
         this.connection.forceProjectUpdate();
     }
@@ -112,11 +118,10 @@ export default class MCSocket {
                 vscode.window.showErrorMessage(err);
             }
         }
-        else {
-            const doneRestartMsg = `Finished restarting ${project.name} in run mode.`;
-            console.log(doneRestartMsg);
-            vscode.window.showInformationMessage(doneRestartMsg);
-        }
+        await project.waitForState(ProjectState.AppStates.STARTED);
+        const doneRestartMsg = `Finished restarting ${project.name} in ${isDebug ? "debug" : "run"} mode.`;
+        console.log(doneRestartMsg);
+        vscode.window.showInformationMessage(doneRestartMsg);
     }
 
     private onContainerLogs = (payload: any): void => {
