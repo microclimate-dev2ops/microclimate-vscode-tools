@@ -17,15 +17,15 @@ export interface IconPaths {
 const resFolderName = "res";
 const imgFolderName = "img";
 
-export function getIconObj(iconName: string, darkAndLight: Boolean = true): IconPaths {
+export function getIconObj(iconName: string, lightOnly: Boolean = false): IconPaths {
     const light = path.join(global.__extRoot, resFolderName, imgFolderName, "light", iconName);
 
     let dark;
-    if (darkAndLight) {
-        dark = path.join(global.__extRoot, resFolderName, imgFolderName, "dark",  iconName);
+    if (lightOnly) {
+        dark = light;
     }
     else {
-        dark = light;
+        dark = path.join(global.__extRoot, resFolderName, imgFolderName, "dark",  iconName);
     }
 
     // Log if the file is missing or can't be read
@@ -41,6 +41,16 @@ export function getIconObj(iconName: string, darkAndLight: Boolean = true): Icon
         light: light,
         dark: dark
     };
+}
+
+/**
+ * Get a string which can be included in a status bar message to render an octicon.
+ * The returned value will be "$(iconName) or $(iconName~spin)"
+ *
+ * @param iconName - One of the octicons from https://octicons.github.com
+ */
+export function getOcticon(iconName: string, spinning: Boolean = false): string {
+    return `$(${iconName}${spinning ? "~spin": ""})`;
 }
 
 /**
@@ -82,6 +92,10 @@ export function uppercaseFirstChar(input: string): string {
     return input.charAt(0).toUpperCase() + input.slice(1);
 }
 
-export function isGoodPort(port: number): Boolean {
-    return !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
+export function isGoodPort(port: number | undefined): Boolean {
+    return port != null && !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
+}
+
+export function getStartMode(debug: Boolean): string {
+    return debug ? "debug" : "run";
 }

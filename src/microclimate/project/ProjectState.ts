@@ -1,3 +1,4 @@
+import { getStartMode } from "../../MCUtil";
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
@@ -5,7 +6,10 @@ export class ProjectState {
     private readonly buildDetail: string;
 
     constructor (
-        projectInfoPayload: any
+        projectInfoPayload: any,
+        // Use below if the projectInfoPayload may be missing information (eg. from a restart success event)
+        // They will be used as fallback values if the new state is null or UNKNOWN.
+        fallbackState?: ProjectState
     ) {
         if (projectInfoPayload == null) {
             // console.error("Passed null project info to ProjectState");
@@ -14,9 +18,25 @@ export class ProjectState {
             this.buildDetail = "";
         }
         else {
-            this.appState = ProjectState.getAppState(projectInfoPayload);
-            this.buildState = ProjectState.getBuildState(projectInfoPayload);
-            this.buildDetail = projectInfoPayload.detailedBuildStatus || "";
+            let newAppState = ProjectState.getAppState(projectInfoPayload);
+            let newBuildState = ProjectState.getBuildState(projectInfoPayload);
+            let newBuildDetail: string = projectInfoPayload.detailedBuildStatus || "";
+
+            // use fall-backs if they were provided, and we couldn't determine something
+            if (fallbackState != null) {
+                if (newAppState == null || newAppState === ProjectState.AppStates.UNKNOWN) {
+                    newAppState = fallbackState.appState;
+                }
+                if (newBuildState == null || newBuildState === ProjectState.BuildStates.UNKNOWN) {
+                    newBuildState = fallbackState.buildState;
+                }
+                if (newBuildDetail == null || newBuildDetail === "") {
+                    newBuildDetail = fallbackState.buildDetail || "";
+                }
+            }
+            this.appState = newAppState;
+            this.buildState = newBuildState;
+            this.buildDetail = newBuildDetail;
         }
     }
 
@@ -25,7 +45,7 @@ export class ProjectState {
     }
 
     public get isStarted(): Boolean {
-        return this.appState === ProjectState.AppStates.STARTED;
+        return this.appState === ProjectState.AppStates.STARTED || this.appState === ProjectState.AppStates.DEBUGGING;
     }
 
     public get isBuilding(): Boolean {
@@ -86,12 +106,12 @@ export namespace ProjectState {
         // console.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
 
         // First, check if the project is open. If it's not, it's disabled.
-        if (closedState !== "open") {
+        if (closedState === "closed") {
             return ProjectState.AppStates.DISABLED;
         }
         // Now, check the app states.
         else if (appStatus === "started") {
-            if (startMode === "debug") {
+            if (startMode === getStartMode(true)) {
                 return ProjectState.AppStates.DEBUGGING;
             }
             return ProjectState.AppStates.STARTED;
@@ -105,7 +125,7 @@ export namespace ProjectState {
         else if (appStatus === "stopped") {
             return ProjectState.AppStates.STOPPED;
         }
-        console.error("Unknown app state " + appStatus);
+        console.error("Unknown app state:", appStatus);
         return ProjectState.AppStates.UNKNOWN;
     }
 
@@ -128,7 +148,7 @@ export namespace ProjectState {
             // This happens with disabled projects
             return BuildStates.UNKNOWN;
         }
-        console.error("Unknown build state " + buildStatus);
+        console.error("Unknown build state:", buildStatus);
         return BuildStates.UNKNOWN;
     }
 
@@ -162,5 +182,18 @@ export namespace ProjectState {
                 return "❓";
         }
     }
-}
 
+    /**
+     * Construct a ProjectState from possibly incomplete newInfo.
+     *
+     * Will try to assign a new appState, buildState, and buildDetail based on newInfo,
+     * but will fall back onto currentState's value for any of those
+     * if the new info fails to provide a recognizable state.
+     */
+    export function fromExisting(currentState: ProjectState, newInfo: any) {
+        let newAppState: AppStates = getAppState(newInfo);
+        if (newAppState === AppStates.UNKNOWN) {
+            newAppState = currentState.appState;
+        }
+    }
+}

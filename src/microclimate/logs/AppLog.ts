@@ -5,7 +5,11 @@ export default class AppLog {
     // Maps projectIDs to AppLog instances
     private static readonly logMap: Map<string, AppLog> = new Map<string, AppLog>();
 
-    public readonly outputChannel: vscode.OutputChannel;
+    private readonly outputChannel: vscode.OutputChannel;
+
+    // If this project is being debugged, we also have to send the output to the debug console.
+    private debugConsole: vscode.DebugConsole | undefined;
+    private hasNewDebugConsole: Boolean = false;
 
     private initialized: Boolean = false;
     private previousLength: number = 0;
@@ -14,6 +18,8 @@ export default class AppLog {
         public readonly projectID: string,
         projectName: string
     ) {
+        // TODO improve the outputChannel name
+        // TODO see if there's a better way to sort these, or prefix them
         this.outputChannel = vscode.window.createOutputChannel(projectName);
         this.outputChannel.appendLine("Waiting for Microclimate to send application logs...");
         // this.outputChannel.show();
@@ -42,12 +48,33 @@ export default class AppLog {
         }
 
         this.outputChannel.append(newContents);
+        if (this.hasNewDebugConsole) {
+            // TODO this doesn't work
+            if (this.debugConsole != null) {
+                // one time only, send the whole output to the debug console
+                this.debugConsole.append(contents);
+                this.hasNewDebugConsole = false;
+            }
+            else {
+                console.error("Unexpected null debug console");
+            }
+        }
+        // It's normal for debugConsole to be null if we're not debugging.
+        else if (this.debugConsole != null) {
+            this.debugConsole.append(newContents);
+        }
+
         this.previousLength = contents.length;
+    }
+
+    public async showOutputChannel() {
+        this.outputChannel.show();
     }
 
     public static getOrCreateLog(projectID: string, projectName: string): AppLog {
         let log = this.logMap.get(projectID);
         if (log == null) {
+            console.log("Creating app log for " + projectName);
             // we have to create it
             log = new AppLog(projectID, projectName);
             AppLog.logMap.set(projectID, log);
@@ -55,7 +82,17 @@ export default class AppLog {
         return log;
     }
 
+    /*
     public static getLogByProjectID(projectID: string): AppLog | undefined {
         return this.logMap.get(projectID);
+    }*/
+    public setDebugConsole(console: vscode.DebugConsole) {
+        this.debugConsole = console;
+        this.hasNewDebugConsole = true;
+    }
+
+    public unsetDebugConsole() {
+        this.debugConsole = undefined;
+        this.hasNewDebugConsole = false;
     }
 }

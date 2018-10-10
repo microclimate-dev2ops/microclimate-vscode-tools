@@ -37,6 +37,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         // this.description = this.workspacePath.fsPath.toString();
     }
 
+    async onChange(): Promise<void> {
+        ConnectionManager.instance.onChange(this);
+    }
+
     async getProjects(): Promise<Project[]> {
         if (!this.needProjectUpdate) {
             return this.projects;
@@ -44,6 +48,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         console.log(`Updating projects list for ${this.mcUri}`);
 
         const result = await request.get(this.projectsApiUri.toString(), { json : true });
+        console.log("Get project list result:", result);
 
         this.projects = [];
 
@@ -52,7 +57,6 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             this.projects.push(newProject);
         }
 
-        ConnectionManager.instance.onChange();
         this.needProjectUpdate = false;
         console.log("Done projects update");
         return this.projects;
@@ -91,17 +95,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {
-        // TODO remove, Portal should tell us instead if it's invalid.
-        if (project.type.type !== ProjectType.Types.MICROPROFILE) {
-            vscode.window.showErrorMessage(`You can't restart ${project.type} projects yet`);
-            return;
-        }
-
         const uri = Endpoints.getEndpointPath(this.mcUri, Endpoints.RESTART_ACTION(project.id));
         const options = {
             json: true,
             body: {
-                startMode: debug ? "debug": "run"
+                startMode: MCUtil.getStartMode(debug)
             }
         };
 
@@ -112,8 +110,14 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
                 vscode.window.showInformationMessage(`Restarting ${project.name} into ${options.body.startMode} mode`);
             })
             .catch( (err) => {
-                console.error("Error POSTing restart request:", err);
-                vscode.window.showInformationMessage(`Restart failed: ${err}`);
+                const errMsg = err.error ? err.error : err;
+                console.log("Error POSTing restart request:", errMsg);
+
+                if (err.statusCode !== 400) {
+                    console.error("Unexpected error POSTing restart request", err);
+                }
+
+                vscode.window.showErrorMessage(`Restart failed: ${errMsg}`);
             });
     }
 

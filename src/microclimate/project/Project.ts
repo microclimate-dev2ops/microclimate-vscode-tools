@@ -6,6 +6,7 @@ import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
+import { pseudoRandomBytes } from "crypto";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json
@@ -17,18 +18,17 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly localPath: vscode.Uri;
     public readonly buildLogPath: vscode.Uri | undefined;
 
-    private _appPort: number;
-    private _debugPort: number = -1;
+    private _appPort: number | undefined;
+    private _debugPort: number | undefined;
 
     // QuickPickItem
     public readonly label: string;
-    public readonly description?: string;
     public readonly detail?: string;
 
     private _state: ProjectState = new ProjectState(undefined);
 
     private pendingState: ProjectState.AppStates | undefined;
-    private onReachPendingState: Function | undefined;
+    private resolvePendingState: Function | undefined;
 
     constructor (
         projectInfo: any,
@@ -36,9 +36,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     ) {
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
-        this._appPort = projectInfo.ports.exposedPort;
 
-        // TODO should use projectType but it's missing sometimes
+        // TODO should use projectType not buildType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
 
         this.localPath = vscode.Uri.file(
@@ -51,20 +50,20 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             this.buildLogPath = vscode.Uri.file(
                 MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.logs.build.file)
             );
+            console.log(`Build log for project ${this.name} is at ${this.buildLogPath}`);
         }
-        else {
-            console.error(`Couldn't get build logs for project ${this.name}, the logs object is: ${projectInfo.logs}`);
+        // Node projects don't have build logs; any other type should
+        else if (this.type.type !== ProjectType.Types.NODE) {
+            console.error(`Couldn't get build logs for project ${this.name}, the logs object is:`, projectInfo.logs);
         }
 
-        this.setStatus(projectInfo);
+        this.update(projectInfo);
 
         // QuickPickItem
         this.label = `${this.name} (${this.type} project)`;
-        this.description = this.appBaseUrl.toString();
         // this.detail = this.id;
 
         console.log("Created project:", this);
-        // console.log("Created project " + this.name);
     }
 
     public getChildren(): TreeItemAdaptable[] {
@@ -82,6 +81,11 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return ti;
     }
 
+    // description used by QuickPickItem
+    public get description(): string {
+        return this.appBaseUrl.toString();
+    }
+
     public get appBaseUrl(): vscode.Uri {
         // TODO decide how this should behave when the app is not started
         return this.connection.mcUri.with({
@@ -95,87 +99,108 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     /**
-     * Set this project's status based on the project info event payload passed
-     * @return If a change was made, and therefore a refresh of the project tree is required
+     * Set this project's status based on the project info event payload passed.
+     * This includes checking the appStatus, buildStatus, buildStatusDetail, and startMode.
+     * Also updates the appPort and debugPort.
+     *
+     * Also signals the ConnectionManager change listener
      */
-    public setStatus = (projectInfo: any): Boolean => {
+    public update = (projectInfo: any): void => {
         if (projectInfo.projectID !== this.id) {
             // shouldn't happen, but just in case
-            console.log(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
-            return false;
+            console.error(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
+            return;
         }
 
         const oldState = this._state;
         // console.log(`${this.name} is having its status updated from ${oldStatus}`);
-        this._state = new ProjectState(projectInfo);
+        this._state = new ProjectState(projectInfo, oldState);
 
         if (this._state === oldState) {
             // console.log("Status did not change");
-            return false;
+            return;
         }
-        else {
-            if (this.pendingState != null && this._state.appState === this.pendingState) {
-                if (this.onReachPendingState != null) {
-                    console.log("Reached pending state", this.pendingState);
-                    this.onReachPendingState();
-                    this.pendingState = undefined;
-                    this.onReachPendingState = undefined;
-                }
-                else {
-                    console.error("PendingState was set but no resolve function was");
-                }
-            }
 
-            // console.log(`${this.name} has a new status:`, this._state);
-            return true;
+        const ports = projectInfo.ports;
+        if (ports != null && ports !== "") {
+            this.setAppPort(ports.exposedPort);
+            this.setDebugPort(ports.exposedDebugPort);
         }
+        else if (this._state.isStarted) {
+            console.error("No ports were provided for an app that is supposed to be started");
+        }
+
+        // If we're waiting for a state, check if we've reached that state, and resolve the pending state promise if so.
+        if (this.pendingState != null && this._state.appState === this.pendingState) {
+            if (this.resolvePendingState != null) {
+                console.log("Reached pending state", this.pendingState);
+                this.resolvePendingState();
+                this.pendingState = undefined;
+                this.resolvePendingState = undefined;
+            }
+            else {
+                console.error("PendingState was set but no resolve function was");
+                this.pendingState = undefined;
+            }
+        }
+
+        // console.log(`${this.name} has a new status:`, this._state);
+        this.connection.onChange();
     }
 
-    public async waitForState(state: ProjectState.AppStates, timeoutMs: number = 60000): Promise<void> {
+    public async waitForState(state: ProjectState.AppStates, timeoutMs: number = 60000): Promise<string> {
         if (this._state.appState === state) {
             console.log("No need to wait, already in state " + state);
-            return;
+            return "Already " + state;
         }
 
         this.pendingState = state;
         console.log(this.name + " is waiting for state",  state);
 
-        const pendingStatePromise = new Promise<void>( (resolve, reject) => {
+        const pendingStatePromise = new Promise<string>( (resolve, reject) => {
+            // TODO try shortening this timeout and see if the error handling works.
             setTimeout(
-                () => reject(`${this.name} did not reach state ${state} within ${timeoutMs}ms`),
+                () => reject(`${this.name} did not reach ${state} state within ${timeoutMs/1000}s`),
                 timeoutMs);
 
-            this.onReachPendingState = resolve;
+            this.resolvePendingState = resolve;
             return;
         });
+
+        vscode.window.setStatusBarMessage(`${MCUtil.getOcticon("sync", true)} Waiting for ${this.name} to be ${state}`, pendingStatePromise);
 
         return pendingStatePromise;
     }
 
-    public get appPort() {
+    public get appPort(): number | undefined {
         return this._appPort;
     }
 
-    public set appPort(appPort: number) {
-        if (!MCUtil.isGoodPort(appPort)) {
-            console.error(`Invalid app port ${appPort} given to project ${this.id}`);
-            return;
-        }
-        this._appPort = appPort;
-        console.log(`New app port for ${this.name} is ${appPort}`);
-    }
-
-    public get debugPort() {
+    public get debugPort(): number | undefined {
         return this._debugPort;
     }
 
-    public set debugPort(debugPort: number) {
-        if (!MCUtil.isGoodPort(debugPort)) {
-            console.error(`Invalid debug port ${debugPort} given to project ${this.id}`);
-            debugPort = -1;
+    private setAppPort(newAppPort: number): void {
+        newAppPort = Number(newAppPort);
+        if (!MCUtil.isGoodPort(newAppPort)) {
+            console.log(`Invalid app port ${newAppPort} given to project ${this.name}`);
             return;
         }
-        this._debugPort = debugPort;
-        console.log(`New debug port for ${this.name} is ${debugPort}`);
+        else if (this._appPort !== newAppPort) {
+            this._appPort = newAppPort;
+            console.log(`New app port for ${this.name} is ${newAppPort}`);
+        }
+    }
+
+    private setDebugPort(newDebugPort: number): void {
+        newDebugPort = Number(newDebugPort);
+        if (!MCUtil.isGoodPort(newDebugPort)) {
+            console.log(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
+            return;
+        }
+        else if (this._debugPort !== newDebugPort) {
+            this._debugPort = newDebugPort;
+            console.log(`New debug port for ${this.name} is ${newDebugPort}`);
+        }
     }
 }

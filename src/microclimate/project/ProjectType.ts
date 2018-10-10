@@ -15,7 +15,6 @@ export class ProjectType {
         this.type = ProjectType.getType(projectType);
         this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
         this.debugType = ProjectType.getDebugType(this.type);
-
         this.icon = ProjectType.getIcons(language);
     }
 
@@ -61,7 +60,7 @@ export class ProjectType {
 
     private static getIcons(language: string): IconPaths {
         // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
-        return getIconObj(language + ".png", false);
+        return getIconObj(language + ".png");
     }
 
     private static getUserFriendlyType(type: ProjectType.Types, language: string) {

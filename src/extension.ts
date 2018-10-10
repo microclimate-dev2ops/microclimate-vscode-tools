@@ -3,7 +3,6 @@ import * as vscode from "vscode";
 
 import { createCommands } from "./command/CommandUtil";
 import createViews from "./view/InitViews";
-import JavaDebugConfigProvider from "./debug/JavaDebugConfigProvider";
 import createDebug from "./debug/InitDebug";
 
 // this method is called when your extension is activated

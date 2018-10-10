@@ -14,10 +14,10 @@ export default class JavaDebugConfigProvider implements vscode.DebugConfiguratio
 
         if (folder == null) {
             console.log("JavaDebugConfigProvider received null folder");
-            return;
+            // return;
         }
 
-        console.log("resolveDebugConfigs - folder is", folder, "debugConfig is ", debugConfiguration);
+        console.log("resolveDebugConfigs - folder is", folder, "debugConfig is ", debugConfiguration, "token is", token);
         return debugConfiguration;
     }
 }

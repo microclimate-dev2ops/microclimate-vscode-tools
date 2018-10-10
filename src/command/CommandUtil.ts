@@ -69,10 +69,11 @@ async function promptForResourceInner(includeConnections: Boolean, startedProjec
         });
     });
 
+    // TODO show something if no projects are selectable
     const selection = await vscode.window.showQuickPick(choices, { canPickMany: false, ignoreFocusOut: true });
     if (selection == null) {
         // user cancelled
-        return selection;
+        return undefined;
     }
     else if (selection instanceof Project) {
         return selection as Project;

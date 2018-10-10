@@ -4,7 +4,6 @@ import ProjectTreeDataProvider from "./projectExplorer/ProjectTree";
 
 export default function createViews() {
     const treeDataProvider: ProjectTreeDataProvider = new ProjectTreeDataProvider();
-    console.log("CreateViews");
 
     return [
         window.createTreeView(treeDataProvider.VIEW_ID, treeDataProvider),

@@ -9,9 +9,9 @@ export default class ConnectionManager {
     private readonly _connections: Connection[] = [];
     private readonly listeners: ( () => void ) [] = [];
 
-    private constructor() {
-        ConnectionManager._instance = this;
+    private constructor(
 
+    ) {
         // add default connection
         // TODO just for testing
         tryAddConnection("localhost", 9090);
@@ -30,7 +30,7 @@ export default class ConnectionManager {
     }
 
     public async addConnection(uri: Uri, host:string, workspace: Uri): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>( (resolve, reject) => {
             if (this.connectionExists(uri)) {
                 return reject("Connection already exists at " + uri);
             }
@@ -41,7 +41,7 @@ export default class ConnectionManager {
             console.log("New Connection @ " + uri);
             this._connections.push(connection);
 
-            this.onChange();
+            this.onChange(connection);
             return resolve();
         });
     }
@@ -64,8 +64,8 @@ export default class ConnectionManager {
     /**
      * Call this whenever a connection is added, removed, or changed.
      */
-    public onChange = (): void => {
-        // console.log("ConnectionManager OnChange");
+    public onChange = (_: Connection): void => {
+        // console.log(`Connection ${connection} changed`);
         this.listeners.forEach( (f) => f());
     }
 }

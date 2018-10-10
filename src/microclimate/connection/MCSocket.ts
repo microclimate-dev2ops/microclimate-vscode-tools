@@ -1,12 +1,12 @@
 import * as io from "socket.io-client";
 import * as vscode from "vscode";
 
-import ConnectionManager from "./ConnectionManager";
 import Connection from "./Connection";
 import AppLog from "../logs/AppLog";
 import Project from "../project/Project";
 import * as restartProjectCmd from "../../command/RestartProjectCmd";
 import { ProjectState } from "../project/ProjectState";
+import * as MCUtil from "../../MCUtil";
 
 export default class MCSocket {
 
@@ -31,11 +31,11 @@ export default class MCSocket {
                 console.log("Disconnect from socket at " + uri);
             })
             .on("projectChanged",       this.onProjectChanged)
-            .on("projectStatusChanged", this.onProjectChanged)
+            .on("projectStatusChanged", this.onProjectStatusChanged)
             .on("projectClosed",        this.onProjectChanged)
 
-            .on("projectDeletion",       this.onProjectDeleted)
-            .on("projectRestartResult",  this.onProjectRestarted)
+            .on("projectDeletion",      this.onProjectDeleted)
+            .on("projectRestartResult", this.onProjectRestarted)
 
             .on("container-logs", this.onContainerLogs);
 
@@ -45,12 +45,14 @@ export default class MCSocket {
     }
 
     private onProjectStatusChanged = async (payload: any): Promise<void> => {
-        console.log("onProjectStatusChanged", payload);
+        // console.log("onProjectStatusChanged", payload);
         this.onProjectChanged(payload);
     }
 
     private onProjectChanged = async (payload: any): Promise<void> => {
-        console.log("onProjectChanged", payload);
+        //console.log("onProjectChanged", payload);
+        console.log(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
+                `buildState=${payload.buildStatus} startMode=${payload.startMode}`);
 
         const projectID = payload.projectID;
         if (projectID == null) {
@@ -66,12 +68,7 @@ export default class MCSocket {
             return;
         }
 
-        // TODO update application, debug ports, run/debug mode
-
-        const changed: Boolean = project.setStatus(payload);
-        if (changed) {
-            ConnectionManager.instance.onChange();
-        }
+        project.update(payload);
     }
 
     private onProjectDeleted = async (payload: any): Promise<void> => {
@@ -87,7 +84,7 @@ export default class MCSocket {
             console.error(`Restart failed on project ${projectID}, response is`, payload);
             if (payload.error != null) {
                 // TODO decide if these messages are user-friendly enough
-                vscode.window.showErrorMessage(payload.error);
+                vscode.window.showErrorMessage(payload.error.msg);
             }
             return;
         }
@@ -102,29 +99,49 @@ export default class MCSocket {
             return;
         }
 
-        project.appPort = Number(payload.ports.exposedPort);
+        const startMode = payload.startMode;
+        if (startMode !== MCUtil.getStartMode(true) && startMode !== MCUtil.getStartMode(false)) {
+            console.error(`Invalid start mode "${startMode}"`);
+        }
+        project.update(payload);
 
-        const isDebug = payload.ports.exposedDebugPort != null;
+        // TODO this is returning true when it shouldn't be
+        // tslint:disable-next-line:triple-equals
+        const isDebug = payload.ports.exposedDebugPort != null && payload.ports.exposedDebugPort != -1;    // startMode === MCUtil.getStartMode(true);
 
         if (isDebug) {
-            project.debugPort = Number(payload.ports.exposedDebugPort);
             try {
-                const successMsg = await restartProjectCmd.startDebugSession(project);
+                const startDebugPromise = restartProjectCmd.startDebugSession(project);
+                vscode.window.setStatusBarMessage(`${MCUtil.getOcticon("bug", true)} Connecting debugger to ${project.name}`, startDebugPromise);
+                const successMsg = await startDebugPromise;
+
                 console.log("Debugger attach success", successMsg);
                 vscode.window.showInformationMessage(successMsg);
             }
             catch (err) {
                 console.error("Debugger attach failure", err);
                 vscode.window.showErrorMessage(err);
+                return;
             }
         }
-        await project.waitForState(ProjectState.AppStates.STARTED);
-        const doneRestartMsg = `Finished restarting ${project.name} in ${isDebug ? "debug" : "run"} mode.`;
+
+        const stateToAwait = /*isDebug ? ProjectState.AppStates.DEBUGGING :*/ ProjectState.AppStates.STARTED;
+        try {
+            await project.waitForState(stateToAwait);
+        }
+        catch (err) {
+            // TODO
+            vscode.window.showErrorMessage(err);
+            console.error(err);
+            return;
+        }
+
+        const doneRestartMsg = `Finished restarting ${project.name} in ${MCUtil.getStartMode(isDebug)} mode.`;
         console.log(doneRestartMsg);
         vscode.window.showInformationMessage(doneRestartMsg);
     }
 
-    private onContainerLogs = (payload: any): void => {
+    private onContainerLogs = async (payload: any): Promise<void> => {
         const projectID = payload.projectID;
         const projectName = payload.projectName;
         const logContents = payload.logs;

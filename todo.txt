@@ -1,0 +1,7 @@
+Important:
+- FileWatcher always sends startMode: "run", even though "debug" is on disk in the project info json
+
+Less Important:
+- Toggle Enablement command (implemented as two separate commands which resolve to one command handler, like restart)
+
+WebView for opening app, Overview page

@@ -53,23 +53,27 @@ export default async function newConnectionCmd(): Promise<void> {
 
 export async function tryAddConnection(host: string, port: number): Promise<void> {
     if (host && port) {
-        const startOverMsg = "Start over";
         const tryAgainMsg = "Try again";
+        const reconnectMsg = "Reconnect";
 
         testConnection(host, port)
             .then( (s) => vscode.window.showInformationMessage(s))
             .catch((s) => {
                 console.error("Connection test failed with message " + s);
-                vscode.window.showErrorMessage(s, startOverMsg, tryAgainMsg)
+                vscode.window.showErrorMessage(s, tryAgainMsg, reconnectMsg)
                 .then((s) => {
-                    if (s === startOverMsg) {
+                    if (s === tryAgainMsg) {
                         newConnectionCmd();
                     }
-                    else if (s === tryAgainMsg) {
+                    else if (s === reconnectMsg) {
                         tryAddConnection(host, port);
+                        return;
                     }
                 });
             });
+    }
+    else {
+        console.error(`TryAddConnection invoked with bad parameters, host=${host} port=${port}`);
     }
 }
 
@@ -101,9 +105,8 @@ async function testConnection(host: string, port: number): Promise<string> {
 
 async function onSuccessfulConnection(mcUri: vscode.Uri, host:string, microclimateData: any): Promise<string> {
 
-    return new Promise<string>((resolve, reject) => {
-        console.log("TEST CONNECTION RESULT:");
-        console.log(microclimateData);
+    return new Promise<string>( (resolve, reject) => {
+        console.log("Microclimate ENV data:", microclimateData);
 
         if (microclimateData == null) {
             return reject("Null test connection microclimateData");
