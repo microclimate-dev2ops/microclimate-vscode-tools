@@ -9,15 +9,13 @@ export default class JavaDebugConfigProvider implements vscode.DebugConfiguratio
         return [];
     }*/
 
+    /*
     resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration,
                 token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
 
-        if (folder == null) {
-            console.log("JavaDebugConfigProvider received null folder");
-            // return;
-        }
+        // Not actually used right now, but might need it later...
 
         console.log("resolveDebugConfigs - folder is", folder, "debugConfig is ", debugConfiguration, "token is", token);
         return debugConfiguration;
-    }
+    }*/
 }

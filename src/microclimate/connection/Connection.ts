@@ -7,7 +7,6 @@ import Project from "../project/Project";
 import Endpoints from "../../constants/EndpointConstants";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
-import { ProjectType } from "../project/ProjectType";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -15,6 +14,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
     private readonly socket: MCSocket;
     private readonly projectsApiUri: vscode.Uri;
+
+    // Has this connection ever been able to contact its Microclimate instance
+    // private hasConnected = false;
+    // Is this connection CURRENTLY connected to its Microclimate instance
+    private isConnected = false;
 
     private projects: Project[] = [];
     private needProjectUpdate: Boolean = true;
@@ -35,10 +39,47 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         // QuickPickItem
         this.label = "Microclimate @ " + this.mcUri.toString();
         // this.description = this.workspacePath.fsPath.toString();
+        console.log(`Created new Connection ${this}`);
     }
 
+    public toString(): string {
+        return this.mcUri.toString();
+    }
+
+    /**
+     * Call this whenever the tree needs to be updated - ie when this connection or any of its projects changes.
+     */
     async onChange(): Promise<void> {
         ConnectionManager.instance.onChange(this);
+    }
+
+    onConnect = async (): Promise<void> => {
+        console.log(`${this} onConnect`);
+        /*
+        if (!this.hasConnected) {
+            console.log(`${this} formed initial connection`);
+            this.hasConnected = true;
+        }*/
+        /*else */ if (this.isConnected) {
+            // we already know we're connected, nothing to do until we disconnect
+            return;
+        }
+        this.isConnected = true;
+        console.log(`${this} is now connected`);
+
+        this.onChange();
+    }
+
+    onDisconnect = async (): Promise<void> => {
+        console.log(`${this} onDisconnect`);
+        if (!this.isConnected) {
+            // we already know we're disconnected, nothing to do until we reconnect
+            return;
+        }
+        this.isConnected = false;
+        console.log(`${this} is now disconnected`);
+
+        this.onChange();
     }
 
     async getProjects(): Promise<Project[]> {
@@ -71,6 +112,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     async getChildren(): Promise<TreeItemAdaptable[]> {
+        if (!this.isConnected) {
+            return [];
+        }
+
         await this.getProjects();
         // console.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
         if (this.projects.length === 0) {
@@ -80,7 +125,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     toTreeItem(): vscode.TreeItem {
-        const ti: vscode.TreeItem = new vscode.TreeItem(this.mcUri.toString(), vscode.TreeItemCollapsibleState.Expanded);
+        let tiLabel = `Microclimate @ ${this.mcUri.toString()}`;
+        if (!this.isConnected) {
+            tiLabel += " [Disconnected]";
+        }
+        const ti: vscode.TreeItem = new vscode.TreeItem(tiLabel, vscode.TreeItemCollapsibleState.Expanded);
         ti.resourceUri = this.workspacePath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;

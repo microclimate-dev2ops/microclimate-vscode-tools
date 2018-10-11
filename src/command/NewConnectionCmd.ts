@@ -64,6 +64,7 @@ export async function tryAddConnection(host: string, port: number): Promise<void
                 .then((s) => {
                     if (s === tryAgainMsg) {
                         newConnectionCmd();
+                        return;
                     }
                     else if (s === reconnectMsg) {
                         tryAddConnection(host, port);

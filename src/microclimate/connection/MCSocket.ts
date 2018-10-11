@@ -10,6 +10,8 @@ import * as MCUtil from "../../MCUtil";
 
 export default class MCSocket {
 
+    private hasConnectionInitialized = false;
+
     private static readonly STATUS_SUCCESS = "success";
 
     private readonly socket: SocketIOClient.Socket;
@@ -24,12 +26,9 @@ export default class MCSocket {
         this.socket.connect();
 
         this.socket
-            .on("connect", () => {
-                console.log("Connected to socket at " + uri);
-            })
-            .on("disconnect", () => {
-                console.log("Disconnect from socket at " + uri);
-            })
+            .on("connect",      this.connection.onConnect)
+            .on("disconnect",   this.connection.onDisconnect)
+
             .on("projectChanged",       this.onProjectChanged)
             .on("projectStatusChanged", this.onProjectStatusChanged)
             .on("projectClosed",        this.onProjectChanged)
@@ -37,7 +36,7 @@ export default class MCSocket {
             .on("projectDeletion",      this.onProjectDeleted)
             .on("projectRestartResult", this.onProjectRestarted)
 
-            .on("container-logs", this.onContainerLogs);
+            .on("container-logs",       this.onContainerLogs);
 
             // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
@@ -69,6 +68,24 @@ export default class MCSocket {
         }
 
         project.update(payload);
+
+        // TODO we have to check if a debugger onnection is needed
+        // Eclipse plugin onProjectChanged:
+        /*
+         * if (portsObj.has(MCConstants.KEY_EXPOSED_DEBUG_PORT)) {
+			int debugPort = parsePort(portsObj.getString(MCConstants.KEY_EXPOSED_DEBUG_PORT));
+			app.setDebugPort(debugPort);
+			if (serverBehaviour.getServer().getMode() == ILaunchManager.DEBUG_MODE && debugPort != -1) {
+				// If the debug connection is lost then reconnect
+				ILaunch launch = serverBehaviour.getServer().getLaunch();
+				if (launch == null || launch.getLaunchMode() != ILaunchManager.DEBUG_MODE) {
+					serverBehaviour.reconnectDebug(null);
+				}
+			}
+		} else {
+			app.setDebugPort(-1);
+		}
+         */
     }
 
     private onProjectDeleted = async (payload: any): Promise<void> => {
@@ -105,9 +122,7 @@ export default class MCSocket {
         }
         project.update(payload);
 
-        // TODO this is returning true when it shouldn't be
-        // tslint:disable-next-line:triple-equals
-        const isDebug = payload.ports.exposedDebugPort != null && payload.ports.exposedDebugPort != -1;    // startMode === MCUtil.getStartMode(true);
+        const isDebug = startMode === MCUtil.getStartMode(true);
 
         if (isDebug) {
             try {
@@ -125,7 +140,7 @@ export default class MCSocket {
             }
         }
 
-        const stateToAwait = /*isDebug ? ProjectState.AppStates.DEBUGGING :*/ ProjectState.AppStates.STARTED;
+        const stateToAwait = isDebug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
         try {
             await project.waitForState(stateToAwait);
         }
