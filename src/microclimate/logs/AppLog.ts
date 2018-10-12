@@ -20,7 +20,7 @@ export default class AppLog {
     ) {
         // TODO improve the outputChannel name
         // TODO see if there's a better way to sort these, or prefix them
-        this.outputChannel = vscode.window.createOutputChannel(projectName);
+        this.outputChannel = vscode.window.createOutputChannel("App Log - " + projectName);
         this.outputChannel.appendLine("Waiting for Microclimate to send application logs...");
         // this.outputChannel.show();
     }

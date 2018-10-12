@@ -10,6 +10,9 @@ import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import requestBuildCmd from "./RequestBuildCmd";
 import openBuildLogCmd from "./OpenBuildLogCmd";
 import openAppLogCmd from "./OpenAppLogCmd";
+import { start } from "repl";
+import { ProjectState } from "../microclimate/project/ProjectState";
+import { pseudoRandomBytes } from "crypto";
 
 export function createCommands() {
 
@@ -29,8 +32,12 @@ export function createCommands() {
     ];
 }
 
-export async function promptForProject(startedOnly: Boolean): Promise<Project | undefined> {
-    const project = await promptForResourceInner(false, startedOnly);
+// Some commands require a project or connection to be selected,
+// if they're launched from the command pallet we have to
+// ask which resource they want to run the command on.
+// only return projects that are in an 'acceptableState'
+export async function promptForProject(...acceptableStates: ProjectState.AppStates[]): Promise<Project | undefined> {
+    const project = await promptForResourceInner(false, ...acceptableStates);
     if (project instanceof Project) {
         return project as Project;
     }
@@ -43,11 +50,12 @@ export async function promptForProject(startedOnly: Boolean): Promise<Project | 
     return undefined;
 }
 
-export async function promptForResource(startedProjectsOnly: Boolean): Promise<Project | Connection | undefined> {
-    return promptForResourceInner(true, startedProjectsOnly);
+export async function promptForResource(...acceptableStates: ProjectState.AppStates[]): Promise<Project | Connection | undefined> {
+    return promptForResourceInner(true, ...acceptableStates);
 }
 
-async function promptForResourceInner(includeConnections: Boolean, startedProjectsOnly: Boolean): Promise<Project | Connection | undefined> {
+async function promptForResourceInner(includeConnections: Boolean, ...acceptableStates: ProjectState.AppStates[]):
+        Promise<Project | Connection | undefined> {
 
     // TODO Try to get the name of †he selected project, and have it selected initially
     const choices: vscode.QuickPickItem[] = [];
@@ -58,19 +66,48 @@ async function promptForResourceInner(includeConnections: Boolean, startedProjec
         choices.push(...connections);
     }
 
-    await new Promise<vscode.QuickPickItem[]>( (resolve, _) => {
-        connections.forEach( async (conn) => {
+    // for now, assume if they want Started, they also accept Debugging. This may change.
+    if (acceptableStates.indexOf(ProjectState.AppStates.STARTED) !== -1
+            && acceptableStates.indexOf(ProjectState.AppStates.DEBUGGING) === -1) {
+
+        acceptableStates.push(ProjectState.AppStates.DEBUGGING);
+    }
+    console.log("Accept states", acceptableStates, "test", acceptableStates.indexOf(ProjectState.AppStates.STARTED));
+
+    await new Promise<void>( async (resolve, _) => {
+        for (const conn of connections) {
             let projects = await conn.getProjects();
-            if (startedProjectsOnly) {
-                projects = projects.filter( (p) => p.state.isStarted );
+            console.log("projects before", projects);
+            if (acceptableStates.length > 0) {
+                // Filter out projects that are not in one of the acceptable states
+                projects = projects.filter( (p) => {
+                    const index = acceptableStates.indexOf(p.state.appState);
+                    console.log("the index of ", p.state.appState, " in ", acceptableStates, " is ", index);
+                    return index !== -1;
+                });
             }
+            console.log("projects after", projects);
             choices.push(...projects);
-            return resolve(choices);
-        });
+        }
+        return resolve();
     });
 
-    // TODO show something if no projects are selectable
-    const selection = await vscode.window.showQuickPick(choices, { canPickMany: false, ignoreFocusOut: true });
+    // If no choices are available, show a message
+    if (choices.length === 0) {
+        let requiredStatesStr: string = "";
+
+        if (acceptableStates.length !== 0) {
+            requiredStatesStr += acceptableStates.map( (state) => state.toString()).join(", ");
+        }
+
+        // TODO improve the msg.
+        const msg = `There is no ${includeConnections ? " Connection, or" : ""} ${requiredStatesStr} Project ` +
+                `on which to run this command.`;
+        vscode.window.showWarningMessage(msg, /*{ modal: true }*/);
+        return undefined;
+    }
+
+    const selection = await vscode.window.showQuickPick(choices, { canPickMany: false, ignoreFocusOut: choices.length !== 0 });
     if (selection == null) {
         // user cancelled
         return undefined;

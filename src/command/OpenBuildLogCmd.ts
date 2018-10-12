@@ -6,7 +6,7 @@ import { promptForProject } from "./CommandUtil";
 export default async function openBuildLogCmd(project: Project): Promise<void> {
     console.log("OpenBuildLogCmd invoked");
     if (project == null) {
-        const selected = await promptForProject(true);
+        const selected = await promptForProject();
         if (selected == null) {
             // user cancelled
             console.log("User cancelled project prompt");

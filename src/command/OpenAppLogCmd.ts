@@ -3,11 +3,12 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import AppLog from "../microclimate/logs/AppLog";
+import { ProjectState } from "../microclimate/project/ProjectState";
 
 export default async function openAppLogCmd(project: Project): Promise<void> {
     console.log("OpenBuildLogCmd invoked");
     if (project == null) {
-        const selected = await promptForProject(true);
+        const selected = await promptForProject(ProjectState.AppStates.STARTED);
         if (selected == null) {
             // user cancelled
             console.log("User cancelled project prompt");

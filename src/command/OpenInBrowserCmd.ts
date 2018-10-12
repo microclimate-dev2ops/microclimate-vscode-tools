@@ -3,11 +3,12 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import { promptForResource } from "./CommandUtil";
+import { ProjectState } from "../microclimate/project/ProjectState";
 
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
     console.log("OpenInBrowserCmd invoked");
     if (resource == null) {
-        const selected = await promptForResource(true);
+        const selected = await promptForResource(ProjectState.AppStates.STARTED);
         if (selected == null) {
             console.log("User cancelled prompt for resource");
             // user cancelled

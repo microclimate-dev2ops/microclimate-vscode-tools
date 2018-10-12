@@ -9,7 +9,7 @@ import { getOcticon, getStartMode } from "../MCUtil";
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
     console.log("RestartProjectCmd invoked");
     if (project == null) {
-        const selected = await promptForProject(true);
+        const selected = await promptForProject(ProjectState.AppStates.STARTED, ProjectState.AppStates.STARTING);
         if (selected == null) {
             // user cancelled
             console.log("User cancelled project prompt");
