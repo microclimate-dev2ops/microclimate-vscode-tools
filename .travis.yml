@@ -1,5 +1,13 @@
 distro: Xenial
 
+branches:
+  only:
+    - master
+
+notifications:
+  on_success: never
+  on_failure: change
+
 os:
   - linux
 
@@ -9,9 +17,9 @@ node_js:
  - "10"
 
 before_install:
-  - npm install -g vsce
+  - npm i -g vsce
+  - npm i
 
-script:
   - echo "Working directory $(pwd)"
   - echo "TSC $(./node_modules/typescript/bin/tsc --version)"
   # List all our source files, this way we can see if there are
@@ -21,4 +29,23 @@ script:
   - npm run compile
   # Remove Github readme, replace it with the vscode readme, which vsce will then pick up.
   - mv README.vscode.md README.md
+
+script:
   - vsce package
+  - cp ./*.vsix ..
+
+after_success:
+  # Checkout the 'build' branch, which will have nothing in it except the newest build.
+  - git config user.email "travis@travis.ibm.com"
+  - git config user.name "Travis-CI"
+  - git fetch origin build:build
+  - git reset --hard build
+  - git checkout build
+  - cp -f ../*.vsix .
+  - git add -f ./*.vsix
+  - git status
+  # This will make a commit with a name like "New build @ 6f1ea87 by Tim Etchells - further travis improvements"
+  - export build_date="$(date +'%F %H:%M')"
+  - export commit_info="$(git log master -1 --pretty='%h by %an - %s')"
+  - 'git commit -m "New build @ $build_date $commit_info"'
+  - git push origin build
