@@ -1,14 +1,16 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-import * as MCUtil from "MCUtil";
-import TreeItemAdaptable from "view/projectExplorer/TreeItemAdaptable";
-import { ProjectState } from "microclimate/project/ProjectState";
-import { ProjectType } from "microclimate/project/ProjectType";
-import Connection from "microclimate/connection/Connection";
+import * as MCUtil from "../../MCUtil";
+import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
+import { ProjectState } from "./ProjectState";
+import { ProjectType } from "./ProjectType";
+import Connection from "../connection/Connection";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json
+    private static readonly ENABLED_CONTEXT_ID  = Project.CONTEXT_ID + ".enabled";
+    private static readonly DISABLED_CONTEXT_ID = Project.CONTEXT_ID + ".disabled";
 
     public readonly name: string;
     public readonly id: string;
@@ -74,7 +76,9 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         ti.resourceUri = this.localPath;
         ti.tooltip = this.state.toString();
-        ti.contextValue = Project.CONTEXT_ID;
+        // There are different context menu actions available to enabled or disabled projects
+        // If you want to target both, use "viewItem ~= /^Project.CONTEXT_ID*$/"
+        ti.contextValue = this.state.isEnabled ? Project.ENABLED_CONTEXT_ID : Project.DISABLED_CONTEXT_ID;
         ti.iconPath = this.type.icon;
         // console.log(`Created TreeItem`, ti);
         return ti;

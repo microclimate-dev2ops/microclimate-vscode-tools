@@ -1,4 +1,4 @@
-import { getStartMode } from "MCUtil";
+import { getStartMode } from "../../MCUtil";
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;

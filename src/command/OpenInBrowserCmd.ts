@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 
-import Project from "microclimate/project/Project";
-import Connection from "microclimate/connection/Connection";
-import { promptForResource } from "command/CommandUtil";
-import { ProjectState } from "microclimate/project/ProjectState";
+import Project from "../microclimate/project/Project";
+import Connection from "../microclimate/connection/Connection";
+import { promptForResource } from "./CommandUtil";
+import { ProjectState } from "../microclimate/project/ProjectState";
 
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
     console.log("OpenInBrowserCmd invoked");

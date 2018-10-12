@@ -1,12 +1,12 @@
 import * as io from "socket.io-client";
 import * as vscode from "vscode";
 
-import Connection from "microclimate/connection/Connection";
-import AppLog from "microclimate/logs/AppLog";
-import Project from "microclimate/project/Project";
-import * as restartProjectCmd from "command/RestartProjectCmd";
-import { ProjectState } from "microclimate/project/ProjectState";
-import * as MCUtil from "MCUtil";
+import Connection from "./Connection";
+import AppLog from "../logs/AppLog";
+import Project from "../project/Project";
+import * as restartProjectCmd from "../../command/RestartProjectCmd";
+import { ProjectState } from "../project/ProjectState";
+import * as MCUtil from "../../MCUtil";
 
 export default class MCSocket {
 

@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import * as MCUtil from "MCUtil";
-import TreeItemAdaptable, { SimpleTreeItem } from "view/projectExplorer/TreeItemAdaptable";
-import Project from "microclimate/project/Project";
-import Endpoints from "constants/EndpointConstants";
-import MCSocket from "microclimate/connection/MCSocket";
-import ConnectionManager from "microclimate/connection/ConnectionManager";
+import * as MCUtil from "../../MCUtil";
+import TreeItemAdaptable, { SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
+import Project from "../project/Project";
+import Endpoints from "../../constants/EndpointConstants";
+import MCSocket from "./MCSocket";
+import ConnectionManager from "./ConnectionManager";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 

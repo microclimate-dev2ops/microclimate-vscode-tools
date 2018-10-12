@@ -1,6 +1,6 @@
 import { window } from "vscode";
 
-import ProjectTreeDataProvider from "view/projectExplorer/ProjectTree";
+import ProjectTreeDataProvider from "./projectExplorer/ProjectTree";
 
 export default function createViews() {
     const treeDataProvider: ProjectTreeDataProvider = new ProjectTreeDataProvider();

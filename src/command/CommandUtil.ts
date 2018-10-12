@@ -1,16 +1,17 @@
 import * as vscode from "vscode";
 
-import newConnectionCmd from "command/NewConnectionCmd";
-import goToFolder from "command/GoToFolderCmd";
-import restartProjectCmd from "command/RestartProjectCmd";
-import openInBrowserCmd from "command/OpenInBrowserCmd";
-import Project from "microclimate/project/Project";
-import Connection from "microclimate/connection/Connection";
-import ConnectionManager from "microclimate/connection/ConnectionManager";
-import requestBuildCmd from "command/RequestBuildCmd";
-import openBuildLogCmd from "command/OpenBuildLogCmd";
-import openAppLogCmd from "command/OpenAppLogCmd";
-import { ProjectState } from "microclimate/project/ProjectState";
+import newConnectionCmd from "./NewConnectionCmd";
+import goToFolder from "./GoToFolderCmd";
+import restartProjectCmd from "./RestartProjectCmd";
+import openInBrowserCmd from "./OpenInBrowserCmd";
+import requestBuildCmd from "./RequestBuildCmd";
+import openBuildLogCmd from "./OpenBuildLogCmd";
+import openAppLogCmd from "./OpenAppLogCmd";
+
+import Project from "../microclimate/project/Project";
+import Connection from "../microclimate/connection/Connection";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
+import { ProjectState } from "../microclimate/project/ProjectState";
 
 export function createCommands() {
 

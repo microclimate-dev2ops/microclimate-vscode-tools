@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import Project from "microclimate/project/Project";
-import { promptForProject } from "command/CommandUtil";
-import { ProjectState } from "microclimate/project/ProjectState";
-import AppLog from "microclimate/logs/AppLog";
-import { getOcticon, getStartMode } from "MCUtil";
+import Project from "../microclimate/project/Project";
+import { promptForProject } from "../command/CommandUtil";
+import { ProjectState } from "../microclimate/project/ProjectState";
+import AppLog from "../microclimate/logs/AppLog";
+import { getOcticon, getStartMode } from "../MCUtil";
 
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
     console.log("RestartProjectCmd invoked");

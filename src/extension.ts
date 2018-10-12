@@ -1,9 +1,9 @@
 "use strict";
 import * as vscode from "vscode";
 
-import { createCommands } from "command/CommandUtil";
-import createViews from "view/InitViews";
-import createDebug from "debug/InitDebug";
+import { createCommands } from "./command/CommandUtil";
+import createViews from "./view/InitViews";
+import createDebug from "./debug/InitDebug";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

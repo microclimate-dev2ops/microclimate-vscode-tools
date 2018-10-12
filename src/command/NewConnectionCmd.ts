@@ -2,8 +2,8 @@ import * as vscode from "vscode";
 import * as request from "request-promise-native";
 import * as reqErrors from "request-promise-native/errors";
 
-import * as MCUtil from "MCUtil";
-import ConnectionManager from "microclimate/connection/ConnectionManager";
+import * as MCUtil from "../MCUtil";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
 
 export default async function newConnectionCmd(): Promise<void> {
     console.log("New connection command invoked");

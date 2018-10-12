@@ -3,7 +3,7 @@
     "displayName": "%displayName%",
     "description": "%description%",
     "version": "0.0.1",
-    "publisher": "no",
+    "publisher": "IBM",
     "engines": {
         "vscode": "^1.27.0"
     },
@@ -11,7 +11,7 @@
         "Other"
     ],
     "activationEvents": [
-        "onView:ext.mc.projectExplorer"
+        "onView:ext.mc.mcProjectExplorer"
     ],
     "main": "./out/extension",
     "repository": "https://github.ibm.com/dev-ex/microclimate-vscode",
@@ -19,7 +19,7 @@
         "views": {
             "explorer": [
                 {
-                    "id": "ext.mc.projectExplorer",
+                    "id": "ext.mc.mcProjectExplorer",
                     "name": "%viewName%"
                 }
             ]
@@ -86,44 +86,49 @@
             "view/title": [
                 {
                     "command": "ext.mc.newConnection",
-                    "when": "view == ext.mc.projectExplorer",
+                    "when": "view == ext.mc.mcProjectExplorer",
                     "group": "navigation"
                 }
             ],
             "view/item/context": [
                 {
-                    "command": "ext.mc.openInBrowser",
-                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)",
-                    "group": "ext.mc.a"
-                },
-                {
                     "command": "ext.mc.goToFolder",
-                    "when": "!(viewItem != ext.mc.projectItem && viewItem != ext.mc.connectionItem)",
+                    "when": "view == ext.mc.mcProjectExplorer",
                     "group": "ext.mc.b"
                 },
                 {
+                    "command": "ext.mc.openInBrowser",
+                    "when": "viewItem == ext.mc.connectionItem",
+                    "group": "ext.mc.a"
+                },
+                {
+                    "command": "ext.mc.openInBrowser",
+                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "group": "ext.mc.a"
+                },
+                {
                     "command": "ext.mc.openAppLog",
-                    "when": "viewItem == ext.mc.projectItem",
+                    "when": "viewItem == ext.mc.projectItem.enabled",
                     "group": "ext.mc.c"
                 },
                 {
                     "command": "ext.mc.openBuildLog",
-                    "when": "viewItem == ext.mc.projectItem",
+                    "when": "viewItem == ext.mc.projectItem.enabled",
                     "group": "ext.mc.c"
                 },
                 {
                     "command": "ext.mc.requestBuild",
-                    "when": "viewItem == ext.mc.projectItem",
+                    "when": "viewItem == ext.mc.projectItem.enabled",
                     "group": "ext.mc.d"
                 },
                 {
                     "command": "ext.mc.restartProjectRun",
-                    "when": "viewItem == ext.mc.projectItem",
+                    "when": "viewItem == ext.mc.projectItem.enabled",
                     "group": "ext.mc.z"
                 },
                 {
                     "command": "ext.mc.restartProjectDebug",
-                    "when": "viewItem == ext.mc.projectItem",
+                    "when": "viewItem == ext.mc.projectItem.enabled",
                     "group": "ext.mc.z"
                 }
             ]
