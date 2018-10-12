@@ -17,6 +17,7 @@ node_js:
  - "10"
 
 before_install:
+  - cd dev
   - npm i -g vsce
   - npm i
 
@@ -27,22 +28,23 @@ before_install:
   - ls -AR src/
   # Make sure compilation will succeed ( vsce package won't show the compilation failures >:( )
   - npm run compile
-  # Remove Github readme, replace it with the vscode readme, which vsce will then pick up.
-  - mv README.vscode.md README.md
 
 script:
   - vsce package
-  - cp ./*.vsix ..
 
 after_success:
+  # Go back to top level, then copy the vsix we just built to .
+  - cd ..
+  - cp dev/*.vsix .
+  - ls -a
   # Checkout the 'build' branch, which will have nothing in it except the newest build.
+  # We're going to replace that with the build we just created.
   - git config user.email "travis@travis.ibm.com"
   - git config user.name "Travis-CI"
   - git fetch origin build:build
   - git reset --hard build
   - git checkout build
-  - cp -f ../*.vsix .
-  - git add -f ./*.vsix
+  - git add -f *.vsix
   - git status
   # This will make a commit with a name like "New build @ 6f1ea87 by Tim Etchells - further travis improvements"
   - export build_date="$(date +'%F %H:%M')"
