@@ -47,5 +47,5 @@ after_success:
   # This will make a commit with a name like "New build @ 6f1ea87 by Tim Etchells - further travis improvements"
   - export build_date="$(date +'%F %H:%M')"
   - export commit_info="$(git log master -1 --pretty='%h by %an - %s')"
-  - 'git commit -m "New build @ $build_date $commit_info"'
+  - 'git commit -m "New build @ $build_date" -m "$commit_info"'
   - git push origin build
