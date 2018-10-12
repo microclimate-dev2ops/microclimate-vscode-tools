@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
-import Project from "../microclimate/project/Project";
-import { promptForProject } from "./CommandUtil";
+import Project from "microclimate/project/Project";
+import { promptForProject } from "command/CommandUtil";
 
 export default async function requestBuildCmd(project: Project): Promise<void> {
     console.log("RequestBuildCmd invoked");

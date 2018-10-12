@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import JavaDebugConfigProvider from "./JavaDebugConfigProvider";
+import JavaDebugConfigProvider from "debug/JavaDebugConfigProvider";
 
 export default function createDebug() {
 

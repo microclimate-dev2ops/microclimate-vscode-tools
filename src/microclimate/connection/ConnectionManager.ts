@@ -1,6 +1,6 @@
 import { Uri } from "vscode";
-import Connection from "./Connection";
-import { tryAddConnection } from "../../command/NewConnectionCmd";
+import Connection from "microclimate/connection/Connection";
+import { tryAddConnection } from "command/NewConnectionCmd";
 
 export default class ConnectionManager {
 

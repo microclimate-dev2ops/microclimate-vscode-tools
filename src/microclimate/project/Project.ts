@@ -1,12 +1,11 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-import * as MCUtil from "../../MCUtil";
-import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
-import { ProjectState } from "./ProjectState";
-import { ProjectType } from "./ProjectType";
-import Connection from "../connection/Connection";
-import { pseudoRandomBytes } from "crypto";
+import * as MCUtil from "MCUtil";
+import TreeItemAdaptable from "view/projectExplorer/TreeItemAdaptable";
+import { ProjectState } from "microclimate/project/ProjectState";
+import { ProjectType } from "microclimate/project/ProjectType";
+import Connection from "microclimate/connection/Connection";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json

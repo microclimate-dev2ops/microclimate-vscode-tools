@@ -1,4 +1,4 @@
-import { uppercaseFirstChar, IconPaths, getIconObj } from "../../MCUtil";
+import { uppercaseFirstChar, IconPaths, getIconObj } from "MCUtil";
 
 export class ProjectType {
 

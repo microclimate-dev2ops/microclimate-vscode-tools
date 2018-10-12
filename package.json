@@ -1,5 +1,5 @@
 {
-    "name": "com.ibm.microclimate.vscode",
+    "name": "MicroclimateToolsVSCode",
     "displayName": "%displayName%",
     "description": "%description%",
     "version": "0.0.1",
@@ -14,6 +14,7 @@
         "onView:ext.mc.projectExplorer"
     ],
     "main": "./out/extension",
+    "repository": "https://github.ibm.com/dev-ex/microclimate-vscode",
     "contributes": {
         "views": {
             "explorer": [

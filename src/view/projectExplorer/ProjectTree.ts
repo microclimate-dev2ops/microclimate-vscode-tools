@@ -1,10 +1,9 @@
 
 import { TreeItem, TreeDataProvider, Event, EventEmitter, TreeItemCollapsibleState } from "vscode";
 
-import  TreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
-import ConnectionManager from "../../microclimate/connection/ConnectionManager";
-import Connection from "../../microclimate/connection/Connection";
-import { getIconObj } from "../../MCUtil";
+import  TreeItemAdaptable, { SimpleTreeItem } from "view/projectExplorer/TreeItemAdaptable";
+import ConnectionManager from "microclimate/connection/ConnectionManager";
+import { getIconObj } from "MCUtil";
 
 export default class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
 

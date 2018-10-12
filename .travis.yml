@@ -1,0 +1,24 @@
+distro: Xenial
+
+os:
+  - linux
+
+language: node_js
+
+node_js:
+ - "10"
+
+before_install:
+  - npm install -g vsce
+
+script:
+  - echo "Working directory $(pwd)"
+  - echo "TSC $(./node_modules/typescript/bin/tsc --version)"
+  # List all our source files, this way we can see if there are
+  # any more issues due to git not handling case-sensitive fileames very well
+  - ls -AR src/
+  # Make sure compilation will succeed ( vsce package won't show the compilation failures >:( )
+  - npm run compile
+  # Remove Github readme, replace it with the vscode readme, which vsce will then pick up.
+  - mv README.vscode.md README.md
+  - vsce package

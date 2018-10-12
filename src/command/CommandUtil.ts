@@ -1,18 +1,16 @@
 import * as vscode from "vscode";
 
-import newConnectionCmd from "./NewConnectionCmd";
-import goToFolder from "./GoToFolderCmd";
-import restartProjectCmd from "./RestartProjectCmd";
-import openInBrowserCmd from "./OpenInBrowserCmd";
-import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
-import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import requestBuildCmd from "./RequestBuildCmd";
-import openBuildLogCmd from "./OpenBuildLogCmd";
-import openAppLogCmd from "./OpenAppLogCmd";
-import { start } from "repl";
-import { ProjectState } from "../microclimate/project/ProjectState";
-import { pseudoRandomBytes } from "crypto";
+import newConnectionCmd from "command/NewConnectionCmd";
+import goToFolder from "command/GoToFolderCmd";
+import restartProjectCmd from "command/RestartProjectCmd";
+import openInBrowserCmd from "command/OpenInBrowserCmd";
+import Project from "microclimate/project/Project";
+import Connection from "microclimate/connection/Connection";
+import ConnectionManager from "microclimate/connection/ConnectionManager";
+import requestBuildCmd from "command/RequestBuildCmd";
+import openBuildLogCmd from "command/OpenBuildLogCmd";
+import openAppLogCmd from "command/OpenAppLogCmd";
+import { ProjectState } from "microclimate/project/ProjectState";
 
 export function createCommands() {
 
@@ -33,9 +31,10 @@ export function createCommands() {
 }
 
 // Some commands require a project or connection to be selected,
-// if they're launched from the command pallet we have to
-// ask which resource they want to run the command on.
-// only return projects that are in an 'acceptableState'
+// if they're launched from the command pallet we have to ask which resource they want to run the command on.
+// The functions below handle this use case.
+
+// only return projects that are in an 'acceptableState' (or pass no acceptable states for all projects)
 export async function promptForProject(...acceptableStates: ProjectState.AppStates[]): Promise<Project | undefined> {
     const project = await promptForResourceInner(false, ...acceptableStates);
     if (project instanceof Project) {
@@ -57,7 +56,7 @@ export async function promptForResource(...acceptableStates: ProjectState.AppSta
 async function promptForResourceInner(includeConnections: Boolean, ...acceptableStates: ProjectState.AppStates[]):
         Promise<Project | Connection | undefined> {
 
-    // TODO Try to get the name of †he selected project, and have it selected initially
+    // TODO Try to get the name of †he selected project, and have it selected initially - if this is possible.
     const choices: vscode.QuickPickItem[] = [];
 
     const connections = ConnectionManager.instance.connections;
@@ -81,9 +80,8 @@ async function promptForResourceInner(includeConnections: Boolean, ...acceptable
             if (acceptableStates.length > 0) {
                 // Filter out projects that are not in one of the acceptable states
                 projects = projects.filter( (p) => {
-                    const index = acceptableStates.indexOf(p.state.appState);
-                    console.log("the index of ", p.state.appState, " in ", acceptableStates, " is ", index);
-                    return index !== -1;
+                    return acceptableStates.indexOf(p.state.appState) !== -1;
+                    // console.log("the index of ", p.state.appState, " in ", acceptableStates, " is ", index);
                 });
             }
             console.log("projects after", projects);
