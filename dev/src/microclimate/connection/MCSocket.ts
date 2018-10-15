@@ -67,7 +67,7 @@ export default class MCSocket {
 
         project.update(payload);
 
-        // TODO we have to check if a debugger onnection is needed
+        // TODO we have to check if a debugger (re)connection is needed
         // Eclipse plugin onProjectChanged:
         /*
          * if (portsObj.has(MCConstants.KEY_EXPOSED_DEBUG_PORT)) {

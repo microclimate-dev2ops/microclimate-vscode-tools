@@ -81,7 +81,8 @@ async function promptForResourceInner(includeConnections: Boolean, ...acceptable
 
         acceptableStates.push(ProjectState.AppStates.DEBUGGING);
     }
-    console.log("Accept states", acceptableStates, "test", acceptableStates.indexOf(ProjectState.AppStates.STARTED));
+
+    console.log("Accept states", acceptableStates);
 
     await new Promise<void>( async (resolve, _) => {
         for (const conn of connections) {

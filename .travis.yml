@@ -35,7 +35,6 @@ script:
 after_success:
   # Go back to top level, then copy the vsix we just built to .
   - cd ..
-  - cp dev/*.vsix .
   - ls -a
   # Checkout the 'build' branch, which will have nothing in it except the newest build.
   # We're going to replace that with the build we just created.
@@ -44,6 +43,8 @@ after_success:
   - git fetch origin build:build
   - git reset --hard build
   - git checkout build
+  # Copy in the build artifact AFTER we do the hard reset
+  - cp dev/*.vsix .
   - git add -f *.vsix
   - git status
   # This will make a commit with a name like "New build @ 6f1ea87 by Tim Etchells - further travis improvements"
