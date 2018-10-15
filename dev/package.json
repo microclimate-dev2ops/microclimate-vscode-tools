@@ -36,7 +36,7 @@
                 }
             },
             {
-                "command": "ext.mc.goToFolder",
+                "command": "ext.mc.openWorkspaceFolder",
                 "title": "Open folder as workspace",
                 "description": "Open this item's folder as your VSCode workspace",
                 "category": "Microclimate"
@@ -89,7 +89,7 @@
         "menus": {
             "commandPalette": [
                 {
-                    "command": "ext.mc.goToFolder",
+                    "command": "ext.mc.openWorkspaceFolder",
                     "when": "never"
                 }
             ],
@@ -116,17 +116,17 @@
                     "group": "ext.mc.a"
                 },
                 {
-                    "command": "ext.mc.goToFolder",
+                    "command": "ext.mc.openWorkspaceFolder",
                     "when": "viewItem == ext.mc.connectionItem",
                     "group": "ext.mc.b"
                 },
                 {
-                    "command": "ext.mc.goToFolder",
+                    "command": "ext.mc.openWorkspaceFolder",
                     "when": "viewItem == ext.mc.projectItem.enabled",
                     "group": "ext.mc.b"
                 },
                 {
-                    "command": "ext.mc.goToFolder",
+                    "command": "ext.mc.openWorkspaceFolder",
                     "when": "viewItem == ext.mc.projectItem.disabled",
                     "group": "ext.mc.b"
                 },

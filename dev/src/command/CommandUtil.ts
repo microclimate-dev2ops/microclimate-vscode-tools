@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
-import newConnectionCmd from "./NewConnectionCmd";
-import openWorkspaceFolderCmd from "./GoToFolderCmd";
+import newConnectionCmd, { CMD_OPEN_FOLDER } from "./NewConnectionCmd";
+import openWorkspaceFolderCmd from "./OpenWorkspaceFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
 import openInBrowserCmd from "./OpenInBrowserCmd";
 import requestBuildCmd from "./RequestBuildCmd";
@@ -16,21 +16,27 @@ import toggleEnablementCmd from "./ToggleEnablementCmd";
 
 export function createCommands() {
 
+    // Register our commands here
+    // The first parameter must match the command ID as declared in package.json
+    // the second parameter is the callback function, which is passed the user's selection, which is either:
+    // - undefined (if run from command palette)
+    // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
         vscode.commands.registerCommand("ext.mc.newConnection", () => newConnectionCmd()),
-        vscode.commands.registerCommand("ext.mc.goToFolder", (args) => openWorkspaceFolderCmd(args)),
 
-        vscode.commands.registerCommand("ext.mc.restartProjectRun", (args) => restartProjectCmd(args, false)),
-        vscode.commands.registerCommand("ext.mc.restartProjectDebug", (args) => restartProjectCmd(args, true)),
+        vscode.commands.registerCommand(CMD_OPEN_FOLDER, (selection) => openWorkspaceFolderCmd(selection, false)),
 
-        vscode.commands.registerCommand("ext.mc.openInBrowser", (args) => openInBrowserCmd(args)),
-        vscode.commands.registerCommand("ext.mc.requestBuild", (args) => requestBuildCmd(args)),
+        vscode.commands.registerCommand("ext.mc.restartProjectRun",     (selection) => restartProjectCmd(selection, false)),
+        vscode.commands.registerCommand("ext.mc.restartProjectDebug",   (selection) => restartProjectCmd(selection, true)),
 
-        vscode.commands.registerCommand("ext.mc.openBuildLog", (args) => openBuildLogCmd(args)),
-        vscode.commands.registerCommand("ext.mc.openAppLog", (args) => openAppLogCmd(args)),
+        vscode.commands.registerCommand("ext.mc.openInBrowser", (selection) => openInBrowserCmd(selection)),
+        vscode.commands.registerCommand("ext.mc.requestBuild",  (selection) => requestBuildCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.disable",   (args) => toggleEnablementCmd(args, false)),
-        vscode.commands.registerCommand("ext.mc.enable",    (args) => toggleEnablementCmd(args, true))
+        vscode.commands.registerCommand("ext.mc.openBuildLog",  (selection) => openBuildLogCmd(selection)),
+        vscode.commands.registerCommand("ext.mc.openAppLog",    (selection) => openAppLogCmd(selection)),
+
+        vscode.commands.registerCommand("ext.mc.disable",   (selection) => toggleEnablementCmd(selection, false)),
+        vscode.commands.registerCommand("ext.mc.enable",    (selection) => toggleEnablementCmd(selection, true))
     ];
 }
 

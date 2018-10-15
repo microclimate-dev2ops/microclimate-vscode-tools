@@ -3,8 +3,8 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 
-export default async function openWorkspaceFolderCmd(resource: Project | Connection) {
-    console.log("Go to folder command invoked on " + resource);
+export default async function openWorkspaceFolderCmd(resource: Project | Connection, isFromDoubleClick: Boolean) {
+    console.log(`Go to folder command invoked on ${resource} isFromDoubleClick=${isFromDoubleClick}`);
     let uri;
     if (resource instanceof Project) {
         uri = resource.localPath;

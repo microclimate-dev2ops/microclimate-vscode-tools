@@ -6,6 +6,7 @@ import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
+import { CMD_OPEN_FOLDER } from "../../command/NewConnectionCmd";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json
@@ -83,9 +84,9 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         ti.iconPath = this.type.icon;
         // command run on double-click
         ti.command = {
-            command: "ext.mc.goToFolder",
+            command: CMD_OPEN_FOLDER,
             title: "",
-            arguments: [this]
+            arguments: [this, true]
         };
         // console.log(`Created TreeItem`, ti);
         return ti;

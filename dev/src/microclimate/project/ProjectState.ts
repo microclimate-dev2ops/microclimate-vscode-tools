@@ -56,10 +56,7 @@ export class ProjectState {
         const appState = this.appState.toString();
 
         let buildStateStr = "";
-        if (appState === ProjectState.AppStates.DISABLED) {
-            buildStateStr = "";
-        }
-        else {
+        if (this.isEnabled) {
             if (this.buildDetail != null && this.buildDetail.trim() !== "") {
                 // a detailed status is available
                 buildStateStr = ` [${this.buildState} - ${this.buildDetail}]`;
