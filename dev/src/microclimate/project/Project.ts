@@ -86,15 +86,24 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
     // description used by QuickPickItem
     public get description(): string {
-        return this.appBaseUrl.toString();
+        const appUrl = this.appBaseUrl;
+        if (appUrl != null) {
+            return appUrl.toString();
+        }
+        else {
+            return "[Not running]";
+        }
     }
 
-    public get appBaseUrl(): vscode.Uri {
-        // TODO decide how this should behave when the app is not started
-        return this.connection.mcUri.with({
-            authority: `${this.connection.host}:${this._appPort}`,
-            path: this.contextRoot
-        });
+    public get appBaseUrl(): vscode.Uri | undefined {
+        if (this._appPort != null) {
+            return this.connection.mcUri.with({
+                authority: `${this.connection.host}:${this._appPort}`,
+                path: this.contextRoot
+            });
+        }
+        // app is stopped, disabled, etc.
+        return undefined;
     }
 
     public get state(): ProjectState {

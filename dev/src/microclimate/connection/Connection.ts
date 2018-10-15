@@ -33,7 +33,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         public readonly host: string,
         public readonly workspacePath: vscode.Uri
     ) {
-        this.projectsApiUri = Endpoints.getEndpointPath(mcUri, Endpoints.PROJECTS);
+        this.projectsApiUri = Endpoints.getEndpointPath(this, Endpoints.PROJECTS);
         this.socket = new MCSocket(mcUri.toString(), this);
 
         // QuickPickItem
@@ -144,7 +144,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {
-        const uri = Endpoints.getEndpointPath(this.mcUri, Endpoints.RESTART_ACTION(project.id));
+        const uri = Endpoints.getEndpointPath(this, Endpoints.RESTART_ACTION(project.id));
         const options = {
             json: true,
             body: {
@@ -152,8 +152,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             }
         };
 
-        // TODO this will always appear to succeed because https://github.ibm.com/dev-ex/portal/issues/523
-        return request.post(uri.toString(), options)
+        request.post(uri.toString(), options)
             .then( (result) => {
                 console.log("Response from restart request:", result);
                 vscode.window.showInformationMessage(`Restarting ${project.name} into ${options.body.startMode} mode`);
@@ -171,7 +170,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public async requestBuild(project: Project): Promise<void> {
-        const uri = Endpoints.getEndpointPath(this.mcUri, Endpoints.BUILD_ACTION(project.id));
+        const uri = Endpoints.getEndpointPath(this, Endpoints.BUILD_ACTION(project.id));
         const options = {
             json: true,
             body: {
@@ -179,7 +178,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             }
         };
 
-        return request.post(uri.toString(), options)
+        request.post(uri.toString(), options)
             .then( (result) => {
                 console.log(`Response from build request for ${project.name}:`, result);
                 vscode.window.showInformationMessage(`Build requested for ${project.name}`);
@@ -187,6 +186,24 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             .catch( (err) => {
                 console.log(`Error POSTing build request`, err);
                 vscode.window.showErrorMessage(`Build request failed: ${err}`);
+            });
+    }
+
+    public async toggleEnablement(project: Project): Promise<void> {
+        const newEnablement: Boolean = !project.state.isEnabled;
+        const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
+
+        const uri = Endpoints.getEndpointPath(this, Endpoints.ENABLEMENT_ACTION(project.id, newEnablement));
+        console.log("Enablement uri is ", uri.toString());
+
+        request.put(uri.toString(), { json: true })
+            .then( (result) => {
+                console.log(`Response from enablement request for ${project.name}:`, result);
+                vscode.window.showInformationMessage(`Requested to ${newEnablementStr.toLowerCase()} ${project.name}`);
+            })
+            .catch( (err) => {
+                console.error(`Error POSTing enablement request`, err);
+                vscode.window.showErrorMessage(`${newEnablementStr} request failed: ${err}`);
             });
     }
 }

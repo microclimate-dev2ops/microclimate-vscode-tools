@@ -4,4 +4,6 @@ Important:
 
 Less Important:
 - Toggle Enablement command (implemented as two separate commands which resolve to one command handler, like restart)
+    - Done, but funky if you do quick requests on one project - maybe track 'in progress' requests
+- Refactor command resource-getting code out of project/connection commands
 - WebView for opening app, Overview page

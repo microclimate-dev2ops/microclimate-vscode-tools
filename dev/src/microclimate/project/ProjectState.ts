@@ -96,6 +96,18 @@ export namespace ProjectState {
         UNKNOWN = "Unknown"
     }
 
+    export function getEnabledStates() {
+        // All states except Disabled.
+        return [
+            AppStates.STARTED,
+            AppStates.STARTING,
+            AppStates.STOPPING,
+            AppStates.STOPPED,
+            AppStates.DEBUGGING,
+            AppStates.UNKNOWN
+        ];
+    }
+
     /**
      * Convert portal's project info object into a ProjectState.
      */

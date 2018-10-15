@@ -12,6 +12,7 @@ import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import { ProjectState } from "../microclimate/project/ProjectState";
+import toggleEnablementCmd from "./ToggleEnablementCmd";
 
 export function createCommands() {
 
@@ -26,8 +27,10 @@ export function createCommands() {
         vscode.commands.registerCommand("ext.mc.requestBuild", (args) => requestBuildCmd(args)),
 
         vscode.commands.registerCommand("ext.mc.openBuildLog", (args) => openBuildLogCmd(args)),
-        vscode.commands.registerCommand("ext.mc.openAppLog", (args) => openAppLogCmd(args))
+        vscode.commands.registerCommand("ext.mc.openAppLog", (args) => openAppLogCmd(args)),
 
+        vscode.commands.registerCommand("ext.mc.disable",   (args) => toggleEnablementCmd(args, false)),
+        vscode.commands.registerCommand("ext.mc.enable",    (args) => toggleEnablementCmd(args, true))
     ];
 }
 
