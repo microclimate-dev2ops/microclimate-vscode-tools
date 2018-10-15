@@ -62,15 +62,15 @@ export class ProjectState {
         else {
             if (this.buildDetail != null && this.buildDetail.trim() !== "") {
                 // a detailed status is available
-                buildStateStr = `[${this.buildState} - ${this.buildDetail}]`;
+                buildStateStr = ` [${this.buildState} - ${this.buildDetail}]`;
             }
             // Don't display the build state if it's unknown (or could add a case above for disabled projs)
             else if (this.buildState !== ProjectState.BuildStates.UNKNOWN) {
-                buildStateStr = `[${this.buildState}]`;
+                buildStateStr = ` [${this.buildState}]`;
             }
         }
 
-        return `[${appState}] ${buildStateStr}`;
+        return `[${appState}]${buildStateStr}`;
     }
 }
 
@@ -81,6 +81,8 @@ export namespace ProjectState {
         STARTING = "Starting",
         STOPPING = "Stopping",
         STOPPED = "Stopped",
+
+        // Starting/Debug should be different from regular Starting.
         DEBUGGING = "Debugging",
 
         DISABLED = "Disabled",

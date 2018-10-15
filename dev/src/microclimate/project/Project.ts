@@ -68,6 +68,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     public getChildren(): TreeItemAdaptable[] {
+        // Projects have no children.
         return [];
     }
 
@@ -80,6 +81,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         // If you want to target both, use "viewItem ~= /^Project.CONTEXT_ID*$/"
         ti.contextValue = this.state.isEnabled ? Project.ENABLED_CONTEXT_ID : Project.DISABLED_CONTEXT_ID;
         ti.iconPath = this.type.icon;
+        // command run on double-click
+        ti.command = {
+            command: "ext.mc.goToFolder",
+            title: "",
+            arguments: [this]
+        };
         // console.log(`Created TreeItem`, ti);
         return ti;
     }
@@ -125,12 +132,10 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
 
         const oldState = this._state;
-        // console.log(`${this.name} is having its status updated from ${oldStatus}`);
         this._state = new ProjectState(projectInfo, oldState);
 
-        if (this._state === oldState) {
-            // console.log("Status did not change");
-            return;
+        if (this._state !== oldState) {
+            console.log(`${this.name} went from ${oldState} to ${this._state}`);
         }
 
         const ports = projectInfo.ports;
@@ -166,11 +171,16 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return "Already " + state;
         }
 
+        // Clear the old pendingState
+        if (this.resolvePendingState != null) {
+            console.log("Cancelling waiting for state ", this.pendingState);
+            this.resolvePendingState();
+        }
         this.pendingState = state;
+
         console.log(this.name + " is waiting for state",  state);
 
         const pendingStatePromise = new Promise<string>( (resolve, reject) => {
-            // TODO try shortening this timeout and see if the error handling works.
             setTimeout(
                 () => reject(`${this.name} did not reach ${state} state within ${timeoutMs/1000}s`),
                 timeoutMs);
@@ -192,7 +202,13 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return this._debugPort;
     }
 
-    private setAppPort(newAppPort: number): void {
+    private setAppPort(newAppPort: number | undefined): void {
+        if (newAppPort == null) {
+            console.log("Unset app port for " + this.name);
+            this._appPort = undefined;
+            return;
+        }
+
         newAppPort = Number(newAppPort);
         if (!MCUtil.isGoodPort(newAppPort)) {
             console.log(`Invalid app port ${newAppPort} given to project ${this.name}`);
@@ -204,7 +220,13 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
     }
 
-    private setDebugPort(newDebugPort: number): void {
+    private setDebugPort(newDebugPort: number | undefined): void {
+        if (newDebugPort == null) {
+            console.log("Unset debug port for " + this.name);
+            this._debugPort = undefined;
+            return;
+        }
+
         newDebugPort = Number(newDebugPort);
         if (!MCUtil.isGoodPort(newDebugPort)) {
             console.log(`Invalid debug port ${newDebugPort} given to project ${this.name}`);

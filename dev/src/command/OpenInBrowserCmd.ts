@@ -17,7 +17,7 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
         resource = selected;
     }
 
-    let uriToOpen;
+    let uriToOpen: vscode.Uri;
     // This will open the project or Microclimate in the external web browser.
     // We can look into giving the option to open it inside the IDE using a WebView,
     // but this will be considerably more work and less performant.
@@ -27,10 +27,19 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
             vscode.window.showErrorMessage("You can only open projects that are Started");
             return;
         }
+        else if (project.appBaseUrl == null) {
+            console.error("Project is started but has no appBaseUrl: " + project.name);
+            vscode.window.showErrorMessage("Could not determine application URL for " + project.name);
+            return;
+        }
         uriToOpen = project.appBaseUrl;
     }
     else if (resource instanceof Connection) {
         const conn: Connection = resource as Connection;
+        if (!conn.isConnected) {
+            vscode.window.showErrorMessage("This connection is Disconnected. You can't connect to Microclimate if it isn't running.");
+            return;
+        }
         uriToOpen = conn.mcUri;
     }
     else {
@@ -39,6 +48,23 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
         return;
     }
 
+    console.log("Open in browser: " + uriToOpen);
     // vscode.window.showInformationMessage("Opening " + uriToOpen);
-    vscode.commands.executeCommand("vscode.open", uriToOpen);
+    // vscode.commands.executeCommand("vscode.open", uriToOpen);
+
+    const html = `<iframe id="inlineFrameExample"
+    title="Inline Frame Example"
+    width="300"
+    height="200"
+    src="${uriToOpen.toString()}">
+    </iframe>`;
+
+    const col = vscode.ViewColumn.Active;   // vscode.ViewColumn.Beside;
+    const wvOptions: vscode.WebviewOptions & vscode.WebviewPanelOptions = {
+        enableScripts: true,
+        enableFindWidget: true,
+        // retainContextWhenHidden: true            // false by default, high performance cost.
+    };
+    const wvPanel = vscode.window.createWebviewPanel(resource.label, resource.label, col, wvOptions);
+    wvPanel.webview.html = html;
 }

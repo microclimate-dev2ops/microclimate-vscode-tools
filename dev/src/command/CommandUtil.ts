@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import newConnectionCmd from "./NewConnectionCmd";
-import goToFolder from "./GoToFolderCmd";
+import openWorkspaceFolderCmd from "./GoToFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
 import openInBrowserCmd from "./OpenInBrowserCmd";
 import requestBuildCmd from "./RequestBuildCmd";
@@ -18,7 +18,7 @@ export function createCommands() {
 
     return [
         vscode.commands.registerCommand("ext.mc.newConnection", () => newConnectionCmd()),
-        vscode.commands.registerCommand("ext.mc.goToFolder", (args) => goToFolder(args)),
+        vscode.commands.registerCommand("ext.mc.goToFolder", (args) => openWorkspaceFolderCmd(args)),
 
         vscode.commands.registerCommand("ext.mc.restartProjectRun", (args) => restartProjectCmd(args, false)),
         vscode.commands.registerCommand("ext.mc.restartProjectDebug", (args) => restartProjectCmd(args, true)),
@@ -65,8 +65,8 @@ async function promptForResourceInner(includeConnections: Boolean, ...acceptable
 
     const connections = ConnectionManager.instance.connections;
     if (includeConnections) {
-        // Convert each Connection into a QuickPickItem
-        choices.push(...connections);
+        // Convert each Connected Connection into a QuickPickItem
+        choices.push(... (connections.filter( (conn) => conn.isConnected)));
     }
 
     // for now, assume if they want Started, they also accept Debugging. This may change.

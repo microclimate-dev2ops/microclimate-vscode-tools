@@ -3,8 +3,8 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 
-export default async function goToFolder(resource: Project | Connection) {
-    console.log("Go to folder command invoked");
+export default async function openWorkspaceFolderCmd(resource: Project | Connection) {
+    console.log("Go to folder command invoked on " + resource);
     let uri;
     if (resource instanceof Project) {
         uri = resource.localPath;
@@ -14,7 +14,9 @@ export default async function goToFolder(resource: Project | Connection) {
     }
 
     if (!uri) {
-        console.error("Error getting uri from object", resource);
+        const msg = "Error getting uri from object: " + resource;
+        console.error(msg);
+        vscode.window.showErrorMessage(msg);
         return;
     }
     console.log("Going to folder " + uri);

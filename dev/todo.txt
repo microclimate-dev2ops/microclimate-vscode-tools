@@ -1,9 +1,11 @@
 Important:
 - Allow removing a Microclimate Connection
-- Stop context menu from showing up when the view (not a TreeItem) is right-clicked
 
 Less Important:
-- Toggle Enablement command (implemented as two separate commands which resolve to one command handler, like restart)
-    - Done, but funky if you do quick requests on one project - maybe track 'in progress' requests
+- Running tree-context commands quickly sometimes results in command being run with a null argument
+    - Suspect because the tree item that was originally right-clicked gets disposed in the meantime, due to a state change etc.
 - Refactor command resource-getting code out of project/connection commands
+
 - WebView for opening app, Overview page
+    - Have to write custom code to get <link>s -> and basically everything else a browser does!
+    - Consider embedding within iframe, which seems to work well.

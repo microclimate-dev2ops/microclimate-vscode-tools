@@ -18,7 +18,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     // Has this connection ever been able to contact its Microclimate instance
     // private hasConnected = false;
     // Is this connection CURRENTLY connected to its Microclimate instance
-    private isConnected = false;
+    private connected: Boolean = false;
 
     private projects: Project[] = [];
     private needProjectUpdate: Boolean = true;
@@ -53,6 +53,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         ConnectionManager.instance.onChange(this);
     }
 
+    public get isConnected() {
+        return this.connected;
+    }
+
     onConnect = async (): Promise<void> => {
         console.log(`${this} onConnect`);
         /*
@@ -60,11 +64,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             console.log(`${this} formed initial connection`);
             this.hasConnected = true;
         }*/
-        /*else */ if (this.isConnected) {
+        /*else */ if (this.connected) {
             // we already know we're connected, nothing to do until we disconnect
             return;
         }
-        this.isConnected = true;
+        this.connected = true;
         console.log(`${this} is now connected`);
 
         this.onChange();
@@ -72,11 +76,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
     onDisconnect = async (): Promise<void> => {
         console.log(`${this} onDisconnect`);
-        if (!this.isConnected) {
+        if (!this.connected) {
             // we already know we're disconnected, nothing to do until we reconnect
             return;
         }
-        this.isConnected = false;
+        this.connected = false;
         console.log(`${this} is now disconnected`);
 
         this.onChange();
@@ -111,8 +115,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return result;
     }
 
-    async getChildren(): Promise<TreeItemAdaptable[]> {
-        if (!this.isConnected) {
+    public async getChildren(): Promise<TreeItemAdaptable[]> {
+        if (!this.connected) {
             return [];
         }
 
@@ -124,9 +128,9 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return this.projects;
     }
 
-    toTreeItem(): vscode.TreeItem {
+    public toTreeItem(): vscode.TreeItem {
         let tiLabel = `Microclimate @ ${this.mcUri.toString()}`;
-        if (!this.isConnected) {
+        if (!this.connected) {
             tiLabel += " [Disconnected]";
         }
         const ti: vscode.TreeItem = new vscode.TreeItem(tiLabel, vscode.TreeItemCollapsibleState.Expanded);
@@ -134,6 +138,12 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
         ti.iconPath = MCUtil.getIconObj("connection.svg");
+        // command run on double-click
+        ti.command = {
+            command: "ext.mc.goToFolder",
+            title: "",
+            arguments: [this]
+        };
         return ti;
     }
 
