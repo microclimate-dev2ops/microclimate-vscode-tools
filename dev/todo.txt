@@ -1,5 +1,9 @@
 Important:
-- Allow removing a Microclimate Connection
+- Allow removing a Microclimate Connection (is this important, though, for local only?!)
+- Node debug!!
+
+- externalize command names into package.nls.json (for ID)
+- externalize all strings (ugh)
 
 Less Important:
 - Running tree-context commands quickly sometimes results in command being run with a null argument
@@ -8,4 +12,9 @@ Less Important:
 
 - WebView for opening app, Overview page
     - Have to write custom code to get <link>s -> and basically everything else a browser does!
+    Alternatively:
     - IFrame seems to work well - But what are the implications of this for more complex frontends?
+        - For Overview, works but requires gross cropping which would have to be updated if there are any css changes
+
+Investigate:
+    - Why do projects/connections sometimes get Emphasized? Cannot find any doc on this

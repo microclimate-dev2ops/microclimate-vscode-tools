@@ -7,7 +7,6 @@ import Project from "../project/Project";
 import Endpoints from "../../constants/EndpointConstants";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
-import { CMD_OPEN_FOLDER } from "../../command/NewConnectionCmd";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -142,9 +141,9 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
         /*
         ti.command = {
-            command: CMD_OPEN_FOLDER,
+            command: Project.ONCLICK_CMD_ID,
             title: "",
-            arguments: [this, true]
+            arguments: [ti.resourceUri]
         };*/
         return ti;
     }

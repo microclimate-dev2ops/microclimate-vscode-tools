@@ -5,7 +5,6 @@ import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
-import { CMD_OPEN_FOLDER } from "../../command/NewConnectionCmd";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json
@@ -28,8 +27,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
     private _state: ProjectState = new ProjectState(undefined);
 
-    private pendingState: ProjectState.AppStates | undefined;
-    private resolvePendingState: Function | undefined;
+    private pendingAppState: ProjectState.AppStates | undefined;
+    private resolvePendingAppState: Function | undefined;
 
     constructor (
         projectInfo: any,
@@ -81,12 +80,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         ti.contextValue = this.state.isEnabled ? Project.ENABLED_CONTEXT_ID : Project.DISABLED_CONTEXT_ID;
         ti.iconPath = this.type.icon;
         // command run on single-click
-        /*
+        // Focuses on this project in the explorer view. Has no effect if the project is not in the current workspace.
         ti.command = {
-            command: CMD_OPEN_FOLDER,
+            command: "revealInExplorer",
             title: "",
-            arguments: [this, true]
-        };*/
+            arguments: [this.localPath]
+        };
         // console.log(`Created TreeItem`, ti);
         return ti;
     }
@@ -151,17 +150,17 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
 
         // If we're waiting for a state, check if we've reached that state, and resolve the pending state promise if so.
-        if (this.pendingState != null && this._state.appState === this.pendingState) {
-            if (this.resolvePendingState != null) {
-                console.log("Reached pending state", this.pendingState);
-                this.resolvePendingState();
-                this.pendingState = undefined;
-                this.resolvePendingState = undefined;
+        if (this.pendingAppState != null && this._state.appState === this.pendingAppState) {
+            if (this.resolvePendingAppState != null) {
+                console.log("Reached pending state", this.pendingAppState);
+                this.resolvePendingAppState();
+                this.pendingAppState = undefined;
+                this.resolvePendingAppState = undefined;
             }
             else {
                 // should never happen
                 console.error("PendingState was set but no resolve function was");
-                this.pendingState = undefined;
+                this.pendingAppState = undefined;
             }
         }
 
@@ -178,11 +177,11 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
 
         // Clear the old pendingState
-        if (this.resolvePendingState != null) {
-            console.log("Cancelling waiting for state ", this.pendingState);
-            this.resolvePendingState();
+        if (this.resolvePendingAppState != null) {
+            console.log("Cancelling waiting for state ", this.pendingAppState);
+            this.resolvePendingAppState();
         }
-        this.pendingState = state;
+        this.pendingAppState = state;
 
         console.log(this.name + " is waiting for state",  state);
 
@@ -191,7 +190,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
                 () => reject(`${this.name} did not reach state "${state}" within ${timeoutMs/1000}s`),
                 timeoutMs);
 
-            this.resolvePendingState = resolve;
+            this.resolvePendingAppState = resolve;
             return;
         });
 
