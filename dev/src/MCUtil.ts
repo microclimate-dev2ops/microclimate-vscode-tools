@@ -29,7 +29,7 @@ export function getIconObj(iconName: string, lightOnly: Boolean = false): IconPa
     }
 
     // Log if the file is missing or can't be read
-    const onIconError = (err: any) => {
+    const onIconError = (err: NodeJS.ErrnoException): void => {
         if (err) {
             console.error("Icon error: " + err);
         }
@@ -96,6 +96,9 @@ export function isGoodPort(port: number | undefined): Boolean {
     return port != null && !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
 }
 
+/**
+ * @return "debug" or "run", the supported startModes.
+ */
 export function getStartMode(debug: Boolean): string {
     return debug ? "debug" : "run";
 }

@@ -1,44 +1,51 @@
 
-import { TreeItem, TreeDataProvider, Event, EventEmitter, TreeItemCollapsibleState } from "vscode";
+import * as vscode from "vscode";
 
 import  TreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../../microclimate/connection/ConnectionManager";
 import { getIconObj } from "../../MCUtil";
 
-export default class ProjectTreeDataProvider implements TreeDataProvider<TreeItemAdaptable> {
+export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<TreeItemAdaptable> {
 
-    public readonly treeDataProvider: TreeDataProvider<{}> = this;
+    public readonly treeDataProvider: vscode.TreeDataProvider<{}> = this;
     public readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";        // must match package.json
 
-    private onChangeEmitter: EventEmitter<TreeItemAdaptable> = new EventEmitter<TreeItemAdaptable>();
-    readonly onDidChangeTreeData: Event<TreeItemAdaptable> = this.onChangeEmitter.event;
-
-    // private readonly root: TreeItemAdaptable;
+    private onChangeEmitter: vscode.EventEmitter<TreeItemAdaptable> = new vscode.EventEmitter<TreeItemAdaptable>();
+    readonly onDidChangeTreeData: vscode.Event<TreeItemAdaptable> = this.onChangeEmitter.event;
 
     constructor() {
         ConnectionManager.instance.addOnChangeListener(this.refresh);
-        // this.root = new SimpleTreeItem("Microclimate", TreeItemCollapsibleState.Expanded, ConnectionManager.instance.connections);
     }
 
-    // "instance arrow function" here ensures proper 'this' binding when used as a callback
-    // "https://github.com/Microsoft/TypeScript/wiki/'this'-in-TypeScript"
+    /**
+     * Notifies VSCode that this tree has to be refreshed.
+     * Used as a call-back for ConnectionManager OnChange.
+     */
     public refresh = (): void => {
         // console.log("Refresh tree");
         this.onChangeEmitter.fire();
     }
 
-    getTreeItem(node: TreeItemAdaptable): TreeItem | Promise<TreeItem> {
+    /**
+     * TreeDataProvider method to convert our custom TreeItemAdaptable class to a vscode.TreeItem
+     */
+    public getTreeItem(node: TreeItemAdaptable): vscode.TreeItem | Promise<vscode.TreeItem> {
         return node.toTreeItem();
     }
 
-    getChildren(node?: TreeItemAdaptable): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]> {
+    /**
+     * TreeDataProvider method to get children for a given TreeItemAdaptable node, or provide the tree's root node.
+     */
+    public getChildren(node?: TreeItemAdaptable): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]> {
         if (!node) {
             const connections = ConnectionManager.instance.connections;
             if (connections.length > 0) {
+                // The top-level nodes of this tree are our Connections, and their children are their Projects
                 return connections;
             }
             else {
-                const noConnectionsRoot = new SimpleTreeItem("No Microclimate connections", TreeItemCollapsibleState.None);
+                // Provide a root node if no Connections have been created
+                const noConnectionsRoot = new SimpleTreeItem("No Microclimate connections", vscode.TreeItemCollapsibleState.None);
                 noConnectionsRoot.treeItem.iconPath = getIconObj("connection.svg");
                 noConnectionsRoot.treeItem.tooltip = "Click the New Microclimate connection button above";
                 return [ noConnectionsRoot ];

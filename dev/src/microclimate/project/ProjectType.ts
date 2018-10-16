@@ -22,7 +22,11 @@ export class ProjectType {
         return this.userFriendlyType;
     }
 
-    private static getType(projectType: string) {
+    /**
+     *
+     * @param projectType A Microclimate internal project type.
+     */
+    private static getType(projectType: string): ProjectType.Types {
         if (projectType === "liberty") {
             return ProjectType.Types.MICROPROFILE;
         }
@@ -63,7 +67,7 @@ export class ProjectType {
         return getIconObj(language + ".png");
     }
 
-    private static getUserFriendlyType(type: ProjectType.Types, language: string) {
+    private static getUserFriendlyType(type: ProjectType.Types, language: string): string {
         // For docker projects, return the language, eg "Python"
         if (type === ProjectType.Types.DOCKER && language != null) {
             return uppercaseFirstChar(language);
@@ -76,6 +80,7 @@ export class ProjectType {
 export namespace ProjectType {
 
     export enum Types {
+        // String value must be user-friendly!
         MICROPROFILE = "Microprofile",
         SPRING = "Spring",
         NODE = "Node.js",

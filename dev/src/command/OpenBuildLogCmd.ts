@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
+import { ProjectType } from "../microclimate/project/ProjectType";
 
 export default async function openBuildLogCmd(project: Project): Promise<void> {
     console.log("OpenBuildLogCmd invoked");
@@ -15,8 +16,12 @@ export default async function openBuildLogCmd(project: Project): Promise<void> {
         project = selected;
     }
 
-    if (!project.state.isEnabled) {
-        vscode.window.showErrorMessage("Build logs are not available for Disabled projects.");
+    if (project.type.type === ProjectType.Types.NODE) {
+        vscode.window.showWarningMessage(`${project.type.userFriendlyType} projects do not have build logs.`);
+        return;
+    }
+    else if (!project.state.isEnabled) {
+        vscode.window.showWarningMessage("Build logs are not available for Disabled projects.");
         return;
     }
     else if (!project.buildLogPath) {

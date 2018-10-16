@@ -10,7 +10,7 @@ import * as MCUtil from "../../MCUtil";
 
 export default class MCSocket {
 
-    private static readonly STATUS_SUCCESS = "success";
+    private static readonly STATUS_SUCCESS: string = "success";
 
     private readonly socket: SocketIOClient.Socket;
 
@@ -43,6 +43,7 @@ export default class MCSocket {
 
     private onProjectStatusChanged = async (payload: any): Promise<void> => {
         // console.log("onProjectStatusChanged", payload);
+        // I don't see any reason why these should be handled differently
         this.onProjectChanged(payload);
     }
 
@@ -98,13 +99,15 @@ export default class MCSocket {
         if (MCSocket.STATUS_SUCCESS !== payload.status) {
             console.error(`Restart failed on project ${projectID}, response is`, payload);
             if (payload.error != null) {
-                // TODO decide if these messages are user-friendly enough
                 vscode.window.showErrorMessage(payload.error.msg);
             }
             return;
         }
         else if (payload.ports == null) {
-            console.error("No ports were provided by supposedly successful restart event", payload);
+            // Should never happen
+            const msg = "Successful restart did not send any ports";
+            vscode.window.showErrorMessage(msg);
+            console.error(msg + ", payload:", payload);
             return;
         }
 
@@ -118,6 +121,8 @@ export default class MCSocket {
         if (startMode !== MCUtil.getStartMode(true) && startMode !== MCUtil.getStartMode(false)) {
             console.error(`Invalid start mode "${startMode}"`);
         }
+        // This updates the ports and startMode.
+        // The app state will not change because the projectRestartResult does not provide an appState.
         project.update(payload);
 
         const isDebug = startMode === MCUtil.getStartMode(true);

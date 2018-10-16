@@ -18,13 +18,6 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
         project = selected;
     }
 
-    /*
-    // TODO remove this - Portal should do it
-    if (!project.state.isStarted) {
-        vscode.window.showErrorMessage("You can only restart projects that are already Started");
-        return;
-    }*/
-
     AppLog.getOrCreateLog(project.id, project.name).unsetDebugConsole();
     console.log(`RestartProject on project ${project.name} into ${getStartMode(debug)} mode`);
 
@@ -32,6 +25,7 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
     vscode.window.setStatusBarMessage(`${getOcticon("sync", true)} Initiating restarting ${project.name}`, restartRequestPromise);
     // After the above async REST request, we don't do anything further for this command until
     // the Socket receives a projectRestartResult event, which will then call the methods below.
+    // see MCSocket.onProjectRestarted
 }
 
 
@@ -51,7 +45,7 @@ export async function startDebugSession(project: Project): Promise<string> {
         throw new Error(`No debug port set for project ${project.name}`);
     }
 
-    // Wait for the server to be Starting before we try to connect the debugger, or it may connect before the server is ready
+    // Wait for the server to be Starting before we try to connect the debugger, or it may try to connect before the server is ready
 
     try {
         await project.waitForState(ProjectState.AppStates.STARTING, 30000);
@@ -80,8 +74,11 @@ export async function startDebugSession(project: Project): Promise<string> {
     }
 }
 
+
+// keys for launch.json
 const LAUNCH = "launch";
 const CONFIGURATIONS = "configurations";
+
 /**
  * Generates and saves the launch config for attaching the debugger to this server.
  *
@@ -107,8 +104,13 @@ async function getDebugConfig(project: Project): Promise<vscode.DebugConfigurati
         }
     }
 
+    // already did this in startDebugSession, but this will make the compiler happy.
+    if (project.type.debugType == null) {
+        throw new Error(`No debug type available for project of type ${project.type}`);
+    }
+
     const debugConfig: vscode.DebugConfiguration = {
-        type: project.type.debugType || "",
+        type: project.type.debugType,
         name: debugName,
         request: "attach",
         hostName: project.connection.host,

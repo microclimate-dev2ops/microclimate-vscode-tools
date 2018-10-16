@@ -1,11 +1,17 @@
 import * as vscode from "vscode";
 
+/**
+ * Interface to allow easily converting any object to a vscode TreeItem.
+ */
 export default interface TreeItemAdaptable {
 
     toTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem>;
     getChildren(): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]>;
 }
 
+/**
+ * Wrapper for TreeItem so that we can create standalone TreeItemAdaptables.
+ */
 export class SimpleTreeItem implements TreeItemAdaptable {
 
     public readonly treeItem: vscode.TreeItem;

@@ -29,7 +29,13 @@
 		"switch-default": true,
 		"strict-boolean-expressions": true,
 		"new-parens": true,
-		"no-boolean-literal-compare": true
+		"no-boolean-literal-compare": true,
+		"typedef": [ true,
+			"call-signature", "parameter",
+			// "arrow-call-signature", // "arrow-parameter",
+			"member-variable-declaration", "property-declaration",
+			"object-destructuring", "array-destructuring"
+		]
 	},
 	"defaultSeverity": "warning"
 }

@@ -63,8 +63,9 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         if (!this.hasConnected) {
             console.log(`${this} formed initial connection`);
             this.hasConnected = true;
-        }*/
-        /*else */ if (this.connected) {
+        }
+        else */
+        if (this.connected) {
             // we already know we're connected, nothing to do until we disconnect
             return;
         }

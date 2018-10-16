@@ -29,8 +29,8 @@ export default class ConnectionManager {
         return Uri.parse(`http://${host}:${port}`);
     }
 
-    public async addConnection(uri: Uri, host:string, workspace: Uri): Promise<void> {
-        return new Promise<void>( (resolve, reject) => {
+    public async addConnection(uri: Uri, host:string, workspace: Uri): Promise<string> {
+        return new Promise<string>( (resolve, reject) => {
             if (this.connectionExists(uri)) {
                 return reject("Connection already exists at " + uri);
             }
@@ -42,7 +42,7 @@ export default class ConnectionManager {
             this._connections.push(connection);
 
             this.onChange(connection);
-            return resolve();
+            return resolve(`New connection to ${uri} succeeded.\nWorkspace path is: ${workspace}`);
         });
     }
 

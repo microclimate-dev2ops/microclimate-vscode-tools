@@ -1,12 +1,12 @@
-import { window } from "vscode";
+import * as vscode from "vscode";
 
 import ProjectTreeDataProvider from "./projectExplorer/ProjectTree";
 
-export default function createViews() {
+export default function createViews(): vscode.Disposable[] {
     const treeDataProvider: ProjectTreeDataProvider = new ProjectTreeDataProvider();
 
     return [
-        window.createTreeView(treeDataProvider.VIEW_ID, treeDataProvider),
-        window.registerTreeDataProvider(treeDataProvider.VIEW_ID, treeDataProvider)
+        vscode.window.createTreeView(treeDataProvider.VIEW_ID, treeDataProvider),
+        vscode.window.registerTreeDataProvider(treeDataProvider.VIEW_ID, treeDataProvider)
     ];
 }

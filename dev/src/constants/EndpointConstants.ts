@@ -6,9 +6,11 @@ import Connection from "../microclimate/connection/Connection";
  */
 export default class Endpoints {
 
-    public static getEndpointPath(connection: Connection, endpoint: string) {
+    public static getEndpointPath(connection: Connection, endpoint: string): Uri {
         return Uri.parse(connection.mcUri.toString().concat(endpoint));
     }
+
+    public static readonly ENVIRONMENT: string = "api/v1/environment";
 
     public static readonly PROJECTS: string = "api/v1/projects";
 
