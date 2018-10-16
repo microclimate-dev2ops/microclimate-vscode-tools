@@ -50,21 +50,5 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
 
     console.log("Open in browser: " + uriToOpen);
     // vscode.window.showInformationMessage("Opening " + uriToOpen);
-    // vscode.commands.executeCommand("vscode.open", uriToOpen);
-
-    const html = `<iframe id="inlineFrameExample"
-    title="Inline Frame Example"
-    width="300"
-    height="200"
-    src="${uriToOpen.toString()}">
-    </iframe>`;
-
-    const col = vscode.ViewColumn.Active;   // vscode.ViewColumn.Beside;
-    const wvOptions: vscode.WebviewOptions & vscode.WebviewPanelOptions = {
-        enableScripts: true,
-        enableFindWidget: true,
-        // retainContextWhenHidden: true            // false by default, high performance cost.
-    };
-    const wvPanel = vscode.window.createWebviewPanel(resource.label, resource.label, col, wvOptions);
-    wvPanel.webview.html = html;
+    vscode.commands.executeCommand("vscode.open", uriToOpen);
 }
