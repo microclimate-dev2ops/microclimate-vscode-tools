@@ -8,4 +8,4 @@ Less Important:
 
 - WebView for opening app, Overview page
     - Have to write custom code to get <link>s -> and basically everything else a browser does!
-    - Consider embedding within iframe, which seems to work well.
+    - IFrame seems to work well - But what are the implications of this for more complex frontends?

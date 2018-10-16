@@ -133,7 +133,7 @@ export default class MCSocket {
             }
             catch (err) {
                 console.error("Debugger attach failure", err);
-                vscode.window.showErrorMessage(err);
+                vscode.window.showErrorMessage("Failed to attach debugger: " + err);
                 return;
             }
         }

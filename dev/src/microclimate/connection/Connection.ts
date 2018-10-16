@@ -139,12 +139,13 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
         ti.iconPath = MCUtil.getIconObj("connection.svg");
-        // command run on double-click
+        // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
+        /*
         ti.command = {
             command: CMD_OPEN_FOLDER,
             title: "",
             arguments: [this, true]
-        };
+        };*/
         return ti;
     }
 

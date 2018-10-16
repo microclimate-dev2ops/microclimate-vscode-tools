@@ -92,6 +92,13 @@ export default class AppLog {
     }
 
     public unsetDebugConsole() {
+        if (this.debugConsole == null) {
+            // nothing to do
+            return;
+        }
+        // This command clears the debug console.
+        // This is done so that the user doesn't wonder why their console isn't getting new output.
+        vscode.commands.executeCommand("workbench.debug.panel.action.clearReplAction");
         this.debugConsole = undefined;
         this.hasNewDebugConsole = false;
     }

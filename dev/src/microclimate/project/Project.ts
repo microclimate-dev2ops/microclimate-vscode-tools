@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
 
 import * as MCUtil from "../../MCUtil";
 import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
@@ -79,15 +78,15 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         ti.resourceUri = this.localPath;
         ti.tooltip = this.state.toString();
         // There are different context menu actions available to enabled or disabled projects
-        // If you want to target both, use "viewItem ~= /^Project.CONTEXT_ID*$/"
         ti.contextValue = this.state.isEnabled ? Project.ENABLED_CONTEXT_ID : Project.DISABLED_CONTEXT_ID;
         ti.iconPath = this.type.icon;
-        // command run on double-click
+        // command run on single-click
+        /*
         ti.command = {
             command: CMD_OPEN_FOLDER,
             title: "",
             arguments: [this, true]
-        };
+        };*/
         // console.log(`Created TreeItem`, ti);
         return ti;
     }
@@ -135,14 +134,17 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         const oldState = this._state;
         this._state = new ProjectState(projectInfo, oldState);
 
+        // Whether or not this update call has changed the project such that we have to update the UI.
+        let changed: Boolean = false;
         if (this._state !== oldState) {
-            console.log(`${this.name} went from ${oldState} to ${this._state}`);
+            changed = true;
+            console.log(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
         }
 
         const ports = projectInfo.ports;
         if (ports != null && ports !== "") {
-            this.setAppPort(ports.exposedPort);
-            this.setDebugPort(ports.exposedDebugPort);
+            changed = this.setAppPort(ports.exposedPort) || changed;
+            changed = this.setDebugPort(ports.exposedDebugPort) || changed;
         }
         else if (this._state.isStarted) {
             console.error("No ports were provided for an app that is supposed to be started");
@@ -157,13 +159,16 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
                 this.resolvePendingState = undefined;
             }
             else {
+                // should never happen
                 console.error("PendingState was set but no resolve function was");
                 this.pendingState = undefined;
             }
         }
 
         // console.log(`${this.name} has a new status:`, this._state);
-        this.connection.onChange();
+        if (changed) {
+            this.connection.onChange();
+        }
     }
 
     public async waitForState(state: ProjectState.AppStates, timeoutMs: number = 60000): Promise<string> {
@@ -183,7 +188,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         const pendingStatePromise = new Promise<string>( (resolve, reject) => {
             setTimeout(
-                () => reject(`${this.name} did not reach ${state} state within ${timeoutMs/1000}s`),
+                () => reject(`${this.name} did not reach state "${state}" within ${timeoutMs/1000}s`),
                 timeoutMs);
 
             this.resolvePendingState = resolve;
@@ -203,39 +208,46 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return this._debugPort;
     }
 
-    private setAppPort(newAppPort: number | undefined): void {
-        if (newAppPort == null) {
+    /**
+     *
+     * @return If this project's app port was changed.
+     */
+    private setAppPort(newAppPort: number | undefined): Boolean {
+        if (newAppPort == null && this._appPort != null) {
+            // Should happen when the app stops.
             console.log("Unset app port for " + this.name);
             this._appPort = undefined;
-            return;
+            return true;
         }
 
         newAppPort = Number(newAppPort);
         if (!MCUtil.isGoodPort(newAppPort)) {
             console.log(`Invalid app port ${newAppPort} given to project ${this.name}`);
-            return;
+            return false;
         }
         else if (this._appPort !== newAppPort) {
             this._appPort = newAppPort;
             console.log(`New app port for ${this.name} is ${newAppPort}`);
+            return true;
         }
+        return false;
     }
 
-    private setDebugPort(newDebugPort: number | undefined): void {
-        if (newDebugPort == null) {
-            console.log("Unset debug port for " + this.name);
-            this._debugPort = undefined;
-            return;
-        }
-
+    /**
+     *
+     * @return If this project's debug port was changed.
+     */
+    private setDebugPort(newDebugPort: number | undefined): Boolean {
         newDebugPort = Number(newDebugPort);
         if (!MCUtil.isGoodPort(newDebugPort)) {
             console.log(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
-            return;
+            return false;
         }
         else if (this._debugPort !== newDebugPort) {
             this._debugPort = newDebugPort;
             console.log(`New debug port for ${this.name} is ${newDebugPort}`);
+            return true;
         }
+        return false;
     }
 }
