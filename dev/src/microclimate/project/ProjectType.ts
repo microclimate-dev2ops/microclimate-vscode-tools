@@ -1,5 +1,5 @@
 import { uppercaseFirstChar } from "../../MCUtil";
-import { IconPaths, Icon, getIconPaths } from "../../constants/Icons";
+import { IconPaths, Icons, getIconPaths } from "../../constants/Icons";
 
 export class ProjectType {
 
@@ -13,10 +13,10 @@ export class ProjectType {
         public readonly projectType: string,
         public readonly language: string,
     ) {
-        this.type = ProjectType.getType(projectType);
-        this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
+        this.type = ProjectType.getType(projectType, language);
+        this.userFriendlyType = ProjectType.getUserFriendlyType(this.type);
         this.debugType = ProjectType.getDebugType(this.type);
-        this.icon = ProjectType.getProjectIcon(this.type, language);
+        this.icon = ProjectType.getProjectIcon(this.type);
     }
 
     public toString(): string {
@@ -27,7 +27,7 @@ export class ProjectType {
      *
      * @param projectType A Microclimate internal project type.
      */
-    private static getType(projectType: string): ProjectType.Types {
+    private static getType(projectType: string, language: string): ProjectType.Types {
         if (projectType === "liberty") {
             return ProjectType.Types.MICROPROFILE;
         }
@@ -41,7 +41,15 @@ export class ProjectType {
             return ProjectType.Types.SWIFT;
         }
         else if (projectType === "docker") {
-            return ProjectType.Types.DOCKER;
+            if (language === "python") {
+                return ProjectType.Types.PYTHON;
+            }
+            else if (language === "go") {
+                return ProjectType.Types.GO;
+            }
+            else {
+                return ProjectType.Types.GENERIC_DOCKER;
+            }
         }
         else {
             console.error(`Unrecognized project - type ${projectType}`);
@@ -63,38 +71,36 @@ export class ProjectType {
         }
     }
 
-    private static getProjectIcon(type: ProjectType.Types, language: string): IconPaths {
+    private static getProjectIcon(type: ProjectType.Types): IconPaths {
         // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
         switch (type) {
             case ProjectType.Types.MICROPROFILE:
-                return getIconPaths(Icon.Microprofile);
+                return getIconPaths(Icons.Microprofile);
             case ProjectType.Types.SPRING:
-                return getIconPaths(Icon.Spring);
+                return getIconPaths(Icons.Spring);
             case ProjectType.Types.NODE:
-                return getIconPaths(Icon.Node);
+                return getIconPaths(Icons.Node);
             case ProjectType.Types.SWIFT:
-                return getIconPaths(Icon.Swift);
-            case ProjectType.Types.DOCKER:
-                if (language === "python") {
-                    return getIconPaths(Icon.Python);
-                }
-                else if (language === "go") {
-                    return getIconPaths(Icon.Go);
-                }
-                else {
-                    // This is our fall-back, we could possibly use a more generic icon.
-                    return getIconPaths(Icon.Docker);
-                }
+                return getIconPaths(Icons.Swift);
+            case ProjectType.Types.PYTHON:
+                return getIconPaths(Icons.Python);
+            case ProjectType.Types.GO:
+                return getIconPaths(Icons.Go);
+            case ProjectType.Types.GENERIC_DOCKER:
+                // This is our fall-back, we could possibly use a more generic icon.
+                return getIconPaths(Icons.Docker);
             default:
-                return getIconPaths(Icon.Generic);
+                return getIconPaths(Icons.Generic);
         }
     }
 
-    private static getUserFriendlyType(type: ProjectType.Types, language: string): string {
-        // For docker projects, return the language, eg "Python"
-        if (type === ProjectType.Types.DOCKER && language != null) {
+    private static getUserFriendlyType(type: ProjectType.Types): string {
+        // For docker projects, return the language
+        /*
+        if (type === ProjectType.Types.GENERIC_DOCKER && language != null) {
             return uppercaseFirstChar(language);
-        }
+        }*/
+
         // For all other types, the enum's string value is user-friendly
         return type.toString();
     }
@@ -108,7 +114,9 @@ export namespace ProjectType {
         SPRING = "Spring",
         NODE = "Node.js",
         SWIFT = "Swift",
-        DOCKER = "Docker",
+        PYTHON = "Python",
+        GO = "Go",
+        GENERIC_DOCKER = "Docker",
         UNKNOWN = "Unknown"
     }
 }

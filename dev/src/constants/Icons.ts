@@ -15,7 +15,7 @@ const darkFolderName = "dark";
  * If there is a matching one in the 'light' folder, that will be used for light themes.
  *
  */
-export function getIconPaths(icon: Icon): IconPaths {
+export function getIconPaths(icon: Icons): IconPaths {
     const darkPath = path.join(global.__extRoot, resFolderName, imgFolderName, darkFolderName, icon);
     // make sure the file exists and is readable
     fs.access(darkPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
@@ -47,7 +47,7 @@ export interface IconPaths {
     readonly dark: string;
 }
 
-export enum Icon {
+export enum Icons {
     Microclimate = "microclimate.svg",
     // project types
     Microprofile = "lang_java.svg",
@@ -61,7 +61,7 @@ export enum Icon {
 }
 
 // https://octicons.github.com/
-export enum Octicon {
+export enum Octicons {
     sync = "sync",
     bug = "bug"
 }
@@ -72,6 +72,6 @@ export enum Octicon {
  *
  * @param iconName - One of the octicons from https://octicons.github.com
  */
-export function getOcticon(iconName: Octicon, spinning: Boolean = false): string {
+export function getOcticon(iconName: Octicons, spinning: Boolean = false): string {
     return `$(${iconName}${spinning ? "~spin": ""})`;
 }

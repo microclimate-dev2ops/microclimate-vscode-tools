@@ -5,7 +5,7 @@ import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
-import { getOcticon, Octicon } from "../../constants/Icons";
+import { getOcticon, Octicons } from "../../constants/Icons";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     private static readonly CONTEXT_ID: string = "ext.mc.projectItem";             // must match package.json
@@ -80,7 +80,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         // There are different context menu actions available to enabled or disabled projects
         ti.contextValue = this.state.isEnabled ? Project.ENABLED_CONTEXT_ID : Project.DISABLED_CONTEXT_ID;
         ti.iconPath = this.type.icon;
-        // command run on single-click
+        // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
         // Focuses on this project in the explorer view. Has no effect if the project is not in the current workspace.
         ti.command = {
             command: "revealInExplorer",
@@ -195,7 +195,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return;
         });
 
-        vscode.window.setStatusBarMessage(`${getOcticon(Octicon.sync, true)} Waiting for ${this.name} to be ${state}`, pendingStatePromise);
+        vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Waiting for ${this.name} to be ${state}`, pendingStatePromise);
 
         return pendingStatePromise;
     }
