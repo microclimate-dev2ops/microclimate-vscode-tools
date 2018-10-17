@@ -54,8 +54,8 @@ export enum Icons {
     Spring       = "lang_java.svg",
     Node         = "lang_node.svg",
     Swift        = "lang_swift.svg",
-    Python       = "lang_generic.svg",
-    Go           = "lang_generic.svg",
+    Python       = "lang_python.svg",
+    Go           = "lang_go.svg",
     Docker       = "lang_generic.svg",
     Generic      = "lang_generic.svg"
 }
