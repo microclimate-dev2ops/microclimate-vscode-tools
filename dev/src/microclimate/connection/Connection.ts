@@ -32,6 +32,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     constructor (
         public readonly mcUri: vscode.Uri,
         public readonly host: string,
+        public readonly version: number,
         public readonly workspacePath: vscode.Uri
     ) {
         this.projectsApiUri = Endpoints.getEndpointPath(this, Endpoints.PROJECTS);
@@ -44,7 +45,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public toString(): string {
-        return this.mcUri.toString();
+        return `Microclimate @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`;
     }
 
     /**

@@ -111,30 +111,55 @@ async function testConnection(host: string, port: number): Promise<string> {
     });
 }
 
-async function onSuccessfulConnection(mcUri: vscode.Uri, host:string, microclimateData: any): Promise<string> {
+// microclimate_version and workspace_location were both added in Microclimate 18.09
+// Portal Restart API improvement was added in 18.11
+const requiredVersion: number = 1811;
+const requiredVersionStr: string = "18.11";
+
+/**
+ * We've determined by this point that Microclimate is running at the given URI,
+ * but we have to validate now that it's a new enough version.
+ */
+async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: any): Promise<string> {
 
     return new Promise<string>( (resolve, reject) => {
-        console.log("Microclimate ENV data:", microclimateData);
+        console.log("Microclimate ENV data:", mcEnvData);
 
-        if (microclimateData == null) {
+        if (mcEnvData == null) {
             return reject("Null microclimateData passed to onSuccessfulConnection");
         }
 
-        const version = microclimateData.microclimate_version;
-        if (version == null) {
-            return reject("Could not determine Microclimate version");
-        }
-        else if (version !== "latest" /* or version is not new enough */) {
-            return reject(`Microclimate version "${version}" is not supported`);
+        const rawVersion: string = mcEnvData.microclimate_version;
+        const rawWorkspace: string = mcEnvData.workspace_location;
+
+        if (rawVersion == null || rawWorkspace == null) {
+            console.error("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
+            return reject(`Your version of Microclimate is not supported. At least ${requiredVersionStr} is required.`);
         }
 
-        const workspace = microclimateData.workspace_location;
-        if (workspace == null) {
-            return reject("Workspace location was missing from environment data");
+        let versionNum: number;
+        if (rawVersion === "latest") {
+            // This means it's being hosted by an internal MC dev.
+            // There's nothing we can do here but assume they have all the features we need.
+            console.log("Dev version of Microclimate");
+            versionNum = Number.MAX_SAFE_INTEGER;
         }
-        const workspaceUri = vscode.Uri.file(workspace);
+        else {
+            versionNum = Number(rawVersion);
+            if (isNaN(versionNum)) {
+                console.error("Couldn't convert provided version to Number, version is: " + rawVersion);
+                return reject(`Could not determine Microclimate version - version is "${rawVersion}".` +
+                        ` At least ${requiredVersion} is required.`);
+            }
+            else if (versionNum < requiredVersion) {
+                console.error(`Microclimate version ${versionNum} is too old.`);
+                return reject(`You are running Microclimate version ${rawVersion}, but at least ${requiredVersion} is required.`);
+            }
+        }
 
-        ConnectionManager.instance.addConnection(mcUri, host, workspaceUri)
+        const workspaceUri: vscode.Uri = vscode.Uri.file(rawWorkspace);
+
+        ConnectionManager.instance.addConnection(mcUri, host, versionNum, workspaceUri)
             .then( (msg: string) => resolve(msg))
             .catch((err: string) => {
                 console.log("New connection rejected by ConnectionManager ", err);

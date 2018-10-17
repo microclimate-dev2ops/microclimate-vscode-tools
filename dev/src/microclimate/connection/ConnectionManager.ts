@@ -29,7 +29,7 @@ export default class ConnectionManager {
         return Uri.parse(`http://${host}:${port}`);
     }
 
-    public async addConnection(uri: Uri, host:string, workspace: Uri): Promise<string> {
+    public async addConnection(uri: Uri, host: string, mcVersion: number, workspace: Uri): Promise<string> {
         return new Promise<string>( (resolve, reject) => {
             if (this.connectionExists(uri)) {
                 return reject("Connection already exists at " + uri);
@@ -37,7 +37,7 @@ export default class ConnectionManager {
 
             // all validation that this connection is good must be done by this point
 
-            const connection: Connection = new Connection(uri, host, workspace);
+            const connection: Connection = new Connection(uri, host, mcVersion, workspace);
             console.log("New Connection @ " + uri);
             this._connections.push(connection);
 

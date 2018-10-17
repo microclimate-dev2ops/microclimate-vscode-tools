@@ -1,19 +1,22 @@
 Important:
 - Allow removing a Microclimate Connection (is this important, though, for local only?)
     - Related: persisting connection, in case it's not 9090
-- Check server-side MC version, just like in Eclipse tools.
-    - Instead do this in the restart code, if capabilities doesn't exist
+- OK to require 18.11? Or:
+    - Require 18.09 and test version on restart
+        - 1809 -> Liberty only
+        - 1810 -> Liberty and Spring
 - Node debug!!
 - Tests!
 - Bash into app container
 
 Annoying Release Stuff:
-- Legal!! No precendent for a VSCode extension, and we have to use the Microsoft store to distribute
+- better logging? needs to go to a file
+    - is there a logging facility provided for extensions
 - Icons
 - externalize command names into package.nls.json (for ID)
 - externalize all strings (ugh)
-- better logging?
-    - is there a logging facility provided for extensions
+- Legal?
+- Copyrights
 
 Less Important:
 
