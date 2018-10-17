@@ -3,11 +3,11 @@ import * as vscode from "vscode";
 
 import { createCommands } from "./command/CommandUtil";
 import createViews from "./view/InitViews";
-import createDebug from "./debug/InitDebug";
+// import createDebug from "./debug/InitDebug";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
 
     global.__extRoot = context.extensionPath;
 
@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
     const subscriptions: any[] = [
         ...createViews(),
         ...createCommands(),
-        ...createDebug()
+        // ...createDebug()
     ];
 
     subscriptions.forEach((e) => {
@@ -28,5 +28,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {
+export function deactivate(): void {
 }
