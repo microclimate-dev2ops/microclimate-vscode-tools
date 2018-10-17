@@ -5,11 +5,12 @@ import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
+import { getOcticon, Octicon } from "../../constants/Icons";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
-    private static readonly CONTEXT_ID = "ext.mc.projectItem";             // must match package.json
-    private static readonly ENABLED_CONTEXT_ID  = Project.CONTEXT_ID + ".enabled";
-    private static readonly DISABLED_CONTEXT_ID = Project.CONTEXT_ID + ".disabled";
+    private static readonly CONTEXT_ID: string = "ext.mc.projectItem";             // must match package.json
+    private static readonly ENABLED_CONTEXT_ID:  string = Project.CONTEXT_ID + ".enabled";
+    private static readonly DISABLED_CONTEXT_ID: string = Project.CONTEXT_ID + ".disabled";
 
     public readonly name: string;
     public readonly id: string;
@@ -194,7 +195,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return;
         });
 
-        vscode.window.setStatusBarMessage(`${MCUtil.getOcticon("sync", true)} Waiting for ${this.name} to be ${state}`, pendingStatePromise);
+        vscode.window.setStatusBarMessage(`${getOcticon(Octicon.sync, true)} Waiting for ${this.name} to be ${state}`, pendingStatePromise);
 
         return pendingStatePromise;
     }

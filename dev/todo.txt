@@ -3,13 +3,17 @@ Important:
     - Related: persisting connection, in case it's not 9090
 - Check server-side MC version, just like in Eclipse tools.
 - Node debug!!
+- Tests!
 
-- Legal stuff! No precendent for a VSCode extension, and we have to use the Microsoft store to distribute
-
+Annoying Release Stuff:
+- Legal!! No precendent for a VSCode extension, and we have to use the Microsoft store to distribute
+- Icons
 - externalize command names into package.nls.json (for ID)
 - externalize all strings (ugh)
+- better logging?
 
 Less Important:
+- Should I continue having a 'docker' project type and then looking at the 'language', or is it OK to have 'python' and 'go' types
 - Running tree-context commands quickly sometimes results in command being run with a null argument
     - Suspect because the tree item that was originally right-clicked gets disposed in the meantime, due to a state change etc.
 - Refactor command resource-getting code out of project/connection commands
@@ -21,6 +25,8 @@ Less Important:
         - For Overview, works but requires gross cropping which would have to be updated if there are any css changes
 
 Investigate:
+    - Problems for Validation errors
+
     - Why do projects/connections sometimes get Emphasized? Cannot find any doc on this
         - Tried debugging vscode itself, but the emphasis never showed up in the debug instance >:(
         - Maybe it doesn't show up when it's an actual vsix and not running in extension debug mode??

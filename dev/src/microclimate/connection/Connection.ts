@@ -7,6 +7,7 @@ import Project from "../project/Project";
 import Endpoints from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
+import { Icon, getIconPaths } from "../../constants/Icons";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -138,7 +139,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         ti.resourceUri = this.workspacePath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
-        ti.iconPath = MCUtil.getIconObj("connection.svg");
+        ti.iconPath = getIconPaths(Icon.Microclimate);
         // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
         /*
         ti.command = {

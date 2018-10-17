@@ -31,8 +31,8 @@
                 "description": "Connect to a Microclimate instance",
                 "category": "Microclimate",
                 "icon": {
-                    "light": "res/img/light/microclimate.svg",
-                    "dark": "res/img/light/microclimate.svg"
+                    "light": "res/img/dark/microclimate.svg",
+                    "dark": "res/img/dark/microclimate.svg"
                 }
             },
             {

@@ -8,6 +8,7 @@
 		}
 	],
 	"settings": {
-		"typescript.tsc.autoDetect": "off"
+		"typescript.tsc.autoDetect": "off",
+		"liveServer.settings.multiRootWorkspaceName": "dev"
 	}
 }

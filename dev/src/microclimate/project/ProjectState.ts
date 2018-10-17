@@ -95,7 +95,7 @@ export namespace ProjectState {
         UNKNOWN = "Unknown"
     }
 
-    export function getEnabledStates() {
+    export function getEnabledStates(): AppStates[] {
         // All states except Disabled.
         return [
             AppStates.STARTED,
@@ -196,20 +196,6 @@ export namespace ProjectState {
                 return "❌";
             default:
                 return "❓";
-        }
-    }
-
-    /**
-     * Construct a ProjectState from possibly incomplete newInfo.
-     *
-     * Will try to assign a new appState, buildState, and buildDetail based on newInfo,
-     * but will fall back onto currentState's value for any of those
-     * if the new info fails to provide a recognizable state.
-     */
-    export function fromExisting(currentState: ProjectState, newInfo: any) {
-        let newAppState: AppStates = getAppState(newInfo);
-        if (newAppState === AppStates.UNKNOWN) {
-            newAppState = currentState.appState;
         }
     }
 }

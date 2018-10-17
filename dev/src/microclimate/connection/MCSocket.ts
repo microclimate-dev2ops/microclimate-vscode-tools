@@ -7,6 +7,7 @@ import Project from "../project/Project";
 import * as restartProjectCmd from "../../command/RestartProjectCmd";
 import { ProjectState } from "../project/ProjectState";
 import * as MCUtil from "../../MCUtil";
+import { getOcticon, Octicon } from "../../constants/Icons";
 
 export default class MCSocket {
 
@@ -130,7 +131,7 @@ export default class MCSocket {
         if (isDebug) {
             try {
                 const startDebugPromise = restartProjectCmd.startDebugSession(project);
-                vscode.window.setStatusBarMessage(`${MCUtil.getOcticon("bug", true)} Connecting debugger to ${project.name}`, startDebugPromise);
+                vscode.window.setStatusBarMessage(`${getOcticon(Octicon.bug, true)} Connecting debugger to ${project.name}`, startDebugPromise);
                 const successMsg = await startDebugPromise;
 
                 console.log("Debugger attach success", successMsg);

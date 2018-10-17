@@ -1,4 +1,5 @@
-import { uppercaseFirstChar, IconPaths, getIconObj } from "../../MCUtil";
+import { uppercaseFirstChar } from "../../MCUtil";
+import { IconPaths, Icon, getIconPaths } from "../../constants/Icons";
 
 export class ProjectType {
 
@@ -15,7 +16,7 @@ export class ProjectType {
         this.type = ProjectType.getType(projectType);
         this.userFriendlyType = ProjectType.getUserFriendlyType(this.type, language);
         this.debugType = ProjectType.getDebugType(this.type);
-        this.icon = ProjectType.getIcons(language);
+        this.icon = ProjectType.getProjectIcon(this.type, language);
     }
 
     public toString(): string {
@@ -62,9 +63,31 @@ export class ProjectType {
         }
     }
 
-    private static getIcons(language: string): IconPaths {
+    private static getProjectIcon(type: ProjectType.Types, language: string): IconPaths {
         // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
-        return getIconObj(language + ".png");
+        switch (type) {
+            case ProjectType.Types.MICROPROFILE:
+                return getIconPaths(Icon.Microprofile);
+            case ProjectType.Types.SPRING:
+                return getIconPaths(Icon.Spring);
+            case ProjectType.Types.NODE:
+                return getIconPaths(Icon.Node);
+            case ProjectType.Types.SWIFT:
+                return getIconPaths(Icon.Swift);
+            case ProjectType.Types.DOCKER:
+                if (language === "python") {
+                    return getIconPaths(Icon.Python);
+                }
+                else if (language === "go") {
+                    return getIconPaths(Icon.Go);
+                }
+                else {
+                    // This is our fall-back, we could possibly use a more generic icon.
+                    return getIconPaths(Icon.Docker);
+                }
+            default:
+                return getIconPaths(Icon.Generic);
+        }
     }
 
     private static getUserFriendlyType(type: ProjectType.Types, language: string): string {
