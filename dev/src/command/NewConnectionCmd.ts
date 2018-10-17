@@ -61,24 +61,24 @@ export default async function newConnectionCmd(): Promise<void> {
  * or start the 'wizard' from the beginning to enter a new host/port.
  */
 export async function tryAddConnection(host: string, port: number): Promise<void> {
-    const tryAgainMsg = "Try again";
-    const reconnectMsg = "Reconnect";
+    const tryAgainBtn  = "Try again";
+    const reconnectBtn = "Reconnect";
 
     testConnection(host, port)
-        .then( async (s) => {
+        .then(async (s) => {
             // Connection succeeded, let the user know.
             // The ConnectionManager will signal the change and the UI will update accordingly.
             vscode.window.showInformationMessage(s);
         })
         .catch(async (s) => {
             console.log("Connection test failed with message " + s);
-            const response = await vscode.window.showErrorMessage(s, tryAgainMsg, reconnectMsg);
-            if (response === tryAgainMsg) {
+            const response = await vscode.window.showErrorMessage(s, tryAgainBtn, reconnectBtn);
+            if (response === tryAgainBtn) {
                 // start again from the beginning
                 newConnectionCmd();
                 return;
             }
-            else if (response === reconnectMsg) {
+            else if (response === reconnectBtn) {
                 // try to connect with the same host:port
                 tryAddConnection(host, port);
                 return;
@@ -89,7 +89,7 @@ export async function tryAddConnection(host: string, port: number): Promise<void
 // Return value resolves to a user-friendly message or error, ie "connection to $url succeeded"
 async function testConnection(host: string, port: number): Promise<string> {
 
-    const uri = ConnectionManager.buildUrl(host, port);
+    const uri = MCUtil.buildMCUrl(host, port);
     const envUri: vscode.Uri = uri.with({ path: Endpoints.ENVIRONMENT });
 
     const connectTimeout = 2500;

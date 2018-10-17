@@ -1,3 +1,4 @@
+import { Uri } from "vscode";
 import * as path from "path";
 
 /**
@@ -41,6 +42,24 @@ export function uppercaseFirstChar(input: string): string {
 
 export function isGoodPort(port: number | undefined): Boolean {
     return port != null && !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
+}
+
+export function buildMCUrl(host: string, port: number): Uri {
+    return Uri.parse(`http://${host}:${port}`);
+}
+
+export function getHostPort(url: Uri): [string, number] | undefined {
+    const colonIndex: number = url.authority.indexOf(":");
+
+    const host = url.authority.substring(0, colonIndex);
+    const portStr = url.authority.substring(colonIndex, url.authority.length);
+
+    const port: number = Number(portStr);
+    if (!isGoodPort(port)) {
+        return undefined;
+    }
+    console.log(`Loaded host ${host} port ${port}`);
+    return [host, port];
 }
 
 /**

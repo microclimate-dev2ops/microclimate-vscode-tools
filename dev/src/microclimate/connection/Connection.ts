@@ -41,11 +41,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         // QuickPickItem
         this.label = "Microclimate @ " + this.mcUri.toString();
         // this.description = this.workspacePath.fsPath.toString();
-        console.log(`Created new Connection ${this}`);
+        console.log(`Created new Connection @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`);
     }
 
     public toString(): string {
-        return `Microclimate @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`;
+        return this.mcUri.toString();
     }
 
     /**
