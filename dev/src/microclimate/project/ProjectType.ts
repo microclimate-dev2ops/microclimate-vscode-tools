@@ -104,6 +104,10 @@ export class ProjectType {
         // For all other types, the enum's string value is user-friendly
         return type.toString();
     }
+
+    public get providesBuildLog(): Boolean {
+        return ProjectType.PROJECTS_WITHOUT_BUILDLOGS.indexOf(this.type) >= 0;
+    }
 }
 
 export namespace ProjectType {
@@ -119,4 +123,9 @@ export namespace ProjectType {
         GENERIC_DOCKER = "Docker",
         UNKNOWN = "Unknown"
     }
+
+
+    export const PROJECTS_WITHOUT_BUILDLOGS: ReadonlyArray<ProjectType.Types> = [
+        ProjectType.Types.NODE
+    ];
 }

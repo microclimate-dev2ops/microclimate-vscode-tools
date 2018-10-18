@@ -1,10 +1,14 @@
 Important:
-- Hit the build log endpoint each time build logs are requested instead of just storing it once on project creation. T
+- Hit the build log endpoint each time build logs are requested instead of just storing it once on project creation.
     - The build log location can change for Docker project types.
 - OK to require 18.11? Or:
-    - Require 18.09 and test version on restart
+    - Require 18.09 and test capabilities on restart
         - 1809 -> Liberty only
         - 1810 -> Liberty and Spring
+- Decide if appending stuff to the debug console is worth the possible confusion
+    - Since it is only the most recently debugged project (if there are multiple, it's confusing beacuse you switch sessions but the console doesn't change)
+    - Only clears if you restart the server into run mode
+    - It's identical to the app output anyway. Rich text features are not used.
 - Node debug!!
 - Tests!
 - Bash into app container

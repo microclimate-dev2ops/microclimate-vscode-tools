@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import { ProjectType } from "../microclimate/project/ProjectType";
 
 export default async function openBuildLogCmd(project: Project): Promise<void> {
     console.log("OpenBuildLogCmd invoked");
@@ -16,7 +15,7 @@ export default async function openBuildLogCmd(project: Project): Promise<void> {
         project = selected;
     }
 
-    if (project.type.type === ProjectType.Types.NODE) {
+    if (!project.type.providesBuildLog) {
         vscode.window.showWarningMessage(`${project.type.userFriendlyType} projects do not have build logs.`);
         return;
     }
