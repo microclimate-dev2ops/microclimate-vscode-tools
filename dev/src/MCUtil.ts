@@ -40,31 +40,52 @@ export function uppercaseFirstChar(input: string): string {
     return input.charAt(0).toUpperCase() + input.slice(1);
 }
 
+/**
+ * @return "debug" or "run", the supported startModes.
+ */
+export function getStartMode(debug: Boolean): string {
+    return debug ? "debug" : "run";
+}
+
+//// Connection helpers
+
+export interface ConnectionInfo {
+    readonly host: string;
+    readonly port: number;
+    // If we start supporting HTTPS, could add a 'protocol' field,
+    // but at that point it might be cleaner to just save the URI.
+}
+
 export function isGoodPort(port: number | undefined): Boolean {
     return port != null && !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
 }
 
-export function buildMCUrl(host: string, port: number): Uri {
-    return Uri.parse(`http://${host}:${port}`);
+/**
+ * Convert a ConnectionInfo to an HTTP URI.
+ */
+export function buildMCUrl(connInfo: ConnectionInfo): Uri {
+    return Uri.parse(`http://${connInfo.host}:${connInfo.port}`);
 }
 
-export function getHostPort(url: Uri): [string, number] | undefined {
+/**
+ * Convert a URI to a ConnectionInfo (for saving to Settings).
+ * A URI type with a 'port' field would be preferable, but vscode does not have this.
+ */
+export function getConnInfoFrom(url: Uri): ConnectionInfo | undefined {
     const colonIndex: number = url.authority.indexOf(":");
 
     const host = url.authority.substring(0, colonIndex);
-    const portStr = url.authority.substring(colonIndex, url.authority.length);
+    const portStr = url.authority.substring(colonIndex + 1, url.authority.length);
 
     const port: number = Number(portStr);
     if (!isGoodPort(port)) {
         return undefined;
     }
     console.log(`Loaded host ${host} port ${port}`);
-    return [host, port];
-}
 
-/**
- * @return "debug" or "run", the supported startModes.
- */
-export function getStartMode(debug: Boolean): string {
-    return debug ? "debug" : "run";
+    const result: ConnectionInfo = {
+        host: host,
+        port: port
+    };
+    return result;
 }

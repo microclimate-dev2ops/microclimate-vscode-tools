@@ -6,39 +6,22 @@ import { tryAddConnection } from "../../command/NewConnectionCmd";
 
 export default class ConnectionManager {
 
-    private static readonly SETTINGS: string = "settings";
-    private static readonly SETTINGS_KEY: string = "ext.mc.connections";
+    private static readonly CONFIG_SECTION: string = "microclimate";
+    private static readonly CONNECTIONS_KEY: string = "connections";
 
     private static _instance: ConnectionManager;
 
     private readonly _connections: Connection[] = [];
     private readonly listeners: ( () => void ) [] = [];
 
-    private constructor(
+    private constructor (
 
     ) {
-        const connectionUris: vscode.Uri[] = ConnectionManager.loadConnections();
-        connectionUris.forEach( (uri) => {
-            const hostPort: [string, number] | undefined = MCUtil.getHostPort(uri);
-            if (hostPort != null) {
-                tryAddConnection(hostPort[0], hostPort[1]);
-            }
-            else {
-                // Should not happen
-                const msg: string = `Failed to load Connection with malformed URI: ${uri}`;
-                console.error(msg);
-                vscode.window.showErrorMessage(msg);
-            }
-        })
-
-        // add default connection
-        // TODO just for testing
-        const defaultHost = "localhost";
-        const defaultPort = 9090;
-        const defaultUri = MCUtil.buildMCUrl(defaultHost, defaultPort);
-        if (!this.connectionExists(defaultUri)) {
-            tryAddConnection(defaultHost, defaultPort);
-        }
+        const connectionInfos: MCUtil.ConnectionInfo[] = ConnectionManager.loadConnections();
+        console.log(`Loaded ${connectionInfos.length} connections from settings`);
+        connectionInfos.forEach((connInfo) =>
+            tryAddConnection(connInfo)
+        );
     }
 
     public static get instance(): ConnectionManager {
@@ -73,23 +56,43 @@ export default class ConnectionManager {
         });
     }
 
-    public static loadConnections(): vscode.Uri[] {
-        console.log("Loading connections");
-        const settings = vscode.workspace.getConfiguration(ConnectionManager.SETTINGS);
-        return settings.get(ConnectionManager.SETTINGS_KEY, []);
+    public static loadConnections(): MCUtil.ConnectionInfo[] {
+        const loaded = vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
+                .get(ConnectionManager.CONNECTIONS_KEY, []);
+
+        console.log("LOADED CONNECTIONS", loaded);
+        return loaded;
     }
 
     public static async saveConnections(): Promise<void> {
-        const connectionUris = ConnectionManager.instance.connections.map( (conn) => conn.mcUri);
+        // We save ConnectionInfo objects since they are simpler and more readable.
 
-        console.log("Saving connections", connectionUris);
+        // This is a bit tough to read - For each connection, convert it to a connInfo.
+        // If the convert fails, ignore it and log an error.
+        const connectionInfos: MCUtil.ConnectionInfo[] = ConnectionManager.instance.connections.reduce(
+            (result: MCUtil.ConnectionInfo[], conn: Connection): MCUtil.ConnectionInfo[] => {
+                const connInfo = MCUtil.getConnInfoFrom(conn.mcUri);
+                if (connInfo != null) {
+                    result.push(connInfo);
+                }
+                else {
+                    // shouldn't happen
+                    console.error("Couldn't convert mcURI to connInfo!", conn.mcUri)
+                }
+                return result;
+            },
+        []);
+
+        console.log("Saving connections", connectionInfos);
         try {
-            return vscode.workspace.getConfiguration(ConnectionManager.SETTINGS).update(ConnectionManager.SETTINGS_KEY, connectionUris);
+            return vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
+                    .update(ConnectionManager.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Workspace);
         }
         catch(err) {
-            console.error("Error saving connections", err);
+            const msg = "Error saving connections: " + err;
+            console.error(msg);
+            vscode.window.showErrorMessage(err);
         }
-        console.log("Saved settings, now they are: ", vscode.workspace.getConfiguration(ConnectionManager.SETTINGS).get(ConnectionManager.SETTINGS_KEY));
     }
 
     /**

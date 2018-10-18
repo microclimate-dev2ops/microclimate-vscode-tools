@@ -16,6 +16,17 @@
     "main": "./out/extension",
     "repository": "https://github.ibm.com/dev-ex/microclimate-vscode",
     "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Microclimate Tools",
+            "properties": {
+                "microclimate.connections": {
+                    "type": "array",
+                    "default": [],
+                    "description": "URLs of Microclimate instances to connect to."
+                }
+            }
+        },
         "views": {
             "explorer": [
                 {

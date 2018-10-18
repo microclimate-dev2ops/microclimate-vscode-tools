@@ -14,7 +14,7 @@ export default async function newConnectionCmd(): Promise<void> {
     // TODO comment this out. Only localhost is permitted.
     const inputOpts: vscode.InputBoxOptions = {
         ignoreFocusOut: true,
-        prompt: "Enter the hostname or IP for the Microclimate instance you wish to connect to. [ESC] to cancel.",
+        prompt: "Enter the hostname or IP for the Microclimate instance you wish to connect to.",
         value: "localhost",
     };
     const hostname: string | undefined = await vscode.window.showInputBox(inputOpts);
@@ -24,7 +24,7 @@ export default async function newConnectionCmd(): Promise<void> {
         return;
     }
 
-    inputOpts.prompt = "Enter the Port for the Microclimate instance you wish to connect to. [ESC] to cancel.";
+    inputOpts.prompt = "Enter the Port for the Microclimate instance you wish to connect to.";
     inputOpts.value = "9090";
 
     let tryAgain = true;
@@ -51,7 +51,11 @@ export default async function newConnectionCmd(): Promise<void> {
     }
 
     if (hostname != null && port != null) {
-        tryAddConnection(hostname, port);
+        const connInfo: MCUtil.ConnectionInfo = {
+            host: hostname,
+            port: port
+        };
+        tryAddConnection(connInfo);
     }
 }
 
@@ -60,11 +64,11 @@ export default async function newConnectionCmd(): Promise<void> {
  * If it fails, display a message to the user and allow them to either try to connect again with the same info,
  * or start the 'wizard' from the beginning to enter a new host/port.
  */
-export async function tryAddConnection(host: string, port: number): Promise<void> {
+export async function tryAddConnection(connInfo: MCUtil.ConnectionInfo): Promise<void> {
     const tryAgainBtn  = "Try again";
     const reconnectBtn = "Reconnect";
 
-    testConnection(host, port)
+    testConnection(connInfo)
         .then(async (s) => {
             // Connection succeeded, let the user know.
             // The ConnectionManager will signal the change and the UI will update accordingly.
@@ -80,16 +84,16 @@ export async function tryAddConnection(host: string, port: number): Promise<void
             }
             else if (response === reconnectBtn) {
                 // try to connect with the same host:port
-                tryAddConnection(host, port);
+                tryAddConnection(connInfo);
                 return;
             }
         });
 }
 
 // Return value resolves to a user-friendly message or error, ie "connection to $url succeeded"
-async function testConnection(host: string, port: number): Promise<string> {
+async function testConnection(connInfo: MCUtil.ConnectionInfo): Promise<string> {
 
-    const uri = MCUtil.buildMCUrl(host, port);
+    const uri = MCUtil.buildMCUrl(connInfo);
     const envUri: vscode.Uri = uri.with({ path: Endpoints.ENVIRONMENT });
 
     const connectTimeout = 2500;
@@ -98,7 +102,7 @@ async function testConnection(host: string, port: number): Promise<string> {
         request.get(envUri.toString(), { json: true, timeout: connectTimeout })
             .then( (microclimateData: string) => {
                 // Connected successfully
-                return onSuccessfulConnection(uri, host, microclimateData);
+                return onSuccessfulConnection(uri, connInfo.host, microclimateData);
             })
             .catch( (err: any) => {
                 console.log(`Request fail - ${err}`);
