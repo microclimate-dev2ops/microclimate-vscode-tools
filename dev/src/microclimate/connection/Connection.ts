@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
 import * as MCUtil from "../../MCUtil";
-import TreeItemAdaptable, { SimpleTreeItem } from "../../view/projectExplorer/TreeItemAdaptable";
+import TreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
 import Project from "../project/Project";
 import Endpoints from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";

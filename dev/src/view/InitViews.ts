@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import ProjectTreeDataProvider from "./projectExplorer/ProjectTree";
+import ProjectTreeDataProvider from "./ProjectTree";
 
 export default function createViews(): vscode.Disposable[] {
     const treeDataProvider: ProjectTreeDataProvider = new ProjectTreeDataProvider();

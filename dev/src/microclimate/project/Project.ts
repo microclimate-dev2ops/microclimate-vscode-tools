@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import * as MCUtil from "../../MCUtil";
-import TreeItemAdaptable from "../../view/projectExplorer/TreeItemAdaptable";
+import TreeItemAdaptable from "../../view/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
