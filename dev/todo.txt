@@ -5,13 +5,13 @@ Important:
     - Require 18.09 and test capabilities on restart
         - 1809 -> Liberty only
         - 1810 -> Liberty and Spring
+    - Have to track startMode internally >:(
 - Decide if appending stuff to the debug console is worth the possible confusion
     - Since it is only the most recently debugged project (if there are multiple, it's confusing beacuse you switch sessions but the console doesn't change)
     - Only clears if you restart the server into run mode
     - It's identical to the app output anyway. Rich text features are not used.
 - Node debug!!
 - Tests!
-- Bash into app container
 
 Annoying Release Stuff:
 - better logging? needs to go to a file

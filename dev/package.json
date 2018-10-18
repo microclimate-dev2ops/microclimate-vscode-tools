@@ -101,6 +101,11 @@
                 "command": "ext.mc.disable",
                 "title": "Disable Project",
                 "category": "Microclimate"
+            },
+            {
+                "command": "ext.mc.containerBash",
+                "title": "Open shell in container",
+                "category": "Microclimate"
             }
         ],
         "menus": {
@@ -175,6 +180,11 @@
                     "command": "ext.mc.restartProjectDebug",
                     "when": "viewItem == ext.mc.projectItem.enabled",
                     "group": "ext.mc.e"
+                },
+                {
+                    "command": "ext.mc.containerBash",
+                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "group": "ext.mc.f"
                 },
                 {
                     "command": "ext.mc.disable",

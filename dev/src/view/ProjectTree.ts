@@ -2,9 +2,9 @@
 import * as vscode from "vscode";
 
 import  TreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
-import ConnectionManager from "../../microclimate/connection/ConnectionManager";
-import { Icons, getIconPaths } from "../../constants/Icons";
-import { NEW_CONNECTION_CMD } from "../../command/NewConnectionCmd";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
+import { Icons, getIconPaths } from "../constants/Icons";
+import { NEW_CONNECTION_CMD } from "../command/NewConnectionCmd";
 
 export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<TreeItemAdaptable> {
 

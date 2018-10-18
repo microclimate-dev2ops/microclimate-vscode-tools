@@ -14,6 +14,7 @@ import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import removeConnectionCmd from "./RemoveConnectionCmd";
+import containerBashCmd from "./ContainerShellCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -38,7 +39,9 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand("ext.mc.openAppLog",    (selection) => openAppLogCmd(selection)),
 
         vscode.commands.registerCommand("ext.mc.disable",   (selection) => toggleEnablementCmd(selection, false)),
-        vscode.commands.registerCommand("ext.mc.enable",    (selection) => toggleEnablementCmd(selection, true))
+        vscode.commands.registerCommand("ext.mc.enable",    (selection) => toggleEnablementCmd(selection, true)),
+
+        vscode.commands.registerCommand("ext.mc.containerBash", (selection) => containerBashCmd(selection))
     ];
 }
 

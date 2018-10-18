@@ -19,6 +19,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly localPath: vscode.Uri;
     public readonly buildLogPath: vscode.Uri | undefined;
 
+    private _containerID: string;
     private _appPort: number | undefined;
     private _debugPort: number | undefined;
 
@@ -37,6 +38,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     ) {
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
+        this._containerID = projectInfo.containerId;
 
         // TODO should use projectType not buildType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
@@ -132,6 +134,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return;
         }
 
+        this._containerID = projectInfo.containerId;
+
         const oldState = this._state;
         this._state = new ProjectState(projectInfo, oldState);
 
@@ -199,6 +203,10 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Waiting for ${this.name} to be ${state}`, pendingStatePromise);
 
         return pendingStatePromise;
+    }
+
+    public get containerID(): string {
+        return this._containerID;
     }
 
     public get appPort(): number | undefined {
