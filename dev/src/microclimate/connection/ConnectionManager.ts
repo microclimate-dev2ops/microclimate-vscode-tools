@@ -45,9 +45,22 @@ export default class ConnectionManager {
             this._connections.push(connection);
             ConnectionManager.saveConnections();
 
-            this.onChange(connection);
+            this.onChange();
             return resolve(`New connection to ${uri} succeeded.\nWorkspace path is: ${workspace}`);
         });
+    }
+
+    public async removeConnection(connection: Connection): Promise<Boolean> {
+        const indexToRemove = this.connections.indexOf(connection);
+        if (indexToRemove === -1) {
+            console.error(`Request to remove connection ${connection} but it doesn't exist!`);
+            return false;
+        }
+        this.connections.splice(indexToRemove, 1);
+        console.log("Removed connection", connection);
+        ConnectionManager.saveConnections();
+        this.onChange();
+        return true;
     }
 
     private connectionExists(uri: vscode.Uri): Boolean {
@@ -77,7 +90,7 @@ export default class ConnectionManager {
                 }
                 else {
                     // shouldn't happen
-                    console.error("Couldn't convert mcURI to connInfo!", conn.mcUri)
+                    console.error("Couldn't convert mcURI to connInfo!", conn.mcUri);
                 }
                 return result;
             },
@@ -107,7 +120,7 @@ export default class ConnectionManager {
     /**
      * Call this whenever a connection is added, removed, or changed.
      */
-    public onChange = (_: Connection): void => {
+    public onChange = (): void => {
         // console.log(`Connection ${connection} changed`);
         this.listeners.forEach( (f) => f());
     }

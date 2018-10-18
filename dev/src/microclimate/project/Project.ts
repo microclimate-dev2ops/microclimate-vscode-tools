@@ -29,7 +29,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private _state: ProjectState = new ProjectState(undefined);
 
     private pendingAppState: ProjectState.AppStates | undefined;
-    private resolvePendingAppState: Function | undefined;
+    private resolvePendingAppState: ( () => void) | undefined;
 
     constructor (
         projectInfo: any,

@@ -47,6 +47,12 @@
                 }
             },
             {
+                "command": "ext.mc.removeConnection",
+                "title": "Remove connection",
+                "description": "Remove a Microclimate connection",
+                "category": "Microclimate"
+            },
+            {
                 "command": "ext.mc.openWorkspaceFolder",
                 "title": "Open folder as workspace",
                 "description": "Open this item's folder as your VSCode workspace",
@@ -115,6 +121,10 @@
                 {
                     "command": "ext.mc.newConnection",
                     "when": "view == ext.mc.mcProjectExplorer && !viewItem"
+                },
+                {
+                    "command": "ext.mc.removeConnection",
+                    "when": "viewItem == ext.mc.connectionItem"
                 },
                 {
                     "command": "ext.mc.openInBrowser",

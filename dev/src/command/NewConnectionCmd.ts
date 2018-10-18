@@ -6,7 +6,7 @@ import * as MCUtil from "../MCUtil";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Endpoints from "../constants/Endpoints";
 
-export const CMD_OPEN_FOLDER = "ext.mc.openWorkspaceFolder";
+export const NEW_CONNECTION_CMD: string = "ext.mc.newConnection";
 
 export default async function newConnectionCmd(): Promise<void> {
     console.log("New connection command invoked");

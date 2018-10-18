@@ -35,6 +35,10 @@
 			// "arrow-call-signature", // "arrow-parameter",
 			"member-variable-declaration", "property-declaration",
 			"object-destructuring", "array-destructuring"
+		],
+		"ban-types": [ true,
+			[ "Object", "Use {} instead" ],
+			[ "Function", "Use typed () => instead"]
 		]
 	},
 	"defaultSeverity": "warning"

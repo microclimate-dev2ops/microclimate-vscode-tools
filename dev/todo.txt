@@ -1,6 +1,6 @@
 Important:
-- Allow removing a Microclimate Connection (is this important, though, for local only?)
-    - Related: persisting connection, in case it's not 9090
+- Hit the build log endpoint each time build logs are requested instead of just storing it once on project creation. T
+    - The build log location can change for Docker project types.
 - OK to require 18.11? Or:
     - Require 18.09 and test version on restart
         - 1809 -> Liberty only

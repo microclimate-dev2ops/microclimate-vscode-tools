@@ -11,7 +11,7 @@ import { Icons, getIconPaths } from "../../constants/Icons";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
-    private static readonly CONTEXT_ID = "ext.mc.connectionItem";             // must match package.json
+    private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.json
 
     private readonly socket: MCSocket;
     private readonly projectsApiUri: vscode.Uri;
@@ -52,10 +52,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
      * Call this whenever the tree needs to be updated - ie when this connection or any of its projects changes.
      */
     async onChange(): Promise<void> {
-        ConnectionManager.instance.onChange(this);
+        ConnectionManager.instance.onChange();
     }
 
-    public get isConnected() {
+    public get isConnected(): Boolean {
         return this.connected;
     }
 
@@ -126,7 +126,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         await this.getProjects();
         // console.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
         if (this.projects.length === 0) {
-            return [ new SimpleTreeItem("No projects") ];
+            const noProjectsTi: SimpleTreeItem = new SimpleTreeItem("No projects");
+            return [ noProjectsTi ];
         }
         return this.projects;
     }

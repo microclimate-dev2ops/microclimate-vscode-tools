@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import newConnectionCmd, { CMD_OPEN_FOLDER } from "./NewConnectionCmd";
+import newConnectionCmd, { NEW_CONNECTION_CMD } from "./NewConnectionCmd";
 import openWorkspaceFolderCmd from "./OpenWorkspaceFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
 import openInBrowserCmd from "./OpenInBrowserCmd";
@@ -13,8 +13,9 @@ import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
+import removeConnectionCmd from "./RemoveConnectionCmd";
 
-export function createCommands() {
+export function createCommands(): vscode.Disposable[] {
 
     // Register our commands here
     // The first parameter must match the command ID as declared in package.json
@@ -22,9 +23,10 @@ export function createCommands() {
     // - undefined (if run from command palette)
     // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
-        vscode.commands.registerCommand("ext.mc.newConnection", () => newConnectionCmd()),
+        vscode.commands.registerCommand(NEW_CONNECTION_CMD, () => newConnectionCmd()),
+        vscode.commands.registerCommand("ext.mc.removeConnection", (selection) => removeConnectionCmd(selection)),
 
-        vscode.commands.registerCommand(CMD_OPEN_FOLDER, (selection) => openWorkspaceFolderCmd(selection, false)),
+        vscode.commands.registerCommand("ext.mc.openWorkspaceFolder", (selection) => openWorkspaceFolderCmd(selection, false)),
 
         vscode.commands.registerCommand("ext.mc.restartProjectRun",     (selection) => restartProjectCmd(selection, false)),
         vscode.commands.registerCommand("ext.mc.restartProjectDebug",   (selection) => restartProjectCmd(selection, true)),
@@ -46,13 +48,27 @@ export function createCommands() {
 
 // only return projects that are in an 'acceptableState' (or pass no acceptable states for all projects)
 export async function promptForProject(...acceptableStates: ProjectState.AppStates[]): Promise<Project | undefined> {
-    const project = await promptForResourceInner(false, ...acceptableStates);
+    const project = await promptForResourceInner(false, true, ...acceptableStates);
     if (project instanceof Project) {
         return project as Project;
     }
-    else if (project instanceof Connection) {
+    else {
         // should never happen
-        console.error("promptForProject received Connection back");
+        console.error("promptForProject received something other than a project back:", project);
+    }
+
+    // user cancelled, or error above
+    return undefined;
+}
+
+export async function promptForConnection(): Promise<Connection | undefined> {
+    const connection = await promptForResourceInner(true, false);
+    if (connection instanceof Connection) {
+        return connection as Connection;
+    }
+    else {
+        // should never happen
+        console.error("promptForConnection received something other than a connection back:", connection);
     }
 
     // user cancelled, or error above
@@ -60,10 +76,10 @@ export async function promptForProject(...acceptableStates: ProjectState.AppStat
 }
 
 export async function promptForResource(...acceptableStates: ProjectState.AppStates[]): Promise<Project | Connection | undefined> {
-    return promptForResourceInner(true, ...acceptableStates);
+    return promptForResourceInner(true, true, ...acceptableStates);
 }
 
-async function promptForResourceInner(includeConnections: Boolean, ...acceptableStates: ProjectState.AppStates[]):
+async function promptForResourceInner(includeConnections: Boolean, includeProjects: Boolean, ...acceptableStates: ProjectState.AppStates[]):
         Promise<Project | Connection | undefined> {
 
     // TODO Try to get the name of †he selected project, and have it selected initially - if this is possible.
@@ -75,19 +91,21 @@ async function promptForResourceInner(includeConnections: Boolean, ...acceptable
         choices.push(... (connections.filter( (conn) => conn.isConnected)));
     }
 
-    // for now, assume if they want Started, they also accept Debugging. This may change.
-    if (acceptableStates.indexOf(ProjectState.AppStates.STARTED) !== -1
-            && acceptableStates.indexOf(ProjectState.AppStates.DEBUGGING) === -1) {
+    if (includeProjects) {
+        // for now, assume if they want Started, they also accept Debugging. This may change.
+        if (acceptableStates.indexOf(ProjectState.AppStates.STARTED) !== -1
+                && acceptableStates.indexOf(ProjectState.AppStates.DEBUGGING) === -1) {
 
-        acceptableStates.push(ProjectState.AppStates.DEBUGGING);
-    }
+            acceptableStates.push(ProjectState.AppStates.DEBUGGING);
+        }
 
-    console.log("Accept states", acceptableStates);
+        console.log("Accept states", acceptableStates);
 
-    await new Promise<void>( async (resolve, _) => {
+        // For each connection, get its project list, and filter by projects we're interested in.
+        // then add the remaining projects to our QuickPick choices.
         for (const conn of connections) {
             let projects = await conn.getProjects();
-            console.log("projects before", projects);
+
             if (acceptableStates.length > 0) {
                 // Filter out projects that are not in one of the acceptable states
                 projects = projects.filter( (p) => {
@@ -95,11 +113,9 @@ async function promptForResourceInner(includeConnections: Boolean, ...acceptable
                     // console.log("the index of ", p.state.appState, " in ", acceptableStates, " is ", index);
                 });
             }
-            console.log("projects after", projects);
             choices.push(...projects);
         }
-        return resolve();
-    });
+    }
 
     // If no choices are available, show a message
     if (choices.length === 0) {
