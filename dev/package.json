@@ -65,6 +65,12 @@
                 "category": "Microclimate"
             },
             {
+                "command": "ext.mc.attachDebugger",
+                "title": "Attach debugger",
+                "description": "Attach the VSCode debugger to a Microclimate project",
+                "category": "Microclimate"
+            },
+            {
                 "command": "ext.mc.restartProjectRun",
                 "title": "Restart in Run mode",
                 "description": "Restart a Microclimate project into Run (normal) mode",
@@ -114,12 +120,6 @@
             }
         ],
         "menus": {
-            "commandPalette": [
-                {
-                    "command": "ext.mc.openWorkspaceFolder",
-                    "when": "never"
-                }
-            ],
             "view/title": [
                 {
                     "command": "ext.mc.newConnection",
@@ -134,81 +134,66 @@
                 },
                 {
                     "command": "ext.mc.removeConnection",
-                    "when": "viewItem == ext.mc.connectionItem"
+                    "when": "%isConnection%"
                 },
                 {
                     "command": "ext.mc.openInBrowser",
-                    "when": "viewItem == ext.mc.connectionItem",
-                    "group": "ext.mc.a"
-                },
-                {
-                    "command": "ext.mc.openInBrowser",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem)/",
                     "group": "ext.mc.a"
                 },
                 {
                     "command": "ext.mc.openWorkspaceFolder",
-                    "when": "viewItem == ext.mc.connectionItem",
-                    "group": "ext.mc.b"
-                },
-                {
-                    "command": "ext.mc.openWorkspaceFolder",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
-                    "group": "ext.mc.b"
-                },
-                {
-                    "command": "ext.mc.openWorkspaceFolder",
-                    "when": "viewItem == ext.mc.projectItem.disabled",
+                    "when": "%isConnectionOrProject%",
                     "group": "ext.mc.b"
                 },
                 {
                     "command": "ext.mc.viewProjectInfo",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
-                    "group": "ext.mc.c"
-                },
-                {
-                    "command": "ext.mc.viewProjectInfo",
-                    "when": "viewItem == ext.mc.projectItem.disabled",
+                    "when": "%isProject%",
                     "group": "ext.mc.c"
                 },
                 {
                     "command": "ext.mc.openAppLog",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.c"
                 },
                 {
                     "command": "ext.mc.openBuildLog",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.c"
                 },
                 {
                     "command": "ext.mc.requestBuild",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.d"
                 },
                 {
+                    "command": "ext.mc.attachDebugger",
+                    "when": "%isDebuggableProject%",
+                    "group": "ext.mc.e"
+                },
+                {
                     "command": "ext.mc.restartProjectRun",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.e"
                 },
                 {
                     "command": "ext.mc.restartProjectDebug",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.e"
                 },
                 {
                     "command": "ext.mc.containerBash",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.f"
                 },
                 {
                     "command": "ext.mc.disable",
-                    "when": "viewItem == ext.mc.projectItem.enabled",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.z"
                 },
                 {
                     "command": "ext.mc.enable",
-                    "when": "viewItem == ext.mc.projectItem.disabled",
+                    "when": "%isDisabledProject%",
                     "group": "ext.mc.z"
                 }
             ]

@@ -16,6 +16,7 @@ import toggleEnablementCmd from "./ToggleEnablementCmd";
 import removeConnectionCmd from "./RemoveConnectionCmd";
 import containerBashCmd from "./ContainerShellCmd";
 import viewProjectInfoCmd from "./ViewProjectInfoCmd";
+import attachDebuggerCmd from "./AttachDebuggerCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -28,8 +29,9 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand(NEW_CONNECTION_CMD, () => newConnectionCmd()),
         vscode.commands.registerCommand("ext.mc.removeConnection", (selection) => removeConnectionCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.openWorkspaceFolder", (selection) => openWorkspaceFolderCmd(selection, false)),
+        vscode.commands.registerCommand("ext.mc.openWorkspaceFolder", (selection) => openWorkspaceFolderCmd(selection)),
 
+        vscode.commands.registerCommand("ext.mc.attachDebugger",        (selection) => attachDebuggerCmd(selection)),
         vscode.commands.registerCommand("ext.mc.restartProjectRun",     (selection) => restartProjectCmd(selection, false)),
         vscode.commands.registerCommand("ext.mc.restartProjectDebug",   (selection) => restartProjectCmd(selection, true)),
 

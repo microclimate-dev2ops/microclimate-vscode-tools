@@ -27,3 +27,12 @@ const rqOptions: request.Options = {
     }
 
 ///// End open in WebView
+
+///// package.JSON
+
+"commandPalette": [
+                {
+                    "command": "ext.mc.openWorkspaceFolder",
+                    "when": "never"
+                }
+            ],

@@ -99,7 +99,7 @@ export default class ConnectionManager {
         console.log("Saving connections", connectionInfos);
         try {
             return vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
-                    .update(ConnectionManager.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Workspace);
+                    .update(ConnectionManager.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Global);
         }
         catch(err) {
             const msg = "Error saving connections: " + err;

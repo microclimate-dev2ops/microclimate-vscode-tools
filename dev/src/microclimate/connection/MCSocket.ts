@@ -4,10 +4,9 @@ import * as vscode from "vscode";
 import Connection from "./Connection";
 import AppLog from "../logs/AppLog";
 import Project from "../project/Project";
-import * as restartProjectCmd from "../../command/RestartProjectCmd";
 import { ProjectState } from "../project/ProjectState";
 import * as MCUtil from "../../MCUtil";
-import { getOcticon, Octicons } from "../../constants/Icons";
+import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 
 export default class MCSocket {
 
@@ -130,23 +129,17 @@ export default class MCSocket {
 
         if (isDebug) {
             try {
-                const startDebugPromise = restartProjectCmd.startDebugSession(project);
-                vscode.window.setStatusBarMessage(`${getOcticon(Octicons.bug, true)} Connecting debugger to ${project.name}`, startDebugPromise);
-                const successMsg = await startDebugPromise;
-
-                console.log("Debugger attach success", successMsg);
-                vscode.window.showInformationMessage(successMsg);
+                await attachDebuggerCmd(project);
             }
             catch (err) {
-                console.error("Debugger attach failure", err);
-                vscode.window.showErrorMessage("Failed to attach debugger: " + err);
-                return;
+                // I think all errors should be handled by attachDebuggerCmd, but just in case.
+                console.error("Error attaching debugger after restart", err);
             }
         }
 
         const stateToAwait = isDebug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
         try {
-            await project.waitForState(stateToAwait);
+            await project.waitForState(60000, stateToAwait);
         }
         catch (err) {
             // TODO

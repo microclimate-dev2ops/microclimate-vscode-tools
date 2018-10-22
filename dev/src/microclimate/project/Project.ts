@@ -11,9 +11,11 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     // index signature so we can use Object.keys(project) nicely
     // [key: string]: any;
 
-    private static readonly CONTEXT_ID: string = "ext.mc.projectItem";             // must match package.json
-    private static readonly ENABLED_CONTEXT_ID:  string = Project.CONTEXT_ID + ".enabled";
-    private static readonly DISABLED_CONTEXT_ID: string = Project.CONTEXT_ID + ".disabled";
+    // these below must match package.json
+    private static readonly CONTEXT_ID_BASE: string = "ext.mc.projectItem";
+    private static readonly CONTEXT_ID_ENABLED:  string = Project.CONTEXT_ID_BASE + ".enabled";
+    private static readonly CONTEXT_ID_DISABLED: string = Project.CONTEXT_ID_BASE + ".disabled";
+    private static readonly CONTEXT_ID_DEBUGGABLE: string = Project.CONTEXT_ID_ENABLED + ".debuggable";
 
     public readonly name: string;
     public readonly id: string;
@@ -32,13 +34,14 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
     private _state: ProjectState = new ProjectState(undefined);
 
-    private pendingAppState: ProjectState.AppStates | undefined;
-    private resolvePendingAppState: ( () => void) | undefined;
+    private pendingAppStates: ProjectState.AppStates[] = [];
+    private resolvePendingAppState: ( () => void ) | undefined;
 
     constructor (
         projectInfo: any,
         public readonly connection: Connection,
     ) {
+        console.log("Creating project from info:", projectInfo);
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
         this._containerID = projectInfo.containerId;
@@ -83,8 +86,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         ti.resourceUri = this.localPath;
         ti.tooltip = this.state.toString();
-        // There are different context menu actions available to enabled or disabled projects
-        ti.contextValue = this.state.isEnabled ? Project.ENABLED_CONTEXT_ID : Project.DISABLED_CONTEXT_ID;
+        // There are different context menu actions available to enabled or disabled or debugging projects
+        ti.contextValue = Project.getContextID(this.state);
         ti.iconPath = this.type.icon;
         // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
         // Focuses on this project in the explorer view. Has no effect if the project is not in the current workspace.
@@ -95,6 +98,20 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         };
         // console.log(`Created TreeItem`, ti);
         return ti;
+    }
+
+    private static getContextID(state: ProjectState): string {
+        if (state.isEnabled) {
+            if (state.appState === ProjectState.AppStates.DEBUGGING) {
+                return Project.CONTEXT_ID_DEBUGGABLE;
+            }
+            else {
+                return Project.CONTEXT_ID_ENABLED;
+            }
+        }
+        else {
+            return Project.CONTEXT_ID_DISABLED;
+        }
     }
 
     // description used by QuickPickItem
@@ -158,18 +175,18 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             console.error("No ports were provided for an app that is supposed to be started");
         }
 
-        // If we're waiting for a state, check if we've reached that state, and resolve the pending state promise if so.
-        if (this.pendingAppState != null && this._state.appState === this.pendingAppState) {
+        // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
+        if (this.pendingAppStates.indexOf(this._state.appState) >= 0) {
             if (this.resolvePendingAppState != null) {
-                console.log("Reached pending state", this.pendingAppState);
+                console.log("Reached pending state: " + this.pendingAppStates);
                 this.resolvePendingAppState();
-                this.pendingAppState = undefined;
+                this.pendingAppStates = [];
                 this.resolvePendingAppState = undefined;
             }
             else {
                 // should never happen
                 console.error("PendingState was set but no resolve function was");
-                this.pendingAppState = undefined;
+                this.pendingAppStates = [];
             }
         }
 
@@ -179,31 +196,40 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
     }
 
-    public async waitForState(state: ProjectState.AppStates, timeoutMs: number = 60000): Promise<string> {
-        if (this._state.appState === state) {
-            console.log("No need to wait, already in state " + state);
-            return "Already " + state;
+    public async waitForState(timeoutMs: number, state: ProjectState.AppStates, ...alternateStates: ProjectState.AppStates[]): Promise<string> {
+        const states: ProjectState.AppStates[] = alternateStates.concat(state);
+        if (states.indexOf(this._state.appState) >= 0) {
+            console.log("No need to wait, already in state " + this._state.appState);
+            return "Already " + this._state.appState;
         }
 
         // Clear the old pendingState
         if (this.resolvePendingAppState != null) {
-            console.log("Cancelling waiting for state ", this.pendingAppState);
+            console.log("Cancelling waiting for state ", this.pendingAppStates);
             this.resolvePendingAppState();
         }
-        this.pendingAppState = state;
+        this.pendingAppStates = states;
 
-        console.log(this.name + " is waiting for state",  state);
+        console.log(this.name + " is waiting for states: " + states);
+
+        let statesAsStr: string;
+        if (states.length > 1) {
+            statesAsStr = states.join(" or ");
+        }
+        else {
+            statesAsStr = states[0].toString();
+        }
 
         const pendingStatePromise = new Promise<string>( (resolve, reject) => {
             setTimeout(
-                () => reject(`${this.name} did not reach state "${state}" within ${timeoutMs/1000}s`),
+                () => reject(`${this.name} did not reach any of states: "${statesAsStr}" within ${timeoutMs/1000}s`),
                 timeoutMs);
 
             this.resolvePendingAppState = resolve;
             return;
         });
 
-        vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Waiting for ${this.name} to be ${state}`, pendingStatePromise);
+        vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Waiting for ${this.name} to be ${statesAsStr}`, pendingStatePromise);
 
         return pendingStatePromise;
     }

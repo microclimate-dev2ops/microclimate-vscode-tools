@@ -2,5 +2,14 @@
     "displayName": "Microclimate Tools for VSCode",
     "description": "Microclimate Tools for VSCode are helpful and good!",
 
-    "viewName": "Microclimate Projects"
+    "viewName": "Microclimate Projects",
+
+
+    "---- Items below are not exposed to user -----": "",
+    "isConnectionOrProject": "viewItem =~ /ext.mc.*/",
+    "isConnection": "viewItem == ext.mc.connectionItem",
+    "isProject": "viewItem =~ /ext.mc.projectItem*/",
+    "isEnabledProject":  "viewItem =~ /ext.mc.projectItem.enabled*/",
+    "isDisabledProject": "viewItem =~ /ext.mc.projectItem.disabled*/",
+    "isDebuggableProject": "viewItem =~ /ext.mc.projectItem.enabled.debuggable*/"
 }
