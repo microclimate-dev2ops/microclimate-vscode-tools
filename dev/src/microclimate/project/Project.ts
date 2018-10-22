@@ -8,6 +8,9 @@ import Connection from "../connection/Connection";
 import { getOcticon, Octicons } from "../../constants/Icons";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
+    // index signature so we can use Object.keys(project) nicely
+    // [key: string]: any;
+
     private static readonly CONTEXT_ID: string = "ext.mc.projectItem";             // must match package.json
     private static readonly ENABLED_CONTEXT_ID:  string = Project.CONTEXT_ID + ".enabled";
     private static readonly DISABLED_CONTEXT_ID: string = Project.CONTEXT_ID + ".disabled";
@@ -19,7 +22,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly localPath: vscode.Uri;
     public readonly buildLogPath: vscode.Uri | undefined;
 
-    private _containerID: string;
+    private _containerID: string | undefined;
     private _appPort: number | undefined;
     private _debugPort: number | undefined;
 
@@ -205,7 +208,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return pendingStatePromise;
     }
 
-    public get containerID(): string {
+    public get containerID(): string | undefined {
         return this._containerID;
     }
 

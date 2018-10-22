@@ -15,6 +15,7 @@ import { ProjectState } from "../microclimate/project/ProjectState";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import removeConnectionCmd from "./RemoveConnectionCmd";
 import containerBashCmd from "./ContainerShellCmd";
+import viewProjectInfoCmd from "./ViewProjectInfoCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -41,7 +42,9 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand("ext.mc.disable",   (selection) => toggleEnablementCmd(selection, false)),
         vscode.commands.registerCommand("ext.mc.enable",    (selection) => toggleEnablementCmd(selection, true)),
 
-        vscode.commands.registerCommand("ext.mc.containerBash", (selection) => containerBashCmd(selection))
+        vscode.commands.registerCommand("ext.mc.containerBash", (selection) => containerBashCmd(selection)),
+
+        vscode.commands.registerCommand("ext.mc.viewProjectInfo", (selection) => viewProjectInfoCmd(selection))
     ];
 }
 
