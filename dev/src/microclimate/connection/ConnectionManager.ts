@@ -73,7 +73,7 @@ export default class ConnectionManager {
         const loaded = vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
                 .get(ConnectionManager.CONNECTIONS_KEY, []);
 
-        console.log("LOADED CONNECTIONS", loaded);
+        // console.log("LOADED CONNECTIONS", loaded);
         return loaded;
     }
 
