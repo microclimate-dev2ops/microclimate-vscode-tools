@@ -42,9 +42,15 @@
                 "description": "Connect to a Microclimate instance",
                 "category": "Microclimate",
                 "icon": {
-                    "light": "res/img/dark/microclimate.svg",
-                    "dark": "res/img/dark/microclimate.svg"
+                    "light": "res/img/light/new.svg",
+                    "dark": "res/img/dark/new.svg"
                 }
+            },
+            {
+                "command": "ext.mc.newDefaultConnection",
+                "title": "New default Microclimate connection",
+                "description": "Connect to Microclimate at the default URL, http://localhost:9090",
+                "category": "Microclimate"
             },
             {
                 "command": "ext.mc.removeConnection",
@@ -130,7 +136,11 @@
             "view/item/context": [
                 {
                     "command": "ext.mc.newConnection",
-                    "when": "view == ext.mc.mcProjectExplorer && !viewItem"
+                    "when": "%isInViewWithNothingSelected%"
+                },
+                {
+                    "command": "ext.mc.newDefaultConnection",
+                    "when": "%isInViewWithNothingSelected%"
                 },
                 {
                     "command": "ext.mc.removeConnection",

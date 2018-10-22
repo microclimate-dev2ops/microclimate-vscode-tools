@@ -1,22 +1,22 @@
 import * as vscode from "vscode";
 
-import newConnectionCmd, { NEW_CONNECTION_CMD } from "./NewConnectionCmd";
+import * as NewConnectionCmd from "./NewConnectionCmd";
 import openWorkspaceFolderCmd from "./OpenWorkspaceFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
 import openInBrowserCmd from "./OpenInBrowserCmd";
 import requestBuildCmd from "./RequestBuildCmd";
 import openBuildLogCmd from "./OpenBuildLogCmd";
 import openAppLogCmd from "./OpenAppLogCmd";
-
-import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
-import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import { ProjectState } from "../microclimate/project/ProjectState";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import removeConnectionCmd from "./RemoveConnectionCmd";
 import containerBashCmd from "./ContainerShellCmd";
 import viewProjectInfoCmd from "./ViewProjectInfoCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
+
+import Project from "../microclimate/project/Project";
+import Connection from "../microclimate/connection/Connection";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
+import { ProjectState } from "../microclimate/project/ProjectState";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -26,7 +26,8 @@ export function createCommands(): vscode.Disposable[] {
     // - undefined (if run from command palette)
     // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
-        vscode.commands.registerCommand(NEW_CONNECTION_CMD, () => newConnectionCmd()),
+        vscode.commands.registerCommand(NewConnectionCmd.NEW_CONNECTION_CMD_ID, () => NewConnectionCmd.newConnectionCmd()),
+        vscode.commands.registerCommand("ext.mc.newDefaultConnection", () => NewConnectionCmd.tryAddConnection(NewConnectionCmd.DEFAULT_CONNINFO)),
         vscode.commands.registerCommand("ext.mc.removeConnection", (selection) => removeConnectionCmd(selection)),
 
         vscode.commands.registerCommand("ext.mc.openWorkspaceFolder", (selection) => openWorkspaceFolderCmd(selection)),

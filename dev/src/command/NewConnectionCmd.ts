@@ -6,9 +6,13 @@ import * as MCUtil from "../MCUtil";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Endpoints from "../constants/Endpoints";
 
-export const NEW_CONNECTION_CMD: string = "ext.mc.newConnection";
+export const NEW_CONNECTION_CMD_ID: string = "ext.mc.newConnection";
+export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
+    host: "localhost",
+    port: 9090
+};
 
-export default async function newConnectionCmd(): Promise<void> {
+export async function newConnectionCmd(): Promise<void> {
     console.log("New connection command invoked");
 
     // TODO comment this out. Only localhost is permitted.

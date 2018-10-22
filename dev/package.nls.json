@@ -6,6 +6,7 @@
 
 
     "---- Items below are not exposed to user -----": "",
+    "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
     "isConnectionOrProject": "viewItem =~ /ext.mc.*/",
     "isConnection": "viewItem == ext.mc.connectionItem",
     "isProject": "viewItem =~ /ext.mc.projectItem*/",

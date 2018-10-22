@@ -1,7 +1,8 @@
 Important:
 - Hit the build log endpoint each time build logs are requested instead of just storing it once on project creation.
     - The build log location can change for Docker project types.
-- 'Create default connection' as a separate command
+- 'Create default connection' as a separate command - where to display this? Palette/view bar/context when nothing selected
+    - Can't test if no connections exist :(
 - OK to require 18.11? Or:
     - Require 18.09 and test capabilities on restart
         - 1809 -> Liberty only
