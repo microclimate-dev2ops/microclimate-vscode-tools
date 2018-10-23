@@ -53,7 +53,7 @@ export default class BuildLog {
                 Logger.log(`${this.outputChannel.name} hasn't changed`);
             }*/
         }
-        catch(err) {
+        catch (err) {
             vscode.window.showErrorMessage("Error updating build log: " + err);
             Logger.logE(err);
         }

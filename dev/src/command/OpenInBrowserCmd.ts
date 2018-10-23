@@ -25,7 +25,7 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
     if (resource instanceof Project) {
         const project: Project = resource as Project;
         if (!project.state.isStarted) {
-            vscode.window.showErrorMessage("You can only open projects that are Started");
+            vscode.window.showErrorMessage("You can only open projects that are Started in the browser.");
             return;
         }
         else if (project.appBaseUrl == null) {

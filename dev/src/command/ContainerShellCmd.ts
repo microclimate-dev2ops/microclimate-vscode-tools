@@ -4,6 +4,7 @@ import { ProjectState } from "../microclimate/project/ProjectState";
 import { promptForProject } from "./CommandUtil";
 import Project from "../microclimate/project/Project";
 import { Logger } from "../Logger";
+import { ProjectType } from "../microclimate/project/ProjectType";
 
 export default async function containerShellCmd(project: Project): Promise<void> {
     Logger.log("containerBashCmd invoked");
@@ -22,7 +23,9 @@ export default async function containerShellCmd(project: Project): Promise<void>
         return;
     }
 
-    const toExec: string = "bash";
+    // annoyingly, only python project containers seem to not have bash installed.
+    // TODO We could check what's installed by doing docker exec through child_process, if that's worth the trouble.
+    const toExec: string = project.type.type === ProjectType.Types.PYTHON ? "sh" : "bash";
     // const env = convertNodeEnvToTerminalEnv(process.env);
 
     const options: vscode.TerminalOptions = {

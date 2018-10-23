@@ -143,7 +143,6 @@ export default class MCSocket {
             await project.waitForState(60000, stateToAwait);
         }
         catch (err) {
-            // TODO
             vscode.window.showErrorMessage(err);
             Logger.logE(err);
             return;
@@ -156,7 +155,7 @@ export default class MCSocket {
 
     private onContainerLogs = async (payload: any): Promise<void> => {
         const projectID = payload.projectID;
-        const projectName = payload.projectName;
+        // const projectName = payload.projectName;
         const logContents = payload.logs;
 
         const log = AppLog.getLogByProjectID(projectID);

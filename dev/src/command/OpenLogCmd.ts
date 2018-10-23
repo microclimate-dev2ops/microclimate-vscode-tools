@@ -24,9 +24,8 @@ export default async function openLogCmd(project: Project, appLog: Boolean): Pro
         return;
     }
 
-    // shouldn't happen anymore
-    if (!project.state.isEnabled) {
-        vscode.window.showErrorMessage("Logs are not available for Disabled projects.");
+    if (appLog && (project.state.appState === ProjectState.AppStates.STOPPED || !project.state.isEnabled)) {
+        vscode.window.showErrorMessage("App Logs are not available for Stopped or Disabled projects.");
         return;
     }
 
