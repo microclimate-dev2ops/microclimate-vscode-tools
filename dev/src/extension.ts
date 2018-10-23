@@ -19,6 +19,8 @@ export function activate(context: vscode.ExtensionContext): void {
     Logger.log(msg);
     vscode.window.showInformationMessage(msg);
 
+    ignoreMCFiles();
+
     const subscriptions: any[] = [
         ...createViews(),
         ...createCommands(),
@@ -33,4 +35,33 @@ export function activate(context: vscode.ExtensionContext): void {
 
 // this method is called when your extension is deactivated
 export function deactivate(): void {
+}
+
+const excludeSection = "exclude";
+const prePattern = "**/";
+// files or directories, doesn't matter, trailing / not required.
+const filesToIgnore: string[] = [
+    ".Trash-0",
+    ".config",
+    ".extensions",
+    ".idc",
+    ".license-accept",
+    ".logs",
+    ".nyc_output",
+    ".projects"
+];
+
+async function ignoreMCFiles(): Promise<void> {
+    const filesConfig = vscode.workspace.getConfiguration("files", null);
+    const existing: any = filesConfig.get<{}>(excludeSection) || {};
+
+    filesToIgnore.forEach( (toIgnore) => {
+        const newIgnore = prePattern + toIgnore;
+        if (existing[newIgnore] == null) {
+            // If the user already set it to false, don't undo that!
+            existing[newIgnore] = true;
+        }
+    });
+
+    filesConfig.update(excludeSection, existing, vscode.ConfigurationTarget.Workspace);
 }

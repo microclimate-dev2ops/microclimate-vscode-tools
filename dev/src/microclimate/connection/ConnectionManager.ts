@@ -81,7 +81,7 @@ export default class ConnectionManager {
     public static async saveConnections(): Promise<void> {
         // We save ConnectionInfo objects since they are simpler and more readable.
 
-        // This is a bit tough to read - For each connection, convert it to a connInfo.
+        // This is a bit tough to read - For each connection, convert it to a connInfo we can save nicely.
         // If the convert fails, ignore it and log an error.
         const connectionInfos: MCUtil.ConnectionInfo[] = ConnectionManager.instance.connections.reduce(
             (result: MCUtil.ConnectionInfo[], conn: Connection): MCUtil.ConnectionInfo[] => {

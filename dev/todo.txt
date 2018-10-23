@@ -1,6 +1,4 @@
 Important:
-- Hit the build log endpoint each time build logs are requested instead of just storing it once on project creation.
-    - The build log location can change for Docker project types.
 - 'Create default connection' as a separate command - where to display this? Palette/view bar/context when nothing selected
     - Can't test if no connections exist :(
 - OK to require 18.11? Or:
@@ -16,8 +14,6 @@ Important:
 - Tests!
 
 Annoying Release Stuff:
-- better logging? needs to go to a file
-    - is there a logging facility provided for extensions
 - Icons
 - externalize command names into package.nls.json (for ID)
 - externalize all strings (ugh)
@@ -36,3 +32,4 @@ Less Important:
 Investigate:
     - Problems view for Validation errors
     - Why do projects/connections sometimes get Emphasized?
+        - When their folders (treeItem.resourceUri) get emphasized from git changes, linting warnings, anything!
