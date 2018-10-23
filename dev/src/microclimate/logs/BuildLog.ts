@@ -25,7 +25,7 @@ export default class BuildLog {
     ) {
         this.outputChannel = vscode.window.createOutputChannel("Build Log - " + projectName);
         this.outputChannel.appendLine(`Fetching build logs for ${projectName}...`);
-        this.outputChannel.show();
+        this.showOutputChannel();
 
         this.update();
         setInterval(this.update, BuildLog.UPDATE_INTERVAL);
@@ -46,7 +46,7 @@ export default class BuildLog {
                 // The build log doesn't get appended to, it's always totally new
                 this.outputChannel.clear();
                 this.outputChannel.appendLine(getResult.body);
-                this.outputChannel.show();
+                this.showOutputChannel();
             }
             /*
             else {
@@ -60,7 +60,7 @@ export default class BuildLog {
     }
 
     public async showOutputChannel(): Promise<void> {
-        this.outputChannel.show();
+        this.outputChannel.show(true);
     }
 
     public static getOrCreateLog(project: Project): BuildLog {

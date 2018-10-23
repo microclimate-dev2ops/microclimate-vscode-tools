@@ -159,8 +159,10 @@ export default class MCSocket {
         const projectName = payload.projectName;
         const logContents = payload.logs;
 
-        const log = AppLog.getOrCreateLog(projectID, projectName);
-        log.update(logContents);
+        const log = AppLog.getLogByProjectID(projectID);
+        if (log != null) {
+            log.update(logContents);
+        }
     }
 
 }

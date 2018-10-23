@@ -69,7 +69,7 @@ export default class AppLog {
     }
 
     public async showOutputChannel(): Promise<void> {
-        this.outputChannel.show();
+        this.outputChannel.show(true);
     }
 
     public static getOrCreateLog(projectID: string, projectName: string): AppLog {
@@ -83,10 +83,10 @@ export default class AppLog {
         return log;
     }
 
-    /*
     public static getLogByProjectID(projectID: string): AppLog | undefined {
         return this.logMap.get(projectID);
-    }*/
+    }
+
     public setDebugConsole(console: vscode.DebugConsole): void {
         this.debugConsole = console;
         this.hasNewDebugConsole = true;
