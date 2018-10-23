@@ -187,6 +187,6 @@ export namespace Logger {
     export enum Levels {
         INFO = "INFO",
         WARNING = "WARN",
-        ERROR = "ERROR"
+        ERROR = "ERRO"
     }
 }

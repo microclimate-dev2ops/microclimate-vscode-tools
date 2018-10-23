@@ -42,7 +42,6 @@ export default function projectInfoHtml(project: Project): string {
             ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 16))}
             ${buildRow("Project ID", project.id)}
             ${buildRow("Path on Disk", project.localPath.fsPath)}
-            ${buildRow("Build Log", getNonNull(project.buildLogPath, "Not available"))}
             ${emptyRow}
             ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"))}
             ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}

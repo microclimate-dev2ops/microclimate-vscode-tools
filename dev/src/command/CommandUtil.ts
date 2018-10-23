@@ -5,13 +5,12 @@ import openWorkspaceFolderCmd from "./OpenWorkspaceFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
 import openInBrowserCmd from "./OpenInBrowserCmd";
 import requestBuildCmd from "./RequestBuildCmd";
-import openBuildLogCmd from "./OpenBuildLogCmd";
-import openAppLogCmd from "./OpenAppLogCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import removeConnectionCmd from "./RemoveConnectionCmd";
 import containerBashCmd from "./ContainerShellCmd";
 import viewProjectInfoCmd from "./ViewProjectInfoCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
+import openLogCmd from "./OpenLogCmd";
 
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
@@ -27,7 +26,7 @@ export function createCommands(): vscode.Disposable[] {
     // - undefined (if run from command palette)
     // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
-        vscode.commands.registerCommand(NewConnectionCmd.NEW_CONNECTION_CMD_ID, () => NewConnectionCmd.newConnectionCmd()),
+        vscode.commands.registerCommand(NewConnectionCmd.COMMAND_ID, () => NewConnectionCmd.newConnectionCmd()),
         vscode.commands.registerCommand("ext.mc.newDefaultConnection", () => NewConnectionCmd.tryAddConnection(NewConnectionCmd.DEFAULT_CONNINFO)),
         vscode.commands.registerCommand("ext.mc.removeConnection", (selection) => removeConnectionCmd(selection)),
 
@@ -40,8 +39,8 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand("ext.mc.openInBrowser", (selection) => openInBrowserCmd(selection)),
         vscode.commands.registerCommand("ext.mc.requestBuild",  (selection) => requestBuildCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.openBuildLog",  (selection) => openBuildLogCmd(selection)),
-        vscode.commands.registerCommand("ext.mc.openAppLog",    (selection) => openAppLogCmd(selection)),
+        vscode.commands.registerCommand("ext.mc.openAppLog",    (selection) => openLogCmd(selection, true)),
+        vscode.commands.registerCommand("ext.mc.openBuildLog",  (selection) => openLogCmd(selection, false)),
 
         vscode.commands.registerCommand("ext.mc.disable",   (selection) => toggleEnablementCmd(selection, false)),
         vscode.commands.registerCommand("ext.mc.enable",    (selection) => toggleEnablementCmd(selection, true)),

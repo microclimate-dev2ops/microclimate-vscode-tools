@@ -16,9 +16,11 @@ export default class Endpoints {
 
     public static readonly RESTART_ACTION = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/restart`;
 
-    public static readonly BUILD_ACTION =   (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/build`;
+    public static readonly BUILD_ACTION   = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/build`;
 
     public static readonly ENABLEMENT_ACTION = (projectID: string, enable: Boolean): string => {
         return `${Endpoints.PROJECTS}/${projectID}/${enable ? "open" : "close"}`;
     }
+
+    public static readonly BUILD_LOG = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/build-log`;
 }

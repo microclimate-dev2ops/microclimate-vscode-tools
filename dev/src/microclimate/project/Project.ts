@@ -23,7 +23,6 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly type: ProjectType;
     public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
-    public readonly buildLogPath: vscode.Uri | undefined;
 
     private _containerID: string | undefined;
     private _appPort: number | undefined;
@@ -55,18 +54,6 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         );
 
         this.contextRoot = projectInfo.contextroot || "";
-
-        // TODO this should be removed and replace OpenBuildLogCmd with a GET to the build-log endpoint.
-        if (projectInfo.logs && projectInfo.logs.build) {
-            this.buildLogPath = vscode.Uri.file(
-                MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.logs.build.file)
-            );
-            Logger.log(`Build log for project ${this.name} is at ${this.buildLogPath}`);
-        }
-        // Node projects don't have build logs; any other type should
-        else if (this.type.providesBuildLog) {
-            Logger.logE(`Couldn't get build logs for ${this.type.userFriendlyType} project ${this.name}, the logs object is:`, projectInfo.logs);
-        }
 
         this.update(projectInfo);
 

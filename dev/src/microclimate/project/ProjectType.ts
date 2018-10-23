@@ -1,5 +1,4 @@
-import { uppercaseFirstChar } from "../../MCUtil";
-import { IconPaths, Icons, getIconPaths } from "../../constants/Icons";
+import * as Icons from "../../constants/Icons";
 import { Logger } from "../../Logger";
 
 export class ProjectType {
@@ -8,7 +7,7 @@ export class ProjectType {
     public readonly userFriendlyType: string;
     public readonly debugType: string | undefined;
 
-    public readonly icon: IconPaths;
+    public readonly icon: Icons.IconPaths;
 
     constructor(
         public readonly projectType: string,
@@ -72,26 +71,26 @@ export class ProjectType {
         }
     }
 
-    private static getProjectIcon(type: ProjectType.Types): IconPaths {
+    private static getProjectIcon(type: ProjectType.Types): Icons.IconPaths {
         // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
         switch (type) {
             case ProjectType.Types.MICROPROFILE:
-                return getIconPaths(Icons.Microprofile);
+                return Icons.getIconPaths(Icons.Icons.Microprofile);
             case ProjectType.Types.SPRING:
-                return getIconPaths(Icons.Spring);
+                return Icons.getIconPaths(Icons.Icons.Spring);
             case ProjectType.Types.NODE:
-                return getIconPaths(Icons.Node);
+                return Icons.getIconPaths(Icons.Icons.Node);
             case ProjectType.Types.SWIFT:
-                return getIconPaths(Icons.Swift);
+                return Icons.getIconPaths(Icons.Icons.Swift);
             case ProjectType.Types.PYTHON:
-                return getIconPaths(Icons.Python);
+                return Icons.getIconPaths(Icons.Icons.Python);
             case ProjectType.Types.GO:
-                return getIconPaths(Icons.Go);
+                return Icons.getIconPaths(Icons.Icons.Go);
             case ProjectType.Types.GENERIC_DOCKER:
                 // This is our fall-back, we could possibly use a more generic icon.
-                return getIconPaths(Icons.Docker);
+                return Icons.getIconPaths(Icons.Icons.Docker);
             default:
-                return getIconPaths(Icons.Generic);
+                return Icons.getIconPaths(Icons.Icons.Generic);
         }
     }
 
@@ -107,7 +106,7 @@ export class ProjectType {
     }
 
     public get providesBuildLog(): Boolean {
-        return ProjectType.PROJECTS_WITHOUT_BUILDLOGS.indexOf(this.type) >= 0;
+        return ProjectType.PROJECTS_WITHOUT_BUILDLOGS.indexOf(this.type) < 0;
     }
 }
 
@@ -124,7 +123,6 @@ export namespace ProjectType {
         GENERIC_DOCKER = "Docker",
         UNKNOWN = "Unknown"
     }
-
 
     export const PROJECTS_WITHOUT_BUILDLOGS: ReadonlyArray<ProjectType.Types> = [
         ProjectType.Types.NODE

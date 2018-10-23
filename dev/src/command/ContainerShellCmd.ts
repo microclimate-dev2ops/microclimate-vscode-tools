@@ -17,6 +17,11 @@ export default async function containerShellCmd(project: Project): Promise<void>
         project = selected;
     }
 
+    if (!project.containerID) {
+        vscode.window.showWarningMessage("This project does not have a container running right now. Wait until the project is Started.");
+        return;
+    }
+
     const toExec: string = "bash";
     // const env = convertNodeEnvToTerminalEnv(process.env);
 

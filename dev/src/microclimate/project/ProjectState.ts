@@ -142,6 +142,9 @@ export namespace ProjectState {
         else if (appStatus === "stopped") {
             return ProjectState.AppStates.STOPPED;
         }
+        else if (appStatus === "unknown") {
+            return ProjectState.AppStates.UNKNOWN;
+        }
         Logger.logE("Unknown app state:", appStatus);
         return ProjectState.AppStates.UNKNOWN;
     }
