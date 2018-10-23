@@ -3,14 +3,15 @@ import * as vscode from "vscode";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import { promptForProject } from "./CommandUtil";
 import Project from "../microclimate/project/Project";
+import { Logger } from "../Logger";
 
 export default async function containerShellCmd(project: Project): Promise<void> {
-    console.log("containerBashCmd invoked");
+    Logger.log("containerBashCmd invoked");
     if (project == null) {
         const selected = await promptForProject(...ProjectState.getEnabledStates());
         if (selected == null) {
             // user cancelled
-            console.log("User cancelled project prompt");
+            Logger.log("User cancelled project prompt");
             return;
         }
         project = selected;

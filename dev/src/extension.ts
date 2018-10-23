@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext): void {
     Logger.log("Finished activating logger");
 
     const msg = "Microclimate Tools for VSCode are active!";
-    console.log(msg);
+    Logger.log(msg);
     vscode.window.showInformationMessage(msg);
 
     const subscriptions: any[] = [
@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ];
 
     subscriptions.forEach((e) => {
-        // console.log("Adding subscription " + util.inspect(e));
+        // Logger.log("Adding subscription " + util.inspect(e));
         context.subscriptions.push(e);
     });
 }

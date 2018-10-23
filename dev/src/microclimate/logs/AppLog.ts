@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { Logger } from "../../Logger";
 
 export default class AppLog {
 
@@ -56,7 +57,7 @@ export default class AppLog {
                 this.hasNewDebugConsole = false;
             }
             else {
-                console.error("Unexpected null debug console");
+                Logger.logE("Unexpected null debug console");
             }
         }
         // It's normal for debugConsole to be null if we're not debugging.
@@ -67,14 +68,14 @@ export default class AppLog {
         this.previousLength = contents.length;
     }
 
-    public async showOutputChannel() {
+    public async showOutputChannel(): Promise<void> {
         this.outputChannel.show();
     }
 
     public static getOrCreateLog(projectID: string, projectName: string): AppLog {
         let log = this.logMap.get(projectID);
         if (log == null) {
-            console.log("Creating app log for " + projectName);
+            Logger.log("Creating app log for " + projectName);
             // we have to create it
             log = new AppLog(projectID, projectName);
             AppLog.logMap.set(projectID, log);
@@ -86,12 +87,12 @@ export default class AppLog {
     public static getLogByProjectID(projectID: string): AppLog | undefined {
         return this.logMap.get(projectID);
     }*/
-    public setDebugConsole(console: vscode.DebugConsole) {
+    public setDebugConsole(console: vscode.DebugConsole): void {
         this.debugConsole = console;
         this.hasNewDebugConsole = true;
     }
 
-    public unsetDebugConsole() {
+    public unsetDebugConsole(): void {
         if (this.debugConsole == null) {
             // nothing to do
             return;

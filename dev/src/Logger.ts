@@ -1,9 +1,9 @@
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
+import * as util from "util";
 import { ExtensionContext } from "vscode";
 
-import * as path from "path";
-import * as fs from "fs";
-import * as util from "util";
-import * as os from "os";
 
 export class Logger {
 
@@ -112,23 +112,37 @@ function getCaller(): string {
     const stack = new Error().stack;
     if (stack != null) {
         const stackLines = stack.split("\n");
-        console.log("stackLines:", stackLines);
+        //console.log("stackLines:", stackLines);
+
+        // Work our way UP the stack until we hit a Logger function, then take the function call before that one.
         for (const [i, line] of stackLines.reverse().entries()) {
             if (line.includes(__filename)) {
                 const callerRaw: string = stackLines[i-1].trim();
                 // the callerRaw line will look like this:
                 // "at activate (/Users/tim/programs/microclimate-vscode/dev/out/extension.js:13:21)"
+                // we want to format it into "extension.js.activate()"
 
+                // The second word is the function name (after "at")
                 const splitResult: string[] = callerRaw.split(" ");
                 let callerFn = "";
                 if (splitResult.length > 1) {
-                    callerFn = splitResult[1];
+                    let functionName = splitResult[1];
+                    // If it's a callback, there will be extra stuff we aren't interested in separated by dots
+                    // eg "Project.__dirname.constructor.connection.update"
+                    // strip out everything up to the last dot, if there is one
+                    const splitByPeriod: string[] = functionName.split(".");
+                    if (splitByPeriod.length > 0) {
+                        functionName = splitByPeriod[splitByPeriod.length - 1];
+                    }
+
+                    callerFn = `.${functionName}()`;
                 }
                 else {
                     console.log("Couldn't parse function name from:", callerRaw);
                     return "";
                 }
                 // filepath will be like "(/Users/tim/programs/microclimate-vscode/dev/out/extension.js:13:21)"
+                // extract "extension.js"
                 const filepath = splitResult[splitResult.length - 1];
 
                 let callerFile = "";
@@ -136,9 +150,9 @@ function getCaller(): string {
                 if (filenameMatches != null && filenameMatches.length > 0) {
                     callerFile = filenameMatches[0];
                 }
-                console.log(`callerFn "${callerFn}" callerFile "${callerFile}"`);
+                // console.log(`callerFn "${callerFn}" callerFile "${callerFile}"`);
 
-                return `${callerFile}.${callerFn}()`;
+                return `${callerFile}${callerFn}`;
             }
         }
     }
@@ -148,19 +162,27 @@ function getCaller(): string {
 
 function getDateTime(): string {
     const now = new Date();
-    // formats to eg. 22/10/2018 9:40:15
+    // formats to eg. 22/10/2018 9:40:15.832
     // Note add 1 to month because months are 0-indexed
     // return `${leftPad(now.getDate())}/${leftPad(now.getMonth() + 1)}/${now.getFullYear()} ` +
-    return `${leftPad(now.getHours())}:${leftPad(now.getMinutes())}:${leftPad(now.getSeconds())}.${now.getMilliseconds()}`;
-}
-// converts a 1-char number to a 2-char with a leading 0. eg. leftPad("2") -> "02"
-function leftPad(n: number): string {
-    if (n >= 10) {
-        return n.toString();
-    }
-    return "0" + n;
+    return `${leftPad(now.getHours(), 2)}:${leftPad(now.getMinutes(), 2)}:${leftPad(now.getSeconds(), 2)}.${leftPad(now.getMilliseconds(), 3)}`;
 }
 
+/**
+ * Convert the given number to a string of at least the given length.
+ * Eg:
+ * leftPad(3, 2) -> "03"
+ * leftPad(20, 2) -> "20"
+ * leftpad(400, 2) -> "400"     (just converts to string)
+ */
+function leftPad(n: number, desiredLen: number): string {
+    const nStr = n.toString();
+    const diff = desiredLen - nStr.length;
+    if (diff <= 0) {
+        return nStr;
+    }
+    return "0".repeat(diff) + nStr;
+}
 export namespace Logger {
     export enum Levels {
         INFO = "INFO",

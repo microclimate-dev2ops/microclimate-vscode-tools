@@ -3,14 +3,15 @@ import * as vscode from "vscode";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Connection from "../microclimate/connection/Connection";
 import { promptForConnection } from "./CommandUtil";
+import { Logger } from "../Logger";
 
 export default async function removeConnectionCmd(connection: Connection): Promise<void> {
-    console.log("removeConnectionCmd invoked");
+    Logger.log("removeConnectionCmd invoked");
     if (connection == null) {
         const selected = await promptForConnection();
         if (selected == null) {
             // user cancelled
-            console.log("User cancelled project prompt");
+            Logger.log("User cancelled project prompt");
             return;
         }
         connection = selected;

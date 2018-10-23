@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import * as MCUtil from "../../MCUtil";
 import Connection from "./Connection";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
+import { Logger } from "../../Logger";
 
 export default class ConnectionManager {
 
@@ -18,7 +19,7 @@ export default class ConnectionManager {
 
     ) {
         const connectionInfos: MCUtil.ConnectionInfo[] = ConnectionManager.loadConnections();
-        console.log(`Loaded ${connectionInfos.length} connections from settings`);
+        Logger.log(`Loaded ${connectionInfos.length} connections from settings`);
         connectionInfos.forEach((connInfo) =>
             tryAddConnection(connInfo)
         );
@@ -41,7 +42,7 @@ export default class ConnectionManager {
             // all validation that this connection is good must be done by this point
 
             const connection: Connection = new Connection(uri, host, mcVersion, workspace);
-            console.log("New Connection @ " + uri);
+            Logger.log("New Connection @ " + uri);
             this._connections.push(connection);
             ConnectionManager.saveConnections();
 
@@ -53,11 +54,11 @@ export default class ConnectionManager {
     public async removeConnection(connection: Connection): Promise<Boolean> {
         const indexToRemove = this.connections.indexOf(connection);
         if (indexToRemove === -1) {
-            console.error(`Request to remove connection ${connection} but it doesn't exist!`);
+            Logger.logE(`Request to remove connection ${connection} but it doesn't exist!`);
             return false;
         }
         this.connections.splice(indexToRemove, 1);
-        console.log("Removed connection", connection);
+        Logger.log("Removed connection", connection);
         ConnectionManager.saveConnections();
         this.onChange();
         return true;
@@ -73,7 +74,7 @@ export default class ConnectionManager {
         const loaded = vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
                 .get(ConnectionManager.CONNECTIONS_KEY, []);
 
-        // console.log("LOADED CONNECTIONS", loaded);
+        // Logger.log("LOADED CONNECTIONS", loaded);
         return loaded;
     }
 
@@ -90,20 +91,20 @@ export default class ConnectionManager {
                 }
                 else {
                     // shouldn't happen
-                    console.error("Couldn't convert mcURI to connInfo!", conn.mcUri);
+                    Logger.logE("Couldn't convert mcURI to connInfo!", conn.mcUri);
                 }
                 return result;
             },
         []);
 
-        console.log("Saving connections", connectionInfos);
+        Logger.log("Saving connections", connectionInfos);
         try {
             return vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
                     .update(ConnectionManager.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Global);
         }
         catch(err) {
             const msg = "Error saving connections: " + err;
-            console.error(msg);
+            Logger.logE(msg);
             vscode.window.showErrorMessage(err);
         }
     }
@@ -113,7 +114,7 @@ export default class ConnectionManager {
      * eg to trigger a tree update in the UI.
      */
     public addOnChangeListener(callback: () => void): void {
-        console.log("Adding onChangeListener " + callback.name);
+        Logger.log("Adding onChangeListener " + callback.name);
         this.listeners.push(callback);
     }
 
@@ -121,7 +122,7 @@ export default class ConnectionManager {
      * Call this whenever a connection is added, removed, or changed.
      */
     public onChange = (): void => {
-        // console.log(`Connection ${connection} changed`);
+        // Logger.log(`Connection ${connection} changed`);
         this.listeners.forEach( (f) => f());
     }
 }

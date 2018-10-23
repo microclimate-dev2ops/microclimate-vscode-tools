@@ -5,6 +5,7 @@ import * as reqErrors from "request-promise-native/errors";
 import * as MCUtil from "../MCUtil";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Endpoints from "../constants/Endpoints";
+import { Logger } from "../Logger";
 
 export const NEW_CONNECTION_CMD_ID: string = "ext.mc.newConnection";
 export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
@@ -13,7 +14,7 @@ export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
 };
 
 export async function newConnectionCmd(): Promise<void> {
-    console.log("New connection command invoked");
+    Logger.log("New connection command invoked");
 
     // TODO comment this out. Only localhost is permitted.
     const inputOpts: vscode.InputBoxOptions = {
@@ -79,7 +80,7 @@ export async function tryAddConnection(connInfo: MCUtil.ConnectionInfo): Promise
             vscode.window.showInformationMessage(s);
         })
         .catch(async (s) => {
-            console.log("Connection test failed with message " + s);
+            Logger.log("Connection test failed with message " + s);
             const response = await vscode.window.showErrorMessage(s, tryAgainBtn, reconnectBtn);
             if (response === tryAgainBtn) {
                 // start again from the beginning
@@ -109,7 +110,7 @@ async function testConnection(connInfo: MCUtil.ConnectionInfo): Promise<string> 
                 return onSuccessfulConnection(uri, connInfo.host, microclimateData);
             })
             .catch( (err: any) => {
-                console.log(`Request fail - ${err}`);
+                Logger.log(`Request fail - ${err}`);
                 if (err instanceof reqErrors.RequestError) {
                     return reject(`Connecting to Microclimate at ${uri} failed.`);
                 }
@@ -131,7 +132,7 @@ const requiredVersionStr: string = "18.11";
 async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: any): Promise<string> {
 
     return new Promise<string>( (resolve, reject) => {
-        console.log("Microclimate ENV data:", mcEnvData);
+        Logger.log("Microclimate ENV data:", mcEnvData);
 
         if (mcEnvData == null) {
             return reject("Null microclimateData passed to onSuccessfulConnection");
@@ -141,7 +142,7 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
         const rawWorkspace: string = mcEnvData.workspace_location;
 
         if (rawVersion == null || rawWorkspace == null) {
-            console.error("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
+            Logger.logE("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
             return reject(`Your version of Microclimate is not supported. At least ${requiredVersionStr} is required.`);
         }
 
@@ -149,18 +150,18 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
         if (rawVersion === "latest") {
             // This means it's being hosted by an internal MC dev.
             // There's nothing we can do here but assume they have all the features we need.
-            console.log("Dev version of Microclimate");
+            Logger.log("Dev version of Microclimate");
             versionNum = Number.MAX_SAFE_INTEGER;
         }
         else {
             versionNum = Number(rawVersion);
             if (isNaN(versionNum)) {
-                console.error("Couldn't convert provided version to Number, version is: " + rawVersion);
+                Logger.logE("Couldn't convert provided version to Number, version is: " + rawVersion);
                 return reject(`Could not determine Microclimate version - version is "${rawVersion}".` +
                         ` At least ${requiredVersion} is required.`);
             }
             else if (versionNum < requiredVersion) {
-                console.error(`Microclimate version ${versionNum} is too old.`);
+                Logger.logE(`Microclimate version ${versionNum} is too old.`);
                 return reject(`You are running Microclimate version ${rawVersion}, but at least ${requiredVersion} is required.`);
             }
         }
@@ -170,7 +171,7 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
         ConnectionManager.instance.addConnection(mcUri, host, versionNum, workspaceUri)
             .then( (msg: string) => resolve(msg))
             .catch((err: string) => {
-                console.log("New connection rejected by ConnectionManager ", err);
+                Logger.log("New connection rejected by ConnectionManager ", err);
                 return reject(err);
             });
     });

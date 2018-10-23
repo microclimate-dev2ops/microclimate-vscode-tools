@@ -8,6 +8,7 @@ import Endpoints from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import { Icons, getIconPaths } from "../../constants/Icons";
+import { Logger } from "../../Logger";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -41,7 +42,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         // QuickPickItem
         this.label = "Microclimate @ " + this.mcUri.toString();
         // this.description = this.workspacePath.fsPath.toString();
-        console.log(`Created new Connection @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`);
+        Logger.log(`Created new Connection @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`);
     }
 
     public toString(): string {
@@ -60,10 +61,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     onConnect = async (): Promise<void> => {
-        console.log(`${this} onConnect`);
+        Logger.log(`${this} onConnect`);
         /*
         if (!this.hasConnected) {
-            console.log(`${this} formed initial connection`);
+            Logger.log(`${this} formed initial connection`);
             this.hasConnected = true;
         }
         else */
@@ -72,19 +73,19 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             return;
         }
         this.connected = true;
-        console.log(`${this} is now connected`);
+        Logger.log(`${this} is now connected`);
 
         this.onChange();
     }
 
     onDisconnect = async (): Promise<void> => {
-        console.log(`${this} onDisconnect`);
+        Logger.log(`${this} onDisconnect`);
         if (!this.connected) {
             // we already know we're disconnected, nothing to do until we reconnect
             return;
         }
         this.connected = false;
-        console.log(`${this} is now disconnected`);
+        Logger.log(`${this} is now disconnected`);
 
         this.onChange();
     }
@@ -93,10 +94,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         if (!this.needProjectUpdate) {
             return this.projects;
         }
-        console.log(`Updating projects list for ${this.mcUri}`);
+        Logger.log(`Updating projects list for ${this.mcUri}`);
 
         const result = await request.get(this.projectsApiUri.toString(), { json : true });
-        console.log("Get project list result:", result);
+        Logger.log("Get project list result:", result);
 
         this.projects = [];
 
@@ -106,14 +107,14 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         }
 
         this.needProjectUpdate = false;
-        console.log("Done projects update");
+        Logger.log("Done projects update");
         return this.projects;
     }
 
     async getProjectByID(projectID: string): Promise<Project | undefined> {
         const result = (await this.getProjects()).find( (project) => project.id === projectID);
         if (result == null) {
-            // console.error(`Couldn't find project with ID ${projectID} on connection ${this.mcUri}`);
+            // Logger.logE(`Couldn't find project with ID ${projectID} on connection ${this.mcUri}`);
         }
         return result;
     }
@@ -124,7 +125,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         }
 
         await this.getProjects();
-        // console.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
+        // Logger.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
         if (this.projects.length === 0) {
             const noProjectsTi: SimpleTreeItem = new SimpleTreeItem("No projects");
             return [ noProjectsTi ];
@@ -153,7 +154,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public async forceProjectUpdate(): Promise<void> {
-        console.log("ForceProjectUpdate");
+        Logger.log("ForceProjectUpdate");
         this.needProjectUpdate = true;
         await this.getProjects();
     }
@@ -169,15 +170,15 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
         request.post(uri.toString(), options)
             .then( (result) => {
-                console.log("Response from restart request:", result);
+                Logger.log("Response from restart request:", result);
                 vscode.window.showInformationMessage(`Restarting ${project.name} into ${options.body.startMode} mode`);
             })
             .catch( (err) => {
                 const errMsg = err.error ? err.error : err;
-                console.log("Error POSTing restart request:", errMsg);
+                Logger.log("Error POSTing restart request:", errMsg);
 
                 if (err.statusCode !== 400) {
-                    console.error("Unexpected error POSTing restart request", err);
+                    Logger.logE("Unexpected error POSTing restart request", err);
                 }
 
                 vscode.window.showErrorMessage(`Restart failed: ${errMsg}`);
@@ -195,11 +196,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
         request.post(uri.toString(), options)
             .then( (result) => {
-                console.log(`Response from build request for ${project.name}:`, result);
+                Logger.log(`Response from build request for ${project.name}:`, result);
                 vscode.window.showInformationMessage(`Build requested for ${project.name}`);
             })
             .catch( (err) => {
-                console.log(`Error POSTing build request`, err);
+                Logger.log(`Error POSTing build request`, err);
                 vscode.window.showErrorMessage(`Build request failed: ${err}`);
             });
     }
@@ -209,15 +210,15 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
 
         const uri = Endpoints.getEndpointPath(this, Endpoints.ENABLEMENT_ACTION(project.id, newEnablement));
-        console.log("Enablement uri is ", uri.toString());
+        Logger.log("Enablement uri is ", uri.toString());
 
         request.put(uri.toString(), { json: true })
             .then( (result) => {
-                console.log(`Response from enablement request for ${project.name}:`, result);
+                Logger.log(`Response from enablement request for ${project.name}:`, result);
                 vscode.window.showInformationMessage(`Requested to ${newEnablementStr.toLowerCase()} ${project.name}`);
             })
             .catch( (err) => {
-                console.error(`Error POSTing enablement request`, err);
+                Logger.logE(`Error POSTing enablement request`, err);
                 vscode.window.showErrorMessage(`${newEnablementStr} request failed: ${err}`);
             });
     }

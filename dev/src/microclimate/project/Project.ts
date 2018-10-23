@@ -6,6 +6,7 @@ import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
 import { getOcticon, Octicons } from "../../constants/Icons";
+import { Logger } from "../../Logger";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     // index signature so we can use Object.keys(project) nicely
@@ -41,7 +42,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         projectInfo: any,
         public readonly connection: Connection,
     ) {
-        console.log("Creating project from info:", projectInfo);
+        Logger.log("Creating project from info:", projectInfo);
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
         this._containerID = projectInfo.containerId;
@@ -60,11 +61,11 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             this.buildLogPath = vscode.Uri.file(
                 MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.logs.build.file)
             );
-            console.log(`Build log for project ${this.name} is at ${this.buildLogPath}`);
+            Logger.log(`Build log for project ${this.name} is at ${this.buildLogPath}`);
         }
         // Node projects don't have build logs; any other type should
         else if (this.type.providesBuildLog) {
-            console.error(`Couldn't get build logs for ${this.type.userFriendlyType} project ${this.name}, the logs object is:`, projectInfo.logs);
+            Logger.logE(`Couldn't get build logs for ${this.type.userFriendlyType} project ${this.name}, the logs object is:`, projectInfo.logs);
         }
 
         this.update(projectInfo);
@@ -73,7 +74,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this.label = `${this.name} (${this.type} project)`;
         // this.detail = this.id;
 
-        console.log("Created project:", this);
+        Logger.log("Created project:", this);
     }
 
     public getChildren(): TreeItemAdaptable[] {
@@ -96,7 +97,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             title: "",
             arguments: [this.localPath]
         };
-        // console.log(`Created TreeItem`, ti);
+        // Logger.log(`Created TreeItem`, ti);
         return ti;
     }
 
@@ -150,7 +151,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public update = (projectInfo: any): void => {
         if (projectInfo.projectID !== this.id) {
             // shouldn't happen, but just in case
-            console.error(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
+            Logger.logE(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
             return;
         }
 
@@ -163,7 +164,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         let changed: Boolean = false;
         if (this._state !== oldState) {
             changed = true;
-            console.log(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
+            Logger.log(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
         }
 
         const ports = projectInfo.ports;
@@ -172,25 +173,25 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             changed = this.setDebugPort(ports.exposedDebugPort) || changed;
         }
         else if (this._state.isStarted) {
-            console.error("No ports were provided for an app that is supposed to be started");
+            Logger.logE("No ports were provided for an app that is supposed to be started");
         }
 
         // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
         if (this.pendingAppStates.indexOf(this._state.appState) >= 0) {
             if (this.resolvePendingAppState != null) {
-                console.log("Reached pending state: " + this.pendingAppStates);
+                Logger.log("Reached pending state: " + this.pendingAppStates);
                 this.resolvePendingAppState();
                 this.pendingAppStates = [];
                 this.resolvePendingAppState = undefined;
             }
             else {
                 // should never happen
-                console.error("PendingState was set but no resolve function was");
+                Logger.logE("PendingState was set but no resolve function was");
                 this.pendingAppStates = [];
             }
         }
 
-        // console.log(`${this.name} has a new status:`, this._state);
+        // Logger.log(`${this.name} has a new status:`, this._state);
         if (changed) {
             this.connection.onChange();
         }
@@ -199,18 +200,18 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public async waitForState(timeoutMs: number, state: ProjectState.AppStates, ...alternateStates: ProjectState.AppStates[]): Promise<string> {
         const states: ProjectState.AppStates[] = alternateStates.concat(state);
         if (states.indexOf(this._state.appState) >= 0) {
-            console.log("No need to wait, already in state " + this._state.appState);
+            Logger.log("No need to wait, already in state " + this._state.appState);
             return "Already " + this._state.appState;
         }
 
         // Clear the old pendingState
         if (this.resolvePendingAppState != null) {
-            console.log("Cancelling waiting for state ", this.pendingAppStates);
+            Logger.log("Cancelling waiting for state ", this.pendingAppStates);
             this.resolvePendingAppState();
         }
         this.pendingAppStates = states;
 
-        console.log(this.name + " is waiting for states: " + states);
+        Logger.log(this.name + " is waiting for states: " + states);
 
         let statesAsStr: string;
         if (states.length > 1) {
@@ -253,19 +254,19 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private setAppPort(newAppPort: number | undefined): Boolean {
         if (newAppPort == null && this._appPort != null) {
             // Should happen when the app stops.
-            console.log("Unset app port for " + this.name);
+            Logger.log("Unset app port for " + this.name);
             this._appPort = undefined;
             return true;
         }
 
         newAppPort = Number(newAppPort);
         if (!MCUtil.isGoodPort(newAppPort)) {
-            console.log(`Invalid app port ${newAppPort} given to project ${this.name}`);
+            Logger.log(`Invalid app port ${newAppPort} given to project ${this.name}`);
             return false;
         }
         else if (this._appPort !== newAppPort) {
             this._appPort = newAppPort;
-            console.log(`New app port for ${this.name} is ${newAppPort}`);
+            Logger.log(`New app port for ${this.name} is ${newAppPort}`);
             return true;
         }
         return false;
@@ -278,12 +279,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private setDebugPort(newDebugPort: number | undefined): Boolean {
         newDebugPort = Number(newDebugPort);
         if (!MCUtil.isGoodPort(newDebugPort)) {
-            console.log(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
+            Logger.log(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
             return false;
         }
         else if (this._debugPort !== newDebugPort) {
             this._debugPort = newDebugPort;
-            console.log(`New debug port for ${this.name} is ${newDebugPort}`);
+            Logger.log(`New debug port for ${this.name} is ${newDebugPort}`);
             return true;
         }
         return false;

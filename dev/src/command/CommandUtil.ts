@@ -17,6 +17,7 @@ import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import { ProjectState } from "../microclimate/project/ProjectState";
+import { Logger } from "../Logger";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -63,7 +64,7 @@ export async function promptForProject(...acceptableStates: ProjectState.AppStat
     }
     else {
         // should never happen
-        console.error("promptForProject received something other than a project back:", project);
+        Logger.logE("promptForProject received something other than a project back:", project);
     }
 
     // user cancelled, or error above
@@ -77,7 +78,7 @@ export async function promptForConnection(): Promise<Connection | undefined> {
     }
     else {
         // should never happen
-        console.error("promptForConnection received something other than a connection back:", connection);
+        Logger.logE("promptForConnection received something other than a connection back:", connection);
     }
 
     // user cancelled, or error above
@@ -108,7 +109,7 @@ async function promptForResourceInner(includeConnections: Boolean, includeProjec
             acceptableStates.push(ProjectState.AppStates.DEBUGGING);
         }
 
-        console.log("Accept states", acceptableStates);
+        Logger.log("Accept states", acceptableStates);
 
         // For each connection, get its project list, and filter by projects we're interested in.
         // then add the remaining projects to our QuickPick choices.
@@ -119,7 +120,7 @@ async function promptForResourceInner(includeConnections: Boolean, includeProjec
                 // Filter out projects that are not in one of the acceptable states
                 projects = projects.filter( (p) => {
                     return acceptableStates.indexOf(p.state.appState) !== -1;
-                    // console.log("the index of ", p.state.appState, " in ", acceptableStates, " is ", index);
+                    // Logger.log("the index of ", p.state.appState, " in ", acceptableStates, " is ", index);
                 });
             }
             choices.push(...projects);
@@ -153,7 +154,7 @@ async function promptForResourceInner(includeConnections: Boolean, includeProjec
         return selection as Connection;
     }
     else {
-        console.error(`Unsupported type in promptForResource ${typeof(selection)}`);
+        Logger.logE(`Unsupported type in promptForResource ${typeof(selection)}`);
         return undefined;
     }
 }

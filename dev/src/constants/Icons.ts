@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { Logger } from "../Logger";
 
 const resFolderName = "res";
 const imgFolderName = "img";
@@ -20,7 +21,7 @@ export function getIconPaths(icon: Icons): IconPaths {
     // make sure the file exists and is readable
     fs.access(darkPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
         if (err) {
-            console.error(`Icon not found! ${icon} - error:`, err);
+            Logger.logE(`Icon not found! ${icon} - error:`, err);
         }
     });
 
@@ -29,7 +30,7 @@ export function getIconPaths(icon: Icons): IconPaths {
         if (err) {
             // The light icon does not exist or cannot be read, so we use the dark icon.
             // This is normal if there is no corresponding light icon.
-            // console.log(`Light Icon not found! ${icon} - error:`, err);
+            // Logger.log(`Light Icon not found! ${icon} - error:`, err);
             lightPath = darkPath;
         }
     });

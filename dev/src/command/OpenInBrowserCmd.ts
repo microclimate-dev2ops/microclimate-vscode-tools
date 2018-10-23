@@ -4,13 +4,14 @@ import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import { promptForResource } from "./CommandUtil";
 import { ProjectState } from "../microclimate/project/ProjectState";
+import { Logger } from "../Logger";
 
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
-    console.log("OpenInBrowserCmd invoked");
+    Logger.log("OpenInBrowserCmd invoked");
     if (resource == null) {
         const selected = await promptForResource(ProjectState.AppStates.STARTED);
         if (selected == null) {
-            console.log("User cancelled prompt for resource");
+            Logger.log("User cancelled prompt for resource");
             // user cancelled
             return;
         }
@@ -28,7 +29,7 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
             return;
         }
         else if (project.appBaseUrl == null) {
-            console.error("Project is started but has no appBaseUrl: " + project.name);
+            Logger.logE("Project is started but has no appBaseUrl: " + project.name);
             vscode.window.showErrorMessage("Could not determine application URL for " + project.name);
             return;
         }
@@ -48,7 +49,7 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
         return;
     }
 
-    console.log("Open in browser: " + uriToOpen);
+    Logger.log("Open in browser: " + uriToOpen);
     // vscode.window.showInformationMessage("Opening " + uriToOpen);
     vscode.commands.executeCommand("vscode.open", uriToOpen);
 }

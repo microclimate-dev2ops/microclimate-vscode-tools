@@ -4,14 +4,15 @@ import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import AppLog from "../microclimate/logs/AppLog";
 import { ProjectState } from "../microclimate/project/ProjectState";
+import { Logger } from "../Logger";
 
 export default async function openAppLogCmd(project: Project): Promise<void> {
-    console.log("OpenBuildLogCmd invoked");
+    Logger.log("OpenBuildLogCmd invoked");
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTED);
         if (selected == null) {
             // user cancelled
-            console.log("User cancelled project prompt");
+            Logger.log("User cancelled project prompt");
             return;
         }
         project = selected;
@@ -23,6 +24,6 @@ export default async function openAppLogCmd(project: Project): Promise<void> {
     }
 
     const appLogOutput = AppLog.getOrCreateLog(project.id, project.name);
-    console.log(`Open app log for project with name ${project.name} id ${project.id}`);
+    Logger.log(`Open app log for project with name ${project.name} id ${project.id}`);
     appLogOutput.showOutputChannel();
 }

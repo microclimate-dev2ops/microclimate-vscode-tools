@@ -1,6 +1,7 @@
 import { Uri } from "vscode";
 import * as path from "path";
 import { ProjectType } from "./microclimate/project/ProjectType";
+import { Logger } from "./Logger";
 
 /**
  * Append toAppend to start, removing the last segment of start if the first segment of toAppend matches it.
@@ -82,7 +83,7 @@ export function getConnInfoFrom(url: Uri): ConnectionInfo | undefined {
     if (!isGoodPort(port)) {
         return undefined;
     }
-    console.log(`Loaded host ${host} port ${port}`);
+    Logger.log(`Loaded host ${host} port ${port}`);
 
     const result: ConnectionInfo = {
         host: host,

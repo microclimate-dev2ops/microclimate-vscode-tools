@@ -23,7 +23,7 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
      * Used as a call-back for ConnectionManager OnChange.
      */
     public refresh = (): void => {
-        // console.log("Refresh tree");
+        // Logger.log("Refresh tree");
         this.onChangeEmitter.fire();
     }
 

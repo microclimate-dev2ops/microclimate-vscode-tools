@@ -1,5 +1,6 @@
 import { uppercaseFirstChar } from "../../MCUtil";
 import { IconPaths, Icons, getIconPaths } from "../../constants/Icons";
+import { Logger } from "../../Logger";
 
 export class ProjectType {
 
@@ -52,7 +53,7 @@ export class ProjectType {
             }
         }
         else {
-            console.error(`Unrecognized project - type ${projectType}`);
+            Logger.logE(`Unrecognized project - type ${projectType}`);
             return ProjectType.Types.UNKNOWN;
         }
     }

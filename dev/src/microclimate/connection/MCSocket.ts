@@ -7,6 +7,7 @@ import Project from "../project/Project";
 import { ProjectState } from "../project/ProjectState";
 import * as MCUtil from "../../MCUtil";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
+import { Logger } from "../../Logger";
 
 export default class MCSocket {
 
@@ -18,7 +19,7 @@ export default class MCSocket {
         public readonly uri: string,
         private readonly connection: Connection
     ) {
-        console.log("Creating MCSocket for URI", uri);
+        Logger.log("Creating MCSocket for URI", uri);
         this.socket = io(uri);
 
         this.socket.connect();
@@ -42,25 +43,25 @@ export default class MCSocket {
     }
 
     private onProjectStatusChanged = async (payload: any): Promise<void> => {
-        // console.log("onProjectStatusChanged", payload);
+        // Logger.log("onProjectStatusChanged", payload);
         // I don't see any reason why these should be handled differently
         this.onProjectChanged(payload);
     }
 
     private onProjectChanged = async (payload: any): Promise<void> => {
-        //console.log("onProjectChanged", payload);
-        console.log(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
+        //Logger.log("onProjectChanged", payload);
+        Logger.log(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
                 `buildState=${payload.buildStatus} startMode=${payload.startMode}`);
 
         const projectID = payload.projectID;
         if (projectID == null) {
-            console.error("No projectID in socket event!", payload);
+            Logger.logE("No projectID in socket event!", payload);
             return;
         }
 
         const project: Project | undefined = await this.connection.getProjectByID(projectID);
         if (project == null) {
-            console.log("No project with ID " + payload.projectID);
+            Logger.log("No project with ID " + payload.projectID);
             // This means we've got a new project - refresh everything
             this.connection.forceProjectUpdate();
             return;
@@ -88,16 +89,16 @@ export default class MCSocket {
     }
 
     private onProjectDeleted = async (payload: any): Promise<void> => {
-        console.log("PROJECT DELETED", payload);
+        Logger.log("PROJECT DELETED", payload);
         this.connection.forceProjectUpdate();
     }
 
     private onProjectRestarted = async (payload: any): Promise<void> => {
-        console.log("PROJECT RESTARTED", payload);
+        Logger.log("PROJECT RESTARTED", payload);
 
         const projectID: string = payload.projectID;
         if (MCSocket.STATUS_SUCCESS !== payload.status) {
-            console.error(`Restart failed on project ${projectID}, response is`, payload);
+            Logger.logE(`Restart failed on project ${projectID}, response is`, payload);
             if (payload.error != null) {
                 vscode.window.showErrorMessage(payload.error.msg);
             }
@@ -107,19 +108,19 @@ export default class MCSocket {
             // Should never happen
             const msg = "Successful restart did not send any ports";
             vscode.window.showErrorMessage(msg);
-            console.error(msg + ", payload:", payload);
+            Logger.logE(msg + ", payload:", payload);
             return;
         }
 
         const project: Project | undefined = await this.connection.getProjectByID(projectID);
         if (project == null) {
-            console.error("Failed to get project associated with restart event, ID is ", projectID);
+            Logger.logE("Failed to get project associated with restart event, ID is ", projectID);
             return;
         }
 
         const startMode = payload.startMode;
         if (startMode !== MCUtil.getStartMode(true) && startMode !== MCUtil.getStartMode(false)) {
-            console.error(`Invalid start mode "${startMode}"`);
+            Logger.logE(`Invalid start mode "${startMode}"`);
         }
         // This updates the ports and startMode.
         // The app state will not change because the projectRestartResult does not provide an appState.
@@ -133,7 +134,7 @@ export default class MCSocket {
             }
             catch (err) {
                 // I think all errors should be handled by attachDebuggerCmd, but just in case.
-                console.error("Error attaching debugger after restart", err);
+                Logger.logE("Error attaching debugger after restart", err);
             }
         }
 
@@ -144,12 +145,12 @@ export default class MCSocket {
         catch (err) {
             // TODO
             vscode.window.showErrorMessage(err);
-            console.error(err);
+            Logger.logE(err);
             return;
         }
 
         const doneRestartMsg = `Finished restarting ${project.name} in ${MCUtil.getStartMode(isDebug)} mode.`;
-        console.log(doneRestartMsg);
+        Logger.log(doneRestartMsg);
         vscode.window.showInformationMessage(doneRestartMsg);
     }
 

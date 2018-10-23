@@ -3,14 +3,15 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import projectInfoHtml from "../microclimate/project/ProjectInfo";
+import { Logger } from "../Logger";
 
 export default async function viewProjectInfoCmd(project: Project): Promise<void> {
-    console.log("viewProjectInfoCmd invoked");
+    Logger.log("viewProjectInfoCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
             // user cancelled
-            console.log("User cancelled project prompt");
+            Logger.log("User cancelled project prompt");
             return;
         }
         project = selected;

@@ -1,18 +1,19 @@
 import * as vscode from "vscode";
-
-import * as Icons from "../constants/Icons";
-import Project from "../microclimate/project/Project";
 import { promptForProject } from "../command/CommandUtil";
-import { ProjectState } from "../microclimate/project/ProjectState";
+import * as Icons from "../constants/Icons";
 import AppLog from "../microclimate/logs/AppLog";
+import Project from "../microclimate/project/Project";
+import { ProjectState } from "../microclimate/project/ProjectState";
+import { Logger } from "../Logger";
+
 
 export default async function attachDebuggerCmd(project: Project): Promise<Boolean> {
-    console.log("attachDebuggerCmd");
+    Logger.log("attachDebuggerCmd");
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTING, ProjectState.AppStates.DEBUGGING);
         if (selected == null) {
             // user cancelled
-            console.log("User cancelled project prompt");
+            Logger.log("User cancelled project prompt");
             return false;
         }
         project = selected;
@@ -23,12 +24,12 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
         vscode.window.setStatusBarMessage(`${Icons.getOcticon(Icons.Octicons.bug, true)} Connecting debugger to ${project.name}`, startDebugPromise);
         const successMsg = await startDebugPromise;
 
-        console.log("Debugger attach success", successMsg);
+        Logger.log("Debugger attach success", successMsg);
         vscode.window.showInformationMessage(successMsg);
         return true;
     }
     catch (err) {
-        console.error("Debugger attach failure", err);
+        Logger.logE("Debugger attach failure", err);
         vscode.window.showErrorMessage("Failed to attach debugger: " + err);
         return false;
     }
@@ -41,7 +42,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
  *  or throws an Error with a user-friendly error message.
  */
 export async function startDebugSession(project: Project): Promise<string> {
-    console.log("startDebugSession for project " + project.name);
+    Logger.log("startDebugSession for project " + project.name);
     if (project.type.debugType == null) {
         // Just in case.
         throw new Error(`No debug type available for project of type ${project.type}`);
@@ -55,19 +56,19 @@ export async function startDebugSession(project: Project): Promise<string> {
         await project.waitForState(30000, ProjectState.AppStates.STARTING, ProjectState.AppStates.DEBUGGING);
     }
     catch (err) {
-        console.error("Timeout waiting before connecting debugger:", err);
+        Logger.logE("Timeout waiting before connecting debugger:", err);
         throw err;
     }
 
     const debugConfig: vscode.DebugConfiguration = await getDebugConfig(project);
-    console.log("Running debug launch:", debugConfig);
+    Logger.log("Running debug launch:", debugConfig);
 
     const projectFolder = vscode.workspace.getWorkspaceFolder(project.localPath);
     // TODO need a better way to detect when this fails.
     // startDebugging just returns a boolean -
     // seems if there's an error, it will display an alert at the top of the window
     const success = await vscode.debug.startDebugging(projectFolder, debugConfig);
-    console.log("Debugger should have connected");
+    Logger.log("Debugger should have connected");
 
     if (success) {
         AppLog.getOrCreateLog(project.id, project.name).setDebugConsole(vscode.debug.activeDebugConsole);
@@ -94,7 +95,7 @@ const CONFIGURATIONS = "configurations";
 async function getDebugConfig(project: Project): Promise<vscode.DebugConfiguration> {
     const launchConfig = vscode.workspace.getConfiguration(LAUNCH, project.localPath);
     const config = launchConfig.get(CONFIGURATIONS, [{}]) as Array<{}>;
-    // console.log("Old config:", config);
+    // Logger.log("Old config:", config);
 
     const debugName = `Debug ${project.name}`;
     // See if we already have a debug launch for this project, so we can replace it.
@@ -131,6 +132,6 @@ async function getDebugConfig(project: Project): Promise<vscode.DebugConfigurati
     }
 
     await launchConfig.update(CONFIGURATIONS, config, vscode.ConfigurationTarget.WorkspaceFolder);
-    // console.log("New config", launchConfig.get(CONFIGURATIONS));
+    // Logger.log("New config", launchConfig.get(CONFIGURATIONS));
     return debugConfig;
 }

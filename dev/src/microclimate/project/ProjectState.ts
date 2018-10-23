@@ -1,4 +1,5 @@
 import { getStartMode } from "../../MCUtil";
+import { Logger } from "../../Logger";
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
@@ -12,7 +13,7 @@ export class ProjectState {
         fallbackState?: ProjectState
     ) {
         if (projectInfoPayload == null) {
-            // console.error("Passed null project info to ProjectState");
+            // Logger.logE("Passed null project info to ProjectState");
             this.appState = ProjectState.AppStates.UNKNOWN;
             this.buildState = ProjectState.BuildStates.UNKNOWN;
             this.buildDetail = "";
@@ -112,14 +113,14 @@ export namespace ProjectState {
      */
     export function getAppState(projectInfoPayload: any): ProjectState.AppStates {
 
-        // console.log("PIP", projectInfoPayload);
+        // Logger.log("PIP", projectInfoPayload);
         let appStatus: string = projectInfoPayload.appStatus || "";
         appStatus = appStatus.toLowerCase();
 
         const closedState: string | undefined = projectInfoPayload.state;
         const startMode:   string | undefined = projectInfoPayload.startMode;
 
-        // console.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
+        // Logger.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
 
         // First, check if the project is open. If it's not, it's disabled.
         if (closedState === "closed") {
@@ -141,7 +142,7 @@ export namespace ProjectState {
         else if (appStatus === "stopped") {
             return ProjectState.AppStates.STOPPED;
         }
-        console.error("Unknown app state:", appStatus);
+        Logger.logE("Unknown app state:", appStatus);
         return ProjectState.AppStates.UNKNOWN;
     }
 
@@ -164,7 +165,7 @@ export namespace ProjectState {
             // This happens with disabled projects
             return BuildStates.UNKNOWN;
         }
-        console.error("Unknown build state:", buildStatus);
+        Logger.logE("Unknown build state:", buildStatus);
         return BuildStates.UNKNOWN;
     }
 
