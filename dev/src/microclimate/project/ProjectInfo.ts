@@ -1,6 +1,7 @@
 import { Uri } from "vscode";
 
 import Project from "./Project";
+import toggleAutoBuildCmd, { TOGGLE_AUTOBUILD_CMD_ID } from "../../command/ToggleAutoBuildCmd";
 
 export default function projectInfoHtml(project: Project): string {
 
@@ -46,7 +47,7 @@ export default function projectInfoHtml(project: Project): string {
                 <td>Auto build</td>
                 <td>${project.autoBuildEnabled ? "On": "Off"}
                     -
-                    <a class="monaco-button monaco-text-button"
+                    <a href="command:${TOGGLE_AUTOBUILD_CMD_ID}" class="monaco-button monaco-text-button"
                         tabindex="0" role="button">
                         Toggle</a>
                 </td>

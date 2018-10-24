@@ -1,10 +1,5 @@
 Important:
 
-- OK to require 18.11? Or:
-    - Require 18.09 and test capabilities on restart
-        - 1809 -> Liberty only
-        - 1810 -> Liberty and Spring
-    - Have to track startMode internally >:(
 - Node debug!!
 - Tests!
 
@@ -17,9 +12,6 @@ Annoying Release Stuff:
 
 Less Important:
 
-- 'Create default connection' as a separate command - where to display this? Palette/view bar/context when nothing selected
-    - Can't test if no connections exist :(
-
 - WebView for Overview page
     - Discuss with Portal-UI creating an endpoint which sends a simple HTML page with NO <link rel>s with all the project info
         - Client (IDE) can request which stylesheet should be used for rendering (or provide the stylesheet itself).
@@ -28,6 +20,5 @@ Less Important:
     - Recommend this extension
 
 Investigate:
-    - Problems view for Validation errors
     - Why do projects/connections sometimes get Emphasized?
         - When their folders (treeItem.resourceUri) get emphasized from git changes, linting warnings, anything!

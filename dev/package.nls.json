@@ -1,16 +1,88 @@
 {
     "displayName": "Microclimate Tools for VSCode",
-    "description": "Microclimate Tools for VSCode are helpful and good!",
+    "description": "Download me to improve your Microclimate workflow :)",
+
+    "// Items starting with cmdID or viewID are not exposed to user": "",
 
     "viewName": "Microclimate Projects",
+    "viewID": "ext.mc.mcProjectExplorer",
+
+    "commandCategory": "Microclimate",
+
+    "cmdID_newConnection": "ext.mc.newConnection",
+    "cmdTitle_newConnection": "New Microclimate connection",
+    "cmdDescr_newConnection": "Connect to a Microclimate instance",
+
+    "cmdID_newDefaultConn": "ext.mc.newConnection",
+    "cmdTitle_newDefaultConn": "New default local Microclimate connection",
+    "cmdDescr_newDefaultConn": "Connect to Microclimate at the default local URL, http://localhost:9090",
+
+    "cmdID_removeConn": "ext.mc.newConnection",
+    "cmdTitle_removeConn": "Remove connection",
+    "cmdDescr_removeConn": "Remove a Microclimate connection",
+
+    "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
+    "cmdTitle_openFolder": "Open folder as workspace",
+    "cmdDescr_openFolder": "Open this item's folder as your VSCode workspace",
+
+    "cmdID_openInBrowser": "ext.mc.openInBrowser",
+    "cmdTitle_openInBrowser": "Open in browser",
+    "cmdDescr_openInBrowser": "Open this resource in the browser",
+
+    "cmdID_attachDebugger": "ext.mc.attachDebugger",
+    "cmdTitle_attachDebugger": "Attach debugger",
+    "cmdDescr_attachDebugger": "Attach the VSCode debugger to a Microclimate project",
+
+    "cmdID_restartRun": "ext.mc.restartProjectRun",
+    "cmdTitle_restartRun": "Restart in Run mode",
+    "cmdDescr_restartRun": "Restart a Microclimate project into Run (normal) mode",
+
+    "cmdID_restartDebug": "ext.mc.restartProjectDebug",
+    "cmdTitle_restartDebug": "Restart in Debug mode",
+    "cmdDescr_restartDebug": "Restart a Microclimate project into Debug mode",
+
+    "cmdID_requestBuild": "ext.mc.requestBuild",
+    "cmdTitle_requestBuild": "Request build",
+    "cmdDescr_requestBuild": "Manually kick off a project build in Microclimate",
+
+    "cmdID_openBuildLog": "ext.mc.openBuildLog",
+    "cmdTitle_openBuildLog": "Open build log",
+
+    "cmdID_openAppLog": "ext.mc.openAppLog",
+    "cmdTitle_openAppLog": "Open application log",
+
+    "cmdID_enable": "ext.mc.enable",
+    "cmdTitle_enable": "Enable Project",
+    "cmdDescr_enable": "Enable this project in Microclimate",
+
+    "cmdID_disable": "ext.mc.disable",
+    "cmdTitle_disable": "Disable Project",
+    "cmdDescr_disable": "Disable this project in Microclimate",
+
+    "cmdID_containerShell": "ext.mc.containerShell",
+    "cmdTitle_containerShell": "Open shell in container",
+    "cmdDescr_containerShell": "Open a shell inside this project's application container",
+
+    "cmdID_projectInfo": "ext.mc.viewProjectInfo",
+    "cmdTitle_projectInfo": "View project info",
+
+    "cmdID_toggleAutoBuild": "ext.mc.toggleAutoBuild",
+    "cmdTitle_toggleAutoBuild": "Toggle auto build",
 
 
-    "---- Items below are not exposed to user -----": "",
+    "settingDesc_connections": "URLs of Microclimate instances to connect to.",
+
+
+    "// None of items below are exposed to user": [
+        "Careful! Changing almost any of these will also require",
+        "a code change in the class that uses the changed context ID."
+    ],
+
     "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
     "isConnectionOrProject": "viewItem =~ /ext.mc.*/",
     "isConnection": "viewItem == ext.mc.connectionItem",
     "isProject": "viewItem =~ /ext.mc.projectItem*/",
     "isEnabledProject":  "viewItem =~ /ext.mc.projectItem.enabled*/",
     "isDisabledProject": "viewItem =~ /ext.mc.projectItem.disabled*/",
-    "isDebuggableProject": "viewItem =~ /ext.mc.projectItem.enabled.debuggable*/"
+    "isDebuggingProject": "viewItem =~ /ext.mc.projectItem.enabled.debugging*/"
 }

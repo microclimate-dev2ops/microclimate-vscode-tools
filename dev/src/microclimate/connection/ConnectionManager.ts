@@ -4,6 +4,7 @@ import * as MCUtil from "../../MCUtil";
 import Connection from "./Connection";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
 import { Logger } from "../../Logger";
+import Project from "../project/Project";
 
 export default class ConnectionManager {
 
@@ -108,6 +109,17 @@ export default class ConnectionManager {
             vscode.window.showErrorMessage(err);
         }
     }
+
+    /*
+    public async getProjectByID(projectID: string): Promise<Project | undefined> {
+        for (const conn of this.connections) {
+            const proj: Project | undefined = await conn.getProjectByID(projectID);
+            if (proj != null) {
+                return proj;
+            }
+        }
+        return undefined;
+    }*/
 
     /**
      * Pass this a function to call whenever a connection is added, removed, or changed,

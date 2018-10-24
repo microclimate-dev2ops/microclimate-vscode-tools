@@ -1,5 +1,11 @@
 import * as vscode from "vscode";
 
+import { Logger } from "../Logger";
+import Project from "../microclimate/project/Project";
+import Connection from "../microclimate/connection/Connection";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
+import { ProjectState } from "../microclimate/project/ProjectState";
+
 import * as NewConnectionCmd from "./NewConnectionCmd";
 import openWorkspaceFolderCmd from "./OpenWorkspaceFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
@@ -11,12 +17,7 @@ import containerBashCmd from "./ContainerShellCmd";
 import viewProjectInfoCmd from "./ViewProjectInfoCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
 import openLogCmd from "./OpenLogCmd";
-
-import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
-import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import { ProjectState } from "../microclimate/project/ProjectState";
-import { Logger } from "../Logger";
+import toggleAutoBuildCmd, { TOGGLE_AUTOBUILD_CMD_ID } from "./ToggleAutoBuildCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -26,18 +27,21 @@ export function createCommands(): vscode.Disposable[] {
     // - undefined (if run from command palette)
     // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
-        vscode.commands.registerCommand(NewConnectionCmd.COMMAND_ID, () => NewConnectionCmd.newConnectionCmd()),
-        vscode.commands.registerCommand("ext.mc.newDefaultConnection", () => NewConnectionCmd.tryAddConnection(NewConnectionCmd.DEFAULT_CONNINFO)),
-        vscode.commands.registerCommand("ext.mc.removeConnection", (selection) => removeConnectionCmd(selection)),
+        vscode.commands.registerCommand(NewConnectionCmd.NEW_CONN_CMD_ID,    () => NewConnectionCmd.newConnectionCmd()),
+        vscode.commands.registerCommand("ext.mc.newDefaultConnection",  () => NewConnectionCmd.tryAddConnection(NewConnectionCmd.DEFAULT_CONNINFO)),
 
-        vscode.commands.registerCommand("ext.mc.openWorkspaceFolder", (selection) => openWorkspaceFolderCmd(selection)),
+        vscode.commands.registerCommand("ext.mc.removeConnection",      (selection) => removeConnectionCmd(selection)),
+
+        vscode.commands.registerCommand("ext.mc.openWorkspaceFolder",   (selection) => openWorkspaceFolderCmd(selection)),
 
         vscode.commands.registerCommand("ext.mc.attachDebugger",        (selection) => attachDebuggerCmd(selection)),
         vscode.commands.registerCommand("ext.mc.restartProjectRun",     (selection) => restartProjectCmd(selection, false)),
         vscode.commands.registerCommand("ext.mc.restartProjectDebug",   (selection) => restartProjectCmd(selection, true)),
 
-        vscode.commands.registerCommand("ext.mc.openInBrowser", (selection) => openInBrowserCmd(selection)),
-        vscode.commands.registerCommand("ext.mc.requestBuild",  (selection) => requestBuildCmd(selection)),
+        vscode.commands.registerCommand("ext.mc.openInBrowser",     (selection) => openInBrowserCmd(selection)),
+
+        vscode.commands.registerCommand("ext.mc.requestBuild",      (selection) => requestBuildCmd(selection)),
+        vscode.commands.registerCommand(TOGGLE_AUTOBUILD_CMD_ID,    (selection) => toggleAutoBuildCmd(selection)),
 
         vscode.commands.registerCommand("ext.mc.openAppLog",    (selection) => openLogCmd(selection, true)),
         vscode.commands.registerCommand("ext.mc.openBuildLog",  (selection) => openLogCmd(selection, false)),
@@ -45,9 +49,9 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand("ext.mc.disable",   (selection) => toggleEnablementCmd(selection, false)),
         vscode.commands.registerCommand("ext.mc.enable",    (selection) => toggleEnablementCmd(selection, true)),
 
-        vscode.commands.registerCommand("ext.mc.containerBash", (selection) => containerBashCmd(selection)),
+        vscode.commands.registerCommand("ext.mc.containerShell",     (selection) => containerBashCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.viewProjectInfo", (selection) => viewProjectInfoCmd(selection))
+        vscode.commands.registerCommand("ext.mc.viewProjectInfo",   (selection) => viewProjectInfoCmd(selection))
     ];
 }
 
@@ -55,7 +59,10 @@ export function createCommands(): vscode.Disposable[] {
 // if they're launched from the command pallet we have to ask which resource they want to run the command on.
 // The functions below handle this use case.
 
-// only return projects that are in an 'acceptableState' (or pass no acceptable states for all projects)
+/**
+ *
+ * @param acceptableStates - If at least one state is passed, only projects in one of these states will be presented to the user.
+ */
 export async function promptForProject(...acceptableStates: ProjectState.AppStates[]): Promise<Project | undefined> {
     const project = await promptForResourceInner(false, true, ...acceptableStates);
     if (project instanceof Project) {
@@ -141,7 +148,7 @@ async function promptForResourceInner(includeConnections: Boolean, includeProjec
         return undefined;
     }
 
-    const selection = await vscode.window.showQuickPick(choices, { canPickMany: false, ignoreFocusOut: choices.length !== 0 });
+    const selection = await vscode.window.showQuickPick(choices, { canPickMany: false, /*ignoreFocusOut: choices.length !== 0*/ });
     if (selection == null) {
         // user cancelled
         return undefined;

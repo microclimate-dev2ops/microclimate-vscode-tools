@@ -7,7 +7,7 @@ import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Endpoints from "../constants/Endpoints";
 import { Logger } from "../Logger";
 
-export const COMMAND_ID: string = "ext.mc.newConnection";
+export const NEW_CONN_CMD_ID: string = "ext.mc.newConnection";
 export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
     host: "localhost",
     port: 9090

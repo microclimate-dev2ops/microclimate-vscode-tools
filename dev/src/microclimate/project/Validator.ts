@@ -13,6 +13,7 @@ export default class Validator {
         const validationResult: any[] = validationPayload.validationResults;
         Logger.log("validationresult", validationPayload);
 
+        project.diagnostics.clear();
         for (const validationProblem of validationResult) {
             const sev = validationProblem.severity === "error" ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning;
 
@@ -24,9 +25,10 @@ export default class Validator {
 
             // clicking on the error will take you to this URI
             let uri: string = project.localPath.fsPath;
+            /*
             if (validationProblem.filename != null) {
                 uri = path.join(uri, validationProblem.filename);
-            }
+            }*/
 
             project.diagnostics.set(vscode.Uri.file(uri), [diagnostic]);
 
@@ -34,7 +36,8 @@ export default class Validator {
             const generateBtn: string = "Generate";
 
             vscode.window.showErrorMessage(`Microclimate ${("" + validationProblem.label).toLowerCase()} ` + validationProblem.filepath, generateBtn)
-                .then( (response) => {
+                .then( (response: string | undefined) => {
+                    // TODO Generate doesn't work for - pom.xml, package.json (node), Dockerfile-*
                     if (response === generateBtn) {
                         Connection.requestGenerate(project);
                     }

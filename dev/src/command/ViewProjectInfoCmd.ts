@@ -19,7 +19,8 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
 
     const wvOptions: vscode.WebviewOptions & vscode.WebviewPanelOptions = {
         enableScripts: true,
-        retainContextWhenHidden: true
+        retainContextWhenHidden: true,
+        enableCommandUris: true
     };
 
     // Could see if a matching WV is already open, and if so, just send it a refresh event instead.

@@ -16,7 +16,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private static readonly CONTEXT_ID_BASE: string = "ext.mc.projectItem";
     private static readonly CONTEXT_ID_ENABLED:  string = Project.CONTEXT_ID_BASE + ".enabled";
     private static readonly CONTEXT_ID_DISABLED: string = Project.CONTEXT_ID_BASE + ".disabled";
-    private static readonly CONTEXT_ID_DEBUGGABLE: string = Project.CONTEXT_ID_ENABLED + ".debuggable";
+    private static readonly CONTEXT_ID_DEBUGGABLE: string = Project.CONTEXT_ID_ENABLED + ".debugging";
 
     public readonly name: string;
     public readonly id: string;
@@ -158,6 +158,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         if (this._state !== oldState) {
             changed = true;
             Logger.log(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
+        }
+
+        const newAutoBuild: Boolean | undefined = projectInfo.autoBuild;
+        if (newAutoBuild != null) {
+            this._autoBuildEnabled = newAutoBuild;
+            Logger.log(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
         }
 
         const ports = projectInfo.ports;

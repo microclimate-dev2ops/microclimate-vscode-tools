@@ -175,8 +175,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             startMode: MCUtil.getStartMode(debug)
         };
 
-        const endpoint = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
-        this.doProjectRequest(project, endpoint, body, request.post, "Restart into ${body.startMode}", errHandler);
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
+        this.doProjectRequest(project, url, body, request.post, `Restart into ${body.startMode}`, errHandler);
     }
 
     public static async requestBuild(project: Project): Promise<void> {
@@ -184,20 +184,35 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             action: "build"
         };
 
-        const endpoint = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
-        this.doProjectRequest(project, endpoint, body, request.post, "Build");
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
+        this.doProjectRequest(project, url, body, request.post, "Build");
 
         // This is a workaround for the Build action not refreshing validation state.
         // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
         this.requestValidate(project);
     }
 
+    public static async requestToggleAutoBuild(project: Project): Promise<void> {
+        const newAutoBuild: Boolean = !project.autoBuildEnabled;
+        // user-friendly action
+        const newAutoBuildUserStr:  string = newAutoBuild ? "Enable auto build" : "Disable auto build";
+        // action we'll put into the request body   https://github.ibm.com/dev-ex/portal/wiki/API:-Build
+        const newAutoBuildAction:   string = newAutoBuild ? "enableautobuild" : "disableautobuild";
+
+        const body = {
+            "action": newAutoBuildAction
+        };
+
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
+        return this.doProjectRequest(project, url, body, request.post, newAutoBuildUserStr);
+    }
+
     public static async requestToggleEnablement(project: Project): Promise<void> {
         const newEnablement: Boolean = !project.state.isEnabled;
         const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
 
-        const endpoint = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.ENABLEMENT_ACTION(newEnablement));
-        this.doProjectRequest(project, endpoint, {}, request.put, newEnablementStr);
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.ENABLEMENT_ACTION(newEnablement));
+        return this.doProjectRequest(project, url, {}, request.put, newEnablementStr);
     }
 
     public static async requestValidate(project: Project): Promise<void> {
@@ -206,8 +221,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             projectType: project.type.internalType
         };
 
-        const endpoint = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
-        this.doProjectRequest(project, endpoint, body, request.post, "Validate");
+        const url = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
+        return this.doProjectRequest(project, url, body, request.post, "Validate");
     }
 
     public static async requestGenerate(project: Project): Promise<void> {
@@ -217,12 +232,12 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             autoGenerate: true
         };
 
-        const endpoint = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
-        this.doProjectRequest(project, endpoint, body, request.post, "Generate");
+        const url = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
+        return this.doProjectRequest(project, url, body, request.post, "Generate");
     }
 
-    public static async doProjectRequest(project: Project, url: string, body: {},
-            requestType: (uri: string, {}) => any,
+    private static async doProjectRequest(project: Project, url: string, body: {},
+            requestFunc: (uri: string, {}) => request.RequestPromise<any>,
             userOperationName: string,
             errorHandler?: (err: any) => void
     ) {
@@ -233,7 +248,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             body: body
         }
 
-        requestType(url, options)
+        requestFunc(url, options)
             .then( (result: any) => {
                 Logger.log(`Response from ${userOperationName} request for ${project.name}:`, result);
                 vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);

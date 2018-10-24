@@ -1,5 +1,5 @@
 {
-    "name": "MicroclimateTools",
+    "name": "vscode-microclimate-tools",
     "displayName": "%displayName%",
     "description": "%description%",
     "version": "0.0.1",
@@ -7,14 +7,24 @@
     "engines": {
         "vscode": "^1.27.0"
     },
+    "license": "SEE LICENSE IN LICENSE.md",
     "categories": [
         "Other"
     ],
+    "keywords": [
+        "IBM", "Microclimate"
+    ],
     "activationEvents": [
-        "onView:ext.mc.mcProjectExplorer"
+        "onView: %viewID%",
+        "workspaceContains: **/.idc",
+        "workspaceContains: **/.cfignore"
     ],
     "main": "./out/extension",
-    "repository": "https://github.ibm.com/dev-ex/microclimate-vscode",
+    "repository": {
+        "type": "git",
+        "url": "https://github.ibm.com/dev-ex/microclimate-vscode"
+    },
+    "icon": "./res/img/microclimate.png",
     "contributes": {
         "configuration": {
             "type": "object",
@@ -23,186 +33,194 @@
                 "microclimate.connections": {
                     "type": "array",
                     "default": [],
-                    "description": "URLs of Microclimate instances to connect to."
+                    "description": "%settingDesc_connections%"
                 }
             }
         },
         "views": {
             "explorer": [
                 {
-                    "id": "ext.mc.mcProjectExplorer",
+                    "id": "%viewID%",
                     "name": "%viewName%"
                 }
             ]
         },
         "commands": [
             {
-                "command": "ext.mc.newConnection",
-                "title": "New Microclimate connection",
-                "description": "Connect to a Microclimate instance",
-                "category": "Microclimate",
+                "command": "%cmdID_newConnection%",
+                "title": "%cmdTitle_newConnection%",
+                "description": "%cmdDescr_newConnection%",
+                "category": "%commandCategory%",
                 "icon": {
                     "light": "res/img/light/new.svg",
                     "dark": "res/img/dark/new.svg"
                 }
             },
             {
-                "command": "ext.mc.newDefaultConnection",
-                "title": "New default Microclimate connection",
-                "description": "Connect to Microclimate at the default URL, http://localhost:9090",
-                "category": "Microclimate"
+                "command": "%cmdID_newDefaultConn%",
+                "title": "%cmdTitle_newDefaultConn%",
+                "description": "%cmdDescr_newDefaultConn%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.removeConnection",
-                "title": "Remove connection",
-                "description": "Remove a Microclimate connection",
-                "category": "Microclimate"
+                "command": "%cmdID_removeConn%",
+                "title": "%cmdTitle_removeConn%",
+                "description": "%cmdDescr_removeConn%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.openWorkspaceFolder",
-                "title": "Open folder as workspace",
-                "description": "Open this item's folder as your VSCode workspace",
-                "category": "Microclimate"
+                "command": "%cmdID_openFolder%",
+                "title": "%cmdTitle_openFolder%",
+                "description": "%cmdDescr_openFolder%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.openInBrowser",
-                "title": "Open in browser",
-                "description": "Open this resource in the browser",
-                "category": "Microclimate"
+                "command": "%cmdID_openInBrowser%",
+                "title": "%cmdTitle_openInBrowser%",
+                "description": "%cmdDescr_openInBrowser%",
+                "category": "%commandCategory%"
             },
             {
                 "command": "ext.mc.attachDebugger",
-                "title": "Attach debugger",
-                "description": "Attach the VSCode debugger to a Microclimate project",
-                "category": "Microclimate"
+                "title": "%cmdTitle_attachDebugger%",
+                "description": "%cmdDescr_attachDebugger%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.restartProjectRun",
-                "title": "Restart in Run mode",
-                "description": "Restart a Microclimate project into Run (normal) mode",
-                "category": "Microclimate"
+                "command": "%cmdID_restartRun%",
+                "title": "%cmdTitle_restartRun%",
+                "description": "%cmdDescr_restartRun%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.restartProjectDebug",
-                "title": "Restart in Debug mode",
-                "description": "Restart a Microclimate project into Debug mode",
-                "category": "Microclimate"
+                "command": "%cmdID_restartDebug%",
+                "title": "%cmdTitle_restartDebug%",
+                "description": "%cmdDescr_restartDebug%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.requestBuild",
-                "title": "Request build",
-                "description": "Manually kick off a project build in Microclimate",
-                "category": "Microclimate"
+                "command": "%cmdID_requestBuild%",
+                "title": "%cmdTitle_requestBuild%",
+                "description": "%cmdDescr_requestBuild%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.openBuildLog",
-                "title": "Open build log",
-                "category": "Microclimate"
+                "command": "%cmdID_openBuildLog%",
+                "title": "%cmdTitle_openBuildLog%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.openAppLog",
-                "title": "Open application log",
-                "category": "Microclimate"
+                "command": "%cmdID_openAppLog%",
+                "title": "%cmdTitle_openAppLog%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.enable",
-                "title": "Enable Project",
-                "category": "Microclimate"
+                "command": "%cmdID_enable%",
+                "title": "%cmdTitle_enable%",
+                "description": "%cmdDescr_enable%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.disable",
-                "title": "Disable Project",
-                "category": "Microclimate"
+                "command": "%cmdID_disable%",
+                "title": "%cmdTitle_disable%",
+                "description": "%cmdDescr_disable%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.containerBash",
-                "title": "Open shell in container",
-                "category": "Microclimate"
+                "command": "%cmdID_containerShell%",
+                "title": "%cmdTitle_containerShell%",
+                "description": "%cmdDescr_containerShell%",
+                "category": "%commandCategory%"
             },
             {
-                "command": "ext.mc.viewProjectInfo",
-                "title": "View project info",
-                "category": "Microclimate"
+                "command": "%cmdID_projectInfo%",
+                "title": "%cmdTitle_projectInfo%",
+                "category": "%commandCategory%"
+            },
+            {
+                "command": "%cmdID_toggleAutoBuild%",
+                "title": "%cmdTitle_toggleAutoBuild%",
+                "category": "%commandCategory%"
             }
         ],
         "menus": {
             "view/title": [
                 {
-                    "command": "ext.mc.newConnection",
-                    "when": "view == ext.mc.mcProjectExplorer",
+                    "command": "%cmdID_newConnection%",
+                    "when": "view == %viewID%",
                     "group": "navigation"
                 }
             ],
             "view/item/context": [
                 {
-                    "command": "ext.mc.newConnection",
+                    "command": "%cmdID_newConnection%",
                     "when": "%isInViewWithNothingSelected%"
                 },
                 {
-                    "command": "ext.mc.newDefaultConnection",
+                    "command": "%cmdID_newDefaultConn%",
                     "when": "%isInViewWithNothingSelected%"
                 },
                 {
-                    "command": "ext.mc.removeConnection",
+                    "command": "%cmdID_removeConn%",
                     "when": "%isConnection%"
                 },
                 {
-                    "command": "ext.mc.openInBrowser",
+                    "command": "%cmdID_openInBrowser%",
                     "when": "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem)/",
                     "group": "ext.mc.a"
                 },
                 {
-                    "command": "ext.mc.openWorkspaceFolder",
+                    "command": "%cmdID_openFolder%",
                     "when": "%isConnectionOrProject%",
                     "group": "ext.mc.b"
                 },
                 {
-                    "command": "ext.mc.viewProjectInfo",
+                    "command": "%cmdID_projectInfo%",
                     "when": "%isProject%",
                     "group": "ext.mc.c"
                 },
                 {
-                    "command": "ext.mc.openAppLog",
+                    "command": "%cmdID_openAppLog%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.c"
                 },
                 {
-                    "command": "ext.mc.openBuildLog",
+                    "command": "%cmdID_openBuildLog%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.c"
                 },
                 {
-                    "command": "ext.mc.requestBuild",
+                    "command": "%cmdID_requestBuild%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.d"
                 },
                 {
                     "command": "ext.mc.attachDebugger",
-                    "when": "%isDebuggableProject%",
+                    "when": "%isDebuggingProject%",
                     "group": "ext.mc.e"
                 },
                 {
-                    "command": "ext.mc.restartProjectRun",
+                    "command": "%cmdID_restartRun%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.e"
                 },
                 {
-                    "command": "ext.mc.restartProjectDebug",
+                    "command": "%cmdID_restartDebug%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.e"
                 },
                 {
-                    "command": "ext.mc.containerBash",
+                    "command": "%cmdID_containerShell%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.f"
                 },
                 {
-                    "command": "ext.mc.disable",
+                    "command": "%cmdID_disable%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.z"
                 },
                 {
-                    "command": "ext.mc.enable",
+                    "command": "%cmdID_enable%",
                     "when": "%isDisabledProject%",
                     "group": "ext.mc.z"
                 }
