@@ -51,6 +51,10 @@ const filesToIgnore: string[] = [
     ".projects"
 ];
 
+/**
+ * Add to the user's `files.exclude` setting to exclude a bunch of files
+ * in the microclimate-workspace that the user probably doesn't want to see.
+ */
 async function ignoreMCFiles(): Promise<void> {
     const filesConfig = vscode.workspace.getConfiguration("files", null);
     const existing: any = filesConfig.get<{}>(excludeSection) || {};

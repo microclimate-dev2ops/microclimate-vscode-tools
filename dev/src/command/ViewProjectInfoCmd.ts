@@ -17,7 +17,13 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
         project = selected;
     }
 
-    const webPanel = vscode.window.createWebviewPanel(project.name, project.name, vscode.ViewColumn.Active);
+    const wvOptions: vscode.WebviewOptions & vscode.WebviewPanelOptions = {
+        enableScripts: true,
+        retainContextWhenHidden: true
+    };
+
+    // Could see if a matching WV is already open, and if so, just send it a refresh event instead.
+    const webPanel = vscode.window.createWebviewPanel(project.name, project.name, vscode.ViewColumn.Active, wvOptions);
     const icons = project.type.icon;
     webPanel.iconPath = {
         light: vscode.Uri.file(icons.light),

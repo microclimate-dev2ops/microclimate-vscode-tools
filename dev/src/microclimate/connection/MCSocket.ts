@@ -8,6 +8,7 @@ import { ProjectState } from "../project/ProjectState";
 import * as MCUtil from "../../MCUtil";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 import { Logger } from "../../Logger";
+import Validator from "../project/Validator";
 
 export default class MCSocket {
 
@@ -35,7 +36,8 @@ export default class MCSocket {
             .on("projectDeletion",      this.onProjectDeleted)
             .on("projectRestartResult", this.onProjectRestarted)
 
-            .on("container-logs",       this.onContainerLogs);
+            .on("container-logs",       this.onContainerLogs)
+            .on("projectValidated",     this.onProjectValidated);
 
             // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
@@ -63,34 +65,16 @@ export default class MCSocket {
         if (project == null) {
             Logger.log("No project with ID " + payload.projectID);
             // This means we've got a new project - refresh everything
-            this.connection.forceProjectUpdate();
+            this.connection.forceUpdateProjectList();
             return;
         }
 
         project.update(payload);
-
-        // TODO we have to check if a debugger (re)connection is needed
-        // Eclipse plugin onProjectChanged:
-        /*
-         * if (portsObj.has(MCConstants.KEY_EXPOSED_DEBUG_PORT)) {
-			int debugPort = parsePort(portsObj.getString(MCConstants.KEY_EXPOSED_DEBUG_PORT));
-			app.setDebugPort(debugPort);
-			if (serverBehaviour.getServer().getMode() == ILaunchManager.DEBUG_MODE && debugPort != -1) {
-				// If the debug connection is lost then reconnect
-				ILaunch launch = serverBehaviour.getServer().getLaunch();
-				if (launch == null || launch.getLaunchMode() != ILaunchManager.DEBUG_MODE) {
-					serverBehaviour.reconnectDebug(null);
-				}
-			}
-		} else {
-			app.setDebugPort(-1);
-		}
-         */
     }
 
     private onProjectDeleted = async (payload: any): Promise<void> => {
         Logger.log("PROJECT DELETED", payload);
-        this.connection.forceProjectUpdate();
+        this.connection.forceUpdateProjectList();
     }
 
     private onProjectRestarted = async (payload: any): Promise<void> => {
@@ -164,4 +148,15 @@ export default class MCSocket {
         }
     }
 
+    private onProjectValidated = async (payload: any): Promise<void> => {
+        const projectID = payload.projectID;
+
+        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        if (project == null) {
+            Logger.logE("Failed to get project associated with validation event, ID is ", projectID);
+            return;
+        }
+
+        Validator.validate(project, payload);
+    }
 }

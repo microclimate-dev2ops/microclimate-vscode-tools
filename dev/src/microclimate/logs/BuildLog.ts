@@ -16,10 +16,12 @@ export default class BuildLog {
 
     private readonly outputChannel: vscode.OutputChannel;
 
+    private readonly timer: NodeJS.Timer;
+
     private lastUpdated: Date = new Date(0);
 
     constructor(
-        private readonly connectionUrl: Connection,
+        private readonly connection: Connection,
         public readonly projectID: string,
         projectName: string
     ) {
@@ -28,14 +30,14 @@ export default class BuildLog {
         this.showOutputChannel();
 
         this.update();
-        setInterval(this.update, BuildLog.UPDATE_INTERVAL);
+        this.timer = setInterval(this.update, BuildLog.UPDATE_INTERVAL);
     }
 
     public update = async (): Promise<void> => {
-        const buildLogUrl: vscode.Uri = Endpoints.getEndpointPath(this.connectionUrl, Endpoints.BUILD_LOG(this.projectID));
+        const buildLogUrl: string = Endpoints.getProjectEndpoint(this.connection, this.projectID, Endpoints.BUILD_LOG);
 
         try {
-            const getResult = await request.get(buildLogUrl.toString(), { resolveWithFullResponse: true });
+            const getResult = await request.get(buildLogUrl, { resolveWithFullResponse: true });
             const lastModifiedStr: string = getResult.headers[BuildLog.LAST_UPDATED_HEADER];
             const lastModified: Date = new Date(Number(lastModifiedStr));
             // Logger.log("buildlog-lastModified", lastModifiedStr, lastModified);
@@ -54,12 +56,31 @@ export default class BuildLog {
             }*/
         }
         catch (err) {
-            vscode.window.showErrorMessage("Error updating build log: " + err);
             Logger.logE(err);
+            if (err.statusCode === 404) {
+                // The project got deleted or disabled
+                return this.destroy();
+            }
+
+            // Allow the user to kill this log so it doesn't spam them with error messages.
+            const removeLogBtn: string = "Remove Log";
+            vscode.window.showErrorMessage("Error updating build log: " + err, removeLogBtn)
+                .then( (btn) => {
+                    if (btn === removeLogBtn) {
+                        this.destroy();
+                    }
+                });
         }
     }
 
+    private async destroy(): Promise<void> {
+        Logger.log("Destroy build log " + this.outputChannel.name);
+        // this.outputChannel.dispose();
+        clearInterval(this.timer);
+    }
+
     public async showOutputChannel(): Promise<void> {
+        this.update();
         this.outputChannel.show(true);
     }
 

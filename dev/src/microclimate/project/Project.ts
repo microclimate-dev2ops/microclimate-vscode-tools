@@ -24,9 +24,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
 
+    public readonly diagnostics: vscode.DiagnosticCollection;
+
     private _containerID: string | undefined;
     private _appPort: number | undefined;
     private _debugPort: number | undefined;
+    private _autoBuildEnabled: Boolean;
 
     // QuickPickItem
     public readonly label: string;
@@ -45,6 +48,9 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
         this._containerID = projectInfo.containerId;
+        this._autoBuildEnabled = projectInfo.autoBuild;
+
+        this.diagnostics = vscode.languages.createDiagnosticCollection(this.name);
 
         // TODO should use projectType not buildType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
@@ -232,6 +238,10 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
     public get debugPort(): number | undefined {
         return this._debugPort;
+    }
+
+    public get autoBuildEnabled(): Boolean {
+        return this._autoBuildEnabled;
     }
 
     /**

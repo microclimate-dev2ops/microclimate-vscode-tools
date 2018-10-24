@@ -15,7 +15,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.json
 
     private readonly socket: MCSocket;
-    private readonly projectsApiUri: vscode.Uri;
+    private readonly projectsApiUri: string;
 
     // Has this connection ever been able to contact its Microclimate instance
     // private hasConnected = false;
@@ -36,7 +36,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         public readonly version: number,
         public readonly workspacePath: vscode.Uri
     ) {
-        this.projectsApiUri = Endpoints.getEndpointPath(this, Endpoints.PROJECTS);
+        this.projectsApiUri = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
         this.socket = new MCSocket(mcUri.toString(), this);
 
         // QuickPickItem
@@ -96,7 +96,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         }
         Logger.log(`Updating projects list for ${this.mcUri}`);
 
-        const result = await request.get(this.projectsApiUri.toString(), { json : true });
+        const result = await request.get(this.projectsApiUri, { json : true });
         Logger.log("Get project list result:", result);
 
         this.projects = [];
@@ -153,73 +153,99 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return ti;
     }
 
-    public async forceProjectUpdate(): Promise<void> {
-        Logger.log("ForceProjectUpdate");
+    public async forceUpdateProjectList(): Promise<void> {
+        Logger.log("forceUpdateProjectList");
         this.needProjectUpdate = true;
         await this.getProjects();
     }
 
-    public async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {
-        const uri = Endpoints.getEndpointPath(this, Endpoints.RESTART_ACTION(project.id));
-        const options = {
-            json: true,
-            body: {
-                startMode: MCUtil.getStartMode(debug)
+    public static async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {
+        const errHandler = (err: any) => {
+            const errMsg = err.error ? err.error : err;
+            Logger.log("Error POSTing restart request:", errMsg);
+
+            if (err.statusCode !== 400) {
+                Logger.logE("Unexpected error POSTing restart request", err);
             }
+
+            vscode.window.showErrorMessage(`Restart failed: ${errMsg}`);
+        }
+
+        const body = {
+            startMode: MCUtil.getStartMode(debug)
         };
 
-        request.post(uri.toString(), options)
-            .then( (result) => {
-                Logger.log("Response from restart request:", result);
-                vscode.window.showInformationMessage(`Restarting ${project.name} into ${options.body.startMode} mode`);
-            })
-            .catch( (err) => {
-                const errMsg = err.error ? err.error : err;
-                Logger.log("Error POSTing restart request:", errMsg);
-
-                if (err.statusCode !== 400) {
-                    Logger.logE("Unexpected error POSTing restart request", err);
-                }
-
-                vscode.window.showErrorMessage(`Restart failed: ${errMsg}`);
-            });
+        const endpoint = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
+        this.doProjectRequest(project, endpoint, body, request.post, "Restart into ${body.startMode}", errHandler);
     }
 
-    public async requestBuild(project: Project): Promise<void> {
-        const uri = Endpoints.getEndpointPath(this, Endpoints.BUILD_ACTION(project.id));
-        const options = {
-            json: true,
-            body: {
-                action: "build"
-            }
+    public static async requestBuild(project: Project): Promise<void> {
+        const body = {
+            action: "build"
         };
 
-        request.post(uri.toString(), options)
-            .then( (result) => {
-                Logger.log(`Response from build request for ${project.name}:`, result);
-                vscode.window.showInformationMessage(`Build requested for ${project.name}`);
-            })
-            .catch( (err) => {
-                Logger.log(`Error POSTing build request`, err);
-                vscode.window.showErrorMessage(`Build request failed: ${err}`);
-            });
+        const endpoint = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
+        this.doProjectRequest(project, endpoint, body, request.post, "Build");
+
+        // This is a workaround for the Build action not refreshing validation state.
+        // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
+        this.requestValidate(project);
     }
 
-    public async toggleEnablement(project: Project): Promise<void> {
+    public static async requestToggleEnablement(project: Project): Promise<void> {
         const newEnablement: Boolean = !project.state.isEnabled;
         const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
 
-        const uri = Endpoints.getEndpointPath(this, Endpoints.ENABLEMENT_ACTION(project.id, newEnablement));
-        Logger.log("Enablement uri is ", uri.toString());
+        const endpoint = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.ENABLEMENT_ACTION(newEnablement));
+        this.doProjectRequest(project, endpoint, {}, request.put, newEnablementStr);
+    }
 
-        request.put(uri.toString(), { json: true })
-            .then( (result) => {
-                Logger.log(`Response from enablement request for ${project.name}:`, result);
-                vscode.window.showInformationMessage(`Requested to ${newEnablementStr.toLowerCase()} ${project.name}`);
+    public static async requestValidate(project: Project): Promise<void> {
+        const body = {
+            projectID: project.id,
+            projectType: project.type.internalType
+        };
+
+        const endpoint = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
+        this.doProjectRequest(project, endpoint, body, request.post, "Validate");
+    }
+
+    public static async requestGenerate(project: Project): Promise<void> {
+        const body = {
+            projectID: project.id,
+            projectType: project.type.internalType,
+            autoGenerate: true
+        };
+
+        const endpoint = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
+        this.doProjectRequest(project, endpoint, body, request.post, "Generate");
+    }
+
+    public static async doProjectRequest(project: Project, url: string, body: {},
+            requestType: (uri: string, {}) => any,
+            userOperationName: string,
+            errorHandler?: (err: any) => void
+    ) {
+        Logger.log(`Doing ${userOperationName} request to ${url}`);
+
+        const options = {
+            json: true,
+            body: body
+        }
+
+        requestType(url, options)
+            .then( (result: any) => {
+                Logger.log(`Response from ${userOperationName} request for ${project.name}:`, result);
+                vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);
             })
-            .catch( (err) => {
-                Logger.logE(`Error POSTing enablement request`, err);
-                vscode.window.showErrorMessage(`${newEnablementStr} request failed: ${err}`);
+            .catch( (err: any) => {
+                if (errorHandler) {
+                    errorHandler(err);
+                }
+                else {
+                    Logger.log(`Error doing ${userOperationName} project request for ${project.name}:`, err);
+                    vscode.window.showErrorMessage(`${userOperationName} request failed: ${err}`);
+                }
             });
     }
 }

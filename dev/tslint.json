@@ -37,8 +37,13 @@
 			"object-destructuring", "array-destructuring"
 		],
 		"ban-types": [ true,
-			[ "Object", "Use {} instead" ],
-			[ "Function", "Use typed () => instead"]
+			// [ "Object", "Use {} instead" ],
+			// [ "Function", "Use (param: type) => type instead"]
+		],
+		"ban": [ true,
+			// [ "console", "log", "Use Logger.log"],
+			[ "console", "warn", "Use Logger.logW"],
+			[ "console", "error", "Use Logger.logE"]
 		]
 	},
 	"defaultSeverity": "warning"

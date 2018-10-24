@@ -42,6 +42,15 @@ export default function projectInfoHtml(project: Project): string {
             ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 16))}
             ${buildRow("Project ID", project.id)}
             ${buildRow("Path on Disk", project.localPath.fsPath)}
+            <tr>
+                <td>Auto build</td>
+                <td>${project.autoBuildEnabled ? "On": "Off"}
+                    -
+                    <a class="monaco-button monaco-text-button"
+                        tabindex="0" role="button">
+                        Toggle</a>
+                </td>
+            </tr>
             ${emptyRow}
             ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"))}
             ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}

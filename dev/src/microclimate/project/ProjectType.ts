@@ -10,10 +10,10 @@ export class ProjectType {
     public readonly icon: Icons.IconPaths;
 
     constructor(
-        public readonly projectType: string,
+        public readonly internalType: string,
         public readonly language: string,
     ) {
-        this.type = ProjectType.getType(projectType, language);
+        this.type = ProjectType.getType(internalType, language);
         this.userFriendlyType = ProjectType.getUserFriendlyType(this.type);
         this.debugType = ProjectType.getDebugType(this.type);
         this.icon = ProjectType.getProjectIcon(this.type);

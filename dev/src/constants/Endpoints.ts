@@ -6,21 +6,27 @@ import Connection from "../microclimate/connection/Connection";
  */
 export default class Endpoints {
 
-    public static getEndpointPath(connection: Connection, endpoint: string): Uri {
-        return Uri.parse(connection.mcUri.toString().concat(endpoint));
+    public static getEndpoint(connection: Connection, endpoint: string): string {
+        return connection.mcUri.toString().concat(endpoint);
+    }
+
+    public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string): string {
+        return connection.mcUri.toString().concat(`${Endpoints.PROJECTS}/${projectID}/${endpoint}`);
     }
 
     public static readonly ENVIRONMENT: string = "api/v1/environment";
 
     public static readonly PROJECTS: string = "api/v1/projects";
 
-    public static readonly RESTART_ACTION = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/restart`;
+    public static readonly VALIDATE_ACTION: string = "api/v1/validate";
+    public static readonly GENERATE_ACTION: string = "api/v1/validate/generate";
 
-    public static readonly BUILD_ACTION   = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/build`;
+    public static readonly RESTART_ACTION:  string = "restart";
+    public static readonly BUILD_ACTION:    string = "build";
+    public static readonly BUILD_LOG:       string = "build-log";
 
-    public static readonly ENABLEMENT_ACTION = (projectID: string, enable: Boolean): string => {
-        return `${Endpoints.PROJECTS}/${projectID}/${enable ? "open" : "close"}`;
+    public static readonly ENABLEMENT_ACTION = (enable: Boolean): string => {
+        return `${enable ? "open" : "close"}`;
     }
 
-    public static readonly BUILD_LOG = (projectID: string): string => `${Endpoints.PROJECTS}/${projectID}/build-log`;
 }

@@ -7,6 +7,7 @@ import AppLog from "../microclimate/logs/AppLog";
 import { getStartMode } from "../MCUtil";
 import { getOcticon, Octicons } from "../constants/Icons";
 import { Logger } from "../Logger";
+import Connection from "../microclimate/connection/Connection";
 
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
     Logger.log("RestartProjectCmd invoked");
@@ -23,7 +24,7 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
     AppLog.getOrCreateLog(project.id, project.name).unsetDebugConsole();
     Logger.log(`RestartProject on project ${project.name} into ${getStartMode(debug)} mode`);
 
-    const restartRequestPromise = project.connection.requestProjectRestart(project, debug);
+    const restartRequestPromise = Connection.requestProjectRestart(project, debug);
     vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Initiating restarting ${project.name}`, restartRequestPromise);
     // After the above async REST request, we don't do anything further for this command until
     // the Socket receives a projectRestartResult event, which will then call the methods below.
