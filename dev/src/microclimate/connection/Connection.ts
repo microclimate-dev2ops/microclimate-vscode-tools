@@ -160,23 +160,12 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public static async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {
-        const errHandler = (err: any) => {
-            const errMsg = err.error ? err.error : err;
-            Logger.log("Error POSTing restart request:", errMsg);
-
-            if (err.statusCode !== 400) {
-                Logger.logE("Unexpected error POSTing restart request", err);
-            }
-
-            vscode.window.showErrorMessage(`Restart failed: ${errMsg}`);
-        }
-
         const body = {
             startMode: MCUtil.getStartMode(debug)
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
-        return this.doProjectRequest(project, url, body, request.post, `Restart into ${body.startMode}`, errHandler);
+        return this.doProjectRequest(project, url, body, request.post, `Restart into ${body.startMode} mode`);
     }
 
     public static async requestBuild(project: Project): Promise<void> {
@@ -243,9 +232,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
     private static doProjectRequest(project: Project, url: string, body: {},
             requestFunc: (uri: string, {}) => request.RequestPromise<any>,
-            userOperationName: string,
-            // then?: (result: )
-            errorHandler?: (err: any) => void
+            userOperationName: string
     ): any {
         Logger.log(`Doing ${userOperationName} request to ${url}`);
 
@@ -263,13 +250,12 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
                 return result;
             })
             .catch( (err: any) => {
-                if (errorHandler) {
-                    errorHandler(err);
-                }
-                else {
-                    Logger.log(`Error doing ${userOperationName} project request for ${project.name}:`, err);
-                    vscode.window.showErrorMessage(`${userOperationName} request failed: ${err}`);
-                }
+                Logger.log(`Error doing ${userOperationName} project request for ${project.name}:`, err);
+
+                // If the server provided a specific message, present the user with that,
+                // otherwise show them the whole error (but it will be ugly)
+                const errMsg = err.error ? err.error : err;
+                vscode.window.showErrorMessage(`${userOperationName} failed: ${errMsg}`);
                 return err;
             });
     }
