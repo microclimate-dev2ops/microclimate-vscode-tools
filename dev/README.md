@@ -5,7 +5,7 @@ Welcome to Microclimate Developer Tools for VSCode!
 This is the README that is packaged into our extension.
 
 ## How to install
-1. [Download the newest build from the build branch](https://github.ibm.com/dev-ex/microclimate-vscode/tree/build)
+1. [Download the newest build from the build branch](https://github.ibm.com/dev-ex/microclimate-vscode/raw/build/vscode-microclimate-tools-0.0.2.vsix)
 2. In VSCode, go `View` > `Extensions` > `...` overflow menu > `Install from VSIX...`
 
 ## How to use
