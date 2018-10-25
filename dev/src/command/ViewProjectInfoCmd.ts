@@ -35,7 +35,6 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
     // const ed = vscode.window.activeTextEditor;
     webPanel.webview.html = ProjectInfo.generateHtml(project);
     webPanel.webview.onDidReceiveMessage( (msg: any) => {
-        // console.log("Got msg from webview", msg);
         if (msg === ProjectInfo.REFRESH_MSG) {
             webPanel.webview.html = ProjectInfo.generateHtml(project);
         }

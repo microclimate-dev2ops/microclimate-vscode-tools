@@ -204,7 +204,12 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
-        return this.doProjectRequest(project, url, body, request.post, newAutoBuildUserStr);
+        return this.doProjectRequest(project, url, body, request.post, newAutoBuildUserStr)
+            .then( (result: any) => {
+                if (result != null && result.statusCode === 200) {
+                    project.setAutoBuild(newAutoBuild);
+                }
+            });
     }
 
     public static async requestToggleEnablement(project: Project): Promise<void> {
@@ -236,22 +241,26 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return this.doProjectRequest(project, url, body, request.post, "Generate");
     }
 
-    private static async doProjectRequest(project: Project, url: string, body: {},
+    private static doProjectRequest(project: Project, url: string, body: {},
             requestFunc: (uri: string, {}) => request.RequestPromise<any>,
             userOperationName: string,
+            // then?: (result: )
             errorHandler?: (err: any) => void
-    ) {
+    ): any {
         Logger.log(`Doing ${userOperationName} request to ${url}`);
 
         const options = {
             json: true,
-            body: body
+            body: body,
+
+            resolveWithFullResponse: true
         }
 
-        requestFunc(url, options)
+        return requestFunc(url, options)
             .then( (result: any) => {
-                Logger.log(`Response from ${userOperationName} request for ${project.name}:`, result);
+                Logger.log(`Response code ${result.statusCode} from ${userOperationName} request for ${project.name}:`, result);
                 vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);
+                return result;
             })
             .catch( (err: any) => {
                 if (errorHandler) {
@@ -261,6 +270,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
                     Logger.log(`Error doing ${userOperationName} project request for ${project.name}:`, err);
                     vscode.window.showErrorMessage(`${userOperationName} request failed: ${err}`);
                 }
+                return err;
             });
     }
 }

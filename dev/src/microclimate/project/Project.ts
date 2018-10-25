@@ -160,12 +160,6 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             Logger.log(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
         }
 
-        const newAutoBuild: Boolean | undefined = projectInfo.autoBuild;
-        if (newAutoBuild != null) {
-            this._autoBuildEnabled = newAutoBuild;
-            Logger.log(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
-        }
-
         const newContainerID: string | undefined = projectInfo.containerID;
         if (newContainerID != null) {
             this._containerID = newContainerID;
@@ -238,6 +232,13 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Waiting for ${this.name} to be ${statesAsStr}`, pendingStatePromise);
 
         return pendingStatePromise;
+    }
+
+    public setAutoBuild(newAutoBuild: Boolean): void {
+        if (newAutoBuild != null) {
+            this._autoBuildEnabled = newAutoBuild;
+            Logger.log(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
+        }
     }
 
     public get containerID(): string | undefined {

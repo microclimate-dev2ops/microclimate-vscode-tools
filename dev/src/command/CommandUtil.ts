@@ -68,7 +68,7 @@ export async function promptForProject(...acceptableStates: ProjectState.AppStat
     if (project instanceof Project) {
         return project as Project;
     }
-    else {
+    else if (project != null) {
         // should never happen
         Logger.logE("promptForProject received something other than a project back:", project);
     }
@@ -82,7 +82,7 @@ export async function promptForConnection(): Promise<Connection | undefined> {
     if (connection instanceof Connection) {
         return connection as Connection;
     }
-    else {
+    else if (connection != null) {
         // should never happen
         Logger.logE("promptForConnection received something other than a connection back:", connection);
     }
@@ -115,7 +115,7 @@ async function promptForResourceInner(includeConnections: Boolean, includeProjec
             acceptableStates.push(ProjectState.AppStates.DEBUGGING);
         }
 
-        Logger.log("Accept states", acceptableStates);
+        // Logger.log("Accept states", acceptableStates);
 
         // For each connection, get its project list, and filter by projects we're interested in.
         // then add the remaining projects to our QuickPick choices.
