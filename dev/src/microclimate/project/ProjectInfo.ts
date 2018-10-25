@@ -5,6 +5,11 @@ import toggleAutoBuildCmd, { TOGGLE_AUTOBUILD_CMD_ID } from "../../command/Toggl
 
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
+export const OPEN_MSG: string = "open";
+
+export enum Openable {
+    WEB = "web", FILE = "file", FOLDER = "folder"
+};
 
 export function generateHtml(project: Project): string {
 
@@ -55,16 +60,18 @@ export function generateHtml(project: Project): string {
                 <!--${buildRow("Microclimate URL", project.connection.toString())}-->
                 ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 16))}
                 ${buildRow("Project ID", project.id)}
-                ${buildRow("Path on Disk", project.localPath.fsPath)}
+                ${buildRow("Path on Disk", project.localPath.fsPath, Openable.FOLDER)}
                 <tr>
-                    <td id="auto-build-label" class="info-label">Auto build</td>
-                    <td>${project.autoBuildEnabled ? "On": "Off"}
-                        -
-                        <input id="auto-build-toggle" type="button" onclick="toggleAutoBuild(this)" class="button" value="Toggle"/>
+                    <td class="info-label">Auto build</td>
+                    <td>
+                        <input id="auto-build-toggle" type="checkbox"
+                            onclick="toggleAutoBuild(this)"
+                            ${project.autoBuildEnabled ? "checked" : ""}
+                        />
                     </td>
                 </tr>
                 ${emptyRow}
-                ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"))}
+                ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
                 ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
                 ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
             </table>
@@ -73,26 +80,20 @@ export function generateHtml(project: Project): string {
                 const vscode = acquireVsCodeApi();
 
                 function refresh() {
-                    vscode.postMessage("${REFRESH_MSG}");
+                    sendMsg("${REFRESH_MSG}");
                 }
 
                 function toggleAutoBuild(toggleAutoBuildBtn) {
-                    vscode.postMessage("${TOGGLE_AUTOBUILD_MSG}");
-
-                    setAutoBuildAction();
-
-                    setTimeout(refresh, 500);
+                    sendMsg("${TOGGLE_AUTOBUILD_MSG}");
                 }
 
-                function setAutoBuildAction() {
-                    const autoBuild = document.getElementById("auto-build-label");
-                    const autoBuildEnabled = autoBuild.textContent.includes("On");
-
-                    const autoBuildBtn = document.getElementById("auto-build-toggle");
-                    autoBuildBtn.textContent = autoBuildEnabled ? "Disable" : "Enable";
+                function vscOpen(element, type) {
+                    sendMsg("${OPEN_MSG}", { type: type, value: element.textContent });
                 }
 
-                setAutoBuildAction();
+                function sendMsg(msg, data) {
+                    vscode.postMessage({ msg: msg, data: data });
+                }
 
             </script>
         </body>
@@ -100,11 +101,24 @@ export function generateHtml(project: Project): string {
     `;
 }
 
-function buildRow(label: string, data: string): string {
+function buildRow(label: string, data: string, openable?: Openable): string {
+    let td: string;
+    if (openable != null) {
+        td = `
+            <td>
+                <a onclick="vscOpen(this, '${openable}')">${data}</a>
+            </td>
+            `;
+    }
+    else {
+        td = `<td>${data}</td>`;
+    }
+    console.log("The td is ", td);
+
     return `
         <tr class="info-row">
             <td class="info-label">${label}:</td>
-            <td>${data}</td>
+            ${td}
         </tr>
     `;
 }
@@ -124,5 +138,6 @@ function getNonNull(item: Uri | number | string | undefined, fallback: string, m
     if (maxLength != null) {
         result = result.substring(0, maxLength);
     }
+
     return result;
 }

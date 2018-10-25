@@ -34,15 +34,35 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
 
     // const ed = vscode.window.activeTextEditor;
     webPanel.webview.html = ProjectInfo.generateHtml(project);
-    webPanel.webview.onDidReceiveMessage( (msg: any) => {
-        if (msg === ProjectInfo.REFRESH_MSG) {
-            webPanel.webview.html = ProjectInfo.generateHtml(project);
+    webPanel.webview.onDidReceiveMessage( (msg: { msg: string, data: { type: string, value: string } }) => {
+        try {
+            if (msg.msg === ProjectInfo.REFRESH_MSG) {
+                webPanel.webview.html = ProjectInfo.generateHtml(project);
+            }
+            else if (msg.msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
+                Connection.requestToggleAutoBuild(project);
+            }
+            else if (msg.msg === ProjectInfo.OPEN_MSG) {
+                Logger.log("Got msg to open, data is ", msg.data);
+                let uri: vscode.Uri;
+                if (msg.data.type === ProjectInfo.Openable.FILE || msg.data.type === ProjectInfo.Openable.FOLDER) {
+                    uri = vscode.Uri.file(msg.data.value);
+                }
+                else {
+                    // default to web
+                    uri = vscode.Uri.parse(msg.data.value);
+                }
+
+                Logger.log("The uri is:", uri);
+                // const cmd: string = msg.data.type === ProjectInfo.Openable.FOLDER ? "vscode.openFolder" : "vscode.open";
+                vscode.commands.executeCommand("vscode.open", uri);
+            }
+            else {
+                Logger.logE("Received unknown event from project info webview:", msg);
+            }
         }
-        else if (msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
-            Connection.requestToggleAutoBuild(project);
-        }
-        else {
-            Logger.logE("Received unknown event from project info webview:", msg);
+        catch(err) {
+            Logger.logE("Error processing msg from WebView", err);
         }
     });
 
