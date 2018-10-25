@@ -2,8 +2,9 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import projectInfoHtml from "../microclimate/project/ProjectInfo";
+import * as ProjectInfo from "../microclimate/project/ProjectInfo";
 import { Logger } from "../Logger";
+import Connection from "../microclimate/connection/Connection";
 
 export default async function viewProjectInfoCmd(project: Project): Promise<void> {
     Logger.log("viewProjectInfoCmd invoked");
@@ -23,7 +24,7 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
         enableCommandUris: true
     };
 
-    // Could see if a matching WV is already open, and if so, just send it a refresh event instead.
+    // TODO if a matching WV is already open, and if so, just send it a refresh event instead.
     const webPanel = vscode.window.createWebviewPanel(project.name, project.name, vscode.ViewColumn.Active, wvOptions);
     const icons = project.type.icon;
     webPanel.iconPath = {
@@ -32,6 +33,19 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
     };
 
     // const ed = vscode.window.activeTextEditor;
-    webPanel.webview.html = projectInfoHtml(project);
+    webPanel.webview.html = ProjectInfo.generateHtml(project);
+    webPanel.webview.onDidReceiveMessage( (msg: any) => {
+        // console.log("Got msg from webview", msg);
+        if (msg === ProjectInfo.REFRESH_MSG) {
+            webPanel.webview.html = ProjectInfo.generateHtml(project);
+        }
+        else if (msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
+            Connection.requestToggleAutoBuild(project);
+        }
+        else {
+            Logger.logE("Received unknown event from project info webview:", msg);
+        }
+    });
+
     webPanel.reveal();
 }

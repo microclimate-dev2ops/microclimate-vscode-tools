@@ -20,6 +20,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
     }
 
     try {
+        // TODO add a timeout to debugger attach
         const startDebugPromise = startDebugSession(project);
         vscode.window.setStatusBarMessage(`${Icons.getOcticon(Icons.Octicons.bug, true)} Connecting debugger to ${project.name}`, startDebugPromise);
         const successMsg = await startDebugPromise;

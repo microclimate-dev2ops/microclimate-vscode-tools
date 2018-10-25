@@ -27,6 +27,6 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
     const restartRequestPromise = Connection.requestProjectRestart(project, debug);
     vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Initiating restarting ${project.name}`, restartRequestPromise);
     // After the above async REST request, we don't do anything further for this command until
-    // the Socket receives a projectRestartResult event, which will then call the methods below.
+    // the Socket receives a projectRestartResult event.
     // see MCSocket.onProjectRestarted
 }

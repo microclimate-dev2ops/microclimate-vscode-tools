@@ -176,7 +176,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
-        this.doProjectRequest(project, url, body, request.post, `Restart into ${body.startMode}`, errHandler);
+        return this.doProjectRequest(project, url, body, request.post, `Restart into ${body.startMode}`, errHandler);
     }
 
     public static async requestBuild(project: Project): Promise<void> {
@@ -189,7 +189,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
         // This is a workaround for the Build action not refreshing validation state.
         // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
-        this.requestValidate(project);
+        return this.requestValidate(project);
     }
 
     public static async requestToggleAutoBuild(project: Project): Promise<void> {

@@ -3,7 +3,10 @@ import { Uri } from "vscode";
 import Project from "./Project";
 import toggleAutoBuildCmd, { TOGGLE_AUTOBUILD_CMD_ID } from "../../command/ToggleAutoBuildCmd";
 
-export default function projectInfoHtml(project: Project): string {
+export const REFRESH_MSG: string = "refresh";
+export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
+
+export function generateHtml(project: Project): string {
 
     const emptyRow =
     `
@@ -36,6 +39,7 @@ export default function projectInfoHtml(project: Project): string {
         </head>
         <body>
             <h2>Project ${project.name}</h2>
+            <button onclick="refresh()">Refresh</button>
             <table>
             <!--${buildRow("Name", project.name)}-->
             ${buildRow("Type", project.type.toString())}
@@ -47,9 +51,9 @@ export default function projectInfoHtml(project: Project): string {
                 <td>Auto build</td>
                 <td>${project.autoBuildEnabled ? "On": "Off"}
                     -
-                    <a href="command:${TOGGLE_AUTOBUILD_CMD_ID}" class="monaco-button monaco-text-button"
-                        tabindex="0" role="button">
-                        Toggle</a>
+                    <button onclick="toggleAutoBuild()" class="monaco-button monaco-text-button">
+                        Toggle
+                    </button>
                 </td>
             </tr>
             ${emptyRow}
@@ -57,6 +61,19 @@ export default function projectInfoHtml(project: Project): string {
             ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
             ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
             </table>
+
+            <script>
+                const vscode = acquireVsCodeApi();
+
+                function refresh() {
+                    vscode.postMessage("${REFRESH_MSG}");
+                }
+
+                function toggleAutoBuild() {
+                    vscode.postMessage("${TOGGLE_AUTOBUILD_MSG}");
+                }
+
+            </script>
         </body>
         </html>
     `;

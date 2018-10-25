@@ -67,7 +67,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this.label = `${this.name} (${this.type} project)`;
         // this.detail = this.id;
 
-        Logger.log("Created project:", this);
+        Logger.log(`Created project ${this.name}:`, this);
     }
 
     public getChildren(): TreeItemAdaptable[] {
@@ -164,6 +164,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         if (newAutoBuild != null) {
             this._autoBuildEnabled = newAutoBuild;
             Logger.log(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
+        }
+
+        const newContainerID: string | undefined = projectInfo.containerID;
+        if (newContainerID != null) {
+            this._containerID = newContainerID;
+            Logger.log(`New containerID for ${this.name} is ${this._containerID.substring(0, 8)}`);
         }
 
         const ports = projectInfo.ports;
