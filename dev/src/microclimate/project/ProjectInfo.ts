@@ -2,6 +2,7 @@ import { Uri } from "vscode";
 
 import Project from "./Project";
 import * as Icons from "../../constants/Icons";
+import { Logger } from "../../Logger";
 
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
@@ -42,6 +43,13 @@ export function generateHtml(project: Project): string {
                 #top-section {
                     display: inline-flex;
                     padding-bottom: 1em;
+                    align-items: center
+                }
+                #mc-icon {
+                    /*width: 5em;*/
+                    height: 5em;
+                    padding: 0;
+                    margin: 0;
                 }
                 input[type="checkbox"] {
                     padding: 0;
@@ -69,6 +77,7 @@ export function generateHtml(project: Project): string {
         <body>
         <div id="top-section">
             <h2>Project ${project.name}</h2>
+            <img id="mc-icon" src="${getMCIcon()}"/>
         </div>
         <table>
             <!--${buildRow("Name", project.name)}-->
@@ -120,7 +129,9 @@ export function generateHtml(project: Project): string {
 }
 
 function getMCIcon(): string {
-    return Icons.getIconPaths(Icons.Icons.Microclimate).dark;
+    const mcIconPath: string =  "vscode-resource:" + Icons.getIconPaths(Icons.Icons.Microclimate).dark;
+    // Logger.log("MCIP", mcIconPath);
+    return mcIconPath;
 }
 
 function buildRow(label: string, data: string, openable?: Openable): string {
