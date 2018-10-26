@@ -5,7 +5,7 @@ import TreeItemAdaptable from "../../view/TreeItemAdaptable";
 import { ProjectState } from "./ProjectState";
 import { ProjectType } from "./ProjectType";
 import Connection from "../connection/Connection";
-import { getOcticon, Octicons } from "../../constants/Icons";
+import { getOcticon, Octicons } from "../../constants/Resources";
 import { Logger } from "../../Logger";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {

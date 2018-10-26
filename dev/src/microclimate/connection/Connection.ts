@@ -7,7 +7,7 @@ import Project from "../project/Project";
 import Endpoints from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
-import { Icons, getIconPaths } from "../../constants/Icons";
+import { Icons, getIconPaths } from "../../constants/Resources";
 import { Logger } from "../../Logger";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {

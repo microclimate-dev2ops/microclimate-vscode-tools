@@ -5,7 +5,7 @@ import { promptForProject } from "../command/CommandUtil";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import AppLog from "../microclimate/logs/AppLog";
 import { getStartMode } from "../MCUtil";
-import { getOcticon, Octicons } from "../constants/Icons";
+import { getOcticon, Octicons } from "../constants/Resources";
 import { Logger } from "../Logger";
 import Connection from "../microclimate/connection/Connection";
 

@@ -1,4 +1,4 @@
-import * as Icons from "../../constants/Icons";
+import * as Resources from "../../constants/Resources";
 import { Logger } from "../../Logger";
 
 export class ProjectType {
@@ -7,7 +7,7 @@ export class ProjectType {
     public readonly userFriendlyType: string;
     public readonly debugType: string | undefined;
 
-    public readonly icon: Icons.IconPaths;
+    public readonly icon: Resources.IconPaths;
 
     constructor(
         public readonly internalType: string,
@@ -71,26 +71,26 @@ export class ProjectType {
         }
     }
 
-    private static getProjectIcon(type: ProjectType.Types): Icons.IconPaths {
+    private static getProjectIcon(type: ProjectType.Types): Resources.IconPaths {
         // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
         switch (type) {
             case ProjectType.Types.MICROPROFILE:
-                return Icons.getIconPaths(Icons.Icons.Microprofile);
+                return Resources.getIconPaths(Resources.Icons.Microprofile);
             case ProjectType.Types.SPRING:
-                return Icons.getIconPaths(Icons.Icons.Spring);
+                return Resources.getIconPaths(Resources.Icons.Spring);
             case ProjectType.Types.NODE:
-                return Icons.getIconPaths(Icons.Icons.Node);
+                return Resources.getIconPaths(Resources.Icons.Node);
             case ProjectType.Types.SWIFT:
-                return Icons.getIconPaths(Icons.Icons.Swift);
+                return Resources.getIconPaths(Resources.Icons.Swift);
             case ProjectType.Types.PYTHON:
-                return Icons.getIconPaths(Icons.Icons.Python);
+                return Resources.getIconPaths(Resources.Icons.Python);
             case ProjectType.Types.GO:
-                return Icons.getIconPaths(Icons.Icons.Go);
+                return Resources.getIconPaths(Resources.Icons.Go);
             case ProjectType.Types.GENERIC_DOCKER:
                 // This is our fall-back, we could possibly use a more generic icon.
-                return Icons.getIconPaths(Icons.Icons.Docker);
+                return Resources.getIconPaths(Resources.Icons.Docker);
             default:
-                return Icons.getIconPaths(Icons.Icons.Generic);
+                return Resources.getIconPaths(Resources.Icons.Generic);
         }
     }
 

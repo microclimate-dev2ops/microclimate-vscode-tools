@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { promptForProject } from "../command/CommandUtil";
-import * as Icons from "../constants/Icons";
+import * as Resources from "../constants/Resources";
 import AppLog from "../microclimate/logs/AppLog";
 import Project from "../microclimate/project/Project";
 import { ProjectState } from "../microclimate/project/ProjectState";
@@ -22,7 +22,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
     try {
         // TODO add a timeout to debugger attach
         const startDebugPromise = startDebugSession(project);
-        vscode.window.setStatusBarMessage(`${Icons.getOcticon(Icons.Octicons.bug, true)} Connecting debugger to ${project.name}`, startDebugPromise);
+        vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} Connecting debugger to ${project.name}`, startDebugPromise);
         const successMsg = await startDebugPromise;
 
         Logger.log("Debugger attach success", successMsg);

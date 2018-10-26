@@ -6,6 +6,8 @@ import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import { ProjectState } from "../microclimate/project/ProjectState";
 
+import Commands from "../constants/Commands";
+
 import * as NewConnectionCmd from "./NewConnectionCmd";
 import openWorkspaceFolderCmd from "./OpenWorkspaceFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
@@ -17,7 +19,7 @@ import containerBashCmd from "./ContainerShellCmd";
 import viewProjectInfoCmd from "./ViewProjectInfoCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
 import openLogCmd from "./OpenLogCmd";
-import toggleAutoBuildCmd, { TOGGLE_AUTOBUILD_CMD_ID } from "./ToggleAutoBuildCmd";
+import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -27,31 +29,31 @@ export function createCommands(): vscode.Disposable[] {
     // - undefined (if run from command palette)
     // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
-        vscode.commands.registerCommand(NewConnectionCmd.NEW_CONN_CMD_ID,    () => NewConnectionCmd.newConnectionCmd()),
-        vscode.commands.registerCommand("ext.mc.newDefaultConnection",  () => NewConnectionCmd.tryAddConnection(NewConnectionCmd.DEFAULT_CONNINFO)),
+        vscode.commands.registerCommand(Commands.NEW_CONNECTION, () => NewConnectionCmd.newConnectionCmd()),
+        vscode.commands.registerCommand(Commands.NEW_DEFAULT_CONNECTION, () => NewConnectionCmd.tryAddConnection(NewConnectionCmd.DEFAULT_CONNINFO)),
 
-        vscode.commands.registerCommand("ext.mc.removeConnection",      (selection) => removeConnectionCmd(selection)),
+        vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, (selection) => removeConnectionCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.openWorkspaceFolder",   (selection) => openWorkspaceFolderCmd(selection)),
+        vscode.commands.registerCommand(Commands.OPEN_WS_FOLDER,    (selection) => openWorkspaceFolderCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.attachDebugger",        (selection) => attachDebuggerCmd(selection)),
-        vscode.commands.registerCommand("ext.mc.restartProjectRun",     (selection) => restartProjectCmd(selection, false)),
-        vscode.commands.registerCommand("ext.mc.restartProjectDebug",   (selection) => restartProjectCmd(selection, true)),
+        vscode.commands.registerCommand(Commands.ATTACH_DEBUGGER,   (selection) => attachDebuggerCmd(selection)),
+        vscode.commands.registerCommand(Commands.RESTART_RUN,       (selection) => restartProjectCmd(selection, false)),
+        vscode.commands.registerCommand(Commands.RESTART_DEBUG,     (selection) => restartProjectCmd(selection, true)),
 
-        vscode.commands.registerCommand("ext.mc.openInBrowser",     (selection) => openInBrowserCmd(selection)),
+        vscode.commands.registerCommand(Commands.OPEN_IN_BROWSER,   (selection) => openInBrowserCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.requestBuild",      (selection) => requestBuildCmd(selection)),
-        vscode.commands.registerCommand(TOGGLE_AUTOBUILD_CMD_ID,    (selection) => toggleAutoBuildCmd(selection)),
+        vscode.commands.registerCommand(Commands.REQUEST_BUILD,     (selection) => requestBuildCmd(selection)),
+        vscode.commands.registerCommand(Commands.TOGGLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.openAppLog",    (selection) => openLogCmd(selection, true)),
-        vscode.commands.registerCommand("ext.mc.openBuildLog",  (selection) => openLogCmd(selection, false)),
+        vscode.commands.registerCommand(Commands.OPEN_APP_LOG,      (selection) => openLogCmd(selection, true)),
+        vscode.commands.registerCommand(Commands.OPEN_BUILD_LOG,    (selection) => openLogCmd(selection, false)),
 
-        vscode.commands.registerCommand("ext.mc.disable",   (selection) => toggleEnablementCmd(selection, false)),
-        vscode.commands.registerCommand("ext.mc.enable",    (selection) => toggleEnablementCmd(selection, true)),
+        vscode.commands.registerCommand(Commands.DISABLE_PROJECT,   (selection) => toggleEnablementCmd(selection, false)),
+        vscode.commands.registerCommand(Commands.ENABLE_PROJECT,    (selection) => toggleEnablementCmd(selection, true)),
 
-        vscode.commands.registerCommand("ext.mc.containerShell",     (selection) => containerBashCmd(selection)),
+        vscode.commands.registerCommand(Commands.CONTAINER_SHELL,   (selection) => containerBashCmd(selection)),
 
-        vscode.commands.registerCommand("ext.mc.viewProjectInfo",   (selection) => viewProjectInfoCmd(selection))
+        vscode.commands.registerCommand(Commands.VIEW_PROJECT_INFO, (selection) => viewProjectInfoCmd(selection))
     ];
 }
 

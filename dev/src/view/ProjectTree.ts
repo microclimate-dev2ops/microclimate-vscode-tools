@@ -3,8 +3,8 @@ import * as vscode from "vscode";
 
 import  TreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import { Icons, getIconPaths } from "../constants/Icons";
-import { NEW_CONN_CMD_ID } from "../command/NewConnectionCmd";
+import { Icons, getIconPaths } from "../constants/Resources";
+import Commands from "../constants/Commands";
 
 export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<TreeItemAdaptable> {
 
@@ -51,7 +51,7 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
                 noConnectionsRoot.treeItem.tooltip = "Click to create a new Microclimate connection";
                 // Clicking the no connections item runs the new connection command.
                 noConnectionsRoot.treeItem.command = {
-                    command: NEW_CONN_CMD_ID,
+                    command: Commands.NEW_CONNECTION,
                     title: ""
                 };
                 return [ noConnectionsRoot ];

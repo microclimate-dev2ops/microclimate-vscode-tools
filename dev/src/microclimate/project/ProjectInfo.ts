@@ -1,8 +1,7 @@
 import { Uri } from "vscode";
 
 import Project from "./Project";
-import * as Icons from "../../constants/Icons";
-import { Logger } from "../../Logger";
+import * as Resources from "../../constants/Resources";
 
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
@@ -90,11 +89,11 @@ export function generateHtml(project: Project): string {
 const resourceScheme = "vscode-resource:";
 
 function getStylesheetPath(): string {
-    return resourceScheme + Icons.getCss("project-info.css");
+    return resourceScheme + Resources.getCss("project-info.css");
 }
 
 function getMCIconPath(): string {
-    const mcIconPath: string =  resourceScheme + Icons.getIconPaths(Icons.Icons.Microclimate).dark;
+    const mcIconPath: string =  resourceScheme + Resources.getIconPaths(Resources.Icons.Microclimate).dark;
     // Logger.log("MCIP", mcIconPath);
     return mcIconPath;
 }

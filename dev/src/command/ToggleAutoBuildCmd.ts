@@ -7,8 +7,6 @@ import Connection from "../microclimate/connection/Connection";
 import { ProjectState } from "../microclimate/project/ProjectState";
 // import ConnectionManager from "../microclimate/connection/ConnectionManager";
 
-export const TOGGLE_AUTOBUILD_CMD_ID = "ext.mc.toggleAutoBuild";
-
 export default async function toggleAutoBuildCmd(project: Project): Promise<void> {
     Logger.log("ToggleAutoBuildCmd invoked");
 
