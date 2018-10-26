@@ -1,0 +1,40 @@
+body {
+}
+table {
+    padding-bottom: 2em;
+}
+tr {
+    padding-bottom: 0.25em;
+}
+#top-section {
+    display: inline-flex;
+    padding-bottom: 1em;
+    align-items: center
+}
+#mc-icon {
+    /*width: 5em;*/
+    height: 5em;
+    padding: 0;
+    margin: 0;
+}
+input[type="checkbox"] {
+    padding: 0;
+    margin: 0;
+}
+.btn {
+    color: var(--vscode-button-foreground);
+    padding-left: 10px;
+    padding-right: 10px;
+    background: var(--vscode-button-background);
+    font-size: 110%;
+    border: 1px solid var(--vscode-button-background);
+    border-radius: 5px;
+}
+.info-label {
+    font-weight: bold;
+    padding-right: 1em;
+}
+.btn:hover, a:hover, btn:focus, a:focus {
+    text-decoration: underline;
+    cursor: pointer;
+}

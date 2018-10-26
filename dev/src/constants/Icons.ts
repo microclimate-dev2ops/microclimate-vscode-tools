@@ -3,9 +3,19 @@ import * as path from "path";
 import { Logger } from "../Logger";
 
 const resFolderName = "res";
+const styleFolderName = "css";
 const imgFolderName = "img";
 const lightFolderName = "light";
 const darkFolderName = "dark";
+
+
+function getResourcePath(...paths: string[]): string {
+    return path.join(global.__extRoot, resFolderName, ...paths);
+}
+
+export function getCss(filename: string): string {
+    return getResourcePath(styleFolderName, filename);
+}
 
 /**
  * Resolve the icon with the given name and return the paths to it,
@@ -17,7 +27,7 @@ const darkFolderName = "dark";
  *
  */
 export function getIconPaths(icon: Icons): IconPaths {
-    const darkPath = path.join(global.__extRoot, resFolderName, imgFolderName, darkFolderName, icon);
+    const darkPath = getResourcePath(imgFolderName, darkFolderName, icon);
     // make sure the file exists and is readable
     fs.access(darkPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
         if (err) {
@@ -25,7 +35,7 @@ export function getIconPaths(icon: Icons): IconPaths {
         }
     });
 
-    let lightPath = path.join(global.__extRoot, resFolderName, imgFolderName, lightFolderName, icon);
+    let lightPath = getResourcePath(imgFolderName, lightFolderName, icon);
     fs.access(lightPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
         if (err) {
             // The light icon does not exist or cannot be read, so we use the dark icon.

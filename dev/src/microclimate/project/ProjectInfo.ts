@@ -31,53 +31,12 @@ export function generateHtml(project: Project): string {
             <!--meta http-equiv="Content-Security-Policy" content="default-src 'none';"-->
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-            <style>
-                body {
-                }
-                table {
-                    padding-bottom: 2em;
-                }
-                tr {
-                    padding-bottom: 0.25em;
-                }
-                #top-section {
-                    display: inline-flex;
-                    padding-bottom: 1em;
-                    align-items: center
-                }
-                #mc-icon {
-                    /*width: 5em;*/
-                    height: 5em;
-                    padding: 0;
-                    margin: 0;
-                }
-                input[type="checkbox"] {
-                    padding: 0;
-                    margin: 0;
-                }
-                .btn {
-                    color: var(--vscode-button-foreground);
-                    padding-left: 10px;
-                    padding-right: 10px;
-                    background: var(--vscode-button-background);
-                    font-size: 110%;
-                    border: 1px solid var(--vscode-button-background);
-                    border-radius: 5px;
-                }
-                .info-label {
-                    font-weight: bold;
-                    padding-right: 1em;
-                }
-                .btn:hover, a:hover, btn:focus, a:focus {
-                    text-decoration: underline;
-                    cursor: pointer;
-                }
-            </style>
+            <link rel="stylesheet" href="${getStylesheetPath()}"/>
         </head>
         <body>
         <div id="top-section">
             <h2>Project ${project.name}</h2>
-            <img id="mc-icon" src="${getMCIcon()}"/>
+            <img id="mc-icon" src="${getMCIconPath()}"/>
         </div>
         <table>
             <!--${buildRow("Name", project.name)}-->
@@ -128,8 +87,14 @@ export function generateHtml(project: Project): string {
     `;
 }
 
-function getMCIcon(): string {
-    const mcIconPath: string =  "vscode-resource:" + Icons.getIconPaths(Icons.Icons.Microclimate).dark;
+const resourceScheme = "vscode-resource:";
+
+function getStylesheetPath(): string {
+    return resourceScheme + Icons.getCss("project-info.css");
+}
+
+function getMCIconPath(): string {
+    const mcIconPath: string =  resourceScheme + Icons.getIconPaths(Icons.Icons.Microclimate).dark;
     // Logger.log("MCIP", mcIconPath);
     return mcIconPath;
 }
