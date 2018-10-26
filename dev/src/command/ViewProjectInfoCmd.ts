@@ -37,6 +37,7 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
     webPanel.webview.onDidReceiveMessage( (msg: { msg: string, data: { type: string, value: string } }) => {
         try {
             if (msg.msg === ProjectInfo.REFRESH_MSG) {
+                // vscode.window.showInformationMessage("refreshed!!");
                 webPanel.webview.html = ProjectInfo.generateHtml(project);
             }
             else if (msg.msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
@@ -54,14 +55,15 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
                 }
 
                 Logger.log("The uri is:", uri);
-                // const cmd: string = msg.data.type === ProjectInfo.Openable.FOLDER ? "vscode.openFolder" : "vscode.open";
-                vscode.commands.executeCommand("vscode.open", uri);
+                const cmd: string = msg.data.type === ProjectInfo.Openable.FOLDER ? "revealFileInOS" : "vscode.open";
+                // vscode.commands.executeCommand("vscode.open", uri);
+                vscode.commands.executeCommand(cmd, uri);
             }
             else {
                 Logger.logE("Received unknown event from project info webview:", msg);
             }
         }
-        catch(err) {
+        catch (err) {
             Logger.logE("Error processing msg from WebView", err);
         }
     });

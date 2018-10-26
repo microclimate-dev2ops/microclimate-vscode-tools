@@ -1,7 +1,7 @@
 import { Uri } from "vscode";
 
 import Project from "./Project";
-import toggleAutoBuildCmd, { TOGGLE_AUTOBUILD_CMD_ID } from "../../command/ToggleAutoBuildCmd";
+import * as Icons from "../../constants/Icons";
 
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
@@ -31,74 +31,96 @@ export function generateHtml(project: Project): string {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
             <style>
+                body {
+                }
+                table {
+                    padding-bottom: 2em;
+                }
                 tr {
-                    padding-bottom: 3px;
+                    padding-bottom: 0.25em;
                 }
-                td {
+                #top-section {
+                    display: inline-flex;
+                    padding-bottom: 1em;
                 }
-                .button {
-                        padding-left: .5rem;
-                        padding-right: .5rem;
-                        background: var(--vscode-editor-foreground);
-                        border: none;
-                        border-radius: 4px;
-                        margin: 4px;
+                input[type="checkbox"] {
+                    padding: 0;
+                    margin: 0;
+                }
+                .btn {
+                    color: var(--vscode-button-foreground);
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    background: var(--vscode-button-background);
+                    font-size: 110%;
+                    border: 1px solid var(--vscode-button-background);
+                    border-radius: 5px;
                 }
                 .info-label {
                     font-weight: bold;
-                    padding-right: 10px;
+                    padding-right: 1em;
+                }
+                .btn:hover, a:hover, btn:focus, a:focus {
+                    text-decoration: underline;
+                    cursor: pointer;
                 }
             </style>
         </head>
         <body>
+        <div id="top-section">
             <h2>Project ${project.name}</h2>
-            <input type="button" onclick="refresh()" class="button" value="Refresh" accesskey="r"/></input>
-            <p id="time"></p>
-            <table>
-                <!--${buildRow("Name", project.name)}-->
-                ${buildRow("Type", project.type.toString())}
-                <!--${buildRow("Microclimate URL", project.connection.toString())}-->
-                ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 16))}
-                ${buildRow("Project ID", project.id)}
-                ${buildRow("Path on Disk", project.localPath.fsPath, Openable.FOLDER)}
-                <tr>
-                    <td class="info-label">Auto build</td>
-                    <td>
-                        <input id="auto-build-toggle" type="checkbox"
-                            onclick="toggleAutoBuild(this)"
-                            ${project.autoBuildEnabled ? "checked" : ""}
-                        />
-                    </td>
-                </tr>
-                ${emptyRow}
-                ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
-                ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
-                ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
-            </table>
+        </div>
+        <table>
+            <!--${buildRow("Name", project.name)}-->
+            ${buildRow("Type", project.type.toString())}
+            <!--${buildRow("Microclimate URL", project.connection.toString())}-->
+            ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
+            ${buildRow("Project ID", project.id)}
+            ${buildRow("Path on Disk", project.localPath.fsPath, Openable.FOLDER)}
+            <tr>
+                <td class="info-label">Auto build:</td>
+                <td>
+                    <input id="auto-build-toggle" type="checkbox" class="btn"
+                        onclick="toggleAutoBuild(this)"
+                        ${project.autoBuildEnabled ? "checked" : ""}
+                    />
+                </td>
+            </tr>
+            ${emptyRow}
+            ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
+            ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
+            ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
+        </table>
 
-            <script type="text/javascript">
-                const vscode = acquireVsCodeApi();
+        <input id="refresh-btn" type="button" onclick="refresh()" class="btn" value="Refresh" accesskey="r"/></input>
 
-                function refresh() {
-                    sendMsg("${REFRESH_MSG}");
-                }
+        <script type="text/javascript">
+            const vscode = acquireVsCodeApi();
 
-                function toggleAutoBuild(toggleAutoBuildBtn) {
-                    sendMsg("${TOGGLE_AUTOBUILD_MSG}");
-                }
+            function refresh() {
+                sendMsg("${REFRESH_MSG}");
+            }
 
-                function vscOpen(element, type) {
-                    sendMsg("${OPEN_MSG}", { type: type, value: element.textContent });
-                }
+            function toggleAutoBuild(toggleAutoBuildBtn) {
+                sendMsg("${TOGGLE_AUTOBUILD_MSG}");
+            }
 
-                function sendMsg(msg, data) {
-                    vscode.postMessage({ msg: msg, data: data });
-                }
+            function vscOpen(element, type) {
+                sendMsg("${OPEN_MSG}", { type: type, value: element.textContent });
+            }
 
-            </script>
+            function sendMsg(msg, data) {
+                vscode.postMessage({ msg: msg, data: data });
+            }
+        </script>
+
         </body>
         </html>
     `;
+}
+
+function getMCIcon(): string {
+    return Icons.getIconPaths(Icons.Icons.Microclimate).dark;
 }
 
 function buildRow(label: string, data: string, openable?: Openable): string {
@@ -113,7 +135,7 @@ function buildRow(label: string, data: string, openable?: Openable): string {
     else {
         td = `<td>${data}</td>`;
     }
-    console.log("The td is ", td);
+    // console.log("The td is ", td);
 
     return `
         <tr class="info-row">
