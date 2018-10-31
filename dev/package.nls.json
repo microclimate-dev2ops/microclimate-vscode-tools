@@ -13,11 +13,11 @@
     "cmdTitle_newConnection": "New Microclimate connection",
     "cmdDescr_newConnection": "Connect to a Microclimate instance",
 
-    "cmdID_newDefaultConn": "ext.mc.newConnection",
+    "cmdID_newDefaultConn": "ext.mc.newDefaultConnection",
     "cmdTitle_newDefaultConn": "New default local Microclimate connection",
     "cmdDescr_newDefaultConn": "Connect to Microclimate at the default local URL, http://localhost:9090",
 
-    "cmdID_removeConn": "ext.mc.newConnection",
+    "cmdID_removeConn": "ext.mc.removeConnection",
     "cmdTitle_removeConn": "Remove connection",
     "cmdDescr_removeConn": "Remove a Microclimate connection",
 

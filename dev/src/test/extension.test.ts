@@ -101,7 +101,7 @@ describe("Microclimate Tools for VSCode Microprofile test", function() {
         expect(mpProjects, "No Enabled Microprofile projects were found").to.not.be.empty;
 
         const mpProject: Project = mpProjects[0];
-        console.log(`Waiting for ${mpProject.name} to be Started`);
+        console.log(`Using Microprofile project ${mpProject.name}. Waiting for it to be Started`);
         const restartTimeout = 120000;
         await mpProject.waitForState(restartTimeout, ProjectState.AppStates.STARTED);
         expect(mpProject.state.appState).to.equal(ProjectState.AppStates.STARTED);
@@ -115,15 +115,17 @@ describe("Microclimate Tools for VSCode Microprofile test", function() {
         await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(ProjectState.AppStates.STARTED));
 
         // await mpProject.waitForState(restartTimeout, ProjectState.AppStates.DEBUGGING);
-        console.log("Finished waiting for debugging mode");
+        console.log("Finished waiting for Started");
 
-        expect(mpProject.state.appState).to.equal(ProjectState.AppStates.STARTED);
+        expect(mpProject.state.appState, `${mpProject.name} should be Started, is instead ${mpProject.state.appState}`).to.equal(ProjectState.AppStates.STARTED);
 
+        /*
         const debugSession = vscode.debug.activeDebugSession;
         if (debugSession == null) {
             throw expect.fail(undefined, undefined, "There should be an active debug session");
         }
         expect(debugSession.name).to.contain(mpProject.name);
+        */
     });
 
 });

@@ -12,7 +12,7 @@ export interface ExpectedSocketEvent {
 
 export interface SocketEvent {
     type: string,
-    nsp: string,
+    nsp?: string,
     data: any
 }
 
@@ -35,10 +35,14 @@ export function createTestSocket(uri: string): Promise<SocketIOClient.Socket> {
 }
 
 // const expectedSocketEvents: ExpectedSocketEvent[] = [];
-let expectedSocketEvent: ExpectedSocketEvent | undefined;
+let _expectedSocketEvent: ExpectedSocketEvent | undefined;
 
-export async function onSocketEvent(event: any): Promise<void> {
-    console.log("Test onSocketEvent ", event);
+export async function onSocketEvent(rawEvent: any): Promise<void> {
+    const event: SocketEvent = {
+        type: rawEvent.data[0],
+        data: rawEvent.data[1]
+    }
+    console.log("SocketTestUtil onSocketEvent ", event);
 
     /*
     if (expectedSocketEvents.length > 0) {
@@ -54,17 +58,19 @@ export async function onSocketEvent(event: any): Promise<void> {
             }
         }
     }*/
-    if (expectedSocketEvent == null) {
+    if (_expectedSocketEvent == null) {
         return;
     }
 
-    if (eventMatches(expectedSocketEvent, event)) {
-        if (expectedSocketEvent.resolveFn != null) {
-            expectedSocketEvent.resolveFn();
+    if (eventMatches(_expectedSocketEvent, event)) {
+        console.log("Expected socket event was received", _expectedSocketEvent);
+        if (_expectedSocketEvent.resolveFn != null) {
+            _expectedSocketEvent.resolveFn();
         }
         else {
-            console.error("ExpectedEvent did not have a resolve function", expectedSocketEvent);
+            console.error("ExpectedEvent did not have a resolve function", _expectedSocketEvent);
         }
+        _expectedSocketEvent = undefined;
     }
 }
 
@@ -75,6 +81,7 @@ function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): B
         if (expectedEvent.expectedData == null) {
             return true;
         }
+        // console.log("Event type matches expected:", expectedEvent, "\nevent:", event);
 
         for (const key of Object.keys(event.data)) {
             // Check that the event contains the expected key that it maps to the expected value
@@ -90,14 +97,14 @@ function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): B
 
 export async function expectSocketEvent(event: ExpectedSocketEvent): Promise<void> {
     // expectedSocketEvents.push(event);
-    if (expectedSocketEvent != null && expectedSocketEvent.resolveFn != null) {
-        console.log("Clearing old expected event", expectedSocketEvent);
-        expectedSocketEvent.resolveFn();
+    if (_expectedSocketEvent != null && _expectedSocketEvent.resolveFn != null) {
+        console.log("Clearing old expected event", _expectedSocketEvent);
+        _expectedSocketEvent.resolveFn();
     }
 
-    expectedSocketEvent = event;
+    _expectedSocketEvent = event;
 
-    console.log("Now waiting for socket event", event);
+    console.log(`Now waiting for socket event of type ${event.eventType} and data ${event.expectedData}`);
     return new Promise<void>( (resolve) => {
         // This promise will be resolved by onSocketEvent above, if the event matches
         event.resolveFn = resolve;
@@ -106,7 +113,7 @@ export async function expectSocketEvent(event: ExpectedSocketEvent): Promise<voi
 
 export function getAppStateEvent(appState: ProjectState.AppStates): ExpectedSocketEvent {
     return {
-        eventType: EventTypes.PROJECT_CHANGED,
-        expectedData: { key: "appState", value: appState.toString().toLowerCase() }
+        eventType: EventTypes.PROJECT_STATUS_CHANGED,
+        expectedData: { key: "appStatus", value: appState.toString().toLowerCase() }
     };
 }

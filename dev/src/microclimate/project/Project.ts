@@ -294,6 +294,10 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
      * @return If this project's debug port was changed.
      */
     private setDebugPort(newDebugPort: number | undefined): Boolean {
+        if (newDebugPort == null && this._debugPort == null) {
+            return false;
+        }
+
         newDebugPort = Number(newDebugPort);
         if (!MCUtil.isGoodPort(newDebugPort)) {
             Logger.log(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
