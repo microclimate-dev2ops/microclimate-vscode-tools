@@ -196,6 +196,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
     }
 
+    /**
+     * Return a promise that resolves when this project enters one of the given AppStates.
+     * This is checked when project state changes, in update() above.
+     *
+     * Will also clear any previous state being waited for - so be careful calling this from test code.
+     */
     public async waitForState(timeoutMs: number, state: ProjectState.AppStates, ...alternateStates: ProjectState.AppStates[]): Promise<string> {
         const states: ProjectState.AppStates[] = alternateStates.concat(state);
         if (states.indexOf(this._state.appState) >= 0) {
@@ -205,12 +211,13 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         // Clear the old pendingState
         if (this.resolvePendingAppState != null) {
-            Logger.log("Cancelling waiting for state ", this.pendingAppStates);
+            Logger.log("Cancelling waiting for state: " + this.pendingAppStates);
             this.resolvePendingAppState();
         }
         this.pendingAppStates = states;
 
         Logger.log(this.name + " is waiting for states: " + states);
+        Logger.log(this.name + " is currently", this._state.appState);
 
         let statesAsStr: string;
         if (states.length > 1) {

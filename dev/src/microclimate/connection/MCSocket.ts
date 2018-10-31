@@ -9,6 +9,7 @@ import * as MCUtil from "../../MCUtil";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 import { Logger } from "../../Logger";
 import Validator from "../project/Validator";
+import EventTypes from "./EventTypes";
 
 export default class MCSocket {
 
@@ -29,15 +30,15 @@ export default class MCSocket {
             .on("connect",      this.connection.onConnect)
             .on("disconnect",   this.connection.onDisconnect)
 
-            .on("projectChanged",       this.onProjectChanged)
-            .on("projectStatusChanged", this.onProjectStatusChanged)
-            .on("projectClosed",        this.onProjectChanged)
+            .on(EventTypes.PROJECT_CHANGED,         this.onProjectChanged)
+            .on(EventTypes.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
+            .on(EventTypes.PROJECT_CLOSED,          this.onProjectChanged)
 
-            .on("projectDeletion",      this.onProjectDeleted)
-            .on("projectRestartResult", this.onProjectRestarted)
+            .on(EventTypes.PROJECT_DELETION,        this.onProjectDeleted)
+            .on(EventTypes.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
 
-            .on("container-logs",       this.onContainerLogs)
-            .on("projectValidated",     this.onProjectValidated);
+            .on(EventTypes.CONTAINER_LOGS,          this.onContainerLogs)
+            .on(EventTypes.PROJECT_VALIDATED,       this.onProjectValidated);
 
             // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize

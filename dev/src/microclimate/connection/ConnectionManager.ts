@@ -4,7 +4,6 @@ import * as MCUtil from "../../MCUtil";
 import Connection from "./Connection";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
 import { Logger } from "../../Logger";
-import Project from "../project/Project";
 
 export default class ConnectionManager {
 
@@ -48,7 +47,7 @@ export default class ConnectionManager {
             ConnectionManager.saveConnections();
 
             this.onChange();
-            return resolve(`New connection to ${uri} succeeded.\nWorkspace path is: ${workspace}`);
+            return resolve(`New connection to ${uri} succeeded. Workspace path is: ${workspace.fsPath}`);
         });
     }
 

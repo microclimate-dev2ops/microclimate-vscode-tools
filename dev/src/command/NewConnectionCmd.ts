@@ -5,7 +5,7 @@ import * as reqErrors from "request-promise-native/errors";
 import * as MCUtil from "../MCUtil";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Endpoints from "../constants/Endpoints";
-import { Logger } from "../Logger";
+import Logger from "../Logger";
 
 export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
     host: "localhost",
@@ -59,7 +59,7 @@ export async function newConnectionCmd(): Promise<void> {
             host: hostname,
             port: port
         };
-        tryAddConnection(connInfo);
+        return tryAddConnection(connInfo);
     }
 }
 
@@ -72,26 +72,30 @@ export async function tryAddConnection(connInfo: MCUtil.ConnectionInfo): Promise
     const tryAgainBtn  = "Try again";
     const reconnectBtn = "Reconnect";
 
-    testConnection(connInfo)
-        .then(async (s) => {
-            // Connection succeeded, let the user know.
-            // The ConnectionManager will signal the change and the UI will update accordingly.
-            vscode.window.showInformationMessage(s);
-        })
-        .catch(async (s) => {
-            Logger.log("Connection test failed with message " + s);
-            const response = await vscode.window.showErrorMessage(s, tryAgainBtn, reconnectBtn);
-            if (response === tryAgainBtn) {
-                // start again from the beginning
-                newConnectionCmd();
-                return;
-            }
-            else if (response === reconnectBtn) {
-                // try to connect with the same host:port
-                tryAddConnection(connInfo);
-                return;
-            }
-        });
+    Logger.log("TryAddConnection", connInfo);
+
+    return new Promise<void>( (resolve, _) => {
+        testConnection(connInfo)
+            .then(async (s) => {
+                // Connection succeeded, let the user know.
+                // The ConnectionManager will signal the change and the UI will update accordingly.
+                Logger.log(s);
+                vscode.window.showInformationMessage(s);
+                return resolve();
+            })
+            .catch(async (s) => {
+                Logger.logW("Connection test failed with message " + s);
+                const response = await vscode.window.showErrorMessage(s, tryAgainBtn, reconnectBtn);
+                if (response === tryAgainBtn) {
+                    // start again from the beginning
+                    return newConnectionCmd();
+                }
+                else if (response === reconnectBtn) {
+                    // try to connect with the same host:port
+                    return tryAddConnection(connInfo);
+                }
+            });
+    });
 }
 
 // Return value resolves to a user-friendly message or error, ie "connection to $url succeeded"
@@ -102,11 +106,11 @@ async function testConnection(connInfo: MCUtil.ConnectionInfo): Promise<string> 
 
     const connectTimeout = 2500;
 
-    return new Promise<string>( (_, reject) => {
+    return new Promise<string>( (resolve, reject) => {
         request.get(envUri.toString(), { json: true, timeout: connectTimeout })
             .then( (microclimateData: string) => {
                 // Connected successfully
-                return onSuccessfulConnection(uri, connInfo.host, microclimateData);
+                return resolve(onSuccessfulConnection(uri, connInfo.host, microclimateData));
             })
             .catch( (err: any) => {
                 Logger.log(`Request fail - ${err}`);
@@ -168,7 +172,9 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
         const workspaceUri: vscode.Uri = vscode.Uri.file(rawWorkspace);
 
         ConnectionManager.instance.addConnection(mcUri, host, versionNum, workspaceUri)
-            .then( (msg: string) => resolve(msg))
+            .then( (msg: string) => {
+                return resolve(msg);
+            })
             .catch((err: string) => {
                 Logger.log("New connection rejected by ConnectionManager ", err);
                 return reject(err);

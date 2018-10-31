@@ -25,7 +25,8 @@
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
-                "--extensionTestsPath=${workspaceFolder}/out/test"
+                "--extensionTestsPath=${workspaceFolder}/out/test",
+                "/Users/tim/programs/microclimate/microclimate-workspace/"
             ],
             "outFiles": [
                 "${workspaceFolder}/out/test/**/*.js"

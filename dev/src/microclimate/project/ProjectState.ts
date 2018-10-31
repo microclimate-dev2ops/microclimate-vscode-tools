@@ -1,5 +1,5 @@
 import { getStartMode } from "../../MCUtil";
-import { Logger } from "../../Logger";
+import Logger from "../../Logger";
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
@@ -27,6 +27,13 @@ export class ProjectState {
             if (fallbackState != null) {
                 if (newAppState == null || newAppState === ProjectState.AppStates.UNKNOWN) {
                     newAppState = fallbackState.appState;
+                    // Somewhat hacky exception for if project is still Started/Debugging but startMode changed
+                    if (newAppState === ProjectState.AppStates.DEBUGGING && projectInfoPayload.startMode === getStartMode(false)) {
+                        newAppState = ProjectState.AppStates.STARTED;
+                    }
+                    else if (newAppState === ProjectState.AppStates.STARTED && projectInfoPayload.startMode === getStartMode(true)) {
+                        newAppState = ProjectState.AppStates.DEBUGGING;
+                    }
                 }
                 if (newBuildState == null || newBuildState === ProjectState.BuildStates.UNKNOWN) {
                     newBuildState = fallbackState.buildState;
@@ -42,7 +49,8 @@ export class ProjectState {
     }
 
     public get isEnabled(): Boolean {
-        return this.appState !== ProjectState.AppStates.DISABLED;
+        return ProjectState.getEnabledStates().indexOf(this.appState) >= 0
+                && this.appState !== ProjectState.AppStates.UNKNOWN;
     }
 
     public get isStarted(): Boolean {
@@ -203,3 +211,5 @@ export namespace ProjectState {
         }
     }
 }
+
+export default ProjectState;

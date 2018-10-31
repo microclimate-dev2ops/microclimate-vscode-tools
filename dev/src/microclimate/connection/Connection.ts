@@ -14,7 +14,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
     private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.json
 
-    private readonly socket: MCSocket;
+    public readonly socket: MCSocket;
+
     private readonly projectsApiUri: string;
 
     // Has this connection ever been able to contact its Microclimate instance
@@ -159,7 +160,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         await this.getProjects();
     }
 
-    public static async requestProjectRestart(project: Project, debug: Boolean): Promise<void> {
+    public static async requestProjectRestart(project: Project, debug: Boolean): Promise<request.RequestPromise<any>> {
         const body = {
             startMode: MCUtil.getStartMode(debug)
         };

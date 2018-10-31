@@ -128,3 +128,5 @@ export namespace ProjectType {
         ProjectType.Types.NODE
     ];
 }
+
+export default ProjectType;

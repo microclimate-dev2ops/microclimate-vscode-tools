@@ -11,6 +11,10 @@ export class Logger {
 
     private static logFilePath: string;
 
+    public static get getLogFilePath(): string {
+        return this.logFilePath;
+    }
+
     public static setLogFilePath(context: ExtensionContext): void {
         // Directory provided by extension context may not exist
         const logDir = context.logPath;
@@ -54,7 +58,7 @@ export class Logger {
     private static async logInner(level: Logger.Levels, s: string, args: any[]): Promise<void> {
         if (this.logFilePath == null) {
             console.error("Logger.log error - No log file path set!");
-            console.log(args);
+            console.log(s, args);
             return;
         }
 
@@ -183,6 +187,7 @@ function leftPad(n: number, desiredLen: number): string {
     }
     return "0".repeat(diff) + nStr;
 }
+
 export namespace Logger {
     export enum Levels {
         INFO = "INFO",
@@ -190,3 +195,5 @@ export namespace Logger {
         ERROR = "ERRO"
     }
 }
+
+export default Logger;
