@@ -6,6 +6,8 @@ import * as MCUtil from "../MCUtil";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Endpoints from "../constants/Endpoints";
 import Logger from "../Logger";
+import Commands from "../constants/Commands";
+import Connection from "../microclimate/connection/Connection";
 
 export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
     host: "localhost",
@@ -69,22 +71,43 @@ export async function newConnectionCmd(): Promise<void> {
  * or start the 'wizard' from the beginning to enter a new host/port.
  */
 export async function tryAddConnection(connInfo: MCUtil.ConnectionInfo): Promise<void> {
-    const tryAgainBtn  = "Try again";
-    const reconnectBtn = "Reconnect";
 
     Logger.log("TryAddConnection", connInfo);
 
-    return new Promise<void>( (resolve, _) => {
+    return new Promise<void>( (resolve) => {
         testConnection(connInfo)
-            .then(async (s) => {
+            .then(async (connection: Connection) => {
+                const successMsg = `New connection to ${connection.mcUri} succeeded.`;
+                const workspaceMsg = `Workspace path is: ${connection.workspacePath.fsPath}`;
+                Logger.log(successMsg, workspaceMsg);
+
                 // Connection succeeded, let the user know.
                 // The ConnectionManager will signal the change and the UI will update accordingly.
-                Logger.log(s);
-                vscode.window.showInformationMessage(s);
+
+                if (vscode.workspace.getWorkspaceFolder(connection.workspacePath) == null) {
+                    // this means the user does not have this connection's workspace folder opened.
+                    // Provide a button to change their workspace to the microclimate-workspace if they wish
+                    const openWsBtn = "Open workspace";
+
+                    vscode.window.showInformationMessage(successMsg + ' ' + workspaceMsg, openWsBtn)
+                        .then ( (response) => {
+                            if (response === openWsBtn) {
+                                vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, connection.workspacePath);
+                            }
+                        });
+                }
+                else {
+                    // The user already has the workspace open, we don't have to do it for them.
+                    vscode.window.showInformationMessage(successMsg);
+                }
+
                 return resolve();
             })
-            .catch(async (s) => {
+            .catch(async (s: any) => {
                 Logger.logW("Connection test failed with message " + s);
+
+                const tryAgainBtn  = "Try again";
+                const reconnectBtn = "Reconnect";
                 const response = await vscode.window.showErrorMessage(s, tryAgainBtn, reconnectBtn);
                 if (response === tryAgainBtn) {
                     // start again from the beginning
@@ -99,14 +122,14 @@ export async function tryAddConnection(connInfo: MCUtil.ConnectionInfo): Promise
 }
 
 // Return value resolves to a user-friendly message or error, ie "connection to $url succeeded"
-async function testConnection(connInfo: MCUtil.ConnectionInfo): Promise<string> {
+async function testConnection(connInfo: MCUtil.ConnectionInfo): Promise<Connection> {
 
     const uri = MCUtil.buildMCUrl(connInfo);
     const envUri: vscode.Uri = uri.with({ path: Endpoints.ENVIRONMENT });
 
     const connectTimeout = 2500;
 
-    return new Promise<string>( (resolve, reject) => {
+    return new Promise<Connection>( (resolve, reject) => {
         request.get(envUri.toString(), { json: true, timeout: connectTimeout })
             .then( (microclimateData: string) => {
                 // Connected successfully
@@ -132,9 +155,9 @@ const requiredVersionStr: string = "18.11";
  * We've determined by this point that Microclimate is running at the given URI,
  * but we have to validate now that it's a new enough version.
  */
-async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: any): Promise<string> {
+async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: any): Promise<Connection> {
 
-    return new Promise<string>( (resolve, reject) => {
+    return new Promise<Connection>( (resolve, reject) => {
         Logger.log("Microclimate ENV data:", mcEnvData);
 
         if (mcEnvData == null) {
@@ -172,8 +195,8 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
         const workspaceUri: vscode.Uri = vscode.Uri.file(rawWorkspace);
 
         ConnectionManager.instance.addConnection(mcUri, host, versionNum, workspaceUri)
-            .then( (msg: string) => {
-                return resolve(msg);
+            .then( (newConnection: Connection) => {
+                return resolve(newConnection);
             })
             .catch((err: string) => {
                 Logger.log("New connection rejected by ConnectionManager ", err);

@@ -33,21 +33,21 @@ export default class ConnectionManager {
         return this._connections;
     }
 
-    public async addConnection(uri: vscode.Uri, host: string, mcVersion: number, workspace: vscode.Uri): Promise<string> {
-        return new Promise<string>( (resolve, reject) => {
+    public async addConnection(uri: vscode.Uri, host: string, mcVersion: number, workspace: vscode.Uri): Promise<Connection> {
+        return new Promise<Connection>( (resolve, reject) => {
             if (this.connectionExists(uri)) {
                 return reject("Connection already exists at " + uri);
             }
 
             // all validation that this connection is good must be done by this point
 
-            const connection: Connection = new Connection(uri, host, mcVersion, workspace);
+            const newConnection: Connection = new Connection(uri, host, mcVersion, workspace);
             Logger.log("New Connection @ " + uri);
-            this._connections.push(connection);
+            this._connections.push(newConnection);
             ConnectionManager.saveConnections();
 
             this.onChange();
-            return resolve(`New connection to ${uri} succeeded. Workspace path is: ${workspace.fsPath}`);
+            return resolve(newConnection);
         });
     }
 

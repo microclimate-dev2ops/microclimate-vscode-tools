@@ -17,7 +17,13 @@ enum Commands {
     DISABLE_PROJECT = "ext.mc.disable",
     ENABLE_PROJECT = "ext.mc.enable",
     CONTAINER_SHELL = "ext.mc.containerShell",
-    VIEW_PROJECT_INFO = "ext.mc.viewProjectInfo"
+    VIEW_PROJECT_INFO = "ext.mc.viewProjectInfo",
+
+    // VSCode commands, kept here for easy reference. These will never change.
+    VSC_OPEN = "vscode.open",
+    VSC_OPEN_FOLDER = "vscode.openFolder",
+    VSC_REVEAL_IN_OS = "revealFileInOS",
+    VSC_REVEAL_EXPLORER = "revealInExplorer",
 }
 
 export default Commands;

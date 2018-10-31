@@ -5,6 +5,7 @@ import Connection from "../microclimate/connection/Connection";
 import { promptForResource } from "./CommandUtil";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import { Logger } from "../Logger";
+import Commands from "../constants/Commands";
 
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
     Logger.log("OpenInBrowserCmd invoked");
@@ -51,5 +52,5 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
 
     Logger.log("Open in browser: " + uriToOpen);
     // vscode.window.showInformationMessage("Opening " + uriToOpen);
-    vscode.commands.executeCommand("vscode.open", uriToOpen);
+    vscode.commands.executeCommand(Commands.VSC_OPEN, uriToOpen);
 }

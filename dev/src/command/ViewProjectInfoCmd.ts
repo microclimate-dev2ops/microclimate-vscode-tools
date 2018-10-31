@@ -5,6 +5,7 @@ import { promptForProject } from "./CommandUtil";
 import * as ProjectInfo from "../microclimate/project/ProjectInfo";
 import { Logger } from "../Logger";
 import Connection from "../microclimate/connection/Connection";
+import Commands from "../constants/Commands";
 
 export default async function viewProjectInfoCmd(project: Project): Promise<void> {
     Logger.log("viewProjectInfoCmd invoked");
@@ -55,8 +56,7 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
                 }
 
                 Logger.log("The uri is:", uri);
-                const cmd: string = msg.data.type === ProjectInfo.Openable.FOLDER ? "revealFileInOS" : "vscode.open";
-                // vscode.commands.executeCommand("vscode.open", uri);
+                const cmd: string = msg.data.type === ProjectInfo.Openable.FOLDER ? Commands.VSC_REVEAL_IN_OS : Commands.VSC_OPEN;
                 vscode.commands.executeCommand(cmd, uri);
             }
             else {

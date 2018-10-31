@@ -16,9 +16,11 @@
         "Microclimate"
     ],
     "activationEvents": [
-        "onView: %viewID%",
-        "workspaceContains: **/.idc",
-        "workspaceContains: **/.cfignore"
+        "onView:ext.mc.mcProjectExplorer",
+        "workspaceContains:**/.idc",
+        "workspaceContains:**/.cfignore",
+        "onCommand:ext.mc.newConnection",
+        "onCommand:ext.mc.newDefaultConnection"
     ],
     "main": "./out/extension",
     "repository": {

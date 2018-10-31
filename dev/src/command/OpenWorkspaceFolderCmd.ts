@@ -4,6 +4,7 @@ import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import { promptForResource } from "./CommandUtil";
 import { Logger } from "../Logger";
+import Commands from "../constants/Commands";
 
 export default async function openWorkspaceFolderCmd(resource: Project | Connection): Promise<void> {
     Logger.log(`Go to folder command invoked on ${resource}`);
@@ -43,6 +44,6 @@ export default async function openWorkspaceFolderCmd(resource: Project | Connect
         // TODO open in new window should be a settable preference
         const inNewWindow: Boolean = false;
         Logger.log(`Opening folder, inNewWindow=${inNewWindow}`);
-        vscode.commands.executeCommand("vscode.openFolder", uri, inNewWindow);
+        vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, uri, inNewWindow);
     }
 }

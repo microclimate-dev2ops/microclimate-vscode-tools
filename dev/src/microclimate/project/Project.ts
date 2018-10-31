@@ -2,11 +2,12 @@ import * as vscode from "vscode";
 
 import * as MCUtil from "../../MCUtil";
 import TreeItemAdaptable from "../../view/TreeItemAdaptable";
-import { ProjectState } from "./ProjectState";
-import { ProjectType } from "./ProjectType";
+import ProjectState from "./ProjectState";
+import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
-import { getOcticon, Octicons } from "../../constants/Resources";
-import { Logger } from "../../Logger";
+import * as Resources from "../../constants/Resources";
+import Logger from "../../Logger";
+import Commands from "../../constants/Commands";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
     // index signature so we can use Object.keys(project) nicely
@@ -86,7 +87,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
         // Focuses on this project in the explorer view. Has no effect if the project is not in the current workspace.
         ti.command = {
-            command: "revealInExplorer",
+            command: Commands.VSC_REVEAL_EXPLORER,
             title: "",
             arguments: [this.localPath]
         };
@@ -236,7 +237,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             return;
         });
 
-        vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Waiting for ${this.name} to be ${statesAsStr}`, pendingStatePromise);
+        const bugIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
+        vscode.window.setStatusBarMessage(`${bugIcon} Waiting for ${this.name} to be ${statesAsStr}`, pendingStatePromise);
 
         return pendingStatePromise;
     }
