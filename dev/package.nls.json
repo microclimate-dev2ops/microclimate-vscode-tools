@@ -4,7 +4,7 @@
 
     "// Items starting with cmdID or viewID are not exposed to user": "",
 
-    "viewName": "Microclimate Projects",
+    "viewName": "Microclimate",
     "viewID": "ext.mc.mcProjectExplorer",
 
     "commandCategory": "Microclimate",
@@ -75,7 +75,7 @@
 
     "// None of items below are exposed to user": [
         "Careful! Changing almost any of these will also require",
-        "a code change in the class that uses the changed context ID."
+        "a code change in the class that uses the relevant context ID."
     ],
 
     "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
