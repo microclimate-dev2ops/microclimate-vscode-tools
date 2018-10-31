@@ -2,12 +2,12 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "../command/CommandUtil";
-import { ProjectState } from "../microclimate/project/ProjectState";
+import ProjectState from "../microclimate/project/ProjectState";
 import AppLog from "../microclimate/logs/AppLog";
-import { getStartMode } from "../MCUtil";
-import { getOcticon, Octicons } from "../constants/Resources";
-import { Logger } from "../Logger";
+import * as Resources from "../constants/Resources";
+import Logger from "../Logger";
 import Connection from "../microclimate/connection/Connection";
+import StartModes, { getDefaultStartMode } from "../constants/StartModes";
 
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
     Logger.log("RestartProjectCmd invoked");
@@ -21,11 +21,14 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
         project = selected;
     }
 
-    AppLog.getOrCreateLog(project.id, project.name).unsetDebugConsole();
-    Logger.log(`RestartProject on project ${project.name} into ${getStartMode(debug)} mode`);
+    const startMode: StartModes = getDefaultStartMode(debug, project.type.type);
 
-    const restartRequestPromise = Connection.requestProjectRestart(project, debug);
-    vscode.window.setStatusBarMessage(`${getOcticon(Octicons.sync, true)} Initiating restarting ${project.name}`, restartRequestPromise);
+    AppLog.getOrCreateLog(project.id, project.name).unsetDebugConsole();
+    Logger.log(`RestartProject on project ${project.name} into ${startMode} mode`);
+
+    const restartRequestPromise = Connection.requestProjectRestart(project, startMode);
+    const syncIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
+    vscode.window.setStatusBarMessage(`${syncIcon} Initiating restarting ${project.name}`, restartRequestPromise);
     return restartRequestPromise;
     // After the above async REST request, we don't do anything further for this command until
     // the Socket receives a projectRestartResult event.

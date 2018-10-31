@@ -42,13 +42,6 @@ export function uppercaseFirstChar(input: string): string {
     return input.charAt(0).toUpperCase() + input.slice(1);
 }
 
-/**
- * @return "debug" or "run", the supported startModes.
- */
-export function getStartMode(debug: Boolean): string {
-    return debug ? "debug" : "run";
-}
-
 //// Connection helpers
 
 export interface ConnectionInfo {

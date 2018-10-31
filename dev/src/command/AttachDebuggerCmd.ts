@@ -3,8 +3,9 @@ import { promptForProject } from "../command/CommandUtil";
 import * as Resources from "../constants/Resources";
 import AppLog from "../microclimate/logs/AppLog";
 import Project from "../microclimate/project/Project";
-import { ProjectState } from "../microclimate/project/ProjectState";
-import { Logger } from "../Logger";
+import ProjectState from "../microclimate/project/ProjectState";
+import Logger from "../Logger";
+import ProjectType from "../microclimate/project/ProjectType";
 
 
 export default async function attachDebuggerCmd(project: Project): Promise<Boolean> {
@@ -72,8 +73,11 @@ export async function startDebugSession(project: Project): Promise<string> {
     Logger.log("Debugger should have connected");
 
     if (success) {
-        AppLog.getOrCreateLog(project.id, project.name).setDebugConsole(vscode.debug.activeDebugConsole);
-        return `Debugging ${project.name} at ${debugConfig.hostName}:${debugConfig.port}`;
+        if (project.type.debugType === ProjectType.DebugTypes.JAVA) {
+            // Hook up the debug console manually for Java projects
+            AppLog.getOrCreateLog(project.id, project.name).setDebugConsole(vscode.debug.activeDebugConsole);
+        }
+        return `Debugging ${project.name} at ${project.connection.host}:${debugConfig.port}`;
     }
     else {
         throw new Error("Failed to start debug session for " + project.name);
@@ -110,20 +114,12 @@ async function getDebugConfig(project: Project): Promise<vscode.DebugConfigurati
         }
     }
 
-    // already did this in startDebugSession, but this will make the compiler happy.
-    if (project.type.debugType == null) {
+    const debugConfig: vscode.DebugConfiguration | undefined = generateDebugConfiguration(debugName, project);
+
+    // already did this in startDebugSession, but just in case
+    if (debugConfig == null) {
         throw new Error(`No debug type available for project of type ${project.type}`);
     }
-
-    const debugConfig: vscode.DebugConfiguration = {
-        type: project.type.debugType,
-        name: debugName,
-        request: "attach",
-        hostName: project.connection.host,
-        port: project.debugPort,
-        // sourcePaths: project.localPath + "/src/"
-        projectName: project.name,
-    };
 
     if (existingIndex !== -1) {
         config[existingIndex] = debugConfig;
@@ -135,4 +131,38 @@ async function getDebugConfig(project: Project): Promise<vscode.DebugConfigurati
     await launchConfig.update(CONFIGURATIONS, config, vscode.ConfigurationTarget.WorkspaceFolder);
     // Logger.log("New config", launchConfig.get(CONFIGURATIONS));
     return debugConfig;
+}
+
+const RQ_ATTACH = "attach";
+
+function generateDebugConfiguration(debugName: string, project: Project): vscode.DebugConfiguration | undefined {
+    switch (project.type.debugType) {
+        case ProjectType.DebugTypes.JAVA: {
+            return {
+                type: project.type.debugType.toString(),
+                name: debugName,
+                request: RQ_ATTACH,
+                hostName: project.connection.host,
+                port: project.debugPort,
+                // sourcePaths: project.localPath + "/src/"
+                projectName: project.name,
+            };
+        }
+        case ProjectType.DebugTypes.NODE: {
+            return {
+                type: project.type.debugType.toString(),
+                name: debugName,
+                request: RQ_ATTACH,
+                address: project.connection.host,
+                port: project.debugPort,
+                localRoot: project.localPath.fsPath,
+                // TODO user could change this in their dockerfile
+                remoteRoot: "/app",
+                // TODO Restart won't work if a build happens and the app port changes
+                restart: true
+            };
+        }
+        default:
+            return undefined;
+    }
 }

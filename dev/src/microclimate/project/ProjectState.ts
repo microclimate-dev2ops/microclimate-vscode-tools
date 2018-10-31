@@ -1,5 +1,5 @@
-import { getStartMode } from "../../MCUtil";
 import Logger from "../../Logger";
+import { isDebugMode } from "../../constants/StartModes";
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
@@ -28,10 +28,10 @@ export class ProjectState {
                 if (newAppState == null || newAppState === ProjectState.AppStates.UNKNOWN) {
                     newAppState = fallbackState.appState;
                     // Somewhat hacky exception for if project is still Started/Debugging but startMode changed
-                    if (newAppState === ProjectState.AppStates.DEBUGGING && projectInfoPayload.startMode === getStartMode(false)) {
+                    if (newAppState === ProjectState.AppStates.DEBUGGING && !isDebugMode(projectInfoPayload.startMode)) {
                         newAppState = ProjectState.AppStates.STARTED;
                     }
-                    else if (newAppState === ProjectState.AppStates.STARTED && projectInfoPayload.startMode === getStartMode(true)) {
+                    else if (newAppState === ProjectState.AppStates.STARTED && isDebugMode(projectInfoPayload.startMode)) {
                         newAppState = ProjectState.AppStates.DEBUGGING;
                     }
                 }
@@ -136,7 +136,7 @@ export namespace ProjectState {
         }
         // Now, check the app states.
         else if (appStatus === "started") {
-            if (startMode === getStartMode(true)) {
+            if (startMode != null && isDebugMode(startMode)) {
                 return ProjectState.AppStates.DEBUGGING;
             }
             return ProjectState.AppStates.STARTED;

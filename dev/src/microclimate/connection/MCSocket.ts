@@ -4,12 +4,13 @@ import * as vscode from "vscode";
 import Connection from "./Connection";
 import AppLog from "../logs/AppLog";
 import Project from "../project/Project";
-import { ProjectState } from "../project/ProjectState";
+import ProjectState from "../project/ProjectState";
 import * as MCUtil from "../../MCUtil";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
-import { Logger } from "../../Logger";
+import Logger from "../../Logger";
 import Validator from "../project/Validator";
 import EventTypes from "./EventTypes";
+import StartModes, { allStartModes, isDebugMode } from "../../constants/StartModes";
 
 export default class MCSocket {
 
@@ -103,15 +104,14 @@ export default class MCSocket {
             return;
         }
 
-        const startMode = payload.startMode;
-        if (startMode !== MCUtil.getStartMode(true) && startMode !== MCUtil.getStartMode(false)) {
+        const startMode: string = payload.startMode;
+        if (allStartModes().indexOf(startMode) < 0) {
             Logger.logE(`Invalid start mode "${startMode}"`);
         }
-        // This updates the ports and startMode.
-        // The app state will not change because the projectRestartResult does not provide an appState.
+        // This updates the ports and startMode, because those are what the payload will provide.
         project.update(payload);
 
-        const isDebug = startMode === MCUtil.getStartMode(true);
+        const isDebug = isDebugMode(startMode);
 
         if (isDebug) {
             try {
@@ -133,7 +133,7 @@ export default class MCSocket {
             return;
         }
 
-        const doneRestartMsg = `Finished restarting ${project.name} in ${MCUtil.getStartMode(isDebug)} mode.`;
+        const doneRestartMsg = `Finished restarting ${project.name} in ${startMode} mode.`;
         Logger.log(doneRestartMsg);
         vscode.window.showInformationMessage(doneRestartMsg);
     }

@@ -9,6 +9,7 @@ import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import { Icons, getIconPaths } from "../../constants/Resources";
 import { Logger } from "../../Logger";
+import StartModes from "../../constants/StartModes";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -160,9 +161,9 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         await this.getProjects();
     }
 
-    public static async requestProjectRestart(project: Project, debug: Boolean): Promise<request.RequestPromise<any>> {
+    public static async requestProjectRestart(project: Project, startMode: StartModes): Promise<request.RequestPromise<any>> {
         const body = {
-            startMode: MCUtil.getStartMode(debug)
+            startMode: startMode.toString()
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
@@ -217,7 +218,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         };
 
         const url = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
-        return this.doProjectRequest(project, url, body, request.post, "Validate");
+        return this.doProjectRequest(project, url, body, request.post);
     }
 
     public static async requestGenerate(project: Project): Promise<void> {
@@ -233,7 +234,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
     private static doProjectRequest(project: Project, url: string, body: {},
             requestFunc: (uri: string, {}) => request.RequestPromise<any>,
-            userOperationName: string
+            userOperationName?: string
     ): any {
         Logger.log(`Doing ${userOperationName} request to ${url}`);
 
@@ -247,7 +248,9 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return requestFunc(url, options)
             .then( (result: any) => {
                 Logger.log(`Response code ${result.statusCode} from ${userOperationName} request for ${project.name}:`, result);
-                vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);
+                if (userOperationName != null) {
+                    vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);
+                }
                 return result;
             })
             .catch( (err: any) => {

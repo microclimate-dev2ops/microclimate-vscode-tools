@@ -1,11 +1,11 @@
 import * as Resources from "../../constants/Resources";
-import { Logger } from "../../Logger";
+import Logger from "../../Logger";
 
 export class ProjectType {
 
     public readonly type: ProjectType.Types;
     public readonly userFriendlyType: string;
-    public readonly debugType: string | undefined;
+    public readonly debugType: ProjectType.DebugTypes | undefined;
 
     public readonly icon: Resources.IconPaths;
 
@@ -61,11 +61,13 @@ export class ProjectType {
      * Get the corresponding VSCode debug configuration "type" value.
      * Returns undefined if we don't know how to debug this project type.
      */
-    private static getDebugType(type: ProjectType.Types): string | undefined {
+    private static getDebugType(type: ProjectType.Types): ProjectType.DebugTypes | undefined {
         switch(type) {
             case ProjectType.Types.MICROPROFILE:
             case ProjectType.Types.SPRING:
-                return "java";
+                return this.DebugTypes.JAVA;
+            case ProjectType.Types.NODE:
+                return this.DebugTypes.NODE;
             default:
                 return undefined;
         }
@@ -122,6 +124,11 @@ export namespace ProjectType {
         GO = "Go",
         GENERIC_DOCKER = "Docker",
         UNKNOWN = "Unknown"
+    }
+
+    export enum DebugTypes {
+        JAVA = "java",
+        NODE = "node"
     }
 
     export const PROJECTS_WITHOUT_BUILDLOGS: ReadonlyArray<ProjectType.Types> = [

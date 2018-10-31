@@ -1,20 +1,10 @@
 Important:
 - Cancel debugger connection if java LSP fails to initialize - timeout appears to not work
-- Node debug!!
+- Only allow Generating dockerfile, since nothing else works :(
+- When Node app stops, stop trying to attach the debugger
+    - Attach while already Attached should be blocked (currently times out after 10s and gives a pretty good errmsg)
 - Tests!
 
-Portal:
-- ContainerID appears to not always get cleared when it should (on disable).
-    - docker ps -a does not reveal a container with this ID or for this project, as it should. But Portal continues to provide a containerID.
-    - This applies to the web UI too - containerID should be cleared when project is disabled.
-- Portal should throw a client error if auto build is toggled for disabled project, since the request has no effect in this case.
-    - [Thu Oct 25 2018 00:39:30:273 UTC] [ERROR] Project 19f42e10-d25b-11e8-a961-95635d57ea0e action enableautobuild failed, response code 500
-    - This applies to the web UI too. Reproduce:
-        - Disable project
-        - Toggle auto build - Slider moves, as though it worked
-        - Refresh the page - the slider returns to its former position, because the toggle didn't work.
-    - This should be fixed in both portal and portal-ui. Portal should throw a 400 if the project is disabled.
-    - Portal-ui should grey out this slider when the project is disabled.
 
 Annoying Release Stuff:
 - Icons
