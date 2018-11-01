@@ -7,7 +7,7 @@ import Logger from "../Logger";
 import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
 
-export default async function viewProjectInfoCmd(project: Project): Promise<void> {
+export default async function projectInfoCmd(project: Project): Promise<void> {
     Logger.log("viewProjectInfoCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
@@ -25,7 +25,6 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
         enableCommandUris: true
     };
 
-    // TODO if a matching WV is already open, and if so, just send it a refresh event instead.
     const webPanel = vscode.window.createWebviewPanel(project.name, project.name, vscode.ViewColumn.Active, wvOptions);
     const icons = project.type.icon;
     webPanel.iconPath = {

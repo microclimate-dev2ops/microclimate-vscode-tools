@@ -3,8 +3,8 @@ import { isDebugMode } from "../../constants/StartModes";
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
-    private readonly buildState: ProjectState.BuildStates;
-    private readonly buildDetail: string;
+    public readonly buildState: ProjectState.BuildStates;
+    public readonly buildDetail: string;
 
     constructor (
         projectInfoPayload: any,
@@ -64,19 +64,27 @@ export class ProjectState {
     public toString(): string {
         const appState = this.appState.toString();
 
-        let buildStateStr = "";
         if (this.isEnabled) {
-            if (this.buildDetail != null && this.buildDetail.trim() !== "") {
-                // a detailed status is available
-                buildStateStr = ` [${this.buildState} - ${this.buildDetail}]`;
-            }
-            // Don't display the build state if it's unknown (or could add a case above for disabled projs)
-            else if (this.buildState !== ProjectState.BuildStates.UNKNOWN) {
-                buildStateStr = ` [${this.buildState}]`;
-            }
+            return `[${appState}] [${this.getBuildString()}]`;
         }
+        else {
+            // don't show build detail for disabled projects
+            return `[${appState}]`;
+        }
+    }
 
-        return `[${appState}]${buildStateStr}`;
+    public getBuildString(): string {
+        let buildStateStr = "";
+
+        if (this.buildDetail != null && this.buildDetail.trim() !== "") {
+            // a detailed status is available
+            buildStateStr = `${this.buildState} - ${this.buildDetail}`;
+        }
+        // Don't display the build state if it's unknown (or could add a case above for disabled projs)
+        else if (this.buildState !== ProjectState.BuildStates.UNKNOWN) {
+            buildStateStr = `${this.buildState}`;
+        }
+        return buildStateStr;
     }
 }
 

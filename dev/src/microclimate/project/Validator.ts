@@ -32,7 +32,7 @@ namespace Validator {
         // unfortunately vscode gives an error that it can't be opened when clicked, so this can likely be improved
         const diagnosticUri: vscode.Uri = project.localPath;
 
-        const oldDiagnostics = project.diagnostics.get(diagnosticUri) || [];
+        const oldDiagnostics: vscode.Diagnostic[] = project.diagnostics.get(diagnosticUri) || [];
         const newDiagnostics: vscode.Diagnostic[] = [];
 
         // For each validation problem, see if we already have an error for it. If so, do nothing.

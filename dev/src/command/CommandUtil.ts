@@ -16,7 +16,7 @@ import requestBuildCmd from "./RequestBuildCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import removeConnectionCmd from "./RemoveConnectionCmd";
 import containerBashCmd from "./ContainerShellCmd";
-import viewProjectInfoCmd from "./ViewProjectInfoCmd";
+import projectInfoCmd from "./ProjectInfoCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
 import openLogCmd from "./OpenLogCmd";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
@@ -53,7 +53,7 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.CONTAINER_SHELL,   (selection) => containerBashCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.VIEW_PROJECT_INFO, (selection) => viewProjectInfoCmd(selection))
+        vscode.commands.registerCommand(Commands.VIEW_PROJECT_INFO, (selection) => projectInfoCmd(selection))
     ];
 }
 

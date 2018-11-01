@@ -9,7 +9,7 @@ export const OPEN_MSG: string = "open";
 
 export enum Openable {
     WEB = "web", FILE = "file", FOLDER = "folder"
-};
+}
 
 export function generateHtml(project: Project): string {
 
@@ -53,6 +53,9 @@ export function generateHtml(project: Project): string {
                     />
                 </td>
             </tr>
+            ${emptyRow}
+            ${buildRow("Application Status", project.state.appState)}
+            ${buildRow("Build Status", project.state.getBuildString())}
             ${emptyRow}
             ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
             ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
