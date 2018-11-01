@@ -11,9 +11,9 @@ export interface ExpectedSocketEvent {
 }
 
 export interface SocketEvent {
-    type: string,
-    nsp?: string,
-    data: any
+    type: string;
+    nsp?: string;
+    data: any;
 }
 
 export function createTestSocket(uri: string): Promise<SocketIOClient.Socket> {
@@ -41,23 +41,9 @@ export async function onSocketEvent(rawEvent: any): Promise<void> {
     const event: SocketEvent = {
         type: rawEvent.data[0],
         data: rawEvent.data[1]
-    }
-    console.log("SocketTestUtil onSocketEvent ", event);
+    };
+    // console.log("SocketTestUtil onSocketEvent ", event);
 
-    /*
-    if (expectedSocketEvents.length > 0) {
-        for (const [i, expectedEvent] of expectedSocketEvents.entries()) {
-            if (eventMatches(expectedEvent, event)) {
-                if (expectedEvent.resolveFn != null) {
-                    expectedEvent.resolveFn();
-                }
-                else {
-                    console.error("ExpectedEvent did not have a resolve function", expectedEvent);
-                }
-                expectedSocketEvents.splice(i, 1);
-            }
-        }
-    }*/
     if (_expectedSocketEvent == null) {
         return;
     }

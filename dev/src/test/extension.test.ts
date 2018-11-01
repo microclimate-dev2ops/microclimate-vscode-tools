@@ -1,40 +1,41 @@
-//
-// Note: This example test is leveraging the Mocha test framework.
-// Please refer to their documentation on https://mochajs.org/ for help.
-//
-
 import { expect } from "chai";
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 import * as fs from "fs";
 
-import { Logger } from "../Logger";
+import Logger from "../Logger";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Commands from "../constants/Commands";
-import { ProjectType } from "../microclimate/project/ProjectType";
+import ProjectType from "../microclimate/project/ProjectType";
 import Project from "../microclimate/project/Project";
-import { ProjectState } from "../microclimate/project/ProjectState";
+import ProjectState from "../microclimate/project/ProjectState";
+
 import * as SocketTestUtil from "./SocketTestUtil";
 
+ // tslint:disable:typedef no-unused-expression no-invalid-this
+
 // Defines a Mocha test suite to group tests of similar kind together
-describe("Microclimate Tools for VSCode Microprofile test", function() {
+describe("Microclimate Tools for VSCode Microprofile test", async function() {
 
     const workspace = "/Users/tim/programs/microclimate/microclimate-workspace";
-    const extensionName = "IBM:vscode-microclimate-tools";
+    const extensionName = "IBM.vscode-microclimate-tools";
+
     let testSocket: SocketIOClient.Socket;
+    let mpProject: Project;
 
     // The test needs to be launched with the microclimate-workspace open, so that the extension is activated.
-    before(async function() {
+
+    before("should have opened the workspace, and have loaded the extension", async function() {
         const wsFolders = vscode.workspace.workspaceFolders;
         console.log("Workspace folders:", wsFolders);
-        expect(wsFolders).to.not.be.null
         expect(wsFolders).to.have.length.greaterThan(0);
         if (wsFolders == null) {
             throw new Error("WSFolders can't be null after here.");
         }
         expect(wsFolders[0].uri.fsPath).to.equal(workspace);
 
+        console.log("Loaded extensions:", vscode.extensions.all.map( (extension) => extension.id));
         const extension = await vscode.extensions.getExtension(extensionName);
-        expect(extension).to.not.be.null;
+        expect(extension).to.exist;
 
         console.log("Workspace is good and extension is loaded.");
     });
@@ -42,7 +43,7 @@ describe("Microclimate Tools for VSCode Microprofile test", function() {
     it("should have a log file file that is readable and non-empty", async function() {
         const logPath = Logger.getLogFilePath;
 
-        expect(logPath).to.not.be.null;
+        expect(logPath).to.exist;
         console.log("The logs are at " + logPath);
 
         fs.readFile(logPath, (err: NodeJS.ErrnoException, data) => {
@@ -54,7 +55,7 @@ describe("Microclimate Tools for VSCode Microprofile test", function() {
 
     it("should initially have no connections", async function() {
         const connMan = ConnectionManager.instance;
-        expect(connMan).to.not.be.null;
+        expect(connMan).to.exist;
 
         const noConnections = connMan.connections.length;
         if (noConnections > 0) {
@@ -88,22 +89,13 @@ describe("Microclimate Tools for VSCode Microprofile test", function() {
 
 
     it("should be able to restart a Microprofile project in Run mode", async function() {
+        const timeout = 120000;
 
-        this.timeout(120000);
+        this.timeout(timeout);
 
-        const conn = ConnectionManager.instance.connections[0];
-        const projects = await conn.getProjects();
-        expect(projects).to.not.be.empty;
-        console.log(`${conn.toString()} has ${projects.length} project(s):`, projects);
-
-        const mpProjects = projects.filter( (p) => p.type.type === ProjectType.Types.MICROPROFILE && p.state.isEnabled);
-        console.log("Enabled Microprofile projects:", mpProjects);
-        expect(mpProjects, "No Enabled Microprofile projects were found").to.not.be.empty;
-
-        const mpProject: Project = mpProjects[0];
+        mpProject = await acquireMicroprofileProject();
         console.log(`Using Microprofile project ${mpProject.name}. Waiting for it to be Started`);
-        const restartTimeout = 120000;
-        await mpProject.waitForState(restartTimeout, ProjectState.AppStates.STARTED);
+        await mpProject.waitForState(timeout, ProjectState.AppStates.STARTED);
         expect(mpProject.state.appState).to.equal(ProjectState.AppStates.STARTED);
 
         console.log(`Restarting project ${mpProject.name} into Run mode`);
@@ -115,9 +107,12 @@ describe("Microclimate Tools for VSCode Microprofile test", function() {
         await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(ProjectState.AppStates.STARTED));
 
         // await mpProject.waitForState(restartTimeout, ProjectState.AppStates.DEBUGGING);
-        console.log("Finished waiting for Started");
+        console.log("Finished waiting for Started event");
 
-        // expect(mpProject.state.appState, `${mpProject.name} should be Started, is instead ${mpProject.state.appState}`).to.equal(ProjectState.AppStates.STARTED);
+        // should resolve immediately
+        await mpProject.waitForState(timeout, ProjectState.AppStates.STARTED);
+        expect(mpProject.state.appState,
+            `${mpProject.name} should be Started, is instead ${mpProject.state.appState}`).to.equal(ProjectState.AppStates.STARTED);
 
         /*
         const debugSession = vscode.debug.activeDebugSession;
@@ -129,5 +124,21 @@ describe("Microclimate Tools for VSCode Microprofile test", function() {
     });
 
 });
+
+async function acquireMicroprofileProject(): Promise<Project> {
+    const conn = ConnectionManager.instance.connections[0];
+    const projects = await conn.getProjects();
+    expect(projects).to.not.be.empty;
+    console.log(`${conn.toString()} has ${projects.length} project(s):`, projects);
+
+    const mpProjects = projects.filter( (p) => p.type.type === ProjectType.Types.MICROPROFILE && p.state.isEnabled);
+    console.log("Enabled Microprofile projects:", mpProjects);
+    expect(mpProjects, "No Enabled Microprofile projects were found").to.not.be.empty;
+
+    const result = mpProjects[0];
+    expect(result).to.exist;
+
+    return mpProjects[0];
+}
 
 
