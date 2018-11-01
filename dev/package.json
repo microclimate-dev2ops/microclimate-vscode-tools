@@ -240,16 +240,16 @@
     "devDependencies": {
         "@types/chai": "^4.1.7",
         "@types/mocha": "^2.2.42",
-        "@types/node": "^8.10.25",
+        "@types/node": "^10.12.1",
         "@types/request": "^2.47.1",
         "@types/request-promise-native": "^1.0.15",
         "@types/socket.io-client": "^1.4.32",
         "@types/socketio-wildcard": "^2.0.1",
         "chai": "^4.2.0",
+        "socketio-wildcard": "^2.0.0",
         "ts-node": "^7.0.1",
         "tslint": "^5.8.0",
-        "socketio-wildcard": "^2.0.0",
-        "typescript": "^2.9.2",
+        "typescript": "^3.1.5",
         "vscode": "^1.1.21"
     },
     "dependencies": {
