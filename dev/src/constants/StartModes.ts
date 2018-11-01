@@ -2,8 +2,6 @@ import ProjectType from "../microclimate/project/ProjectType";
 
 // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/constants.ts
 
-
-
 enum StartModes {
     RUN = "run",
     DEBUG = "debug",
@@ -22,7 +20,7 @@ export function isDebugMode(startMode: string): Boolean {
     return startMode === StartModes.DEBUG.toString() || startMode === StartModes.DEBUG_NO_INIT.toString();
 }
 
-export function getDefaultStartMode(debug: Boolean, projectType: ProjectType.Types) {
+export function getDefaultStartMode(debug: Boolean, projectType: ProjectType.Types): StartModes {
     if (!debug) {
         return StartModes.RUN;
     }

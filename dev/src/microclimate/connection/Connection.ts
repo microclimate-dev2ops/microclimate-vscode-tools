@@ -218,6 +218,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         };
 
         const url = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
+        // validate requests are silent.
         return this.doProjectRequest(project, url, body, request.post);
     }
 
@@ -229,21 +230,22 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         };
 
         const url = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
-        return this.doProjectRequest(project, url, body, request.post, "Generate");
+        return this.doProjectRequest(project, url, body, request.post, "Generate Dockerfile")
+            // request a validate after the generate so that the validation errors go away
+            .then( (_: any) => this.requestValidate(project));
     }
 
     private static doProjectRequest(project: Project, url: string, body: {},
-            requestFunc: (uri: string, {}) => request.RequestPromise<any>,
-            userOperationName?: string
-    ): any {
+            requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
+            userOperationName?: string): any {
+
         Logger.log(`Doing ${userOperationName} request to ${url}`);
 
         const options = {
             json: true,
             body: body,
-
             resolveWithFullResponse: true
-        }
+        };
 
         return requestFunc(url, options)
             .then( (result: any) => {

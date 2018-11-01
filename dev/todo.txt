@@ -1,10 +1,5 @@
 Important:
-- Cancel debugger connection if java LSP fails to initialize - timeout appears to not work
-- Only allow Generating dockerfile, since nothing else works :(
-- When Node app stops, stop trying to attach the debugger
-    - Attach while already Attached should be blocked (currently times out after 10s and gives a pretty good errmsg)
 - Tests!
-
 
 Annoying Release Stuff:
 - Icons
