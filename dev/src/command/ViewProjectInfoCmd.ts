@@ -3,9 +3,9 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import * as ProjectInfo from "../microclimate/project/ProjectInfo";
-import { Logger } from "../Logger";
-import Connection from "../microclimate/connection/Connection";
+import Logger from "../Logger";
 import Commands from "../constants/Commands";
+import Requester from "../microclimate/project/Requester";
 
 export default async function viewProjectInfoCmd(project: Project): Promise<void> {
     Logger.log("viewProjectInfoCmd invoked");
@@ -30,7 +30,7 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
     const icons = project.type.icon;
     webPanel.iconPath = {
         light: vscode.Uri.file(icons.light),
-        dark: vscode.Uri.file(icons.dark)
+        dark:  vscode.Uri.file(icons.dark)
     };
 
     // const ed = vscode.window.activeTextEditor;
@@ -42,7 +42,7 @@ export default async function viewProjectInfoCmd(project: Project): Promise<void
                 webPanel.webview.html = ProjectInfo.generateHtml(project);
             }
             else if (msg.msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
-                Connection.requestToggleAutoBuild(project);
+                Requester.requestToggleAutoBuild(project);
             }
             else if (msg.msg === ProjectInfo.OPEN_MSG) {
                 Logger.log("Got msg to open, data is ", msg.data);

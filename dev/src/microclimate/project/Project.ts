@@ -120,21 +120,6 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
     }
 
-    public get appBaseUrl(): vscode.Uri | undefined {
-        if (this._appPort != null) {
-            return this.connection.mcUri.with({
-                authority: `${this.connection.host}:${this._appPort}`,
-                path: this.contextRoot
-            });
-        }
-        // app is stopped, disabled, etc.
-        return undefined;
-    }
-
-    public get state(): ProjectState {
-        return this._state;
-    }
-
     /**
      * Set this project's status based on the project info event payload passed.
      * This includes checking the appStatus, buildStatus, buildStatusDetail, and startMode.
@@ -245,6 +230,10 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return pendingStatePromise;
     }
 
+    public async onDeletion(): Promise<void> {
+        this.diagnostics.clear();
+    }
+
     public setAutoBuild(newAutoBuild: Boolean): void {
         if (newAutoBuild != null) {
             this._autoBuildEnabled = newAutoBuild;
@@ -268,7 +257,23 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return this._autoBuildEnabled;
     }
 
-    public get debugAddress(): string | undefined {
+    public get state(): ProjectState {
+        return this._state;
+    }
+
+    public get appBaseUrl(): vscode.Uri | undefined {
+        if (this._appPort == null) {
+            // app is stopped, disabled, etc.
+            return undefined;
+        }
+
+        return this.connection.mcUri.with({
+            authority: `${this.connection.host}:${this._appPort}`,
+            path: this.contextRoot
+        });
+    }
+
+    public get debugUrl(): string | undefined {
         if (this._debugPort == null) {
             return undefined;
         }

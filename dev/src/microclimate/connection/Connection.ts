@@ -1,15 +1,13 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import * as MCUtil from "../../MCUtil";
 import TreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
 import Project from "../project/Project";
 import Endpoints from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import { Icons, getIconPaths } from "../../constants/Resources";
-import { Logger } from "../../Logger";
-import StartModes from "../../constants/StartModes";
+import Logger from "../../Logger";
 
 export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
 
@@ -161,108 +159,5 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         await this.getProjects();
     }
 
-    public static async requestProjectRestart(project: Project, startMode: StartModes): Promise<request.RequestPromise<any>> {
-        const body = {
-            startMode: startMode.toString()
-        };
 
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
-        return this.doProjectRequest(project, url, body, request.post, `Restart into ${body.startMode} mode`);
-    }
-
-    public static async requestBuild(project: Project): Promise<void> {
-        const body = {
-            action: "build"
-        };
-
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
-        this.doProjectRequest(project, url, body, request.post, "Build");
-
-        // This is a workaround for the Build action not refreshing validation state.
-        // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
-        return this.requestValidate(project);
-    }
-
-    public static async requestToggleAutoBuild(project: Project): Promise<void> {
-        const newAutoBuild: Boolean = !project.autoBuildEnabled;
-        // user-friendly action
-        const newAutoBuildUserStr:  string = newAutoBuild ? "Enable auto build" : "Disable auto build";
-        // action we'll put into the request body   https://github.ibm.com/dev-ex/portal/wiki/API:-Build
-        const newAutoBuildAction:   string = newAutoBuild ? "enableautobuild" : "disableautobuild";
-
-        const body = {
-            "action": newAutoBuildAction
-        };
-
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
-        return this.doProjectRequest(project, url, body, request.post, newAutoBuildUserStr)
-            .then( (result: any) => {
-                if (result != null && result.statusCode === 200) {
-                    project.setAutoBuild(newAutoBuild);
-                }
-            });
-    }
-
-    public static async requestToggleEnablement(project: Project): Promise<void> {
-        const newEnablement: Boolean = !project.state.isEnabled;
-        const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
-
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.ENABLEMENT_ACTION(newEnablement));
-        return this.doProjectRequest(project, url, {}, request.put, newEnablementStr);
-    }
-
-    public static async requestValidate(project: Project): Promise<void> {
-        const body = {
-            projectID: project.id,
-            projectType: project.type.internalType
-        };
-
-        const url = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
-        // validate requests are silent.
-        return this.doProjectRequest(project, url, body, request.post);
-    }
-
-    public static async requestGenerate(project: Project): Promise<void> {
-        const body = {
-            projectID: project.id,
-            projectType: project.type.internalType,
-            autoGenerate: true
-        };
-
-        const url = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
-        return this.doProjectRequest(project, url, body, request.post, "Generate Dockerfile")
-            // request a validate after the generate so that the validation errors go away
-            .then( (_: any) => this.requestValidate(project));
-    }
-
-    private static doProjectRequest(project: Project, url: string, body: {},
-            requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
-            userOperationName?: string): any {
-
-        Logger.log(`Doing ${userOperationName} request to ${url}`);
-
-        const options = {
-            json: true,
-            body: body,
-            resolveWithFullResponse: true
-        };
-
-        return requestFunc(url, options)
-            .then( (result: any) => {
-                Logger.log(`Response code ${result.statusCode} from ${userOperationName} request for ${project.name}:`, result);
-                if (userOperationName != null) {
-                    vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);
-                }
-                return result;
-            })
-            .catch( (err: any) => {
-                Logger.log(`Error doing ${userOperationName} project request for ${project.name}:`, err);
-
-                // If the server provided a specific message, present the user with that,
-                // otherwise show them the whole error (but it will be ugly)
-                const errMsg = err.error ? err.error : err;
-                vscode.window.showErrorMessage(`${userOperationName} failed: ${errMsg}`);
-                return err;
-            });
-    }
 }

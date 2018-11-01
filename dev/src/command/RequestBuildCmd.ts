@@ -2,8 +2,8 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import { Logger } from "../Logger";
-import Connection from "../microclimate/connection/Connection";
+import Logger from "../Logger";
+import Requester from "../microclimate/project/Requester";
 
 export default async function requestBuildCmd(project: Project): Promise<void> {
     Logger.log("RequestBuildCmd invoked");
@@ -24,5 +24,5 @@ export default async function requestBuildCmd(project: Project): Promise<void> {
 
     Logger.log(`Request build for project ${project.name}`);
 
-    Connection.requestBuild(project);
+    Requester.requestBuild(project);
 }

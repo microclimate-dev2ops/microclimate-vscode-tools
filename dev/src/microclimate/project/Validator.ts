@@ -2,26 +2,27 @@ import * as vscode from "vscode";
 
 import Logger from "../../Logger";
 import Project from "./Project";
-import Connection from "../connection/Connection";
+import Requester from "./Requester";
 
-// from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts
-interface ValidationResult {
-    // severity: Severity;
-    severity: string;
-    filename: string;
-    filepath?: string;
-    // type: ProblemType
-    label: string;
-    details: string;
-    quickfix?: {
-        fixID: string,
-        name: string,
-        description: string
-    };
-}
+namespace Validator {
 
-export default class Validator {
-    public static async validate(project: Project, validationPayload: any): Promise<void> {
+    // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts
+    interface ValidationResult {
+        // severity: Severity;
+        severity: string;
+        filename: string;
+        filepath?: string;
+        // type: ProblemType
+        label: string;
+        details: string;
+        quickfix?: {
+            fixID: string,
+            name: string,
+            description: string
+        };
+    }
+
+    export async function validate(project: Project, validationPayload: any): Promise<void> {
 
         const validationResult: ValidationResult[] = validationPayload.validationResults;
         Logger.log("validationresult", validationPayload);
@@ -63,7 +64,7 @@ export default class Validator {
                 vscode.window.showErrorMessage(popupErrMsg, generateBtn)
                     .then( (response: string | undefined) => {
                         if (response === generateBtn) {
-                            Connection.requestGenerate(project);
+                            Requester.requestGenerate(project);
                         }
                     });
             }
@@ -77,3 +78,4 @@ export default class Validator {
     }
 }
 
+export default Validator;

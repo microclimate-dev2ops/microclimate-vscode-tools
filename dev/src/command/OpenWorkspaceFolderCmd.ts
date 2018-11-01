@@ -41,9 +41,8 @@ export default async function openWorkspaceFolderCmd(resource: Project | Connect
         vscode.window.showWarningMessage("The selected folder is already your workspace root.");
     }
     else {
-        // TODO open in new window should be a settable preference
-        const inNewWindow: Boolean = false;
-        Logger.log(`Opening folder, inNewWindow=${inNewWindow}`);
-        vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, uri, inNewWindow);
+        // To change 'in new window' behaviour, use "window.openFoldersInNewWindow": "default",
+        Logger.log(`Opening folder ${uri}`);
+        vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, uri);
     }
 }

@@ -44,7 +44,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
         return true;
     }
     catch (err) {
-        const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugAddress} `;
+        const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugUrl} `;
         Logger.logE(failMsg, err);
         vscode.window.showErrorMessage(failMsg + err.message.toString());
         return false;
@@ -110,7 +110,7 @@ export async function startDebugSession(project: Project): Promise<string> {
     if (debugSuccess) {
         // open the app's logs
         AppLog.getOrCreateLog(project.id, project.name).showOutputChannel();
-        return `Debugging ${project.name} at ${project.debugAddress}`;
+        return `Debugging ${project.name} at ${project.debugUrl}`;
     }
     else {
         throw new Error(errDetail);

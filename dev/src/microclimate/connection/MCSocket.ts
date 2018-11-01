@@ -11,6 +11,7 @@ import Logger from "../../Logger";
 import Validator from "../project/Validator";
 import EventTypes from "./EventTypes";
 import StartModes, { allStartModes, isDebugMode } from "../../constants/StartModes";
+import ProjectTreeDataProvider from "../../view/ProjectTree";
 
 export default class MCSocket {
 
@@ -59,7 +60,7 @@ export default class MCSocket {
 
         const projectID = payload.projectID;
         if (projectID == null) {
-            Logger.logE("No projectID in socket event!", payload);
+            Logger.logE("No projectID in changed socket event!", payload);
             return;
         }
 
@@ -76,6 +77,20 @@ export default class MCSocket {
 
     private onProjectDeleted = async (payload: any): Promise<void> => {
         Logger.log("PROJECT DELETED", payload);
+        const projectID = payload.projectID;
+        if (projectID == null) {
+            Logger.logE("No projectID in deletion socket event!", payload);
+            return;
+        }
+
+        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        if (project == null) {
+            Logger.log(`Trying to delete project with ID ${projectID} but it was not found`);
+        }
+        else {
+            await project.onDeletion();
+        }
+
         this.connection.forceUpdateProjectList();
     }
 

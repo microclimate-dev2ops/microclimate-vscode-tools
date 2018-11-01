@@ -2,9 +2,9 @@
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import { ProjectState } from "../microclimate/project/ProjectState";
-import { Logger } from "../Logger";
-import Connection from "../microclimate/connection/Connection";
+import ProjectState from "../microclimate/project/ProjectState";
+import Logger from "../Logger";
+import Requester from "../microclimate/project/Requester";
 
 /**
  * @param enable - Whether the given project is to be enabled, or disabled.
@@ -32,5 +32,5 @@ export default async function toggleEnablementCmd(project: Project, enable: Bool
 
     Logger.log(`Toggle enablement for project ${project.name}`);
 
-    Connection.requestToggleEnablement(project);
+    Requester.requestToggleEnablement(project);
 }

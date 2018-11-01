@@ -1,11 +1,8 @@
-import * as vscode from "vscode";
-
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import { Logger } from "../Logger";
-import Connection from "../microclimate/connection/Connection";
-import { ProjectState } from "../microclimate/project/ProjectState";
-// import ConnectionManager from "../microclimate/connection/ConnectionManager";
+import Logger from "../Logger";
+import ProjectState from "../microclimate/project/ProjectState";
+import Requester from "../microclimate/project/Requester";
 
 export default async function toggleAutoBuildCmd(project: Project): Promise<void> {
     Logger.log("ToggleAutoBuildCmd invoked");
@@ -20,5 +17,5 @@ export default async function toggleAutoBuildCmd(project: Project): Promise<void
         project = selected;
     }
 
-    Connection.requestToggleAutoBuild(project);
+    Requester.requestToggleAutoBuild(project);
 }
