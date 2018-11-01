@@ -178,23 +178,27 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
         if (this.pendingAppStates.includes(this._state.appState)) {
-            if (this.resolvePendingAppState != null) {
-                Logger.log("Reached pending state: " + this.pendingAppStates);
-                this.resolvePendingAppState();
-                this.pendingAppStates = [];
-                this.resolvePendingAppState = undefined;
-            }
-            else {
-                // should never happen
-                Logger.logE("PendingState was set but no resolve function was");
-                this.pendingAppStates = [];
-            }
+            this.clearPendingState();
         }
 
         // Logger.log(`${this.name} has a new status:`, this._state);
         if (changed) {
             this.connection.onChange();
         }
+    }
+
+    private clearPendingState(): void {
+        Logger.log("Clear pending state, pending states are: " + this.pendingAppStates);
+        if (this.resolvePendingAppState != null) {
+            Logger.log("Resolving pending state(s)");
+            this.resolvePendingAppState();
+        }
+        else if (this.pendingAppStates.length > 0) {
+            // should never happen
+            Logger.logE("Reached pending state(s) but no resolve function was set");
+        }
+        this.pendingAppStates = [];
+        this.resolvePendingAppState = undefined;
     }
 
     /**
@@ -205,16 +209,14 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
      */
     public async waitForState(timeoutMs: number, state: ProjectState.AppStates, ...alternateStates: ProjectState.AppStates[]): Promise<string> {
         const states: ProjectState.AppStates[] = alternateStates.concat(state);
-        if (states.indexOf(this._state.appState) >= 0) {
+
+        this.clearPendingState();
+
+        if (states.includes(this._state.appState)) {
             Logger.log("No need to wait, already in state " + this._state.appState);
             return "Already " + this._state.appState;
         }
 
-        // Clear the old pendingState
-        if (this.resolvePendingAppState != null) {
-            Logger.log("Cancelling waiting for state: " + this.pendingAppStates);
-            this.resolvePendingAppState();
-        }
         this.pendingAppStates = states;
 
         Logger.log(this.name + " is waiting for states: " + states);
@@ -264,6 +266,14 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
     public get autoBuildEnabled(): Boolean {
         return this._autoBuildEnabled;
+    }
+
+    public get debugAddress(): string | undefined {
+        if (this._debugPort == null) {
+            return undefined;
+        }
+
+        return this.connection.host + ":" + this._debugPort;
     }
 
     /**

@@ -8,10 +8,6 @@ export default class AppLog {
 
     private readonly outputChannel: vscode.OutputChannel;
 
-    // If this project is being debugged, we also have to send the output to the debug console.
-    private debugConsole: vscode.DebugConsole | undefined;
-    private hasNewDebugConsole: Boolean = false;
-
     private initialized: Boolean = false;
     private previousLength: number = 0;
 
@@ -49,22 +45,6 @@ export default class AppLog {
         }
 
         this.outputChannel.append(newContents);
-        if (this.hasNewDebugConsole) {
-            // TODO this doesn't work
-            if (this.debugConsole != null) {
-                // one time only, send the whole output to the debug console
-                this.debugConsole.append(contents);
-                this.hasNewDebugConsole = false;
-            }
-            else {
-                Logger.logE("Unexpected null debug console");
-            }
-        }
-        // It's normal for debugConsole to be null if we're not debugging.
-        else if (this.debugConsole != null) {
-            this.debugConsole.append(newContents);
-        }
-
         this.previousLength = contents.length;
     }
 
@@ -85,22 +65,5 @@ export default class AppLog {
 
     public static getLogByProjectID(projectID: string): AppLog | undefined {
         return this.logMap.get(projectID);
-    }
-
-    public setDebugConsole(console: vscode.DebugConsole): void {
-        this.debugConsole = console;
-        this.hasNewDebugConsole = true;
-    }
-
-    public unsetDebugConsole(): void {
-        if (this.debugConsole == null) {
-            // nothing to do
-            return;
-        }
-        // This command clears the debug console.
-        // This is done so that the user doesn't wonder why their console isn't getting new output.
-        vscode.commands.executeCommand("workbench.debug.panel.action.clearReplAction");
-        this.debugConsole = undefined;
-        this.hasNewDebugConsole = false;
     }
 }

@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+
+import * as MCUtil from "../MCUtil";
 import { promptForProject } from "../command/CommandUtil";
 import * as Resources from "../constants/Resources";
 import AppLog from "../microclimate/logs/AppLog";
@@ -21,18 +23,30 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
     }
 
     try {
-        // TODO add a timeout to debugger attach
-        const startDebugPromise = startDebugSession(project);
-        vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} Connecting debugger to ${project.name}`, startDebugPromise);
-        const successMsg = await startDebugPromise;
+        // This should be longer than the timeout we pass to VSCode through the debug config, or the default (whichever is longer).
+        // It's 10s for Node projects, seems to be a lot shorter for Java, so 15s is fine.
+        // The user could make the timeout longer which would cause this to not work as intended,
+        // but they will likely understand what's happening in that case.
+        const timeoutS = 15;
+
+        const startDebugWithTimeout = MCUtil.promiseWithTimeout(startDebugSession(project),
+            timeoutS * 1000,
+            `Debugger did not connect within ${timeoutS}s`);
+
+        vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} Connecting debugger to ${project.name}`,
+                startDebugWithTimeout);
+
+        // will throw error if connection fails or timeout
+        const successMsg = await startDebugWithTimeout;
 
         Logger.log("Debugger attach success", successMsg);
         vscode.window.showInformationMessage(successMsg);
         return true;
     }
     catch (err) {
-        Logger.logE("Debugger attach failure", err);
-        vscode.window.showErrorMessage("Failed to attach debugger: " + err);
+        const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugAddress} `;
+        Logger.logE(failMsg, err);
+        vscode.window.showErrorMessage(failMsg + err.message.toString());
         return false;
     }
 }
@@ -63,24 +77,43 @@ export async function startDebugSession(project: Project): Promise<string> {
     }
 
     const debugConfig: vscode.DebugConfiguration = await getDebugConfig(project);
-    Logger.log("Running debug launch:", debugConfig);
-
     const projectFolder = vscode.workspace.getWorkspaceFolder(project.localPath);
-    // TODO need a better way to detect when this fails.
-    // startDebugging just returns a boolean -
-    // seems if there's an error, it will display an alert at the top of the window
-    const success = await vscode.debug.startDebugging(projectFolder, debugConfig);
+    Logger.log("Running debug launch:", debugConfig, "on project folder:", projectFolder);
+
+    const priorDebugSession = vscode.debug.activeDebugSession;
+    let debugSuccess = await vscode.debug.startDebugging(projectFolder, debugConfig);
     Logger.log("Debugger should have connected");
 
-    if (success) {
-        if (project.type.debugType === ProjectType.DebugTypes.JAVA) {
-            // Hook up the debug console manually for Java projects
-            AppLog.getOrCreateLog(project.id, project.name).setDebugConsole(vscode.debug.activeDebugConsole);
-        }
-        return `Debugging ${project.name} at ${project.connection.host}:${debugConfig.port}`;
+    // startDebugging above will often return 'true' before the debugger actually connects, so it could still fail.
+    // Do some extra checks here to ensure that a new debug session was actually launched, and report failure if it wasn't.
+
+    // optional extra error message
+    let errDetail: string = "";
+    const newDebugSession = vscode.debug.activeDebugSession;
+
+    if (newDebugSession == null || newDebugSession.name !== debugConfig.name) {
+        Logger.logW("Debug session failed to launch");
+        debugSuccess = false;
+    }
+    else if (priorDebugSession != null && priorDebugSession.id === newDebugSession.id) {
+        // This means we were already debugging this project (since the debug session name did match above),
+        // and we failed to create a new session - the old one is still running
+        Logger.logW("Project already had an active debug session, and a new one was not created");
+        debugSuccess = false;
+        errDetail = `- is it already being debugged?`;
+    }
+    // There might be other error scenarios I've missed.
+    else {
+        Logger.log("Debugger connect apparently succeeded");
+    }
+
+    if (debugSuccess) {
+        // open the app's logs
+        AppLog.getOrCreateLog(project.id, project.name).showOutputChannel();
+        return `Debugging ${project.name} at ${project.debugAddress}`;
     }
     else {
-        throw new Error("Failed to start debug session for " + project.name);
+        throw new Error(errDetail);
     }
 }
 
@@ -158,7 +191,6 @@ function generateDebugConfiguration(debugName: string, project: Project): vscode
                 localRoot: project.localPath.fsPath,
                 // TODO user could change this in their dockerfile
                 remoteRoot: "/app",
-                // TODO Restart won't work if a build happens and the app port changes
                 restart: true
             };
         }

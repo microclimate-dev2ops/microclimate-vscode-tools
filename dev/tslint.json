@@ -38,7 +38,7 @@
 		],
 		"ban-types": [ true,
 			// [ "Object", "Use {} instead" ],
-			// [ "Function", "Use (param: type) => type instead"]
+			[ "Function", "Use (param: type) => type instead"]
 		],
 		"ban": [ true,
 			// [ "console", "log", "Use Logger.log"],

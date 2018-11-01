@@ -54,8 +54,8 @@ export default class MCSocket {
 
     private onProjectChanged = async (payload: any): Promise<void> => {
         //Logger.log("onProjectChanged", payload);
-        Logger.log(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
-                `buildState=${payload.buildStatus} startMode=${payload.startMode}`);
+        // Logger.log(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
+                // `buildState=${payload.buildStatus} startMode=${payload.startMode}`);
 
         const projectID = payload.projectID;
         if (projectID == null) {

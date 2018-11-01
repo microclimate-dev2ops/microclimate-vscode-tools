@@ -23,7 +23,6 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
 
     const startMode: StartModes = getDefaultStartMode(debug, project.type.type);
 
-    AppLog.getOrCreateLog(project.id, project.name).unsetDebugConsole();
     Logger.log(`RestartProject on project ${project.name} into ${startMode} mode`);
 
     const restartRequestPromise = Connection.requestProjectRestart(project, startMode);

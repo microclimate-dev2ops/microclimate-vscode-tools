@@ -42,6 +42,23 @@ export function uppercaseFirstChar(input: string): string {
     return input.charAt(0).toUpperCase() + input.slice(1);
 }
 
+/**
+ * Returns a wrapper promise which runs the given promise with the given timeout.
+ * If the timeout expires before the given promise is fulfilled, the wrapper promise rejects with the given message.
+ *
+ * If the promise resolves or rejects before the timeout,
+ * the wrapper promise resolves or rejects with the same result as the inner promise.
+ */
+export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMS: number, rejectMsg: string): Promise<T> {
+    return new Promise<T>( (resolve, reject) => {
+        setTimeout( () => reject(rejectMsg), timeoutMS);
+
+        promise
+            .then( (result: T) => resolve(result))
+            .catch( (err: any) => reject(err));
+    });
+}
+
 //// Connection helpers
 
 export interface ConnectionInfo {
