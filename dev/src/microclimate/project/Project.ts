@@ -177,7 +177,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
 
         // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
-        if (this.pendingAppStates.indexOf(this._state.appState) >= 0) {
+        if (this.pendingAppStates.includes(this._state.appState)) {
             if (this.resolvePendingAppState != null) {
                 Logger.log("Reached pending state: " + this.pendingAppStates);
                 this.resolvePendingAppState();
