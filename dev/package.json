@@ -150,7 +150,7 @@
             "view/title": [
                 {
                     "command": "%cmdID_newConnection%",
-                    "when": "view == %viewID%",
+                    "when": "view == ext.mc.mcProjectExplorer",
                     "group": "navigation"
                 }
             ],

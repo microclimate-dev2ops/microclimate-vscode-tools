@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     const msg = "Microclimate Tools for VSCode are active!";
     Logger.log(msg);
-    vscode.window.showInformationMessage(msg);
+    // vscode.window.showInformationMessage(msg);
 
     ignoreMCFiles();
 
