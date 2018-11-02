@@ -136,7 +136,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     public toTreeItem(): vscode.TreeItem {
         let tiLabel = `Microclimate @ ${this.mcUri.toString()}`;
         if (!this.connected) {
-            tiLabel += " [Disconnected]";
+            tiLabel += `[Disconnected]`;
         }
         const ti: vscode.TreeItem = new vscode.TreeItem(tiLabel, vscode.TreeItemCollapsibleState.Expanded);
         ti.resourceUri = this.workspacePath;

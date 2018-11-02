@@ -18,8 +18,8 @@ export async function newConnectionCmd(): Promise<void> {
     Logger.log("New connection command invoked");
 
     // TODO comment this out. Only localhost is permitted.
+    /*
     const inputOpts: vscode.InputBoxOptions = {
-        ignoreFocusOut: true,
         prompt: "Enter the hostname or IP for the Microclimate instance you wish to connect to.",
         value: "localhost",
     };
@@ -28,15 +28,17 @@ export async function newConnectionCmd(): Promise<void> {
     if (hostname == null) {
         // user cancelled
         return;
-    }
+    }*/
 
-    inputOpts.prompt = "Enter the Port for the Microclimate instance you wish to connect to.";
-    inputOpts.value = "9090";
+    const hostname = "localhost";
 
     let tryAgain = true;
     let port: number | undefined = undefined;
     while (tryAgain) {
-        const portStr = await vscode.window.showInputBox(inputOpts);
+        const portStr = await vscode.window.showInputBox( {
+            prompt: "Enter the Port for the local Microclimate instance you wish to connect to.",
+            value: "9090"
+        });
 
         if (portStr == null) {
             // user cancelled

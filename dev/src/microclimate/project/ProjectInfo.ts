@@ -2,10 +2,13 @@ import { Uri } from "vscode";
 
 import Project from "./Project";
 import * as Resources from "../../constants/Resources";
+import Logger from "../../Logger";
 
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
 export const OPEN_MSG: string = "open";
+
+const resourceScheme = "vscode-resource:";
 
 export enum Openable {
     WEB = "web", FILE = "file", FOLDER = "folder"
@@ -27,7 +30,7 @@ export function generateHtml(project: Project): string {
         <html>
         <head>
             <meta charset="UTF-8">
-            <!--meta http-equiv="Content-Security-Policy" content="default-src 'none';"-->
+            <!--meta http-equiv="Content-Security-Policy" content="default-src 'self' ;"-->
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
             <link rel="stylesheet" href="${getStylesheetPath()}"/>
@@ -50,6 +53,7 @@ export function generateHtml(project: Project): string {
                     <input id="auto-build-toggle" type="checkbox" class="btn"
                         onclick="toggleAutoBuild(this)"
                         ${project.autoBuildEnabled ? "checked" : ""}
+                        ${project.state.isEnabled ? " " : " disabled"}
                     />
                 </td>
             </tr>
@@ -62,7 +66,7 @@ export function generateHtml(project: Project): string {
             ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
         </table>
 
-        <input id="refresh-btn" type="button" onclick="refresh()" class="btn" value="Refresh" accesskey="r"/></input>
+        <input id="refresh-btn" type="button" onclick="refresh()" class="btn" value="Refresh"/></input>
 
         <script type="text/javascript">
             const vscode = acquireVsCodeApi();
@@ -88,8 +92,6 @@ export function generateHtml(project: Project): string {
         </html>
     `;
 }
-
-const resourceScheme = "vscode-resource:";
 
 function getStylesheetPath(): string {
     return resourceScheme + Resources.getCss("project-info.css");

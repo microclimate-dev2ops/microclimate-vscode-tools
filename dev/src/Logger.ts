@@ -4,6 +4,7 @@ import * as path from "path";
 import * as util from "util";
 import { ExtensionContext } from "vscode";
 
+// tslint:disable ban
 
 export class Logger {
 
