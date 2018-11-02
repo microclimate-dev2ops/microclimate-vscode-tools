@@ -74,6 +74,10 @@ export class ProjectState {
     }
 
     public getBuildString(): string {
+        if (!this.isEnabled) {
+            return "";
+        }
+
         let buildStateStr = "";
 
         if (this.buildDetail != null && this.buildDetail.trim() !== "") {

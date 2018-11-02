@@ -3,7 +3,6 @@ Important:
 
 Annoying Release Stuff:
 - Icons
-- externalize command names into package.nls.json (for ID)
 - externalize all strings (ugh)
 - Legal?
 - Copyrights

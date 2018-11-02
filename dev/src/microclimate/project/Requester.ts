@@ -23,11 +23,11 @@ namespace Requester {
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
-        return doProjectRequest(project, url, body, request.post, "Build");
-
-        // This is a workaround for the Build action not refreshing validation state.
-        // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
-        // return this.requestValidate(project);
+        // return doProjectRequest(project, url, body, request.post, "Build");
+        return doProjectRequest(project, url, body, request.post, "Build")
+            // This is a workaround for the Build action not refreshing validation state.
+            // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
+            .then( (_: any) => requestValidate(project));
     }
 
     export async function requestToggleAutoBuild(project: Project): Promise<void> {
@@ -77,9 +77,9 @@ namespace Requester {
         };
 
         const url = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
-        return doProjectRequest(project, url, body, request.post, "Generate Dockerfile");
-            // request a validate after the generate so that the validation errors go away
-            // .then( (_: any) => this.requestValidate(project));
+        return doProjectRequest(project, url, body, request.post, "Generate Dockerfile")
+            // request a validate after the generate so that the validation errors go away faster
+            .then( (_: any) => requestValidate(project));
     }
 
     export async function doProjectRequest(project: Project, url: string, body: {},

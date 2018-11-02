@@ -6,7 +6,7 @@ import Requester from "./Requester";
 
 namespace Validator {
 
-    // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts
+    // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts#L144
     interface ValidationResult {
         // severity: Severity;
         severity: string;
@@ -24,7 +24,7 @@ namespace Validator {
 
     export async function validate(project: Project, validationPayload: any): Promise<void> {
 
-        const validationResult: ValidationResult[] = validationPayload.validationResults;
+        const validationResults: ValidationResult[] = validationPayload.validationResults;
         Logger.log("validationresult", validationPayload);
 
         // clicking on the error will take you to this URI
@@ -37,7 +37,7 @@ namespace Validator {
 
         // For each validation problem, see if we already have an error for it. If so, do nothing.
         // If we don't, create an error and display a pop-up notifying the user of the new error.
-        for (const validationProblem of validationResult) {
+        for (const validationProblem of validationResults) {
             const diagnosticMsg: string = validationProblem.details;
 
             const existingDiagnostic: vscode.Diagnostic | undefined = oldDiagnostics.find( (d) => d.message === diagnosticMsg);
@@ -54,7 +54,9 @@ namespace Validator {
             diagnostic.source = `Microclimate`;
             newDiagnostics.push(diagnostic);
 
-            const popupErrMsg = `Microclimate: ${validationProblem.label} ${validationProblem.filepath}`;
+            // The interface declares filePath as optional, but it should always be set.
+            const filePath = validationProblem.filepath || validationProblem.filename;
+            const popupErrMsg = `Microclimate: ${validationProblem.label} ${filePath}`;
 
             // Allow the user to generate missing files.
             // Generate only works for dockerfile for some reason, so only display the Generate button if that's what's missing.

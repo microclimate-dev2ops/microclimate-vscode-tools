@@ -28,10 +28,10 @@ export default async function openLogCmd(project: Project, isAppLog: Boolean): P
         return;
     }
 
-    if (isAppLog && (project.state.appState === ProjectState.AppStates.STOPPED || !project.state.isEnabled)) {
-        // If we were to create an app log for stopped or disabled project,
+    if (isAppLog && (/*project.state.appState === ProjectState.AppStates.STOPPED ||*/ !project.state.isEnabled)) {
+        // If we were to create an app log for a disabled project,
         // it would just say "waiting for Microclimate to send logs" until the app starts.
-        vscode.window.showErrorMessage("App Logs are not available for Stopped or Disabled projects.");
+        vscode.window.showErrorMessage("App Logs are not available for Disabled projects.");
         return;
     }
 

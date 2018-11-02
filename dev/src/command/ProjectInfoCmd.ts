@@ -37,7 +37,7 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
     webPanel.webview.onDidReceiveMessage( (msg: { msg: string, data: { type: string, value: string } }) => {
         try {
             if (msg.msg === ProjectInfo.REFRESH_MSG) {
-                // vscode.window.showInformationMessage("refreshed!!");
+                Logger.log("Refresh projectInfo for " + project.name);
                 webPanel.webview.html = ProjectInfo.generateHtml(project);
             }
             else if (msg.msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
