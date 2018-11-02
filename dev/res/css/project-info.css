@@ -6,10 +6,7 @@
 }
 
 #mc-icon {
-    /*width: 5em;*/
-    height: 5em;
-    padding: 0;
-    margin: 0;
+    margin-right: 10px;
 }
 
 table {

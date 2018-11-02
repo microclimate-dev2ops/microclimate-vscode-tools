@@ -34,8 +34,8 @@ export function generateHtml(project: Project): string {
         </head>
         <body>
         <div id="top-section">
+            <img id="mc-icon" width="30px" src="${getMCIconPath()}"/>
             <h2>Project ${project.name}</h2>
-            <img id="mc-icon" src="${getMCIconPath()}"/>
         </div>
         <table>
             <!--${buildRow("Name", project.name)}-->
@@ -125,7 +125,7 @@ function buildRow(label: string, data: string, openable?: Openable): string {
 
 function getNonNull(item: Uri | number | string | undefined, fallback: string, maxLength?: number): string {
     let result: string;
-    if (item == null) {
+    if (item == null || item === "") {
         result = fallback;
     }
     else if (item instanceof Uri && item.scheme.includes("file")) {
