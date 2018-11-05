@@ -54,7 +54,7 @@ export class ProjectState {
     }
 
     public get isStarted(): Boolean {
-        return this.appState === ProjectState.AppStates.STARTED || this.appState === ProjectState.AppStates.DEBUGGING;
+        return ProjectState.getStartedStates().includes(this.appState);
     }
 
     public get isBuilding(): Boolean {
@@ -169,7 +169,7 @@ export namespace ProjectState {
         else if (appStatus === "stopped") {
             return ProjectState.AppStates.STOPPED;
         }
-        else if (appStatus === "unknown") {
+        else if (appStatus === "unknown" || appStatus === "") {
             return ProjectState.AppStates.UNKNOWN;
         }
         Logger.logE("Unknown app state:", appStatus);

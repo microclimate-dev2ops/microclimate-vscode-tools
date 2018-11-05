@@ -28,7 +28,8 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
 
         const startDebugWithTimeout = MCUtil.promiseWithTimeout(startDebugSession(project),
             timeoutS * 1000,
-            `Debugger did not connect within ${timeoutS}s`);
+            `Debugger did not connect within ${timeoutS}s`
+        );
 
         vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} Connecting debugger to ${project.name}`,
                 startDebugWithTimeout);
@@ -42,9 +43,9 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
     }
     catch (err) {
         const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugUrl} `;
-        Logger.logE(failMsg, err);
-        const errMsg = " " + (err.message || "");
-        vscode.window.showErrorMessage(failMsg + errMsg);
+        const extraErrMsg = err.message ? err.message : "";
+        Logger.logE(failMsg, extraErrMsg);
+        vscode.window.showErrorMessage(failMsg + extraErrMsg);
         return false;
     }
 }
@@ -80,26 +81,30 @@ export async function startDebugSession(project: Project): Promise<string> {
 
     const priorDebugSession = vscode.debug.activeDebugSession;
     let debugSuccess = await vscode.debug.startDebugging(projectFolder, debugConfig);
-    Logger.log("Debugger should have connected");
 
     // startDebugging above will often return 'true' before the debugger actually connects, so it could still fail.
     // Do some extra checks here to ensure that a new debug session was actually launched, and report failure if it wasn't.
 
     // optional extra error message
     let errDetail: string = "";
-    const newDebugSession = vscode.debug.activeDebugSession;
+    const currentDebugSession = vscode.debug.activeDebugSession;
 
-    if (newDebugSession == null || newDebugSession.name !== debugConfig.name) {
+    if (currentDebugSession == null) {
         Logger.logW("Debug session failed to launch");
         debugSuccess = false;
     }
-    else if (priorDebugSession != null && priorDebugSession.id === newDebugSession.id) {
+    else if (currentDebugSession.name !== debugConfig.name) {
+        Logger.logW(`There is an active debug session "${currentDebugSession}", but it's not the one we just tried to launch`);
+        debugSuccess = false;
+    }
+    else if (priorDebugSession != null && priorDebugSession.id === currentDebugSession.id) {
         // This means we were already debugging this project (since the debug session name did match above),
         // and we failed to create a new session - the old one is still running
         Logger.logW("Project already had an active debug session, and a new one was not created");
         debugSuccess = false;
         errDetail = `- is it already being debugged?`;
     }
+    // TODO if they are already debugging node and they try to debug another node, we can warn them
     // There might be other error scenarios I've missed.
     else {
         Logger.log("Debugger connect ostensibly succeeded");
