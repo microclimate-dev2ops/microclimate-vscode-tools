@@ -54,7 +54,7 @@ export async function onSocketEvent(rawEvent: any): Promise<void> {
     }
 
     if (eventMatches(_expectedSocketEvent, event)) {
-        Logger.test(`Expected socket event was received of type ${event.type} with data ${event.data}`);
+        Logger.test(`Expected socket event was received of type ${event.type} with data ${JSON.stringify(_expectedSocketEvent.expectedData)}`);
         if (_expectedSocketEvent.resolveFn != null) {
             _expectedSocketEvent.resolveFn();
         }

@@ -10,23 +10,23 @@ import * as SocketTestUtil from "./SocketTestUtil";
 import ProjectType from "../microclimate/project/ProjectType";
 
 import doRestartTests from "./ProjectRestartTests";
-import Project from "../microclimate/project/Project";
 
 // tslint:disable:typedef no-unused-expression no-invalid-this ban
 
-const workspace = "/Users/tim/programs/microclimate/microclimate-workspace";
+const workspace: vscode.Uri = vscode.Uri.file("/Users/tim/programs/microclimate/microclimate-workspace");
 const extensionName = "IBM.vscode-microclimate-tools";
 
-const projectTypesToTest: ProjectType.Types[] = [
-    ProjectType.Types.MICROPROFILE,
-    ProjectType.Types.SPRING,
-    ProjectType.Types.NODE
+// boolean indicates whether or not this project is restartable.
+const projectTypesToTest: [ProjectType.Types, Boolean][] = [
+    [ ProjectType.Types.MICROPROFILE, true ],
+    [ ProjectType.Types.SPRING, true ],
+    [ ProjectType.Types.NODE, true ],
+    [ ProjectType.Types.PYTHON, false ],
 ];
 
 export const longTimeout: number = 120000;
 
-// Defines a Mocha test suite to group tests of similar kind together
-describe("Microclimate Tools for VSCode Microprofile test", async function() {
+describe("Microclimate Tools for VSCode test", async function() {
 
     // The test needs to be launched with the microclimate-workspace open, so that the extension is activated.
 
@@ -37,7 +37,7 @@ describe("Microclimate Tools for VSCode Microprofile test", async function() {
         if (wsFolders == null) {
             throw new Error("WSFolders can't be null after here.");
         }
-        expect(wsFolders[0].uri.fsPath).to.equal(workspace);
+        expect(wsFolders[0].uri.fsPath).to.equal(workspace.fsPath);
 
         Logger.test("Loaded extensions:", vscode.extensions.all.map( (extension) => extension.id));
         const extension = await vscode.extensions.getExtension(extensionName);
@@ -45,6 +45,22 @@ describe("Microclimate Tools for VSCode Microprofile test", async function() {
 
         Logger.test("Workspace is good and extension is loaded.");
         Logger.silenceLevels(Logger.Levels.INFO);
+    });
+
+    afterEach(async function() {
+        const activeDbSession = vscode.debug.activeDebugSession;
+        if (activeDbSession != null) {
+            // Logger.test("Attempting to disconnect from active debug session " + activeDbSession.name);
+
+            // These parameters are not documented, see the code linked below for Java. Seems to work for Node too.
+            // tslint:disable-next-line:max-line-length
+            // https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L169
+            await activeDbSession.customRequest("disconnect", { "terminateDebuggee": false, "restart": false })
+                .then(
+                    ()      => Logger.test(`Disconnected debug session "${activeDbSession.name}"`),
+                    (err)   => Logger.test(`Disconnect from debug session ${activeDbSession.name} error:`, err)
+                );
+        }
     });
 
     it("should have a log file file that is readable and non-empty", async function() {
@@ -60,7 +76,7 @@ describe("Microclimate Tools for VSCode Microprofile test", async function() {
         });
     });
 
-    it("should initially have no connections", async function() {
+    it("should have no initial connections", async function() {
         const connMan = ConnectionManager.instance;
         expect(connMan).to.exist;
 
@@ -99,25 +115,8 @@ describe("Microclimate Tools for VSCode Microprofile test", async function() {
     });
 
     for (const projectType of projectTypesToTest) {
-        describe(`Restart tests for ${projectType}`, async function() {
-            doRestartTests(projectType, true);
+        describe(`Restart tests for ${projectType[0]}, should ${projectType[1] ? "" : "NOT "}be able to restart`, async function() {
+            doRestartTests(projectType[0], projectType[1]);
         });
     }
 });
-
-export async function getProjectOfType(projectType: ProjectType.Types): Promise<Project> {
-    Logger.test("Acquiring project of type " + projectType);
-    const conn = ConnectionManager.instance.connections[0];
-    const projects = await conn.getProjects();
-    expect(projects).to.not.be.empty;
-    Logger.test(`${conn.toString()} has ${projects.length} project(s):`, projects);
-
-    const projectsOfType = projects.filter( (p) => p.type.type === projectType && p.state.isEnabled);
-    Logger.test(`Enabled ${projectType} projects:`, projectsOfType);
-    expect(projectsOfType, `No Enabled ${projectType} projects were found`).to.not.be.empty;
-
-    const result = projectsOfType[0];
-    expect(result).to.exist;
-
-    return projectsOfType[0];
-}
