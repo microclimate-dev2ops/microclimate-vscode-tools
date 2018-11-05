@@ -128,6 +128,13 @@ export namespace ProjectState {
         ];
     }
 
+    export function getStartedStates(): AppStates[] {
+        return [
+            ProjectState.AppStates.STARTED,
+            ProjectState.AppStates.DEBUGGING
+        ];
+    }
+
     /**
      * Convert portal's project info object into a ProjectState.
      */

@@ -24,10 +24,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
 
     try {
         // This should be longer than the timeout we pass to VSCode through the debug config, or the default (whichever is longer).
-        // It's 10s for Node projects, seems to be a lot shorter for Java, so 15s is fine.
-        // The user could make the timeout longer which would cause this to not work as intended,
-        // but they will likely understand what's happening in that case.
-        const timeoutS = 15;
+        const timeoutS = 60;
 
         const startDebugWithTimeout = MCUtil.promiseWithTimeout(startDebugSession(project),
             timeoutS * 1000,
@@ -46,7 +43,8 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
     catch (err) {
         const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugUrl} `;
         Logger.logE(failMsg, err);
-        vscode.window.showErrorMessage(failMsg + err.message.toString());
+        const errMsg = " " + (err.message || "");
+        vscode.window.showErrorMessage(failMsg + errMsg);
         return false;
     }
 }
@@ -104,7 +102,7 @@ export async function startDebugSession(project: Project): Promise<string> {
     }
     // There might be other error scenarios I've missed.
     else {
-        Logger.log("Debugger connect apparently succeeded");
+        Logger.log("Debugger connect ostensibly succeeded");
     }
 
     if (debugSuccess) {

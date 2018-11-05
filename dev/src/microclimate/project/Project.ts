@@ -25,7 +25,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
 
-    public readonly diagnostics: vscode.DiagnosticCollection;
+    public static readonly diagnostics: vscode.DiagnosticCollection
+            = vscode.languages.createDiagnosticCollection("Microclimate");
 
     private _containerID: string | undefined;
     private _appPort: number | undefined;
@@ -50,8 +51,6 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this.id = projectInfo.projectID;
         this._containerID = projectInfo.containerId;
         this._autoBuildEnabled = projectInfo.autoBuild;
-
-        this.diagnostics = vscode.languages.createDiagnosticCollection(this.name);
 
         // TODO should use projectType not buildType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
@@ -186,6 +185,10 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this.resolvePendingAppState = undefined;
     }
 
+    public async waitForStarted(timeoutMs: number): Promise<string> {
+        return this.waitForState(timeoutMs, ProjectState.AppStates.STARTED, ProjectState.AppStates.DEBUGGING);
+    }
+
     /**
      * Return a promise that resolves when this project enters one of the given AppStates.
      * This is checked when project state changes, in update() above.
@@ -231,7 +234,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     public async onDeletion(): Promise<void> {
-        this.diagnostics.clear();
+        // Clear all diagnostics for this project's path
+        Project.diagnostics.delete(this.localPath);
     }
 
     public setAutoBuild(newAutoBuild: Boolean): void {
