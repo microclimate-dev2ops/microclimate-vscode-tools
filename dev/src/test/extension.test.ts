@@ -5,46 +5,53 @@ import * as fs from "fs";
 import Logger from "../Logger";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Commands from "../constants/Commands";
-import ProjectType from "../microclimate/project/ProjectType";
-import Project from "../microclimate/project/Project";
-import ProjectState from "../microclimate/project/ProjectState";
 
 import * as SocketTestUtil from "./SocketTestUtil";
+import ProjectType from "../microclimate/project/ProjectType";
 
- // tslint:disable:typedef no-unused-expression no-invalid-this
+import doRestartTests from "./ProjectRestartTests";
+import Project from "../microclimate/project/Project";
+
+// tslint:disable:typedef no-unused-expression no-invalid-this ban
+
+const workspace = "/Users/tim/programs/microclimate/microclimate-workspace";
+const extensionName = "IBM.vscode-microclimate-tools";
+
+const projectTypesToTest: ProjectType.Types[] = [
+    ProjectType.Types.MICROPROFILE,
+    ProjectType.Types.SPRING,
+    ProjectType.Types.NODE
+];
+
+export const longTimeout: number = 120000;
 
 // Defines a Mocha test suite to group tests of similar kind together
 describe("Microclimate Tools for VSCode Microprofile test", async function() {
-
-    const workspace = "/Users/tim/programs/microclimate/microclimate-workspace";
-    const extensionName = "IBM.vscode-microclimate-tools";
-
-    let testSocket: SocketIOClient.Socket;
-    let mpProject: Project;
 
     // The test needs to be launched with the microclimate-workspace open, so that the extension is activated.
 
     before("should have opened the workspace, and have loaded the extension", async function() {
         const wsFolders = vscode.workspace.workspaceFolders;
-        console.log("Workspace folders:", wsFolders);
+        Logger.test("Workspace folders:", wsFolders);
         expect(wsFolders).to.have.length.greaterThan(0);
         if (wsFolders == null) {
             throw new Error("WSFolders can't be null after here.");
         }
         expect(wsFolders[0].uri.fsPath).to.equal(workspace);
 
-        console.log("Loaded extensions:", vscode.extensions.all.map( (extension) => extension.id));
+        Logger.test("Loaded extensions:", vscode.extensions.all.map( (extension) => extension.id));
         const extension = await vscode.extensions.getExtension(extensionName);
         expect(extension).to.exist;
 
-        console.log("Workspace is good and extension is loaded.");
+        Logger.test("Workspace is good and extension is loaded.");
+        Logger.silenceLevels(Logger.Levels.INFO);
     });
 
     it("should have a log file file that is readable and non-empty", async function() {
         const logPath = Logger.getLogFilePath;
 
         expect(logPath).to.exist;
-        console.log("The logs are at " + logPath);
+        Logger.test("The logs are at " + logPath);
 
         fs.readFile(logPath, (err: NodeJS.ErrnoException, data) => {
             expect(err, "Couldn't read log file, error was " + err).to.be.null;
@@ -59,7 +66,7 @@ describe("Microclimate Tools for VSCode Microprofile test", async function() {
 
         const noConnections = connMan.connections.length;
         if (noConnections > 0) {
-            console.log("Clearing " + noConnections + " previous connection(s)");
+            Logger.test("Clearing " + noConnections + " previous connection(s)");
 
             connMan.connections.forEach( async (conn) => {
                 await connMan.removeConnection(conn);
@@ -74,7 +81,7 @@ describe("Microclimate Tools for VSCode Microprofile test", async function() {
         expect(connMan.connections.length).to.eq(0, "Connections exist when there should be none");
 
         await vscode.commands.executeCommand(Commands.NEW_DEFAULT_CONNECTION);
-        console.log("Finished default connection command");
+        Logger.test("Finished default connection command");
 
         expect(connMan.connections.length).to.eq(1, "Failed to create new connection");
 
@@ -82,63 +89,35 @@ describe("Microclimate Tools for VSCode Microprofile test", async function() {
         // expect(connection.isConnected).to.be.true;
         expect(connection.host).to.equal("localhost");
         expect(connection.mcUri.authority).to.contain("localhost:9090");
+    });
 
-        testSocket = await SocketTestUtil.createTestSocket(connection.mcUri.toString());
+    it("should have a socket connection", async function() {
+        const uri = ConnectionManager.instance.connections[0].mcUri.toString();
+
+        const testSocket = await SocketTestUtil.createTestSocket(uri);
         expect(testSocket.connected, "Socket did not connect").to.be.true;
     });
 
-
-    it("should be able to restart a Microprofile project in Run mode", async function() {
-        const timeout = 120000;
-
-        this.timeout(timeout);
-
-        mpProject = await acquireMicroprofileProject();
-        console.log(`Using Microprofile project ${mpProject.name}. Waiting for it to be Started`);
-        await mpProject.waitForState(timeout, ProjectState.AppStates.STARTED);
-        expect(mpProject.state.appState).to.equal(ProjectState.AppStates.STARTED);
-
-        console.log(`Restarting project ${mpProject.name} into Run mode`);
-        await vscode.commands.executeCommand(Commands.RESTART_RUN, mpProject);
-
-        console.log("Issued restart request");
-
-        await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(ProjectState.AppStates.STOPPED));
-        await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(ProjectState.AppStates.STARTED));
-
-        // await mpProject.waitForState(restartTimeout, ProjectState.AppStates.DEBUGGING);
-        console.log("Finished waiting for Started event");
-
-        // should resolve immediately
-        await mpProject.waitForState(timeout, ProjectState.AppStates.STARTED);
-        expect(mpProject.state.appState,
-            `${mpProject.name} should be Started, is instead ${mpProject.state.appState}`).to.equal(ProjectState.AppStates.STARTED);
-
-        /*
-        const debugSession = vscode.debug.activeDebugSession;
-        if (debugSession == null) {
-            throw expect.fail(undefined, undefined, "There should be an active debug session");
-        }
-        expect(debugSession.name).to.contain(mpProject.name);
-        */
-    });
-
+    for (const projectType of projectTypesToTest) {
+        describe(`Restart tests for ${projectType}`, async function() {
+            doRestartTests(projectType, true);
+        });
+    }
 });
 
-async function acquireMicroprofileProject(): Promise<Project> {
+export async function getProjectOfType(projectType: ProjectType.Types): Promise<Project> {
+    Logger.test("Acquiring project of type " + projectType);
     const conn = ConnectionManager.instance.connections[0];
     const projects = await conn.getProjects();
     expect(projects).to.not.be.empty;
-    console.log(`${conn.toString()} has ${projects.length} project(s):`, projects);
+    Logger.test(`${conn.toString()} has ${projects.length} project(s):`, projects);
 
-    const mpProjects = projects.filter( (p) => p.type.type === ProjectType.Types.MICROPROFILE && p.state.isEnabled);
-    console.log("Enabled Microprofile projects:", mpProjects);
-    expect(mpProjects, "No Enabled Microprofile projects were found").to.not.be.empty;
+    const projectsOfType = projects.filter( (p) => p.type.type === projectType && p.state.isEnabled);
+    Logger.test(`Enabled ${projectType} projects:`, projectsOfType);
+    expect(projectsOfType, `No Enabled ${projectType} projects were found`).to.not.be.empty;
 
-    const result = mpProjects[0];
+    const result = projectsOfType[0];
     expect(result).to.exist;
 
-    return mpProjects[0];
+    return projectsOfType[0];
 }
-
-

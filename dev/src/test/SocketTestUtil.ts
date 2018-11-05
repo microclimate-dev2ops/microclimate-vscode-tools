@@ -1,8 +1,10 @@
 import * as io from "socket.io-client";
+// tslint:disable-next-line:no-require-imports
 import wildcard = require("socketio-wildcard");
 
 import EventTypes from "../microclimate/connection/EventTypes";
 import ProjectState from "../microclimate/project/ProjectState";
+import Logger from "../Logger";
 
 export interface ExpectedSocketEvent {
     readonly eventType: EventTypes;
@@ -16,8 +18,11 @@ export interface SocketEvent {
     data: any;
 }
 
+
+// tslint:disable:ban
+
 export function createTestSocket(uri: string): Promise<SocketIOClient.Socket> {
-    console.log("Creating test socket at: " + uri);
+    Logger.test("Creating test socket at: " + uri);
     const socket = io(uri);
 
     // use the socket-io-wildcard middleware so we can send all events to one function
@@ -26,7 +31,7 @@ export function createTestSocket(uri: string): Promise<SocketIOClient.Socket> {
 
     return new Promise<SocketIOClient.Socket>( (resolve) => {
         socket.on("connect", () => {
-            console.log("Socket connect success");
+            Logger.test("Socket connect success");
             return resolve(socket);
         });
 
@@ -42,14 +47,14 @@ export async function onSocketEvent(rawEvent: any): Promise<void> {
         type: rawEvent.data[0],
         data: rawEvent.data[1]
     };
-    // console.log("SocketTestUtil onSocketEvent ", event);
+    // Logger.test("SocketTestUtil onSocketEvent ", event);
 
     if (_expectedSocketEvent == null) {
         return;
     }
 
     if (eventMatches(_expectedSocketEvent, event)) {
-        console.log("Expected socket event was received", _expectedSocketEvent);
+        Logger.test(`Expected socket event was received of type ${event.type} with data ${event.data}`);
         if (_expectedSocketEvent.resolveFn != null) {
             _expectedSocketEvent.resolveFn();
         }
@@ -67,7 +72,7 @@ function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): B
         if (expectedEvent.expectedData == null) {
             return true;
         }
-        // console.log("Event type matches expected:", expectedEvent, "\nevent:", event);
+        // Logger.test("Event type matches expected:", expectedEvent, "\nevent:", event);
 
         for (const key of Object.keys(event.data)) {
             // Check that the event contains the expected key that it maps to the expected value
@@ -84,13 +89,13 @@ function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): B
 export async function expectSocketEvent(event: ExpectedSocketEvent): Promise<void> {
     // expectedSocketEvents.push(event);
     if (_expectedSocketEvent != null && _expectedSocketEvent.resolveFn != null) {
-        console.log("Clearing old expected event", _expectedSocketEvent);
+        Logger.test("Clearing old expected event", _expectedSocketEvent);
         _expectedSocketEvent.resolveFn();
     }
 
     _expectedSocketEvent = event;
 
-    console.log(`Now waiting for socket event of type ${event.eventType} and data ${event.expectedData}`);
+    Logger.test(`Now waiting for socket event of type ${event.eventType} and data: ${JSON.stringify(event.expectedData)}`);
     return new Promise<void>( (resolve) => {
         // This promise will be resolved by onSocketEvent above, if the event matches
         event.resolveFn = resolve;

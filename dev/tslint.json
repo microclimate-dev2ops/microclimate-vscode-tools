@@ -41,9 +41,10 @@
 			[ "Function", "Use (param: type) => type instead"]
 		],
 		"ban": [ true,
-			// [ "console", "log", "Use Logger.log"],
+			[ "console", "log", "Use Logger"],
 			[ "console", "warn", "Use Logger.logW"],
-			[ "console", "error", "Use Logger.logE"]
+			[ "console", "error", "Use Logger.logE"],
+			[ "Logger", "test", "For test use only"]
 		]
 	},
 	"defaultSeverity": "warning"

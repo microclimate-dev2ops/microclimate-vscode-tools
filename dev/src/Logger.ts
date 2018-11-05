@@ -12,6 +12,8 @@ export class Logger {
 
     private static logFilePath: string;
 
+    private static disabledLevels: Logger.Levels[] = [];
+
     public static get getLogFilePath(): string {
         return this.logFilePath;
     }
@@ -44,6 +46,12 @@ export class Logger {
         this.log("Logger initialized at " + this.logFilePath);
     }
 
+    public static silenceLevels(level: Logger.Levels, ...levels: Logger.Levels[]): void {
+        levels = levels.concat(level);
+        Logger.log("Disabling log levels:", levels);
+        this.disabledLevels = levels;
+    }
+
     public static async log(s: string, ...args: any[]): Promise<void> {
         return this.logInner(Logger.Levels.INFO, s, args);
     }
@@ -56,10 +64,17 @@ export class Logger {
         return this.logInner(Logger.Levels.ERROR, s, args);
     }
 
+    public static async test(s: string, ...args: any[]): Promise<void> {
+        return this.logInner(Logger.Levels.TEST, s, args);
+    }
+
     private static async logInner(level: Logger.Levels, s: string, args: any[]): Promise<void> {
         if (this.logFilePath == null) {
             console.error("Logger.log error - No log file path set!");
             console.log(s, args);
+            return;
+        }
+        else if (this.disabledLevels.includes(level)) {
             return;
         }
 
@@ -193,7 +208,8 @@ export namespace Logger {
     export enum Levels {
         INFO = "INFO",
         WARNING = "WARN",
-        ERROR = "ERRO"
+        ERROR = "ERRO",
+        TEST = "TEST"
     }
 }
 
