@@ -125,7 +125,7 @@ export class Logger {
     }
 }
 
-const callingFileRegex: RegExp  = /\w+\.js/g;
+const callingFileRegex: RegExp  = /\w+\.(js|ts)/g;
 // const callingFnRegex: string    = `at\s(\w)+\s`;
 
 function getCaller(): string {
@@ -142,25 +142,28 @@ function getCaller(): string {
                 // "at activate (/Users/tim/programs/microclimate-vscode/dev/out/extension.js:13:21)"
                 // we want to format it into "extension.js.activate()"
 
+                // console.log("callerRaw", callerRaw);
+
                 // The second word is the function name (after "at")
                 const splitResult: string[] = callerRaw.split(" ");
                 let callerFn = "";
-                if (splitResult.length > 1) {
+                // Sometimes the function name will not be available in the stacktrace.
+                // In this case there will only be 2 words: "at /some/path".
+                if (splitResult.length > 2) {
                     let functionName = splitResult[1];
                     // If it's a callback, there will be extra stuff we aren't interested in separated by dots
                     // eg "Project.__dirname.constructor.connection.update"
                     // strip out everything up to the last dot, if there is one
                     const splitByPeriod: string[] = functionName.split(".");
-                    if (splitByPeriod.length > 0) {
+                    if (splitByPeriod.length > 1) {
                         functionName = splitByPeriod[splitByPeriod.length - 1];
+                        // Ignore anonymous functions, because displaying that is not helpful.
+                        if (functionName !== "<anonymous>") {
+                            callerFn = `.${functionName}()`;
+                        }
                     }
+                }
 
-                    callerFn = `.${functionName}()`;
-                }
-                else {
-                    console.log("Couldn't parse function name from:", callerRaw);
-                    return "";
-                }
                 // filepath will be like "(/Users/tim/programs/microclimate-vscode/dev/out/extension.js:13:21)"
                 // extract "extension.js"
                 const filepath = splitResult[splitResult.length - 1];
@@ -172,7 +175,14 @@ function getCaller(): string {
                 }
                 // console.log(`callerFn "${callerFn}" callerFile "${callerFile}"`);
 
-                return `${callerFile}${callerFn}`;
+                let lineNo: string = "";
+                const splitByColon = callerRaw.split(":");
+                if (splitByColon.length > 1) {
+                    // The last value is the column. The second-to-last value is the line number.
+                    lineNo = ":" + splitByColon[splitByColon.length - 2];
+                }
+
+                return `${callerFile}${callerFn}${lineNo}`;
             }
         }
     }
