@@ -12,6 +12,7 @@ import Validator from "../project/Validator";
 import EventTypes from "./EventTypes";
 import StartModes, { allStartModes, isDebugMode } from "../../constants/StartModes";
 import ProjectTreeDataProvider from "../../view/ProjectTree";
+import projectInfoCmd from "../../command/ProjectInfoCmd";
 
 export default class MCSocket {
 
@@ -34,7 +35,7 @@ export default class MCSocket {
 
             .on(EventTypes.PROJECT_CHANGED,         this.onProjectChanged)
             .on(EventTypes.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
-            .on(EventTypes.PROJECT_CLOSED,          this.onProjectChanged)
+            .on(EventTypes.PROJECT_CLOSED,          this.onProjectClosed)
 
             .on(EventTypes.PROJECT_DELETION,        this.onProjectDeleted)
             .on(EventTypes.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
@@ -64,10 +65,10 @@ export default class MCSocket {
             return;
         }
 
-        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        const project = await this.getProject(payload);
         if (project == null) {
-            Logger.log("No project with ID " + payload.projectID);
-            // This means we've got a new project - refresh everything
+            // This probably means we've got a new project - refresh everything
+            Logger.log("Received projectChanged for unknown project; refreshing project list");
             this.connection.forceUpdateProjectList();
             return;
         }
@@ -75,22 +76,25 @@ export default class MCSocket {
         project.update(payload);
     }
 
-    private onProjectDeleted = async (payload: any): Promise<void> => {
-        Logger.log("PROJECT DELETED", payload);
-        const projectID = payload.projectID;
-        if (projectID == null) {
-            Logger.logE("No projectID in deletion socket event!", payload);
+    private onProjectClosed = async (payload: any): Promise<void> => {
+        const project = await this.getProject(payload);
+        if (project == null) {
             return;
         }
 
-        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        await project.clearValidationErrors();
+        this.onProjectChanged(payload);
+    }
+
+    private onProjectDeleted = async (payload: any): Promise<void> => {
+        Logger.log("PROJECT DELETED", payload);
+
+        const project = await this.getProject(payload);
         if (project == null) {
-            Logger.log(`Trying to delete project with ID ${projectID} but it was not found`);
-        }
-        else {
-            await project.onDeletion();
+            return;
         }
 
+        await project.clearValidationErrors();
         this.connection.forceUpdateProjectList();
     }
 
@@ -113,9 +117,8 @@ export default class MCSocket {
             return;
         }
 
-        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        const project = await this.getProject(payload);
         if (project == null) {
-            Logger.logE("Failed to get project associated with restart event, ID is ", projectID);
             return;
         }
 
@@ -165,14 +168,25 @@ export default class MCSocket {
     }
 
     private onProjectValidated = async (payload: any): Promise<void> => {
-        const projectID = payload.projectID;
-
-        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        const project = await this.getProject(payload);
         if (project == null) {
-            Logger.logE("Failed to get project associated with validation event, ID is ", projectID);
             return;
         }
 
         Validator.validate(project, payload);
+    }
+
+    private async getProject(payload: any): Promise<Project | undefined> {
+        const projectID = payload.projectID;
+        if (projectID == null) {
+            Logger.logE("No projectID in socket event!", payload);
+            return undefined;
+        }
+
+        const project: Project | undefined = await this.connection.getProjectByID(projectID);
+        if (project == null) {
+            Logger.logW(`Trying to delete project with ID ${projectID} but it was not found`);
+        }
+        return project;
     }
 }
