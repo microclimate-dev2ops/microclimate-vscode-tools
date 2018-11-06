@@ -189,7 +189,7 @@
                 },
                 {
                     "command": "%cmdID_openAppMonitor%",
-                    "when": "%isProject%",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.c"
                 },
                 {
