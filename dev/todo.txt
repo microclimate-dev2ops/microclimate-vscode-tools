@@ -1,9 +1,10 @@
 Important:
 - Tests!
+- Consider 'docker logs' command
 
 Annoying Release Stuff:
 - Icons
-- externalize all strings (ugh)
+- externalize all strings :(
 - Legal?
 - Copyrights
 
