@@ -4,6 +4,9 @@ Important:
 - Give the user an easy way to clean up launch.json
 - Add last build and last image build to Project Info page
 - Force refresh command on connection context
+- Node debug - Consider looking for 'nodemon crashed' message in app logs, and displaying a notification in this case
+- Disabled projects should have validation errors removed
+- Open Application Monitor
 
 Annoying Release Stuff:
 - Icons

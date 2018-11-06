@@ -20,6 +20,7 @@ import projectInfoCmd from "./ProjectInfoCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
 import openLogCmd from "./OpenLogCmd";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
+import openAppMonitorCmd from "./OpenAppMonitor";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -53,7 +54,9 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.CONTAINER_SHELL,   (selection) => containerBashCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.VIEW_PROJECT_INFO, (selection) => projectInfoCmd(selection))
+        vscode.commands.registerCommand(Commands.VIEW_PROJECT_INFO, (selection) => projectInfoCmd(selection)),
+
+        vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR, (selection) => openAppMonitorCmd(selection))
     ];
 }
 

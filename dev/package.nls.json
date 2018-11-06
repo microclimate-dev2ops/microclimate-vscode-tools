@@ -69,6 +69,8 @@
     "cmdID_toggleAutoBuild": "ext.mc.toggleAutoBuild",
     "cmdTitle_toggleAutoBuild": "Toggle auto build",
 
+    "cmdID_openAppMonitor": "ext.mc.openAppMonitor",
+    "cmdTitle_openAppMonitor": "Open app monitor",
 
     "settingDesc_connections": "URLs of Microclimate instances to connect to.",
 

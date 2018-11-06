@@ -144,6 +144,11 @@
                 "command": "%cmdID_toggleAutoBuild%",
                 "title": "%cmdTitle_toggleAutoBuild%",
                 "category": "%commandCategory%"
+            },
+            {
+                "command": "%cmdID_openAppMonitor%",
+                "title": "%cmdTitle_openAppMonitor%",
+                "category": "%commandCategory%"
             }
         ],
         "menus": {
@@ -179,6 +184,11 @@
                 },
                 {
                     "command": "%cmdID_projectInfo%",
+                    "when": "%isProject%",
+                    "group": "ext.mc.c"
+                },
+                {
+                    "command": "%cmdID_openAppMonitor%",
                     "when": "%isProject%",
                     "group": "ext.mc.c"
                 },
