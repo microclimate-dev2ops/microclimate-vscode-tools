@@ -24,6 +24,7 @@ For the README packaged with this extension, see [the extension README](https://
 - Integrate Microclimate validation errors into the VSCode Problems view
 - Open a shell session into a Microclimate application container
 - View project info (similar to Microclimate Overview page)
+- Open the App Monitor page
 - Toggle project auto-build
 - Easily scope your VSCode workspace to a Microclimate project or your `microclimate-workspace`
 - Open applications in system browser
