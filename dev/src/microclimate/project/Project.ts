@@ -33,6 +33,10 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private _debugPort: number | undefined;
     private _autoBuildEnabled: Boolean;
 
+    // Dates below will always be set, but might be "invalid date"s
+    private _lastBuild: Date;
+    private _lastImgBuild: Date;
+
     // QuickPickItem
     public readonly label: string;
     public readonly detail?: string;
@@ -49,8 +53,13 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         Logger.log("Creating project from info:", projectInfo);
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
+
         this._containerID = projectInfo.containerId;
         this._autoBuildEnabled = projectInfo.autoBuild;
+        // lastbuild is a number
+        this._lastBuild = new Date(projectInfo.lastbuild);
+        // appImageLastBuild is a string
+        this._lastImgBuild = new Date(Number(projectInfo.appImgLastBuild));
 
         // TODO should use projectType not buildType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
@@ -134,6 +143,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
 
         this._containerID = projectInfo.containerId;
+        this._lastBuild = new Date(projectInfo.lastbuild);
+        this._lastImgBuild = new Date(Number(projectInfo.appImageLastBuild));
 
         const oldState = this._state;
         this._state = new ProjectState(projectInfo, oldState);
@@ -283,6 +294,14 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
 
         return this.connection.host + ":" + this._debugPort;
+    }
+
+    public get lastBuild(): Date {
+        return this._lastBuild;
+    }
+
+    public get lastImgBuild(): Date {
+        return this._lastImgBuild;
     }
 
     /**

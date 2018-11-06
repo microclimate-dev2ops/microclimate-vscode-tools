@@ -2,7 +2,7 @@ import { Uri } from "vscode";
 
 import Project from "./Project";
 import * as Resources from "../../constants/Resources";
-import Logger from "../../Logger";
+import * as MCUtil from "../../MCUtil";
 
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
@@ -59,7 +59,10 @@ export function generateHtml(project: Project): string {
             </tr>
             ${emptyRow}
             ${buildRow("Application Status", project.state.appState)}
-            ${buildRow("Build Status", project.state.getBuildString())}
+            ${buildRow("Build Status", getNonNull(project.state.getBuildString(), "Not available"))}
+            ${emptyRow}
+            ${buildRow("Last Image Build", formatDate(project.lastImgBuild, "Not available"))}
+            ${buildRow("Last Build", formatDate(project.lastBuild, "Not available"))}
             ${emptyRow}
             ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
             ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
@@ -130,7 +133,7 @@ function getNonNull(item: Uri | number | string | undefined, fallback: string, m
     if (item == null || item === "") {
         result = fallback;
     }
-    else if (item instanceof Uri && item.scheme.includes("file")) {
+    else if (item instanceof Uri && (<Uri>item).scheme.includes("file")) {
         result = item.fsPath;
     }
     else {
@@ -142,4 +145,18 @@ function getNonNull(item: Uri | number | string | undefined, fallback: string, m
     }
 
     return result;
+}
+
+function formatDate(d: Date, fallback: string): string {
+    if (MCUtil.isGoodDate(d)) {
+        let dateStr: string = d.toLocaleDateString();
+        if (dateStr === (new Date()).toLocaleDateString()) {
+            dateStr = "Today";
+        }
+
+        return `${dateStr} at ${d.toLocaleTimeString()}`;
+    }
+    else {
+        return fallback;
+    }
 }

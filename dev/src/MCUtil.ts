@@ -59,6 +59,10 @@ export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMS: number, re
     });
 }
 
+export function isGoodDate(date: Date): Boolean {
+    return !isNaN(date.valueOf());
+}
+
 //// Connection helpers
 
 export interface ConnectionInfo {
