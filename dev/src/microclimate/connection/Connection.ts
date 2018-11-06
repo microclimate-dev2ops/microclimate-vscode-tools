@@ -137,8 +137,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         const tiLabel = `Microclimate @ ${this.mcUri.toString()}`;
 
         const ti: vscode.TreeItem = new vscode.TreeItem(tiLabel, vscode.TreeItemCollapsibleState.Expanded);
-        ti.resourceUri = this.workspacePath;
-        ti.tooltip = ti.resourceUri.fsPath.toString();
+        // ti.resourceUri = this.workspacePath;
+        ti.tooltip = this.workspacePath.fsPath.toString();
         ti.contextValue = Connection.CONTEXT_ID;
         ti.iconPath = getIconPaths(Icons.Microclimate);
         // command run on single-click - https://github.com/Microsoft/vscode/issues/39601

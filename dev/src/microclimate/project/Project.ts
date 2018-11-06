@@ -78,7 +78,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public toTreeItem(): vscode.TreeItem {
         const ti = new vscode.TreeItem(`${this.name} ${this.state}`, vscode.TreeItemCollapsibleState.None);
 
-        ti.resourceUri = this.localPath;
+        // ti.resourceUri = this.localPath;
         ti.tooltip = this.state.toString();
         // There are different context menu actions available to enabled or disabled or debugging projects
         ti.contextValue = Project.getContextID(this.state);
