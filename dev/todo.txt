@@ -1,6 +1,9 @@
 Important:
 - Tests!
-- Consider 'docker logs' command
+- Consider 'docker logs' command (it should be provided by MC, not by me, tho)
+- Give the user an easy way to clean up launch.json
+- Add last build and last image build to Project Info page
+- Force refresh command on connection context
 
 Annoying Release Stuff:
 - Icons

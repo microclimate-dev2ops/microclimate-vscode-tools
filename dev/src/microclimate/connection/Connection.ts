@@ -121,7 +121,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
 
     public async getChildren(): Promise<TreeItemAdaptable[]> {
         if (!this.connected) {
-            return [];
+            return [ new SimpleTreeItem("❌  Disconnected")];
         }
 
         await this.getProjects();
@@ -134,10 +134,8 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public toTreeItem(): vscode.TreeItem {
-        let tiLabel = `Microclimate @ ${this.mcUri.toString()}`;
-        if (!this.connected) {
-            tiLabel += `[Disconnected]`;
-        }
+        const tiLabel = `Microclimate @ ${this.mcUri.toString()}`;
+
         const ti: vscode.TreeItem = new vscode.TreeItem(tiLabel, vscode.TreeItemCollapsibleState.Expanded);
         ti.resourceUri = this.workspacePath;
         ti.tooltip = ti.resourceUri.fsPath.toString();
