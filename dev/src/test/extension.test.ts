@@ -44,24 +44,10 @@ describe("Microclimate Tools for VSCode test", async function() {
         expect(extension).to.exist;
 
         Logger.test("Workspace is good and extension is loaded.");
-        Logger.silenceLevels(Logger.Levels.INFO);
+        // Logger.silenceLevels(Logger.Levels.INFO);
     });
 
-    afterEach(async function() {
-        const activeDbSession = vscode.debug.activeDebugSession;
-        if (activeDbSession != null) {
-            // Logger.test("Attempting to disconnect from active debug session " + activeDbSession.name);
 
-            // These parameters are not documented, see the code linked below for Java. Seems to work for Node too.
-            // tslint:disable-next-line:max-line-length
-            // https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L169
-            await activeDbSession.customRequest("disconnect", { "terminateDebuggee": false, "restart": false })
-                .then(
-                    ()      => Logger.test(`Disconnected debug session "${activeDbSession.name}"`),
-                    (err)   => Logger.test(`Disconnect from debug session ${activeDbSession.name} error:`, err)
-                );
-        }
-    });
 
     it("should have a log file file that is readable and non-empty", async function() {
         const logPath = Logger.getLogFilePath;
@@ -116,7 +102,27 @@ describe("Microclimate Tools for VSCode test", async function() {
 
     for (const projectType of projectTypesToTest) {
         describe(`Restart tests for ${projectType[0]}, should ${projectType[1] ? "" : "NOT "}be able to restart`, async function() {
+            afterEach(killDebugSessions);
+
             doRestartTests(projectType[0], projectType[1]);
         });
     }
 });
+
+async function killDebugSessions(): Promise<void> {
+    const activeDbSession = vscode.debug.activeDebugSession;
+    if (activeDbSession != null) {
+        // Logger.test("Attempting to disconnect from active debug session " + activeDbSession.name);
+
+        // These parameters are not documented, see the code linked below for Java. Seems to work for Node too.
+        // tslint:disable-next-line:max-line-length
+        // https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L169
+        return activeDbSession.customRequest("disconnect", { "terminateDebuggee": false, "restart": false })
+            .then(
+                ()      => Logger.test(`Disconnected debug session "${activeDbSession.name}"`),
+                (err)   => Logger.test(`Disconnect from debug session ${activeDbSession.name} error:`, err)
+            );
+    }
+
+    return Promise.resolve();
+}

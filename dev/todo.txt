@@ -21,8 +21,5 @@ Less Important:
     - Recommend this extension
 
 Investigate:
-    - Why do projects/connections sometimes get Emphasized?
-        - When their folders (treeItem.resourceUri) get emphasized from git changes, linting warnings, anything!
-        - https://github.com/Microsoft/vscode/issues/62497
 
 https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L274
