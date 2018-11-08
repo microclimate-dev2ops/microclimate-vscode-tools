@@ -10,6 +10,10 @@ Annoying Release Stuff:
 - externalize all strings :(
 - Legal?
 - Copyrights
+- Open Source-ability
+    - Remove any internal issue links
+    - Remove any references to other devs, teams
+    - Add file headers and generally improve documentation
 
 Less Important:
 
@@ -21,5 +25,8 @@ Less Important:
     - Recommend this extension
 
 Investigate:
+    - Telemetry
+        - https://www.npmjs.com/package/amplitude
+        - Considerations for open-source
 
 https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L274

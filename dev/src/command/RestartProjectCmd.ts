@@ -4,17 +4,17 @@ import Project from "../microclimate/project/Project";
 import { promptForProject } from "../command/CommandUtil";
 import ProjectState from "../microclimate/project/ProjectState";
 import * as Resources from "../constants/Resources";
-import Logger from "../Logger";
+import Log from "../Logger";
 import StartModes, { getDefaultStartMode } from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
 
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
-    Logger.log("RestartProjectCmd invoked");
+    Log.i("RestartProjectCmd invoked");
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTED, ProjectState.AppStates.STARTING);
         if (selected == null) {
             // user cancelled
-            Logger.log("User cancelled project prompt");
+            Log.i("User cancelled project prompt");
             return;
         }
         project = selected;
@@ -22,7 +22,7 @@ export default async function restartProjectCmd(project: Project, debug: Boolean
 
     const startMode: StartModes = getDefaultStartMode(debug, project.type.type);
 
-    Logger.log(`RestartProject on project ${project.name} into ${startMode} mode`);
+    Log.i(`RestartProject on project ${project.name} into ${startMode} mode`);
 
     const restartRequestPromise = Requester.requestProjectRestart(project, startMode);
     const syncIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);

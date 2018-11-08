@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 import { createCommands } from "./command/CommandUtil";
 import createViews from "./view/InitViews";
-import { Logger } from "./Logger";
+import { Log } from "./Logger";
 // import createDebug from "./debug/InitDebug";
 
 // this method is called when your extension is activated
@@ -12,11 +12,11 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Initialize our globals
     global.__extRoot = context.extensionPath;
-    Logger.setLogFilePath(context);
-    Logger.log("Finished activating logger");
+    Log.setLogFilePath(context);
+    Log.i("Finished activating logger");
 
     const msg = "Microclimate Tools for VSCode are active!";
-    Logger.log(msg);
+    Log.i(msg);
     // vscode.window.showInformationMessage(msg);
 
     ignoreMCFiles();

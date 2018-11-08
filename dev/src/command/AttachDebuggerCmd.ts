@@ -6,17 +6,17 @@ import * as Resources from "../constants/Resources";
 import AppLog from "../microclimate/logs/AppLog";
 import Project from "../microclimate/project/Project";
 import ProjectState from "../microclimate/project/ProjectState";
-import Logger from "../Logger";
+import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 
 
 export default async function attachDebuggerCmd(project: Project): Promise<Boolean> {
-    Logger.log("attachDebuggerCmd");
+    Log.i("attachDebuggerCmd");
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTING, ProjectState.AppStates.DEBUGGING);
         if (selected == null) {
             // user cancelled
-            Logger.log("User cancelled project prompt");
+            Log.i("User cancelled project prompt");
             return false;
         }
         project = selected;
@@ -37,14 +37,14 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
         // will throw error if connection fails or timeout
         const successMsg = await startDebugWithTimeout;
 
-        Logger.log("Debugger attach success", successMsg);
+        Log.i("Debugger attach success", successMsg);
         vscode.window.showInformationMessage(successMsg);
         return true;
     }
     catch (err) {
         const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugUrl} `;
         const extraErrMsg = err.message ? err.message : "";
-        Logger.logE(failMsg, extraErrMsg);
+        Log.e(failMsg, extraErrMsg);
         vscode.window.showErrorMessage(failMsg + extraErrMsg);
         return false;
     }
@@ -57,7 +57,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<Boole
  *  or throws an Error with a user-friendly error message.
  */
 export async function startDebugSession(project: Project): Promise<string> {
-    Logger.log("startDebugSession for project " + project.name);
+    Log.i("startDebugSession for project " + project.name);
     if (project.type.debugType == null) {
         // Just in case.
         throw new Error(`No debug type available for project of type ${project.type}`);
@@ -71,13 +71,13 @@ export async function startDebugSession(project: Project): Promise<string> {
         await project.waitForState(30000, ProjectState.AppStates.STARTING, ProjectState.AppStates.DEBUGGING);
     }
     catch (err) {
-        Logger.logE("Timeout waiting before connecting debugger:", err);
+        Log.e("Timeout waiting before connecting debugger:", err);
         throw err;
     }
 
     const debugConfig: vscode.DebugConfiguration = await getDebugConfig(project);
     const projectFolder = vscode.workspace.getWorkspaceFolder(project.localPath);
-    Logger.log("Running debug launch:", debugConfig, "on project folder:", projectFolder);
+    Log.i("Running debug launch:", debugConfig, "on project folder:", projectFolder);
 
     const priorDebugSession = vscode.debug.activeDebugSession;
     let debugSuccess = await vscode.debug.startDebugging(projectFolder, debugConfig);
@@ -90,24 +90,24 @@ export async function startDebugSession(project: Project): Promise<string> {
     const currentDebugSession = vscode.debug.activeDebugSession;
 
     if (currentDebugSession == null) {
-        Logger.logW("Debug session failed to launch");
+        Log.w("Debug session failed to launch");
         debugSuccess = false;
     }
     else if (currentDebugSession.name !== debugConfig.name) {
-        Logger.logW(`There is an active debug session "${currentDebugSession}", but it's not the one we just tried to launch`);
+        Log.w(`There is an active debug session "${currentDebugSession}", but it's not the one we just tried to launch`);
         debugSuccess = false;
     }
     else if (priorDebugSession != null && priorDebugSession.id === currentDebugSession.id) {
         // This means we were already debugging this project (since the debug session name did match above),
         // and we failed to create a new session - the old one is still running
-        Logger.logW("Project already had an active debug session, and a new one was not created");
+        Log.w("Project already had an active debug session, and a new one was not created");
         debugSuccess = false;
         errDetail = `- is it already being debugged?`;
     }
     // TODO if they are already debugging node and they try to debug another node, we can warn them
     // There might be other error scenarios I've missed.
     else {
-        Logger.log("Debugger connect ostensibly succeeded");
+        Log.i("Debugger connect ostensibly succeeded");
     }
 
     if (debugSuccess) {

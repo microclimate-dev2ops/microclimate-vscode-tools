@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Logger } from "../../Logger";
+import { Log } from "../../Logger";
 
 export default class AppLog {
 
@@ -54,7 +54,7 @@ export default class AppLog {
     public static getOrCreateLog(projectID: string, projectName: string): AppLog {
         let log = this.logMap.get(projectID);
         if (log == null) {
-            Logger.log("Creating app log for " + projectName);
+            Log.i("Creating app log for " + projectName);
             // we have to create it
             log = new AppLog(projectID, projectName);
             AppLog.logMap.set(projectID, log);

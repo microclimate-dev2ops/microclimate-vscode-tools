@@ -6,13 +6,13 @@ import { ExtensionContext } from "vscode";
 
 // tslint:disable ban
 
-export class Logger {
+export class Log {
 
     private static readonly LOG_NAME: string = "microclimate-tools.log";
 
     private static logFilePath: string;
 
-    private static disabledLevels: Logger.Levels[] = [];
+    private static disabledLevels: Log.Levels[] = [];
 
     public static get getLogFilePath(): string {
         return this.logFilePath;
@@ -43,32 +43,36 @@ export class Logger {
         const fullPath = path.join(context.logPath, this.LOG_NAME);
         this.logFilePath = fullPath;
         console.log("Microclimate Tools log file is at " + this.logFilePath);
-        this.log("Logger initialized at " + this.logFilePath);
+        this.i("Logger initialized at " + this.logFilePath);
     }
 
-    public static silenceLevels(level: Logger.Levels, ...levels: Logger.Levels[]): void {
+    public static silenceLevels(level: Log.Levels, ...levels: Log.Levels[]): void {
         levels = levels.concat(level);
-        Logger.log("Disabling log levels:", levels);
+        Log.i("Disabling log levels:", levels);
         this.disabledLevels = levels;
     }
 
-    public static async log(s: string, ...args: any[]): Promise<void> {
-        return this.logInner(Logger.Levels.INFO, s, args);
+    public static async d(s: string, ...args: any[]): Promise<void> {
+        return this.logInner(Log.Levels.DEBUG, s, args);
     }
 
-    public static async logW(s: string, ...args: any[]): Promise<void> {
-        return this.logInner(Logger.Levels.WARNING, s, args);
+    public static async i(s: string, ...args: any[]): Promise<void> {
+        return this.logInner(Log.Levels.INFO, s, args);
     }
 
-    public static async logE(s: string, ...args: any[]): Promise<void> {
-        return this.logInner(Logger.Levels.ERROR, s, args);
+    public static async w(s: string, ...args: any[]): Promise<void> {
+        return this.logInner(Log.Levels.WARNING, s, args);
     }
 
-    public static async test(s: string, ...args: any[]): Promise<void> {
-        return this.logInner(Logger.Levels.TEST, s, args);
+    public static async e(s: string, ...args: any[]): Promise<void> {
+        return this.logInner(Log.Levels.ERROR, s, args);
     }
 
-    private static async logInner(level: Logger.Levels, s: string, args: any[]): Promise<void> {
+    public static async t(s: string, ...args: any[]): Promise<void> {
+        return this.logInner(Log.Levels.TEST, s, args);
+    }
+
+    private static async logInner(level: Log.Levels, s: string, args: any[]): Promise<void> {
         if (this.logFilePath == null) {
             console.error("Logger.log error - No log file path set!");
             console.log(s, args);
@@ -125,7 +129,7 @@ export class Logger {
     }
 }
 
-const callingFileRegex: RegExp  = /\w+\.(js|ts)/g;
+const callingFileRegex: RegExp  = /(\w+\.)?\w+\.(js|ts)/g;
 // const callingFnRegex: string    = `at\s(\w)+\s`;
 
 function getCaller(): string {
@@ -214,8 +218,9 @@ function leftPad(n: number, desiredLen: number): string {
     return "0".repeat(diff) + nStr;
 }
 
-export namespace Logger {
+export namespace Log {
     export enum Levels {
+        DEBUG = "DBUG",
         INFO = "INFO",
         WARNING = "WARN",
         ERROR = "ERRO",
@@ -223,4 +228,4 @@ export namespace Logger {
     }
 }
 
-export default Logger;
+export default Log;

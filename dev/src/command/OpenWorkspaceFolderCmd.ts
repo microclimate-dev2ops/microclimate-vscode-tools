@@ -3,15 +3,15 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import { promptForResource } from "./CommandUtil";
-import { Logger } from "../Logger";
+import { Log } from "../Logger";
 import Commands from "../constants/Commands";
 
 export default async function openWorkspaceFolderCmd(resource: Project | Connection): Promise<void> {
-    Logger.log(`Go to folder command invoked on ${resource}`);
+    Log.i(`Go to folder command invoked on ${resource}`);
     if (resource == null) {
         const selected = await promptForResource();
         if (selected == null) {
-            Logger.log("User cancelled prompt for resource");
+            Log.i("User cancelled prompt for resource");
             // user cancelled
             return;
         }
@@ -27,22 +27,22 @@ export default async function openWorkspaceFolderCmd(resource: Project | Connect
     }
     else {
         const msg = `Could not get resource URI from object of type ${typeof(resource)}`;
-        Logger.logE(msg, resource);
+        Log.e(msg, resource);
         vscode.window.showErrorMessage(msg);
         return;
     }
 
-    Logger.log("Going to folder " + uri);
+    Log.i("Going to folder " + uri);
 
     const currentFolders = vscode.workspace.workspaceFolders;
     // currentFolders[0] is the current workspace root.
     if (currentFolders != null && currentFolders[0] != null && currentFolders[0].uri.fsPath === uri.fsPath) {
-        Logger.log("Selected folder is already workspace root");
+        Log.i("Selected folder is already workspace root");
         vscode.window.showWarningMessage("The selected folder is already your workspace root.");
     }
     else {
         // To change 'in new window' behaviour, use "window.openFoldersInNewWindow": "default",
-        Logger.log(`Opening folder ${uri}`);
+        Log.i(`Opening folder ${uri}`);
         vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, uri);
     }
 }

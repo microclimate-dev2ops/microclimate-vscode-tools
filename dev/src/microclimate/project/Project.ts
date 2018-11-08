@@ -6,7 +6,7 @@ import ProjectState from "./ProjectState";
 import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
 import * as Resources from "../../constants/Resources";
-import Logger from "../../Logger";
+import Log from "../../Logger";
 import Commands from "../../constants/Commands";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
@@ -50,7 +50,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         projectInfo: any,
         public readonly connection: Connection,
     ) {
-        Logger.log("Creating project from info:", projectInfo);
+        Log.d("Creating project from info:", projectInfo);
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
 
@@ -76,7 +76,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this.label = `${this.name} (${this.type} project)`;
         // this.detail = this.id;
 
-        Logger.log(`Created project ${this.name}:`, this);
+        Log.d(`Created project ${this.name}:`, this);
     }
 
     public getChildren(): TreeItemAdaptable[] {
@@ -138,7 +138,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public update = (projectInfo: any): void => {
         if (projectInfo.projectID !== this.id) {
             // shouldn't happen, but just in case
-            Logger.logE(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
+            Log.e(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
             return;
         }
 
@@ -153,13 +153,13 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         let changed: Boolean = false;
         if (this._state !== oldState) {
             changed = true;
-            Logger.log(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
+            Log.d(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
         }
 
         const newContainerID: string | undefined = projectInfo.containerID;
         if (newContainerID != null) {
             this._containerID = newContainerID;
-            Logger.log(`New containerID for ${this.name} is ${this._containerID.substring(0, 8)}`);
+            Log.i(`New containerID for ${this.name} is ${this._containerID.substring(0, 8)}`);
         }
 
         const ports = projectInfo.ports;
@@ -168,7 +168,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             changed = this.setDebugPort(ports.exposedDebugPort) || changed;
         }
         else if (this._state.isStarted) {
-            Logger.logE("No ports were provided for an app that is supposed to be started");
+            Log.e("No ports were provided for an app that is supposed to be started");
         }
 
         // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
@@ -183,14 +183,14 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     }
 
     private clearPendingState(): void {
-        Logger.log("Clear pending state, pending states are: " + this.pendingAppStates);
+        Log.i("Clear pending state, pending states are: " + JSON.stringify(this.pendingAppStates));
         if (this.resolvePendingAppState != null) {
-            Logger.log("Resolving pending state(s)");
+            Log.i("Resolving pending state(s)");
             this.resolvePendingAppState();
         }
         else if (this.pendingAppStates.length > 0) {
             // should never happen
-            Logger.logE("Reached pending state(s) but no resolve function was set");
+            Log.e("Reached pending state(s) but no resolve function was set");
         }
         this.pendingAppStates = [];
         this.resolvePendingAppState = undefined;
@@ -212,14 +212,14 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this.clearPendingState();
 
         if (states.includes(this._state.appState)) {
-            Logger.log("No need to wait, already in state " + this._state.appState);
+            Log.i("No need to wait, already in state " + this._state.appState);
             return "Already " + this._state.appState;
         }
 
         this.pendingAppStates = states;
 
-        Logger.log(this.name + " is waiting for states: " + states);
-        Logger.log(this.name + " is currently", this._state.appState);
+        Log.i(this.name + " is waiting for states: " + states.join(", "));
+        Log.i(this.name + " is currently", this._state.appState);
 
         let statesAsStr: string;
         if (states.length > 1) {
@@ -231,15 +231,17 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         const pendingStatePromise = new Promise<string>( (resolve, reject) => {
             setTimeout(
-                () => reject(`${this.name} did not reach any of states: "${statesAsStr}" within ${timeoutMs/1000}s`),
+                () => reject(`${this.name} did not reach ` +
+                    `${states.length > 1 ? "any of states" : "state"}:` +
+                    `"${statesAsStr}" within ${timeoutMs/1000}s`),
                 timeoutMs);
 
             this.resolvePendingAppState = resolve;
             return;
         });
 
-        const bugIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
-        vscode.window.setStatusBarMessage(`${bugIcon} Waiting for ${this.name} to be ${statesAsStr}`, pendingStatePromise);
+        const syncIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
+        vscode.window.setStatusBarMessage(`${syncIcon} Waiting for ${this.name} to be ${statesAsStr}`, pendingStatePromise);
 
         return pendingStatePromise;
     }
@@ -252,7 +254,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public setAutoBuild(newAutoBuild: Boolean): void {
         if (newAutoBuild != null) {
             this._autoBuildEnabled = newAutoBuild;
-            Logger.log(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
+            Log.i(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
         }
     }
 
@@ -311,19 +313,19 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private setAppPort(newAppPort: number | undefined): Boolean {
         if (newAppPort == null && this._appPort != null) {
             // Should happen when the app stops.
-            Logger.log("Unset app port for " + this.name);
+            Log.d("Unset app port for " + this.name);
             this._appPort = undefined;
             return true;
         }
 
         newAppPort = Number(newAppPort);
         if (!MCUtil.isGoodPort(newAppPort)) {
-            Logger.log(`Invalid app port ${newAppPort} given to project ${this.name}`);
+            Log.w(`Invalid app port ${newAppPort} given to project ${this.name}`);
             return false;
         }
         else if (this._appPort !== newAppPort) {
             this._appPort = newAppPort;
-            Logger.log(`New app port for ${this.name} is ${newAppPort}`);
+            Log.d(`New app port for ${this.name} is ${newAppPort}`);
             return true;
         }
         return false;
@@ -340,12 +342,12 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         newDebugPort = Number(newDebugPort);
         if (!MCUtil.isGoodPort(newDebugPort)) {
-            Logger.log(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
+            Log.w(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
             return false;
         }
         else if (this._debugPort !== newDebugPort) {
             this._debugPort = newDebugPort;
-            Logger.log(`New debug port for ${this.name} is ${newDebugPort}`);
+            Log.d(`New debug port for ${this.name} is ${newDebugPort}`);
             return true;
         }
         return false;

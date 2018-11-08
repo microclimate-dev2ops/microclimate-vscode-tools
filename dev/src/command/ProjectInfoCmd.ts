@@ -3,17 +3,17 @@ import * as vscode from "vscode";
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import * as ProjectInfo from "../microclimate/project/ProjectInfo";
-import Logger from "../Logger";
+import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
 
 export default async function projectInfoCmd(project: Project): Promise<void> {
-    Logger.log("viewProjectInfoCmd invoked");
+    Log.i("viewProjectInfoCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
             // user cancelled
-            Logger.log("User cancelled project prompt");
+            Log.i("User cancelled project prompt");
             return;
         }
         project = selected;
@@ -37,14 +37,14 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
     webPanel.webview.onDidReceiveMessage( (msg: { msg: string, data: { type: string, value: string } }) => {
         try {
             if (msg.msg === ProjectInfo.REFRESH_MSG) {
-                Logger.log("Refresh projectInfo for " + project.name);
+                Log.i("Refresh projectInfo for " + project.name);
                 webPanel.webview.html = ProjectInfo.generateHtml(project);
             }
             else if (msg.msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
                 Requester.requestToggleAutoBuild(project);
             }
             else if (msg.msg === ProjectInfo.OPEN_MSG) {
-                Logger.log("Got msg to open, data is ", msg.data);
+                Log.i("Got msg to open, data is ", msg.data);
                 let uri: vscode.Uri;
                 if (msg.data.type === ProjectInfo.Openable.FILE || msg.data.type === ProjectInfo.Openable.FOLDER) {
                     uri = vscode.Uri.file(msg.data.value);
@@ -54,16 +54,16 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
                     uri = vscode.Uri.parse(msg.data.value);
                 }
 
-                Logger.log("The uri is:", uri);
+                Log.i("The uri is:", uri);
                 const cmd: string = msg.data.type === ProjectInfo.Openable.FOLDER ? Commands.VSC_REVEAL_IN_OS : Commands.VSC_OPEN;
                 vscode.commands.executeCommand(cmd, uri);
             }
             else {
-                Logger.logE("Received unknown event from project info webview:", msg);
+                Log.e("Received unknown event from project info webview:", msg);
             }
         }
         catch (err) {
-            Logger.logE("Error processing msg from WebView", err);
+            Log.e("Error processing msg from WebView", err);
         }
     });
 

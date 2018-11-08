@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import Logger from "../../Logger";
+import Log from "../../Logger";
 import Project from "./Project";
 import Requester from "./Requester";
 
@@ -25,7 +25,7 @@ namespace Validator {
     export async function validate(project: Project, validationPayload: any): Promise<void> {
 
         const validationResults: ValidationResult[] = validationPayload.validationResults;
-        Logger.log("validationresult", validationPayload);
+        // Logger.log("validationresult", validationPayload);
 
         // clicking on the error will take you to this URI
         // it's the project folder path -
@@ -38,6 +38,7 @@ namespace Validator {
         // For each validation problem, see if we already have an error for it. If so, do nothing.
         // If we don't, create an error and display a pop-up notifying the user of the new error.
         for (const validationProblem of validationResults) {
+            Log.i("ValidationProblem:", validationProblem);
             const diagnosticMsg: string = validationProblem.details;
 
             const existingDiagnostic: vscode.Diagnostic | undefined = oldDiagnostics.find( (d) => d.message === diagnosticMsg);

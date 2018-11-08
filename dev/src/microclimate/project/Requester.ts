@@ -4,7 +4,7 @@ import * as request from "request-promise-native";
 import Project from "./Project";
 import StartModes from "../../constants/StartModes";
 import Endpoints from "../../constants/Endpoints";
-import Logger from "../../Logger";
+import Log from "../../Logger";
 
 namespace Requester {
 
@@ -86,7 +86,7 @@ namespace Requester {
             requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
             userOperationName?: string): Promise<any> {
 
-        Logger.log(`Doing ${userOperationName} request to ${url}`);
+        Log.i(`Doing ${userOperationName} request to ${url}`);
 
         const options = {
             json: true,
@@ -96,14 +96,14 @@ namespace Requester {
 
         return requestFunc(url, options)
             .then( (result: any) => {
-                Logger.log(`Response code ${result.statusCode} from ${userOperationName} request for ${project.name}:`, result);
+                Log.i(`Response code ${result.statusCode} from ${userOperationName} request for ${project.name}:`, result);
                 if (userOperationName != null) {
                     vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);
                 }
                 return result;
             })
             .catch( (err: any) => {
-                Logger.log(`Error doing ${userOperationName} project request for ${project.name}:`, err);
+                Log.i(`Error doing ${userOperationName} project request for ${project.name}:`, err);
 
                 // If the server provided a specific message, present the user with that,
                 // otherwise show them the whole error (but it will be ugly)

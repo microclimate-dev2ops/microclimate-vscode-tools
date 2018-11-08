@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Logger } from "../Logger";
+import { Log } from "../Logger";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
@@ -75,7 +75,7 @@ export async function promptForProject(...acceptableStates: ProjectState.AppStat
     }
     else if (project != null) {
         // should never happen
-        Logger.logE("promptForProject received something other than a project back:", project);
+        Log.e("promptForProject received something other than a project back:", project);
     }
 
     // user cancelled, or error above
@@ -89,7 +89,7 @@ export async function promptForConnection(): Promise<Connection | undefined> {
     }
     else if (connection != null) {
         // should never happen
-        Logger.logE("promptForConnection received something other than a connection back:", connection);
+        Log.e("promptForConnection received something other than a connection back:", connection);
     }
 
     // user cancelled, or error above
@@ -165,7 +165,7 @@ async function promptForResourceInner(includeConnections: Boolean, includeProjec
         return selection as Connection;
     }
     else {
-        Logger.logE(`Unsupported type in promptForResource ${typeof(selection)}`);
+        Log.e(`Unsupported type in promptForResource ${typeof(selection)}`);
         return undefined;
     }
 }

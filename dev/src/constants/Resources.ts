@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Logger } from "../Logger";
+import { Log } from "../Logger";
 
 const resFolderName = "res";
 const styleFolderName = "css";
@@ -31,7 +31,7 @@ export function getIconPaths(icon: Icons): IconPaths {
     // make sure the file exists and is readable
     fs.access(darkPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
         if (err) {
-            Logger.logE(`Icon not found! ${icon} - error:`, err);
+            Log.e(`Icon not found! ${icon} - error:`, err);
         }
     });
 

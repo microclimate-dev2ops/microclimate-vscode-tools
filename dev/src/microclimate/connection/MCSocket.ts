@@ -7,7 +7,7 @@ import Project from "../project/Project";
 import ProjectState from "../project/ProjectState";
 import * as MCUtil from "../../MCUtil";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
-import Logger from "../../Logger";
+import Log from "../../Logger";
 import Validator from "../project/Validator";
 import EventTypes from "./EventTypes";
 import StartModes, { allStartModes, isDebugMode } from "../../constants/StartModes";
@@ -24,7 +24,7 @@ export default class MCSocket {
         public readonly uri: string,
         private readonly connection: Connection
     ) {
-        Logger.log("Creating MCSocket for URI", uri);
+        Log.i("Creating MCSocket for URI", uri);
         this.socket = io(uri);
 
         this.socket.connect();
@@ -61,14 +61,14 @@ export default class MCSocket {
 
         const projectID = payload.projectID;
         if (projectID == null) {
-            Logger.logE("No projectID in changed socket event!", payload);
+            Log.e("No projectID in changed socket event!", payload);
             return;
         }
 
         const project = await this.getProject(payload);
         if (project == null) {
             // This probably means we've got a new project - refresh everything
-            Logger.log("Received projectChanged for unknown project; refreshing project list");
+            Log.i("Received projectChanged for unknown project; refreshing project list");
             this.connection.forceUpdateProjectList();
             return;
         }
@@ -87,7 +87,7 @@ export default class MCSocket {
     }
 
     private onProjectDeleted = async (payload: any): Promise<void> => {
-        Logger.log("PROJECT DELETED", payload);
+        Log.i("PROJECT DELETED", payload);
 
         const project = await this.getProject(payload);
         if (project == null) {
@@ -99,11 +99,11 @@ export default class MCSocket {
     }
 
     private onProjectRestarted = async (payload: any): Promise<void> => {
-        Logger.log("PROJECT RESTARTED", payload);
+        Log.i("PROJECT RESTARTED", payload);
 
         const projectID: string = payload.projectID;
         if (MCSocket.STATUS_SUCCESS !== payload.status) {
-            Logger.logE(`Restart failed on project ${projectID}, response is`, payload);
+            Log.e(`Restart failed on project ${projectID}, response is`, payload);
             if (payload.error != null) {
                 vscode.window.showErrorMessage(payload.error.msg);
             }
@@ -113,7 +113,7 @@ export default class MCSocket {
             // Should never happen
             const msg = "Successful restart did not send any ports";
             vscode.window.showErrorMessage(msg);
-            Logger.logE(msg + ", payload:", payload);
+            Log.e(msg + ", payload:", payload);
             return;
         }
 
@@ -124,7 +124,7 @@ export default class MCSocket {
 
         const startMode: string = payload.startMode;
         if (allStartModes().indexOf(startMode) < 0) {
-            Logger.logE(`Invalid start mode "${startMode}"`);
+            Log.e(`Invalid start mode "${startMode}"`);
         }
         // This updates the ports and startMode, because those are what the payload will provide.
         project.update(payload);
@@ -137,7 +137,7 @@ export default class MCSocket {
             }
             catch (err) {
                 // I think all errors should be handled by attachDebuggerCmd, but just in case.
-                Logger.logE("Error attaching debugger after restart", err);
+                Log.e("Error attaching debugger after restart", err);
             }
         }
 
@@ -147,12 +147,12 @@ export default class MCSocket {
         }
         catch (err) {
             vscode.window.showErrorMessage(err);
-            Logger.logE(err);
+            Log.e(err);
             return;
         }
 
         const doneRestartMsg = `Finished restarting ${project.name} in ${startMode} mode.`;
-        Logger.log(doneRestartMsg);
+        Log.i(doneRestartMsg);
         vscode.window.showInformationMessage(doneRestartMsg);
     }
 
@@ -179,14 +179,10 @@ export default class MCSocket {
     private async getProject(payload: any): Promise<Project | undefined> {
         const projectID = payload.projectID;
         if (projectID == null) {
-            Logger.logE("No projectID in socket event!", payload);
+            Log.e("No projectID in socket event!", payload);
             return undefined;
         }
 
-        const project: Project | undefined = await this.connection.getProjectByID(projectID);
-        if (project == null) {
-            Logger.logW(`Trying to delete project with ID ${projectID} but it was not found`);
-        }
-        return project;
+        return this.connection.getProjectByID(projectID);
     }
 }

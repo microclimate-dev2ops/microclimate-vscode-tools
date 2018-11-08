@@ -3,7 +3,7 @@
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import ProjectState from "../microclimate/project/ProjectState";
-import Logger from "../Logger";
+import Log from "../Logger";
 import Requester from "../microclimate/project/Requester";
 
 /**
@@ -11,7 +11,7 @@ import Requester from "../microclimate/project/Requester";
  * IE if enable=true, the command will only succeed if the project is disabled when the command is invoked.
  */
 export default async function toggleEnablementCmd(project: Project, enable: Boolean): Promise<void> {
-    Logger.log("ToggleEnablementCmd invoked");
+    Log.i("ToggleEnablementCmd invoked");
     if (project == null) {
         let acceptStates;
         if (enable) {
@@ -24,13 +24,13 @@ export default async function toggleEnablementCmd(project: Project, enable: Bool
         const selected = await promptForProject(...acceptStates);
         if (selected == null) {
             // user cancelled
-            Logger.log("User cancelled project prompt");
+            Log.i("User cancelled project prompt");
             return;
         }
         project = selected;
     }
 
-    Logger.log(`Toggle enablement for project ${project.name}`);
+    Log.i(`Toggle enablement for project ${project.name}`);
 
     Requester.requestToggleEnablement(project);
 }

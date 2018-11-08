@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import { Logger } from "../../Logger";
+import { Log } from "../../Logger";
 import Endpoints from "../../constants/Endpoints";
 import Project from "../project/Project";
 import Connection from "../connection/Connection";
@@ -43,7 +43,7 @@ export default class BuildLog {
             // Logger.log("buildlog-lastModified", lastModifiedStr, lastModified);
 
             if (lastModified == null || lastModified > this.lastUpdated) {
-                Logger.log("Updating build logs"); // new body", getResult.body);
+                Log.i("Updating build logs"); // new body", getResult.body);
                 this.lastUpdated = new Date(lastModified);
                 // The build log doesn't get appended to, it's always totally new
                 this.outputChannel.clear();
@@ -56,7 +56,7 @@ export default class BuildLog {
             }*/
         }
         catch (err) {
-            Logger.logE(err);
+            Log.e(err);
             if (err.statusCode === 404) {
                 // The project got deleted or disabled
                 return this.destroy();
@@ -74,7 +74,7 @@ export default class BuildLog {
     }
 
     private async destroy(): Promise<void> {
-        Logger.log("Destroy build log " + this.outputChannel.name);
+        Log.i("Destroy build log " + this.outputChannel.name);
         // this.outputChannel.dispose();
         clearInterval(this.timer);
     }
@@ -87,7 +87,7 @@ export default class BuildLog {
     public static getOrCreateLog(project: Project): BuildLog {
         let log = this.logMap.get(project.id);
         if (log == null) {
-            Logger.log("Creating build log for " + project.name);
+            Log.i("Creating build log for " + project.name);
             // we have to create it
             log = new BuildLog(project.connection, project.id, project.name);
             BuildLog.logMap.set(project.id, log);

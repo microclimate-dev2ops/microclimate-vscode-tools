@@ -2,16 +2,16 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import Logger from "../Logger";
+import Log from "../Logger";
 import Requester from "../microclimate/project/Requester";
 
 export default async function requestBuildCmd(project: Project): Promise<void> {
-    Logger.log("RequestBuildCmd invoked");
+    Log.i("RequestBuildCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
             // user cancelled
-            Logger.log("User cancelled project prompt");
+            Log.i("User cancelled project prompt");
             return;
         }
         project = selected;
@@ -22,7 +22,7 @@ export default async function requestBuildCmd(project: Project): Promise<void> {
         return;
     }
 
-    Logger.log(`Request build for project ${project.name}`);
+    Log.i(`Request build for project ${project.name}`);
 
     Requester.requestBuild(project);
 }

@@ -1,4 +1,4 @@
-import Logger from "../../Logger";
+import Log from "../../Logger";
 import { isDebugMode } from "../../constants/StartModes";
 
 export class ProjectState {
@@ -172,7 +172,7 @@ export namespace ProjectState {
         else if (appStatus === "unknown" || appStatus === "") {
             return ProjectState.AppStates.UNKNOWN;
         }
-        Logger.logE("Unknown app state:", appStatus);
+        Log.e("Unknown app state:", appStatus);
         return ProjectState.AppStates.UNKNOWN;
     }
 
@@ -195,7 +195,7 @@ export namespace ProjectState {
             // This happens with disabled projects
             return BuildStates.UNKNOWN;
         }
-        Logger.logE("Unknown build state:", buildStatus);
+        Log.e("Unknown build state:", buildStatus);
         return BuildStates.UNKNOWN;
     }
 

@@ -1,50 +1,50 @@
 import * as Resources from "../../constants/Resources";
-import Logger from "../../Logger";
+import Log from "../../Logger";
 
 export class ProjectType {
 
     public readonly type: ProjectType.Types;
-    public readonly userFriendlyType: string;
+    // public readonly userFriendlyType: string;
     public readonly debugType: ProjectType.DebugTypes | undefined;
 
     public readonly icon: Resources.IconPaths;
 
     constructor(
         public readonly internalType: string,
-        public readonly language: string,
+        public readonly language: string
     ) {
         this.type = ProjectType.getType(internalType, language);
-        this.userFriendlyType = ProjectType.getUserFriendlyType(this.type);
+        // this.userFriendlyType = ProjectType.getUserFriendlyType(this.type);
         this.debugType = ProjectType.getDebugType(this.type);
         this.icon = ProjectType.getProjectIcon(this.type);
     }
 
     public toString(): string {
-        return this.userFriendlyType;
+        return this.type.toString();
     }
 
     /**
      *
-     * @param projectType A Microclimate internal project type.
+     * @param interalType A Microclimate internal project type.
      */
-    private static getType(projectType: string, language: string): ProjectType.Types {
-        if (projectType === "liberty") {
+    private static getType(interalType: string, language: string): ProjectType.Types {
+        if (interalType === this.InternalTypes.MICROPROFILE) {
             return ProjectType.Types.MICROPROFILE;
         }
-        else if (projectType === "spring") {
+        else if (interalType === this.InternalTypes.SPRING) {
             return ProjectType.Types.SPRING;
         }
-        else if (projectType === "nodejs") {
+        else if (interalType === this.InternalTypes.NODE) {
             return ProjectType.Types.NODE;
         }
-        else if (projectType === "swift") {
+        else if (interalType === this.InternalTypes.SWIFT) {
             return ProjectType.Types.SWIFT;
         }
-        else if (projectType === "docker") {
-            if (language === "python") {
+        else if (interalType === this.InternalTypes.DOCKER) {
+            if (language === this.Languages.PYTHON) {
                 return ProjectType.Types.PYTHON;
             }
-            else if (language === "go") {
+            else if (language === this.Languages.GO) {
                 return ProjectType.Types.GO;
             }
             else {
@@ -52,7 +52,7 @@ export class ProjectType {
             }
         }
         else {
-            Logger.logE(`Unrecognized project - type ${projectType}`);
+            Log.e(`Unrecognized project type ${interalType}`);
             return ProjectType.Types.UNKNOWN;
         }
     }
@@ -74,7 +74,6 @@ export class ProjectType {
     }
 
     private static getProjectIcon(type: ProjectType.Types): Resources.IconPaths {
-        // Right now these are stolen from https://github.com/Microsoft/vscode/tree/master/resources
         switch (type) {
             case ProjectType.Types.MICROPROFILE:
                 return Resources.getIconPaths(Resources.Icons.Microprofile);
@@ -96,16 +95,17 @@ export class ProjectType {
         }
     }
 
+    /*
     private static getUserFriendlyType(type: ProjectType.Types): string {
         // For docker projects, return the language
         /*
         if (type === ProjectType.Types.GENERIC_DOCKER && language != null) {
             return uppercaseFirstChar(language);
-        }*/
+        }
 
         // For all other types, the enum's string value is user-friendly
         return type.toString();
-    }
+    }*/
 
     public get providesBuildLog(): Boolean {
         return ProjectType.PROJECTS_WITHOUT_BUILDLOGS.indexOf(this.type) < 0;
@@ -114,8 +114,27 @@ export class ProjectType {
 
 export namespace ProjectType {
 
+    // possible values of the "projectType" or "buildType" internal attribute
+    export enum InternalTypes {
+        MICROPROFILE = "liberty",
+        SPRING = "spring",
+        NODE = "nodejs",
+        SWIFT = "swift",
+        DOCKER = "docker"
+    }
+
+    // Possible values of the "language" internal attribute
+    export enum Languages {
+        JAVA = "java",
+        NODE = "nodejs",
+        SWIFT = "swift",
+        PYTHON = "python",
+        GO = "go"
+    }
+
+    // These are the project types as exposed to the user.
+    // String value must be user-friendly!
     export enum Types {
-        // String value must be user-friendly!
         MICROPROFILE = "Microprofile",
         SPRING = "Spring",
         NODE = "Node.js",
@@ -126,6 +145,7 @@ export namespace ProjectType {
         UNKNOWN = "Unknown"
     }
 
+    // VSCode debug types, used as the "type" attribute in a debug launch.
     export enum DebugTypes {
         JAVA = "java",
         NODE = "node"
