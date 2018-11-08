@@ -5,10 +5,13 @@ enum Commands {
     NEW_CONNECTION = "ext.mc.newConnection",
     NEW_DEFAULT_CONNECTION = "ext.mc.newDefaultConnection",
     REMOVE_CONNECTION = "ext.mc.removeConnection",
+    REFRESH_CONNECTION = "ext.mc.refreshConnection",
+
     OPEN_WS_FOLDER = "ext.mc.openWorkspaceFolder",
     ATTACH_DEBUGGER = "ext.mc.attachDebugger",
     RESTART_RUN = "ext.mc.restartProjectRun",
     RESTART_DEBUG = "ext.mc.restartProjectDebug",
+
     OPEN_IN_BROWSER = "ext.mc.openInBrowser",
     REQUEST_BUILD = "ext.mc.requestBuild",
     TOGGLE_AUTOBUILD = "ext.mc.toggleAutoBuild",

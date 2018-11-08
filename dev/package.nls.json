@@ -21,6 +21,10 @@
     "cmdTitle_removeConn": "Remove connection",
     "cmdDescr_removeConn": "Remove a Microclimate connection",
 
+    "cmdID_refreshConnection": "ext.mc.refreshConnection",
+    "cmdTitle_refreshConnection": "Refresh connection",
+    "cmdDescr_refreshConnection": "Refresh a Microclimate connection",
+
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open folder as workspace",
     "cmdDescr_openFolder": "Open this item's folder as your VSCode workspace",
@@ -71,6 +75,7 @@
 
     "cmdID_openAppMonitor": "ext.mc.openAppMonitor",
     "cmdTitle_openAppMonitor": "Open app monitor",
+    "cmdDescr_openAppMonitor": "Open a project's Application Monitor page in the browser",
 
     "settingDesc_connections": "URLs of Microclimate instances to connect to.",
 

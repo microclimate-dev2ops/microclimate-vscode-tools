@@ -72,6 +72,12 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_refreshConnection%",
+                "title": "%cmdTitle_refreshConnection%",
+                "description": "%cmdDescr_refreshConnection%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_openFolder%",
                 "title": "%cmdTitle_openFolder%",
                 "description": "%cmdDescr_openFolder%",
@@ -170,6 +176,10 @@
                 },
                 {
                     "command": "%cmdID_removeConn%",
+                    "when": "%isConnection%"
+                },
+                {
+                    "command": "%cmdID_refreshConnection%",
                     "when": "%isConnection%"
                 },
                 {

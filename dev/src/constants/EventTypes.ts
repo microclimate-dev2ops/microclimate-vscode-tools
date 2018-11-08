@@ -1,4 +1,7 @@
 
+/**
+ * List of Socket.io event types from Portal that we're interested in.
+ */
 enum EventTypes {
     PROJECT_CHANGED = "projectChanged",
     PROJECT_STATUS_CHANGED = "projectStatusChanged",

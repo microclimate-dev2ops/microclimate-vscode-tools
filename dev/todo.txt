@@ -1,9 +1,9 @@
 Important:
 - Tests!
-- Consider 'docker logs' command (it should be provided by MC, not by me, tho)
+    - Debug, restart tests are good
+    - Would be great to get coverage for other commands - but for most of them, it's hard to test if the API calls worked
 - Give the user an easy way to clean up launch.json
-- Force refresh command on connection context
-- Node debug - Consider looking for 'nodemon crashed' message in app logs, and displaying a notification in this case
+- Why is there no linting for Node projects?
 
 Annoying Release Stuff:
 - Icons

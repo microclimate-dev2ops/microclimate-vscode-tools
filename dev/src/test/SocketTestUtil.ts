@@ -71,7 +71,7 @@ async function onSocketEvent(rawEvent: any): Promise<void> {
             matchedEvent.resolveFn(event.data);
         }
         else {
-            console.error("ExpectedEvent did not have a resolve function", matchedEvent);
+            Log.e("ExpectedEvent did not have a resolve function", matchedEvent);
         }
         // _expectedSocketEvent = undefined;
         expectedSocketEvents.splice(expectedSocketEvents.indexOf(matchedEvent), 1);
