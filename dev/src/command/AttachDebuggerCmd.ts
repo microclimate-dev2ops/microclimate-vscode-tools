@@ -11,12 +11,12 @@ import ProjectType from "../microclimate/project/ProjectType";
 
 
 export default async function attachDebuggerCmd(project: Project): Promise<Boolean> {
-    Log.i("attachDebuggerCmd");
+    Log.d("attachDebuggerCmd");
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTING, ProjectState.AppStates.DEBUGGING);
         if (selected == null) {
             // user cancelled
-            Log.i("User cancelled project prompt");
+            Log.d("User cancelled project prompt");
             return false;
         }
         project = selected;

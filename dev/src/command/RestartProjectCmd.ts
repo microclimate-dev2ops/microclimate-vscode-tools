@@ -9,12 +9,12 @@ import StartModes, { getDefaultStartMode } from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
 
 export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
-    Log.i("RestartProjectCmd invoked");
+    Log.d("RestartProjectCmd invoked");
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTED, ProjectState.AppStates.STARTING);
         if (selected == null) {
             // user cancelled
-            Log.i("User cancelled project prompt");
+            Log.d("User cancelled project prompt");
             return;
         }
         project = selected;

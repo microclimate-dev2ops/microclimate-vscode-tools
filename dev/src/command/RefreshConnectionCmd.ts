@@ -11,7 +11,7 @@ export default async function refreshConnectionCmd(connection: Connection): Prom
         const selected = await promptForConnection();
         if (selected == null) {
             // user cancelled
-            Log.i("User cancelled project prompt");
+            Log.d("User cancelled project prompt");
             return;
         }
         connection = selected;

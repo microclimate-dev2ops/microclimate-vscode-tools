@@ -15,7 +15,7 @@ export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
 };
 
 export async function newConnectionCmd(): Promise<void> {
-    Log.i("New connection command invoked");
+    Log.d("New connection command invoked");
 
     // Only localhost is permitted. Uncomment this to (start to) support other hosts
     /*

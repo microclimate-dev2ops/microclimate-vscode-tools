@@ -8,11 +8,11 @@ import { Log } from "../Logger";
 import Commands from "../constants/Commands";
 
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
-    Log.i("OpenInBrowserCmd invoked");
+    Log.d("OpenInBrowserCmd invoked");
     if (resource == null) {
         const selected = await promptForResource(ProjectState.AppStates.STARTED);
         if (selected == null) {
-            Log.i("User cancelled prompt for resource");
+            Log.d("User cancelled prompt for resource");
             // user cancelled
             return;
         }

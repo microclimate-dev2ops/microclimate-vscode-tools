@@ -6,12 +6,12 @@ import { promptForConnection } from "./CommandUtil";
 import { Log } from "../Logger";
 
 export default async function removeConnectionCmd(connection: Connection): Promise<void> {
-    Log.i("removeConnectionCmd invoked");
+    Log.d("removeConnectionCmd invoked");
     if (connection == null) {
         const selected = await promptForConnection();
         if (selected == null) {
             // user cancelled
-            Log.i("User cancelled project prompt");
+            Log.d("User cancelled project prompt");
             return;
         }
         connection = selected;

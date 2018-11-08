@@ -97,7 +97,7 @@ export function getConnInfoFrom(url: Uri): ConnectionInfo | undefined {
     if (!isGoodPort(port)) {
         return undefined;
     }
-    Log.i(`Loaded host ${host} port ${port}`);
+    // Log.i(`Loaded connection info host ${host} port ${port}`);
 
     const result: ConnectionInfo = {
         host: host,

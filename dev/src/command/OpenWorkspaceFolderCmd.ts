@@ -7,11 +7,11 @@ import { Log } from "../Logger";
 import Commands from "../constants/Commands";
 
 export default async function openWorkspaceFolderCmd(resource: Project | Connection): Promise<void> {
-    Log.i(`Go to folder command invoked on ${resource}`);
+    Log.d(`Go to folder command invoked on ${resource}`);
     if (resource == null) {
         const selected = await promptForResource();
         if (selected == null) {
-            Log.i("User cancelled prompt for resource");
+            Log.d("User cancelled prompt for resource");
             // user cancelled
             return;
         }

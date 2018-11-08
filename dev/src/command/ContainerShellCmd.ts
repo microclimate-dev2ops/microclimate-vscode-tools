@@ -7,12 +7,12 @@ import { Log } from "../Logger";
 import { ProjectType } from "../microclimate/project/ProjectType";
 
 export default async function containerShellCmd(project: Project): Promise<void> {
-    Log.i("containerBashCmd invoked");
+    Log.d("containerBashCmd invoked");
     if (project == null) {
         const selected = await promptForProject(...ProjectState.getEnabledStates());
         if (selected == null) {
             // user cancelled
-            Log.i("User cancelled project prompt");
+            Log.d("User cancelled project prompt");
             return;
         }
         project = selected;

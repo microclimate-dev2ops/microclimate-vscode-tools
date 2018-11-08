@@ -8,12 +8,12 @@ import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
 
 export default async function projectInfoCmd(project: Project): Promise<void> {
-    Log.i("viewProjectInfoCmd invoked");
+    Log.d("viewProjectInfoCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
             // user cancelled
-            Log.i("User cancelled project prompt");
+            Log.d("User cancelled project prompt");
             return;
         }
         project = selected;

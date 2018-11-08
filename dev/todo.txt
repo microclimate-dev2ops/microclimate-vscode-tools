@@ -4,6 +4,12 @@ Important:
     - Would be great to get coverage for other commands - but for most of them, it's hard to test if the API calls worked
 - Give the user an easy way to clean up launch.json
 - Why is there no linting for Node projects?
+    - Theia does not support eslint.
+        - Issue to add this support: https://github.com/theia-ide/theia-apps/issues/65
+    - To get eslint to run WITHIN vscode without the user having to take action, we have to add an eslintrc to our template project
+    - eg https://github.ibm.com/timetchells/node-test/blob/master/.eslintrc.json
+    - If we have this file in the WORKSPACE ROOT (ie, won't work if microclimate-workspace is the root), then eslint will work.
+    - See ~/Documents/*linting.png
 
 Annoying Release Stuff:
 - Icons

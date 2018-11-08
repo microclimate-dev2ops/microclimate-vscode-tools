@@ -6,11 +6,11 @@ import Log from "../Logger";
 import Commands from "../constants/Commands";
 
 export default async function openAppMonitorCmd(project: Project): Promise<void> {
-    Log.i("openAppMonitorCmd invoked");
+    Log.d("openAppMonitorCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
-            Log.i("User cancelled prompt for resource");
+            Log.d("User cancelled prompt for resource");
             // user cancelled
             return;
         }

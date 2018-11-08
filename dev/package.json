@@ -188,6 +188,11 @@
                     "group": "ext.mc.a"
                 },
                 {
+                    "command": "%cmdID_openAppMonitor%",
+                    "when": "%isEnabledProject%",
+                    "group": "ext.mc.a"
+                },
+                {
                     "command": "%cmdID_openFolder%",
                     "when": "%isConnectionOrProject%",
                     "group": "ext.mc.b"
@@ -195,11 +200,6 @@
                 {
                     "command": "%cmdID_projectInfo%",
                     "when": "%isProject%",
-                    "group": "ext.mc.c"
-                },
-                {
-                    "command": "%cmdID_openAppMonitor%",
-                    "when": "%isEnabledProject%",
                     "group": "ext.mc.c"
                 },
                 {

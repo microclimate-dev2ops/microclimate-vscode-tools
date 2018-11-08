@@ -12,12 +12,12 @@ import { ProjectState } from "../microclimate/project/ProjectState";
  * @param isAppLog - Indicates whether the user wants to open the App log or Build log.
  */
 export default async function openLogCmd(project: Project, isAppLog: Boolean): Promise<void> {
-    Log.i("OpenLogCmd invoked");
+    Log.d("OpenLogCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
             // user cancelled
-            Log.i("User cancelled project prompt");
+            Log.d("User cancelled project prompt");
             return;
         }
         project = selected;
