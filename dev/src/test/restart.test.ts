@@ -1,0 +1,205 @@
+import { expect } from "chai";
+import * as vscode from "vscode";
+
+// import this so that mocha will execute this file second
+import * as base from "./base.test";
+
+import * as SocketTestUtil from "./SocketTestUtil";
+
+import Project from "../microclimate/project/Project";
+import TestUtil from "./TestUtil";
+import Log from "../Logger";
+import ProjectState from "../microclimate/project/ProjectState";
+import Commands from "../constants/Commands";
+import ProjectType from "../microclimate/project/ProjectType";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
+
+// tslint:disable:typedef no-unused-expression no-invalid-this ban
+
+interface TestableProjectType {
+    projectType: ProjectType;
+    // We want to tests projects that can't be restarted too,
+    // so tell the test whether or not the restart should succeed here.
+    canRestart: Boolean;
+}
+
+// boolean indicates whether or not this project is restartable.
+const projectTypesToTest: TestableProjectType[] = [
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
+        canRestart: true
+    },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
+        canRestart: true
+    },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
+        canRestart: true
+    },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.SWIFT, ProjectType.Languages.SWIFT),
+        canRestart: false
+    },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
+        canRestart: false
+    },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.GO),
+        canRestart: false
+    }
+];
+
+describe(`Restart tests`, async function() {
+    const connection = ConnectionManager.instance.connections[0];
+    expect(connection).to.exist;
+
+    before("Create test projects", async function() {
+        // Long timeout because project creation is slow
+        this.timeout(60 * 10 * 1000);
+
+        const projectTypes: ProjectType[] = projectTypesToTest.map( (type) => type.projectType);
+        Log.t("Create projects of types: " + JSON.stringify(projectTypes.map( (t) => t.type)));
+
+        // const createResult = await TestUtil.createTestProjects(connection, projectTypes);
+        await TestUtil.createTestProjects(connection, projectTypes);
+        Log.t("Done creating test projects");
+    });
+
+    for (const testType of projectTypesToTest) {
+        let project: Project;
+        const canRestart = testType.canRestart;
+
+        it(`should be able to acquire the ${testType.projectType} test project we created`, async function() {
+            const project_: Project | undefined = await TestUtil.getTestProject(connection, testType.projectType.type);
+            expect(project_).to.exist;
+            if (project_ == null) {
+                throw new Error("Failed to get test project");
+            }
+            expect(project_.type.type).to.equal(testType.projectType.type);
+            project = project_;
+        });
+
+        it(`should ${canRestart ? "" : "NOT "}be able to restart the ${testType.projectType} project in Run mode`, async function() {
+            this.timeout(TestUtil.longTimeout);
+
+            Log.t(`Using ${project.type} project ${project.name}`);
+            await TestUtil.waitForProjectStarted(project);
+
+            const success = await testRestart(project, false, canRestart);
+            const failMsg = canRestart ? "Restart unexpectedly failed" : "Restart succeeded, but should have failed!";
+            Log.i(`Restart into run mode ${success ? "succeeded" : ""}`);
+            expect(success, failMsg).to.be.equal(canRestart);
+        });
+
+        afterEach("Kill active debug session", TestUtil.killActiveDebugSession);
+
+        it(`should ${canRestart ? "" : "NOT "}be able to restart the ${testType.projectType} project in Debug mode`, async function() {
+            this.timeout(TestUtil.longTimeout);
+
+            Log.t(`Using ${project.type} project ${project.name}`);
+            await TestUtil.waitForProjectStarted(project);
+
+            const success = await testRestart(project, true, canRestart);
+
+            const failMsg = canRestart ? "Restart unexpectedly failed" : "Restart succeeded, but should have failed!";
+            expect(success, failMsg).to.be.equal(canRestart);
+            if (!success) {
+                Log.i("Restart into debug mode failed");
+                // if we expected it to fail, the test is over here.
+                return;
+            }
+
+            Log.t("Restart into debug mode succeeded.");
+
+            // Wait 5 seconds, this helps resolve some timing issues with debugger connection.
+            await TestUtil.wait(5000, "Giving debugger connect a chance to complete");
+            await assertDebugSessionExists(project.name);
+
+        });
+
+        if (canRestart) {
+            it(`should be able to attach the debugger to the same Debugging ${testType.projectType} project`, async function() {
+                this.timeout(base.longTimeout / 2);
+
+                await TestUtil.waitForProjectStarted(project);
+                expect(project.state.appState, "Project was not Debugging").to.equal(ProjectState.AppStates.DEBUGGING);
+
+                await vscode.commands.executeCommand(Commands.ATTACH_DEBUGGER, project);
+                await TestUtil.wait(5000, "Giving debugger connect a chance to complete again");
+                await assertDebugSessionExists(project.name);
+            });
+        }
+
+        it(`should clean up the test project`, async function() {
+            if (project != null) {
+                try {
+                    TestUtil.deleteProject(project.connection, project.id);
+                }
+                catch (err) {
+                    Log.t(`Error deleting project ${project.name}:`, err);
+                }
+            }
+            else {
+                Log.t("Project creation failed; nothing to clean up");
+            }
+            // don't bother asserting deletion; it won't affect our results.
+        });
+    }
+});
+
+export async function testRestart(project: Project, debug: Boolean, shouldSucceed: Boolean): Promise<Boolean> {
+    Log.t(`Testing restart debug=${debug} on project ${project.name}. should be restartable? ${shouldSucceed}`);
+
+    const restartCmdResult: any = await vscode.commands.executeCommand(debug ? Commands.RESTART_DEBUG : Commands.RESTART_RUN, project);
+    expect(restartCmdResult).to.exist;
+    // the result here is the request response
+    Log.t("Restart response is ", restartCmdResult);
+
+    const statusCode: number = restartCmdResult.statusCode;
+    expect(statusCode, "Restart result didn't have a statusCode, so it probably isn't a requestResult").to.exist;
+    Log.t("Status code from restart result is " + statusCode);
+
+    if (shouldSucceed) {
+        TestUtil.expectSuccessStatus(statusCode, restartCmdResult);
+    }
+    else {
+        TestUtil.expect400Status(statusCode);
+        // The API blocks us from proceeding, as it should.
+        return false;
+    }
+
+    await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(project.id, ProjectState.AppStates.STOPPED));
+    await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(project.id, ProjectState.AppStates.STARTING));
+    await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(project.id, ProjectState.AppStates.STARTED));
+
+    Log.t("Finished waiting for Started event");
+
+    const terminalState = debug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
+
+    // should resolve immediately
+    await project.waitForStarted(TestUtil.longTimeout);
+    expect(project.state.appState,
+        `${project.name} should be ${terminalState}, is instead ${project.state.appState}`).to.equal(terminalState);
+
+    Log.t(`Done testing restart for ${project.name} into ${terminalState} mode`);
+    return true;
+}
+
+export async function assertDebugSessionExists(projectName: string): Promise<void> {
+    Log.t("assertDebugSessionExists containing name " + projectName);
+    const debugSession = vscode.debug.activeDebugSession;
+
+    if (debugSession == null) {
+        // throw an error (rather than expect) so the compiler can see that debugSession != null after this
+        Log.t("No active debug session");
+        throw new Error("There should be an active debug session");
+    }
+    Log.t("Active debug session is named " + debugSession.name);
+    expect(debugSession.name).to.contain(projectName, "Active debug session is not for this project");
+    const threads = await debugSession.customRequest("threads");
+    Log.t("Debugger threads", threads);
+    // it will only have length 1 for node projects
+    expect(threads["threads"], "Debug session existed but has no threads").to.exist.and.not.be.empty;
+}

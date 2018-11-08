@@ -1,28 +1,35 @@
 import * as io from "socket.io-client";
+
+// I don't know how to import this properly
 // tslint:disable-next-line:no-require-imports
 import wildcard = require("socketio-wildcard");
 
-import EventTypes from "../microclimate/connection/EventTypes";
+import EventTypes from "../constants/EventTypes";
 import ProjectState from "../microclimate/project/ProjectState";
-import Logger from "../Logger";
+import Log from "../Logger";
 
 export interface ExpectedSocketEvent {
     readonly eventType: EventTypes;
+    readonly projectID?: string;
     readonly expectedData?: { key: string, value: any };
-    resolveFn?: () => void;
+    resolveFn?: (result: SocketEventData) => void;
 }
 
-export interface SocketEvent {
+interface SocketEvent {
     type: string;
     nsp?: string;
-    data: any;
+    data: SocketEventData;
 }
 
+interface SocketEventData {
+    [key: string]: string;
+    projectID: string;
+}
 
 // tslint:disable:ban
 
 export function createTestSocket(uri: string): Promise<SocketIOClient.Socket> {
-    Logger.test("Creating test socket at: " + uri);
+    Log.t("Creating test socket at: " + uri);
     const socket = io(uri);
 
     // use the socket-io-wildcard middleware so we can send all events to one function
@@ -31,7 +38,7 @@ export function createTestSocket(uri: string): Promise<SocketIOClient.Socket> {
 
     return new Promise<SocketIOClient.Socket>( (resolve) => {
         socket.on("connect", () => {
-            Logger.test("Socket connect success");
+            Log.t("Socket connect success");
             return resolve(socket);
         });
 
@@ -39,40 +46,55 @@ export function createTestSocket(uri: string): Promise<SocketIOClient.Socket> {
     });
 }
 
-// const expectedSocketEvents: ExpectedSocketEvent[] = [];
-let _expectedSocketEvent: ExpectedSocketEvent | undefined;
+const expectedSocketEvents: ExpectedSocketEvent[] = [];
+// let _expectedSocketEvent: ExpectedSocketEvent | undefined;
 
-export async function onSocketEvent(rawEvent: any): Promise<void> {
+async function onSocketEvent(rawEvent: any): Promise<void> {
     const event: SocketEvent = {
         type: rawEvent.data[0],
         data: rawEvent.data[1]
     };
-    // Logger.test("SocketTestUtil onSocketEvent ", event);
+    // Logger.test("onSocketEvent ", event);
 
-    if (_expectedSocketEvent == null) {
+    if (expectedSocketEvents.length === 0) {
         return;
     }
 
-    if (eventMatches(_expectedSocketEvent, event)) {
-        Logger.test(`Expected socket event was received of type ${event.type} with data ${JSON.stringify(_expectedSocketEvent.expectedData)}`);
-        if (_expectedSocketEvent.resolveFn != null) {
-            _expectedSocketEvent.resolveFn();
+    const matchedEvent = expectedSocketEvents.find( (e) => eventMatches(e, event));
+
+    if (matchedEvent != null) {
+        Log.t(`Expected socket event was received of type ${event.type} ` +
+                `for project ${matchedEvent.projectID} with data ${JSON.stringify(matchedEvent.expectedData)}`);
+
+        if (matchedEvent.resolveFn != null) {
+            // This causes expectSocketEvent to resolve with this event's data
+            matchedEvent.resolveFn(event.data);
         }
         else {
-            console.error("ExpectedEvent did not have a resolve function", _expectedSocketEvent);
+            console.error("ExpectedEvent did not have a resolve function", matchedEvent);
         }
-        _expectedSocketEvent = undefined;
+        // _expectedSocketEvent = undefined;
+        expectedSocketEvents.splice(expectedSocketEvents.indexOf(matchedEvent), 1);
+        if (expectedSocketEvents.length > 0) {
+            Log.t("Still waiting for socket events:", expectedSocketEvents);
+        }
     }
 }
 
-function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): Boolean {
+function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): boolean {
 
     // First check that the event is of the correct type
     if (expectedEvent.eventType === event.type) {
+        // check that the event is for the correct project
+        if (expectedEvent.projectID != null && expectedEvent.projectID !== event.data.projectID) {
+            return false;
+        }
+
+        // check that the event has the correct data, if specific data is expected
         if (expectedEvent.expectedData == null) {
             return true;
         }
-        // Logger.test("Event type matches expected:", expectedEvent, "\nevent:", event);
+        // Logger.test("Event type matches expected event:", expectedEvent, "actual event:", event);
 
         for (const key of Object.keys(event.data)) {
             // Check that the event contains the expected key that it maps to the expected value
@@ -86,25 +108,25 @@ function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): B
     return false;
 }
 
-export async function expectSocketEvent(event: ExpectedSocketEvent): Promise<void> {
-    // expectedSocketEvents.push(event);
-    if (_expectedSocketEvent != null && _expectedSocketEvent.resolveFn != null) {
-        Logger.test("Clearing old expected event", _expectedSocketEvent);
-        _expectedSocketEvent.resolveFn();
-    }
+export async function expectSocketEvent(event: ExpectedSocketEvent): Promise<SocketEventData> {
+    expectedSocketEvents.push(event);
 
-    _expectedSocketEvent = event;
+    Log.t(`Now waiting for socket event of type ${event.eventType} and data: ${JSON.stringify(event.expectedData)}`);
+    Log.t(`Events being waited for are now:`, expectedSocketEvents);
 
-    Logger.test(`Now waiting for socket event of type ${event.eventType} and data: ${JSON.stringify(event.expectedData)}`);
-    return new Promise<void>( (resolve) => {
-        // This promise will be resolved by onSocketEvent above, if the event matches
+    return new Promise<SocketEventData>( (resolve) => {
+        // This promise will be resolved with the socket event's 'data' in onSocketEvent above when a matching event is received
         event.resolveFn = resolve;
     });
 }
 
-export function getAppStateEvent(appState: ProjectState.AppStates): ExpectedSocketEvent {
+export function getAppStateEvent(projectID: string, appState: ProjectState.AppStates): ExpectedSocketEvent {
+    if (appState === ProjectState.AppStates.DEBUGGING) {
+        throw new Error("There is no Debugging state event");
+    }
     return {
         eventType: EventTypes.PROJECT_STATUS_CHANGED,
+        projectID: projectID,
         expectedData: { key: "appStatus", value: appState.toString().toLowerCase() }
     };
 }
