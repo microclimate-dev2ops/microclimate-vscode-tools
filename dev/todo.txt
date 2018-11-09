@@ -2,7 +2,6 @@ Important:
 - Tests!
     - Debug, restart tests are good
     - Would be great to get coverage for other commands - but for most of them, it's hard to test if the API calls worked
-- Give the user an easy way to clean up launch.json
 - Why is there no linting for Node projects?
     - Theia does not support eslint.
         - Issue to add this support: https://github.com/theia-ide/theia-apps/issues/65

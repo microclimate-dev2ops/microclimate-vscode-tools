@@ -61,7 +61,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     onConnect = async (): Promise<void> => {
-        Log.i(`${this} onConnect`);
+        Log.d(`${this} onConnect`);
         /*
         if (!this.hasConnected) {
             Logger.log(`${this} formed initial connection`);
@@ -73,7 +73,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
             return;
         }
         this.connected = true;
-        Log.i(`${this} is now connected`);
+        Log.d(`${this} is now connected`);
 
         this.onChange();
     }
@@ -94,10 +94,10 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         if (!this.needProjectUpdate) {
             return this.projects;
         }
-        Log.i(`Updating projects list for ${this.mcUri}`);
+        Log.d(`Updating projects list for ${this.mcUri}`);
 
         const result = await request.get(this.projectsApiUri, { json : true });
-        Log.i("Get project list result:", result);
+        Log.d("Get project list result:", result);
 
         this.projects = [];
 
@@ -107,7 +107,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         }
 
         this.needProjectUpdate = false;
-        Log.i("Done projects update");
+        Log.d("Done projects update");
         return this.projects;
     }
 
@@ -152,7 +152,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     }
 
     public async forceUpdateProjectList(): Promise<void> {
-        Log.i("forceUpdateProjectList");
+        Log.d("forceUpdateProjectList");
         this.needProjectUpdate = true;
         await this.getProjects();
     }
