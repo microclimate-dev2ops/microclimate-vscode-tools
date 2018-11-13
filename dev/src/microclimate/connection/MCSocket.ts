@@ -131,24 +131,21 @@ export default class MCSocket {
 
         const isDebug = isDebugMode(startMode);
 
+        const timeout = 60000;
         if (isDebug) {
             try {
                 await attachDebuggerCmd(project);
+                await project.waitForState(timeout, ProjectState.AppStates.DEBUGGING);
             }
             catch (err) {
                 // I think all errors should be handled by attachDebuggerCmd, but just in case.
                 Log.e("Error attaching debugger after restart", err);
+                vscode.window.showErrorMessage(err);
+                return;
             }
         }
-
-        const stateToAwait = isDebug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
-        try {
-            await project.waitForState(60000, stateToAwait);
-        }
-        catch (err) {
-            vscode.window.showErrorMessage(err);
-            Log.e(err);
-            return;
+        else {
+            await project.waitForState(timeout, ProjectState.AppStates.STARTED);
         }
 
         const doneRestartMsg = `Finished restarting ${project.name} in ${startMode} mode.`;

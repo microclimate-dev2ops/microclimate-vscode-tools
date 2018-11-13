@@ -1,0 +1,7 @@
+{
+    "activeMsg": "Microclimate Tools for VSCode are active!",
+
+    "debug": {
+        "didNotConnectInTime": "Debugger did not connect within {{ timeout }}s"
+    }
+}

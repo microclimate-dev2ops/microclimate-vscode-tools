@@ -3,20 +3,22 @@ import * as vscode from "vscode";
 
 import { createCommands } from "./command/CommandUtil";
 import createViews from "./view/InitViews";
-import { Log } from "./Logger";
-// import createDebug from "./debug/InitDebug";
+import Log from "./Logger";
+import Translator from "./constants/strings/translator";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
     // Initialize our globals
     global.__extRoot = context.extensionPath;
     Log.setLogFilePath(context);
     Log.i("Finished activating logger");
 
-    const msg = "Microclimate Tools for VSCode are active!";
-    Log.i(msg);
+    await Translator.init();
+    const msg = Translator.t("activeMsg");
+    // Make sure i18next loaded the strings properly here.
+    Log.i("activeMsg:", msg);
     // vscode.window.showInformationMessage(msg);
 
     ignoreMCFiles();

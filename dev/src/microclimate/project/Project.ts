@@ -233,7 +233,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             setTimeout(
                 () => reject(`${this.name} did not reach ` +
                     `${states.length > 1 ? "any of states" : "state"}:` +
-                    `"${statesAsStr}" within ${timeoutMs/1000}s`),
+                    ` "${statesAsStr}" within ${timeoutMs/1000}s`),
                 timeoutMs);
 
             this.resolvePendingAppState = resolve;

@@ -8,13 +8,24 @@
             "script": "watch",
             "problemMatcher": "$tsc-watch",
             "isBackground": true,
-            "presentation": {
-                "reveal": "never"
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+        },
+        {
+            "label": "Copy strings to out dir",
+            "type": "shell",
+            "command": "cp",
+            "args": [
+                "${workspaceFolder}/src/constants/strings/strings-*.json",
+                "${workspaceFolder}/out/constants/strings/"
+            ]
+        },
+        {
+            "label": "preLaunch",
+            "dependsOn": [ "Copy strings to out dir", "npm: watch" ],
+            "isBackground": true
         }
     ]
 }

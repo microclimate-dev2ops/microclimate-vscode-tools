@@ -259,6 +259,8 @@
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",
+        "@types/i18next": "^11.9.3",
+        "@types/i18next-node-fs-backend": "0.0.30",
         "@types/mocha": "^2.2.42",
         "@types/node": "^10.12.1",
         "@types/request": "^2.47.1",
@@ -273,6 +275,8 @@
         "vscode": "^1.1.21"
     },
     "dependencies": {
+        "i18next": "^8.3.0",
+        "i18next-node-fs-backend": "^2.1.0",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",
         "socket.io-client": "^2.1.1"
