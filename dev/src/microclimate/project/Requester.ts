@@ -31,14 +31,14 @@ namespace Requester {
     }
 
     export async function requestToggleAutoBuild(project: Project): Promise<void> {
-        const newAutoBuild: Boolean = !project.autoBuildEnabled;
+        const newAutoBuild: boolean = !project.autoBuildEnabled;
         // user-friendly action
         const newAutoBuildUserStr:  string = newAutoBuild ? "Enable auto build" : "Disable auto build";
         // action we'll put into the request body   https://github.ibm.com/dev-ex/portal/wiki/API:-Build
         const newAutoBuildAction:   string = newAutoBuild ? "enableautobuild" : "disableautobuild";
 
         const body = {
-            "action": newAutoBuildAction
+            action: newAutoBuildAction
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
@@ -51,7 +51,7 @@ namespace Requester {
     }
 
     export async function requestToggleEnablement(project: Project): Promise<void> {
-        const newEnablement: Boolean = !project.state.isEnabled;
+        const newEnablement: boolean = !project.state.isEnabled;
         const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.ENABLEMENT_ACTION(newEnablement));
@@ -82,7 +82,8 @@ namespace Requester {
             .then( (_: any) => requestValidate(project));
     }
 
-    export async function doProjectRequest(project: Project, url: string, body: {},
+    export async function doProjectRequest(
+            project: Project, url: string, body: {},
             requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
             userOperationName?: string): Promise<any> {
 

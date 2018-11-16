@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import * as MCUtil from "../../MCUtil";
-import TreeItemAdaptable from "../../view/TreeItemAdaptable";
+import ITreeItemAdaptable from "../../view/TreeItemAdaptable";
 import ProjectState from "./ProjectState";
 import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
@@ -9,7 +9,7 @@ import * as Resources from "../../constants/Resources";
 import Log from "../../Logger";
 import Commands from "../../constants/Commands";
 
-export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
+export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem {
 
     // these below must match package.json
     private static readonly CONTEXT_ID_BASE: string = "ext.mc.projectItem";
@@ -77,7 +77,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         Log.d(`Created project ${this.name}:`, this);
     }
 
-    public getChildren(): TreeItemAdaptable[] {
+    public getChildren(): ITreeItemAdaptable[] {
         // Projects have no children.
         return [];
     }

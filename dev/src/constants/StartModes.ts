@@ -16,11 +16,11 @@ export function allStartModes(): string[] {
     ];
 }
 
-export function isDebugMode(startMode: string): Boolean {
+export function isDebugMode(startMode: string): boolean {
     return startMode === StartModes.DEBUG.toString() || startMode === StartModes.DEBUG_NO_INIT.toString();
 }
 
-export function getDefaultStartMode(debug: Boolean, projectType: ProjectType.Types): StartModes {
+export function getDefaultStartMode(debug: boolean, projectType: ProjectType.Types): StartModes {
     if (!debug) {
         return StartModes.RUN;
     }

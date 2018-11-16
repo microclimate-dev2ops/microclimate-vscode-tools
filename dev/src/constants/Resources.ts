@@ -8,7 +8,6 @@ const imgFolderName = "img";
 const lightFolderName = "light";
 const darkFolderName = "dark";
 
-
 function getResourcePath(...paths: string[]): string {
     return path.join(global.__extRoot, resFolderName, ...paths);
 }
@@ -83,6 +82,6 @@ export enum Octicons {
  *
  * @param iconName - One of the octicons from https://octicons.github.com
  */
-export function getOcticon(iconName: Octicons, spinning: Boolean = false): string {
-    return `$(${iconName}${spinning ? "~spin": ""})`;
+export function getOcticon(iconName: Octicons, spinning: boolean = false): string {
+    return `$(${iconName}${spinning ? "~spin" : ""})`;
 }

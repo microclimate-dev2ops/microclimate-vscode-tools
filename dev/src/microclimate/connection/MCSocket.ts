@@ -64,7 +64,7 @@ export default class MCSocket {
     }
 
     private onProjectChanged = async (payload: any): Promise<void> => {
-        //Logger.log("onProjectChanged", payload);
+        // Logger.log("onProjectChanged", payload);
         // Logger.log(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
                 // `buildState=${payload.buildStatus} startMode=${payload.startMode}`);
 
@@ -182,7 +182,7 @@ export default class MCSocket {
         Validator.validate(project, payload);
     }
 
-    private getProject = async(payload: any): Promise<Project | undefined> => {
+    private getProject = async (payload: any): Promise<Project | undefined> => {
         const projectID = payload.projectID;
         if (projectID == null) {
             // Should never happen

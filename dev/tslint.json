@@ -5,6 +5,7 @@
 		"member-ordering": false,
 		"no-namespace": false,
 		"object-literal-sort-keys": false,
+		"object-literal-shorthand": false,
 		"one-line": false,
 		"ordered-imports": false,
 		"trailing-comma": false,

@@ -40,6 +40,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 // this method is called when your extension is deactivated
 export function deactivate(): void {
+    // nothing here
 }
 
 const excludeSection = "exclude";

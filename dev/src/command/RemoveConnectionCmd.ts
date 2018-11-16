@@ -17,6 +17,6 @@ export default async function removeConnectionCmd(connection: Connection): Promi
         connection = selected;
     }
 
-    //const removed: Boolean = await ConnectionManager.instance.removeConnection(connection);
+    // const removed: boolean = await ConnectionManager.instance.removeConnection(connection);
     ConnectionManager.instance.removeConnection(connection);
 }

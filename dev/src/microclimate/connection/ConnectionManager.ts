@@ -13,12 +13,12 @@ export default class ConnectionManager {
     private static _instance: ConnectionManager;
 
     private readonly _connections: Connection[] = [];
-    private readonly listeners: ( () => void ) [] = [];
+    private readonly listeners: Array<( () => void )> = [];
 
-    private constructor (
+    private constructor(
 
     ) {
-        const connectionInfos: MCUtil.ConnectionInfo[] = ConnectionManager.loadConnections();
+        const connectionInfos: MCUtil.IConnectionInfo[] = ConnectionManager.loadConnections();
         Log.i(`Loaded ${connectionInfos.length} connections from settings`);
         connectionInfos.forEach((connInfo) =>
             tryAddConnection(connInfo)
@@ -51,7 +51,7 @@ export default class ConnectionManager {
         });
     }
 
-    public async removeConnection(connection: Connection): Promise<Boolean> {
+    public async removeConnection(connection: Connection): Promise<boolean> {
         const indexToRemove = this.connections.indexOf(connection);
         if (indexToRemove === -1) {
             Log.e(`Request to remove connection ${connection} but it doesn't exist!`);
@@ -65,13 +65,13 @@ export default class ConnectionManager {
         return true;
     }
 
-    private connectionExists(uri: vscode.Uri): Boolean {
+    private connectionExists(uri: vscode.Uri): boolean {
         return this._connections.some( (conn) => {
             return conn.mcUri.toString() === uri.toString();
         });
     }
 
-    public static loadConnections(): MCUtil.ConnectionInfo[] {
+    public static loadConnections(): MCUtil.IConnectionInfo[] {
         const loaded = vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
                 .get(ConnectionManager.CONNECTIONS_KEY, []);
 
@@ -84,8 +84,8 @@ export default class ConnectionManager {
 
         // This is a bit tough to read - For each connection, convert it to a connInfo we can save nicely.
         // If the convert fails, ignore it and log an error.
-        const connectionInfos: MCUtil.ConnectionInfo[] = ConnectionManager.instance.connections.reduce(
-            (result: MCUtil.ConnectionInfo[], conn: Connection): MCUtil.ConnectionInfo[] => {
+        const connectionInfos: MCUtil.IConnectionInfo[] = ConnectionManager.instance.connections.reduce(
+            (result: MCUtil.IConnectionInfo[], conn: Connection): MCUtil.IConnectionInfo[] => {
                 const connInfo = MCUtil.getConnInfoFrom(conn.mcUri);
                 if (connInfo != null) {
                     result.push(connInfo);
@@ -103,7 +103,7 @@ export default class ConnectionManager {
             return vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
                     .update(ConnectionManager.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Global);
         }
-        catch(err) {
+        catch (err) {
             const msg = "Error saving connections: " + err;
             Log.e(msg);
             vscode.window.showErrorMessage(err);

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import TreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
+import ITreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
 import Project from "../project/Project";
 import Endpoints from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
@@ -9,7 +9,7 @@ import ConnectionManager from "./ConnectionManager";
 import { Icons, getIconPaths } from "../../constants/Resources";
 import Log from "../../Logger";
 
-export default class Connection implements TreeItemAdaptable, vscode.QuickPickItem {
+export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
     private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.json
 
@@ -20,17 +20,17 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     // Has this connection ever been able to contact its Microclimate instance
     // private hasConnected = false;
     // Is this connection CURRENTLY connected to its Microclimate instance
-    private connected: Boolean = false;
+    private connected: boolean = false;
 
     private projects: Project[] = [];
-    private needProjectUpdate: Boolean = true;
+    private needProjectUpdate: boolean = true;
 
     // QuickPickItem
     public readonly label: string;
     public readonly description?: string;
     // public readonly detail?: string;
 
-    constructor (
+    constructor(
         public readonly mcUri: vscode.Uri,
         public readonly host: string,
         public readonly version: number,
@@ -57,15 +57,15 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
     /**
      * Call this whenever the tree needs to be updated - ie when this connection or any of its projects changes.
      */
-    async onChange(): Promise<void> {
+    public async onChange(): Promise<void> {
         ConnectionManager.instance.onChange();
     }
 
-    public get isConnected(): Boolean {
+    public get isConnected(): boolean {
         return this.connected;
     }
 
-    onConnect = async (): Promise<void> => {
+    public onConnect = async (): Promise<void> => {
         Log.d(`${this} onConnect`);
         /*
         if (!this.hasConnected) {
@@ -83,7 +83,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         this.onChange();
     }
 
-    onDisconnect = async (): Promise<void> => {
+    public onDisconnect = async (): Promise<void> => {
         Log.i(`${this} onDisconnect`);
         if (!this.connected) {
             // we already know we're disconnected, nothing to do until we reconnect
@@ -95,7 +95,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         this.onChange();
     }
 
-    async getProjects(): Promise<Project[]> {
+    public async getProjects(): Promise<Project[]> {
         if (!this.needProjectUpdate) {
             return this.projects;
         }
@@ -116,7 +116,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return this.projects;
     }
 
-    async getProjectByID(projectID: string): Promise<Project | undefined> {
+    public async getProjectByID(projectID: string): Promise<Project | undefined> {
         const result = (await this.getProjects()).find( (project) => project.id === projectID);
         if (result == null) {
             // Logger.logE(`Couldn't find project with ID ${projectID} on connection ${this.mcUri}`);
@@ -124,7 +124,7 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         return result;
     }
 
-    public async getChildren(): Promise<TreeItemAdaptable[]> {
+    public async getChildren(): Promise<ITreeItemAdaptable[]> {
         if (!this.connected) {
             return [ new SimpleTreeItem("❌  Disconnected")];
         }
@@ -161,6 +161,5 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         this.needProjectUpdate = true;
         await this.getProjects();
     }
-
 
 }

@@ -7,7 +7,7 @@ import Requester from "./Requester";
 namespace Validator {
 
     // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts#L144
-    interface ValidationResult {
+    interface IValidationResult {
         // severity: Severity;
         severity: string;
         filename: string;
@@ -24,7 +24,7 @@ namespace Validator {
 
     export async function validate(project: Project, validationPayload: any): Promise<void> {
 
-        const validationResults: ValidationResult[] = validationPayload.validationResults;
+        const validationResults: IValidationResult[] = validationPayload.validationResults;
         // Logger.log("validationresult", validationPayload);
 
         // clicking on the error will take you to this URI

@@ -59,27 +59,27 @@ export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMS: number, re
     });
 }
 
-export function isGoodDate(date: Date): Boolean {
+export function isGoodDate(date: Date): boolean {
     return !isNaN(date.valueOf());
 }
 
 //// Connection helpers
 
-export interface ConnectionInfo {
+export interface IConnectionInfo {
     readonly host: string;
     readonly port: number;
     // If we start supporting HTTPS, could add a 'protocol' field,
     // but at that point it might be cleaner to just save the URI.
 }
 
-export function isGoodPort(port: number | undefined): Boolean {
+export function isGoodPort(port: number | undefined): boolean {
     return port != null && !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
 }
 
 /**
  * Convert a ConnectionInfo to an HTTP URI.
  */
-export function buildMCUrl(connInfo: ConnectionInfo): Uri {
+export function buildMCUrl(connInfo: IConnectionInfo): Uri {
     return Uri.parse(`http://${connInfo.host}:${connInfo.port}`);
 }
 
@@ -87,7 +87,7 @@ export function buildMCUrl(connInfo: ConnectionInfo): Uri {
  * Convert a URI to a ConnectionInfo (for saving to Settings).
  * A URI type with a 'port' field would be preferable, but vscode does not have this.
  */
-export function getConnInfoFrom(url: Uri): ConnectionInfo | undefined {
+export function getConnInfoFrom(url: Uri): IConnectionInfo | undefined {
     const colonIndex: number = url.authority.indexOf(":");
 
     const host = url.authority.substring(0, colonIndex);
@@ -99,7 +99,7 @@ export function getConnInfoFrom(url: Uri): ConnectionInfo | undefined {
     }
     // Log.i(`Loaded connection info host ${host} port ${port}`);
 
-    const result: ConnectionInfo = {
+    const result: IConnectionInfo = {
         host: host,
         port: port
     };

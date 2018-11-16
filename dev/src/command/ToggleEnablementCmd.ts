@@ -10,7 +10,7 @@ import Requester from "../microclimate/project/Requester";
  * @param enable - Whether the given project is to be enabled, or disabled.
  * IE if enable=true, the command will only succeed if the project is disabled when the command is invoked.
  */
-export default async function toggleEnablementCmd(project: Project, enable: Boolean): Promise<void> {
+export default async function toggleEnablementCmd(project: Project, enable: boolean): Promise<void> {
     Log.d("ToggleEnablementCmd invoked");
     if (project == null) {
         let acceptStates;

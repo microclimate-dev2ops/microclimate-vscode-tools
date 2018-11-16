@@ -1,18 +1,18 @@
 
 import * as vscode from "vscode";
 
-import  TreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
+import ITreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import { Icons, getIconPaths } from "../constants/Resources";
 import Commands from "../constants/Commands";
 
-export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<TreeItemAdaptable> {
+export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<ITreeItemAdaptable> {
 
     public readonly treeDataProvider: vscode.TreeDataProvider<{}> = this;
     public readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";        // must match package.json
 
-    private onChangeEmitter: vscode.EventEmitter<TreeItemAdaptable> = new vscode.EventEmitter<TreeItemAdaptable>();
-    readonly onDidChangeTreeData: vscode.Event<TreeItemAdaptable> = this.onChangeEmitter.event;
+    private onChangeEmitter: vscode.EventEmitter<ITreeItemAdaptable> = new vscode.EventEmitter<ITreeItemAdaptable>();
+    public readonly onDidChangeTreeData: vscode.Event<ITreeItemAdaptable> = this.onChangeEmitter.event;
 
     constructor() {
         ConnectionManager.instance.addOnChangeListener(this.refresh);
@@ -30,14 +30,14 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
     /**
      * TreeDataProvider method to convert our custom TreeItemAdaptable class to a vscode.TreeItem
      */
-    public getTreeItem(node: TreeItemAdaptable): vscode.TreeItem | Promise<vscode.TreeItem> {
+    public getTreeItem(node: ITreeItemAdaptable): vscode.TreeItem | Promise<vscode.TreeItem> {
         return node.toTreeItem();
     }
 
     /**
      * TreeDataProvider method to get children for a given TreeItemAdaptable node, or provide the tree's root node.
      */
-    public getChildren(node?: TreeItemAdaptable): TreeItemAdaptable[] | Promise<TreeItemAdaptable[]> {
+    public getChildren(node?: ITreeItemAdaptable): ITreeItemAdaptable[] | Promise<ITreeItemAdaptable[]> {
         if (!node) {
             const connections = ConnectionManager.instance.connections;
             if (connections.length > 0) {

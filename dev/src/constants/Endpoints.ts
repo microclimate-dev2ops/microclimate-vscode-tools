@@ -25,7 +25,7 @@ export default class Endpoints {
     public static readonly BUILD_ACTION:    string = "build";
     public static readonly BUILD_LOG:       string = "build-log";
 
-    public static readonly ENABLEMENT_ACTION = (enable: Boolean): string => {
+    public static readonly ENABLEMENT_ACTION = (enable: boolean): string => {
         return `${enable ? "open" : "close"}`;
     }
 

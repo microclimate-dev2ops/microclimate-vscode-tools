@@ -62,7 +62,7 @@ export class ProjectType {
      * Returns undefined if we don't know how to debug this project type.
      */
     private static getDebugType(type: ProjectType.Types): ProjectType.DebugTypes | undefined {
-        switch(type) {
+        switch (type) {
             case ProjectType.Types.MICROPROFILE:
             case ProjectType.Types.SPRING:
                 return this.DebugTypes.JAVA;
@@ -107,7 +107,7 @@ export class ProjectType {
         return type.toString();
     }*/
 
-    public get providesBuildLog(): Boolean {
+    public get providesBuildLog(): boolean {
         return ProjectType.PROJECTS_WITHOUT_BUILDLOGS.indexOf(this.type) < 0;
     }
 }

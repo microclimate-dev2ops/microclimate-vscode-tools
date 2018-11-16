@@ -9,7 +9,7 @@ import StartModes, { getDefaultStartMode } from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
 import AppLog from "../microclimate/logs/AppLog";
 
-export default async function restartProjectCmd(project: Project, debug: Boolean): Promise<void> {
+export default async function restartProjectCmd(project: Project, debug: boolean): Promise<void> {
     Log.d("RestartProjectCmd invoked");
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTED, ProjectState.AppStates.STARTING);

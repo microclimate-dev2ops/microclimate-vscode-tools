@@ -25,7 +25,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         }
         expect(wsFolders[0].uri.fsPath).to.equal(workspace.fsPath);
 
-        Log.t("Loaded extensions:", vscode.extensions.all.map( (extension) => extension.id));
+        Log.t("Loaded extensions:", vscode.extensions.all.map( (ext) => ext.id));
         const extension = await vscode.extensions.getExtension(extensionName);
         expect(extension).to.exist;
 
@@ -89,4 +89,3 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         expect(obs.connection, "Failed to initialize ProjectObserver connection").to.exist;
     });
 });
-

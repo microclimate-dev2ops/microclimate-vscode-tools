@@ -9,7 +9,7 @@ import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Connection from "../microclimate/connection/Connection";
 
-export const DEFAULT_CONNINFO: MCUtil.ConnectionInfo = {
+export const DEFAULT_CONNINFO: MCUtil.IConnectionInfo = {
     host: "localhost",
     port: 9090
 };
@@ -59,7 +59,7 @@ export async function newConnectionCmd(): Promise<void> {
     }
 
     if (hostname != null && port != null) {
-        const connInfo: MCUtil.ConnectionInfo = {
+        const connInfo: MCUtil.IConnectionInfo = {
             host: hostname,
             port: port
         };
@@ -72,7 +72,7 @@ export async function newConnectionCmd(): Promise<void> {
  * If it fails, display a message to the user and allow them to either try to connect again with the same info,
  * or start the 'wizard' from the beginning to enter a new host/port.
  */
-export async function tryAddConnection(connInfo: MCUtil.ConnectionInfo): Promise<void> {
+export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promise<void> {
 
     Log.i("TryAddConnection", connInfo);
 
@@ -124,7 +124,7 @@ export async function tryAddConnection(connInfo: MCUtil.ConnectionInfo): Promise
 }
 
 // Return value resolves to a user-friendly message or error, ie "connection to $url succeeded"
-async function testConnection(connInfo: MCUtil.ConnectionInfo): Promise<Connection> {
+async function testConnection(connInfo: MCUtil.IConnectionInfo): Promise<Connection> {
 
     const uri = MCUtil.buildMCUrl(connInfo);
     const envUri: vscode.Uri = uri.with({ path: Endpoints.ENVIRONMENT });

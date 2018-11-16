@@ -8,7 +8,7 @@ export default class AppLog {
 
     private readonly outputChannel: vscode.OutputChannel;
 
-    private initialized: Boolean = false;
+    private initialized: boolean = false;
     private previousLength: number = 0;
 
     constructor(

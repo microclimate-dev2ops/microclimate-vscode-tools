@@ -102,7 +102,7 @@ export async function promptForResource(...acceptableStates: ProjectState.AppSta
     return promptForResourceInner(true, true, ...acceptableStates);
 }
 
-async function promptForResourceInner(includeConnections: Boolean, includeProjects: Boolean, ...acceptableStates: ProjectState.AppStates[]):
+async function promptForResourceInner(includeConnections: boolean, includeProjects: boolean, ...acceptableStates: ProjectState.AppStates[]):
         Promise<Project | Connection | undefined> {
 
     // TODO Try to get the name of †he selected project, and have it selected initially - if this is possible.

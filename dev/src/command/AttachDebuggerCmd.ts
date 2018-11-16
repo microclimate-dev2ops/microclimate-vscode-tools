@@ -9,8 +9,7 @@ import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 import AppLog from "../microclimate/logs/AppLog";
 
-
-export default async function attachDebuggerCmd(project: Project): Promise<Boolean> {
+export default async function attachDebuggerCmd(project: Project): Promise<boolean> {
     Log.d("attachDebuggerCmd");
     if (project == null) {
         const selected = await promptForProject(...ProjectState.getDebuggableStates());
@@ -123,7 +122,6 @@ export async function startDebugSession(project: Project): Promise<string> {
         throw new Error(errDetail);
     }
 }
-
 
 // keys for launch.json
 const LAUNCH = "launch";

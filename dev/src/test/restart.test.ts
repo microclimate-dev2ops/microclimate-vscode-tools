@@ -19,15 +19,15 @@ import ProjectObserver from "./ProjectObserver";
 import SocketTestUtil from "./SocketTestUtil";
 import EventTypes from "../microclimate/connection/EventTypes";
 
-interface TestableProjectType {
+interface ITestableProjectType {
     projectType: ProjectType;
     // We want to tests projects that can't be restarted too,
     // so tell the test whether or not the restart should succeed here.
-    canRestart: Boolean;
+    canRestart: boolean;
 }
 
 // boolean indicates whether or not this project is restartable.
-const projectTypesToTest: TestableProjectType[] = [
+const projectTypesToTest: ITestableProjectType[] = [
     {
         projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
         canRestart: true
@@ -176,7 +176,7 @@ describe(`Restart tests`, async function() {
     }
 });
 
-export async function testRestart(project: Project, debug: Boolean, shouldSucceed: Boolean): Promise<Boolean> {
+export async function testRestart(project: Project, debug: boolean, shouldSucceed: boolean): Promise<boolean> {
     Log.t(`Testing restart debug=${debug} on project ${project.name}. should be restartable? ${shouldSucceed}`);
 
     const restartCmdResult: any = await vscode.commands.executeCommand(debug ? Commands.RESTART_DEBUG : Commands.RESTART_RUN, project);

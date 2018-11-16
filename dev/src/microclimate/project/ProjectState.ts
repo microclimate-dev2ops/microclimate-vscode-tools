@@ -13,7 +13,7 @@ export class ProjectState {
     public readonly buildState: ProjectState.BuildStates;
     public readonly buildDetail: string;
 
-    constructor (
+    constructor(
         projectInfoPayload: any,
         // Use oldState if the projectInfoPayload is missing state information (eg. from a restart success event)
         // It will be used as fallback values if the new state is null or UNKNOWN.
@@ -44,15 +44,15 @@ export class ProjectState {
         }
     }
 
-    public get isEnabled(): Boolean {
+    public get isEnabled(): boolean {
         return ProjectState.getEnabledStates().includes(this.appState);
     }
 
-    public get isStarted(): Boolean {
+    public get isStarted(): boolean {
         return ProjectState.getStartedStates().includes(this.appState);
     }
 
-    public get isBuilding(): Boolean {
+    public get isBuilding(): boolean {
         return this.buildState === ProjectState.BuildStates.BUILDING;
     }
 
@@ -144,7 +144,7 @@ export namespace ProjectState {
     export function getAppState(projectInfoPayload: any): ProjectState.AppStates {
 
         // Logger.log("PIP", projectInfoPayload);
-        const appStatus: string = <string> projectInfoPayload[KEY_APP_STATE] || "";
+        const appStatus: string = projectInfoPayload[KEY_APP_STATE] as string || "";
 
         const closedState: string | undefined = projectInfoPayload[KEY_CLOSED_STATE];
         const startMode:   string | undefined = projectInfoPayload[KEY_START_MODE];
