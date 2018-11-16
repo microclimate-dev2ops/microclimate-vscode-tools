@@ -7,7 +7,6 @@ import * as Resources from "../constants/Resources";
 import Log from "../Logger";
 import StartModes, { getDefaultStartMode } from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
-import AppLog from "../microclimate/logs/AppLog";
 
 export default async function restartProjectCmd(project: Project, debug: boolean): Promise<void> {
     Log.d("RestartProjectCmd invoked");
@@ -30,7 +29,7 @@ export default async function restartProjectCmd(project: Project, debug: boolean
     vscode.window.setStatusBarMessage(`${syncIcon} Initiating restarting ${project.name}`, restartRequestPromise);
 
     // open the app's logs so we can watch the restart execute
-    AppLog.getOrCreateLog(project.id, project.name).showOutputChannel();
+    project.connection.logManager.getOrCreateAppLog(project.id, project.name).showOutputChannel();
 
     return restartRequestPromise;
     // After the above async REST request, we don't do anything further for this command until

@@ -8,12 +8,15 @@ import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import { Icons, getIconPaths } from "../../constants/Resources";
 import Log from "../../Logger";
+import MCLogManager from "../logs/MCLogManager";
 
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
     private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.json
 
     public readonly socket: MCSocket;
+
+    public readonly logManager: MCLogManager;
 
     private readonly projectsApiUri: string;
 
@@ -38,6 +41,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     ) {
         this.projectsApiUri = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
         this.socket = new MCSocket(mcUri.toString(), this);
+        this.logManager = new MCLogManager(this);
 
         // QuickPickItem
         this.label = "Microclimate @ " + this.mcUri.toString();
@@ -67,30 +71,26 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
     public onConnect = async (): Promise<void> => {
         Log.d(`${this} onConnect`);
-        /*
-        if (!this.hasConnected) {
-            Logger.log(`${this} formed initial connection`);
-            this.hasConnected = true;
-        }
-        else */
         if (this.connected) {
             // we already know we're connected, nothing to do until we disconnect
             return;
         }
         this.connected = true;
         Log.d(`${this} is now connected`);
+        this.logManager.onConnectionReconnect();
 
         this.onChange();
     }
 
     public onDisconnect = async (): Promise<void> => {
-        Log.i(`${this} onDisconnect`);
+        Log.d(`${this} onDisconnect`);
         if (!this.connected) {
             // we already know we're disconnected, nothing to do until we reconnect
             return;
         }
         this.connected = false;
-        Log.i(`${this} is now disconnected`);
+        Log.d(`${this} is now disconnected`);
+        this.logManager.onConnectionDisconnect();
 
         this.onChange();
     }

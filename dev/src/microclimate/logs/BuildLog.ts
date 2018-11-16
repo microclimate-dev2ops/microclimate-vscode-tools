@@ -1,20 +1,15 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import { Log } from "../../Logger";
+import Log from "../../Logger";
 import Endpoints from "../../constants/Endpoints";
-import Project from "../project/Project";
 import Connection from "../connection/Connection";
+import MCLog from "./MCLog";
 
-export default class BuildLog {
+export default class BuildLog extends MCLog {
 
     private static readonly UPDATE_INTERVAL: number = 5000;
     private static readonly LAST_UPDATED_HEADER: string = "build-log-last-modified";
-
-    // Maps projectIDs to BuildLog instances
-    private static readonly logMap: Map<string, BuildLog> = new Map<string, BuildLog>();
-
-    private readonly outputChannel: vscode.OutputChannel;
 
     private readonly timer: NodeJS.Timer;
 
@@ -23,17 +18,21 @@ export default class BuildLog {
     constructor(
         private readonly connection: Connection,
         public readonly projectID: string,
-        projectName: string
+        public readonly projectName: string
     ) {
-        this.outputChannel = vscode.window.createOutputChannel("Build Log - " + projectName);
-        this.outputChannel.appendLine(`Fetching build logs for ${projectName}...`);
-        this.showOutputChannel();
+        super(projectID, projectName,
+            `Fetching build logs for ${projectName}...`,
+            MCLog.LogTypes.BUILD);
 
         this.update();
         this.timer = setInterval(this.update, BuildLog.UPDATE_INTERVAL);
     }
 
     public update = async (): Promise<void> => {
+        if (!this.doUpdate) {
+            Log.e("Update was invoked on an buildLog with doUpdate=false, this should never happen!");
+        }
+
         const buildLogUrl: string = Endpoints.getProjectEndpoint(this.connection, this.projectID, Endpoints.BUILD_LOG);
 
         try {
@@ -43,55 +42,43 @@ export default class BuildLog {
             // Logger.log("buildlog-lastModified", lastModifiedStr, lastModified);
 
             if (lastModified == null || lastModified > this.lastUpdated) {
-                Log.i("Updating build logs"); // new body", getResult.body);
+                Log.d("Updating " + this.outputChannel.name); // new body", getResult.body);
                 this.lastUpdated = new Date(lastModified);
                 // The build log doesn't get appended to, it's always totally new
                 this.outputChannel.clear();
                 this.outputChannel.appendLine(getResult.body);
-                this.showOutputChannel();
+                // this.showOutputChannel();
             }
             /*
             else {
-                Logger.log(`${this.outputChannel.name} hasn't changed`);
+                Log.d(`${this.outputChannel.name} hasn't changed`);
             }*/
         }
         catch (err) {
             Log.e(err);
             if (err.statusCode === 404) {
                 // The project got deleted or disabled
-                return this.destroy();
+                return this.stopUpdating();
             }
 
             // Allow the user to kill this log so it doesn't spam them with error messages.
-            const removeLogBtn: string = "Remove Log";
+            const removeLogBtn: string = "Stop updating";
             vscode.window.showErrorMessage("Error updating build log: " + err, removeLogBtn)
                 .then( (btn) => {
                     if (btn === removeLogBtn) {
-                        this.destroy();
+                        this.stopUpdating(false);
                     }
                 });
         }
     }
 
-    private async destroy(): Promise<void> {
-        Log.i("Destroy build log " + this.outputChannel.name);
-        // this.outputChannel.dispose();
+    public async stopUpdating(connectionLost: boolean = true): Promise<void> {
         clearInterval(this.timer);
+        super.stopUpdating(connectionLost);
     }
 
     public async showOutputChannel(): Promise<void> {
         this.update();
-        this.outputChannel.show(true);
-    }
-
-    public static getOrCreateLog(project: Project): BuildLog {
-        let log = this.logMap.get(project.id);
-        if (log == null) {
-            Log.i("Creating build log for " + project.name);
-            // we have to create it
-            log = new BuildLog(project.connection, project.id, project.name);
-            BuildLog.logMap.set(project.id, log);
-        }
-        return log;
+        super.showOutputChannel();
     }
 }

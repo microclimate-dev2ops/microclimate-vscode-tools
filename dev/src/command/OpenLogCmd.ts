@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { Log } from "../Logger";
+import Log from "../Logger";
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import AppLog from "../microclimate/logs/AppLog";
-import BuildLog from "../microclimate/logs/BuildLog";
+import ProjectState from "../microclimate/project/ProjectState";
+import MCLog from "../microclimate/logs/MCLog";
 
 /**
  *
@@ -22,24 +22,28 @@ export default async function openLogCmd(project: Project, isAppLog: boolean): P
         project = selected;
     }
 
-    if (!isAppLog && !project.type.providesBuildLog) {
-        vscode.window.showErrorMessage(`Build logs are not available for ${project.type} projects.`);
-        return;
-    }
-
-    if (isAppLog && (/*project.state.appState === ProjectState.AppStates.STOPPED ||*/ !project.state.isEnabled)) {
-        // If we were to create an app log for a disabled project,
-        // it would just say "waiting for Microclimate to send logs" until the app starts.
-        vscode.window.showErrorMessage("App Logs are not available for Disabled projects.");
-        return;
-    }
-
-    let log: AppLog | BuildLog;
+    let log: MCLog;
     if (isAppLog) {
-        log = AppLog.getOrCreateLog(project.id, project.name);
+        if (!project.state.isEnabled) {
+            // If we were to create an app log for a disabled project,
+            // it would just say "waiting for Microclimate to send logs" until the app starts.
+            vscode.window.showErrorMessage("App Logs are not available for Disabled projects.");
+            return;
+        }
+        else if (project.state.appState === ProjectState.AppStates.STOPPED) {
+            vscode.window.showWarningMessage(`${project.name} is ${ProjectState.AppStates.STOPPED};` +
+                ` it might not have any app log output until it starts.`);
+        }
+
+        log = project.connection.logManager.getOrCreateAppLog(project.id, project.name);
     }
     else {
-        log = BuildLog.getOrCreateLog(project);
+        if (!project.type.providesBuildLog) {
+            vscode.window.showErrorMessage(`Build logs are not available for ${project.type} projects.`);
+            return;
+        }
+
+        log = project.connection.logManager.getOrCreateBuildLog(project.id, project.name);
     }
     log.showOutputChannel();
 }

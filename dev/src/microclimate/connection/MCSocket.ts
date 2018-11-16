@@ -2,7 +2,6 @@ import * as io from "socket.io-client";
 import * as vscode from "vscode";
 
 import Connection from "./Connection";
-import AppLog from "../logs/AppLog";
 import Project from "../project/Project";
 import ProjectState from "../project/ProjectState";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
@@ -164,7 +163,7 @@ export default class MCSocket {
         // const projectName = payload.projectName;
         const logContents = payload.logs;
 
-        const log = AppLog.getLogByProjectID(projectID);
+        const log = this.connection.logManager.getAppLog(projectID);
         if (log != null) {
             log.update(logContents);
         }

@@ -1,10 +1,20 @@
 Important:
 - Attach Debugger command to Starting state
+    - Works
     - New 'starting debug' state
     - Should have this in the other UIs
     - startMode is updated AFTER Starting state is reached, so it briefly shows the wrong startMode, but then it gets corrected when the restartResult is received
+- I need help testing
+    - At what point can we pull in SVT?
 
-- What to do with app logs when MC is restarted? Clear them all? Kill the outputStreams?
+- When Microclimate restarts when logs are open, the logs are reset properly
+    - New log names - "Microclimate" is too long :V
+    - Now displays a warning if you open app logs for Stopped app
+        - but we still want to allow this for nodemon output - and probably should in the web UI too!
+- Show command that's running in promptForResource
+- Preference to show logs when updated
+    - Separate prefs for build and app logs
+- Better button labels when connection fails
 - externalize all strings :(
 - Make start mode strings user friendly again
 - Don't offer to open the microclimate-workspace if user's in a subdirectory of it

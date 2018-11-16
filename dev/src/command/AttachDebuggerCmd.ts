@@ -7,7 +7,6 @@ import Project from "../microclimate/project/Project";
 import ProjectState from "../microclimate/project/ProjectState";
 import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
-import AppLog from "../microclimate/logs/AppLog";
 
 export default async function attachDebuggerCmd(project: Project): Promise<boolean> {
     Log.d("attachDebuggerCmd");
@@ -85,7 +84,7 @@ export async function startDebugSession(project: Project): Promise<string> {
 
     // Show the app logs again - Usually this will have no effect since we showed them when the restart was initiated,
     // but sometimes the Language Server outputstream will be opened over the project one, which is annoying, so put ours back on top.
-    AppLog.getOrCreateLog(project.id, project.name).showOutputChannel();
+    project.connection.logManager.getOrCreateAppLog(project.id, project.name).showOutputChannel();
 
     // startDebugging above will often return 'true' before the debugger actually connects, so it could still fail.
     // Do some extra checks here to ensure that a new debug session was actually launched, and report failure if it wasn't.

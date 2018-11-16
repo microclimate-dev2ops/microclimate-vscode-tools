@@ -1,27 +1,27 @@
-import * as vscode from "vscode";
-import { Log } from "../../Logger";
+import MCLog from "./MCLog";
+import Log from "../../Logger";
 
-export default class AppLog {
-
-    // Maps projectIDs to AppLog instances
-    private static readonly logMap: Map<string, AppLog> = new Map<string, AppLog>();
-
-    private readonly outputChannel: vscode.OutputChannel;
+export default class AppLog extends MCLog {
 
     private initialized: boolean = false;
     private previousLength: number = 0;
 
     constructor(
         public readonly projectID: string,
-        projectName: string
+        public readonly projectName: string
     ) {
-        // TODO see if there's a better way to sort these, or prefix them
-        this.outputChannel = vscode.window.createOutputChannel("App Log - " + projectName);
-        this.outputChannel.appendLine("Waiting for Microclimate to send application logs...");
-        // this.outputChannel.show();
+        super(projectID, projectName,
+            `Waiting for Microclimate to send application logs for ${projectName}...`,
+            MCLog.LogTypes.APP);
+
+        // update will be invoked when we get a container-logs event
     }
 
     public async update(contents: string): Promise<void> {
+        if (!this.doUpdate) {
+            Log.e("Update was invoked on an applog with doUpdate=false, this should never happen!");
+        }
+
         if (!this.initialized) {
             this.initialized = true;
             this.outputChannel.clear();
@@ -45,24 +45,5 @@ export default class AppLog {
 
         this.outputChannel.append(newContents);
         this.previousLength = contents.length;
-    }
-
-    public async showOutputChannel(): Promise<void> {
-        this.outputChannel.show(true);
-    }
-
-    public static getOrCreateLog(projectID: string, projectName: string): AppLog {
-        let log = this.logMap.get(projectID);
-        if (log == null) {
-            Log.i("Creating app log for " + projectName);
-            // we have to create it
-            log = new AppLog(projectID, projectName);
-            AppLog.logMap.set(projectID, log);
-        }
-        return log;
-    }
-
-    public static getLogByProjectID(projectID: string): AppLog | undefined {
-        return this.logMap.get(projectID);
     }
 }
