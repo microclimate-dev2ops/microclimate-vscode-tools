@@ -7,6 +7,7 @@ Important:
 - What to do with app logs when MC is restarted? Clear them all? Kill the outputStreams?
 - externalize all strings :(
 - Make start mode strings user friendly again
+- Don't offer to open the microclimate-workspace if user's in a subdirectory of it
 - Expose log file location to user
 
 Annoying Release Stuff:

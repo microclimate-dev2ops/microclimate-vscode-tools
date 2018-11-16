@@ -34,7 +34,6 @@ export class Log {
             }
             catch (err) {
                 // This shouldn't happen, but fall back to console.log if it does.
-                // TODO test this!
                 console.error("Error creating log file!", err);
                 this.logInner = util.promisify(console.log);
             }
@@ -155,6 +154,7 @@ function getCaller(): string {
                 // In this case there will only be 2 words: "at /some/path".
                 if (splitResult.length > 2) {
                     let functionName = splitResult[1];
+                    // console.log("FunctionName: " + functionName);
                     // If it's a callback, there will be extra stuff we aren't interested in separated by dots
                     // eg "Project.__dirname.constructor.connection.update"
                     // strip out everything up to the last dot, if there is one
@@ -165,6 +165,10 @@ function getCaller(): string {
                         if (functionName !== "<anonymous>") {
                             callerFn = `.${functionName}()`;
                         }
+                    }
+                    else if (functionName === "new") {
+                        // This happens when it's a constructor (if the function is named "new", above if should execute instead)
+                        callerFn = `.<init>()`;
                     }
                 }
 

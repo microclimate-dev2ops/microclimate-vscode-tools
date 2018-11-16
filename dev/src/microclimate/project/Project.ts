@@ -163,7 +163,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         }
 
         const ports = projectInfo.ports;
-        if (ports != null && ports !== "") {
+        if (ports != null) {
             changed = this.setAppPort(ports.exposedPort) || changed;
             changed = this.setDebugPort(ports.exposedDebugPort) || changed;
         }
@@ -333,7 +333,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         newAppPort = Number(newAppPort);
         if (!MCUtil.isGoodPort(newAppPort)) {
-            Log.w(`Invalid app port ${newAppPort} given to project ${this.name}`);
+            Log.w(`Invalid app port ${newAppPort} given to project ${this.name}, ignoring it`);
             return false;
         }
         else if (this._appPort !== newAppPort) {
@@ -341,7 +341,9 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             Log.d(`New app port for ${this.name} is ${newAppPort}`);
             return true;
         }
-        return false;
+        else {
+            return false;
+        }
     }
 
     /**
@@ -349,13 +351,16 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
      * @return If this project's debug port was changed.
      */
     private setDebugPort(newDebugPort: number | undefined): Boolean {
-        if (newDebugPort == null && this._debugPort == null) {
-            return false;
+        if (newDebugPort == null && this._appPort != null) {
+            // Should happen when the app stops.
+            Log.d("Unset debug port for " + this.name);
+            this._debugPort = undefined;
+            return true;
         }
 
         newDebugPort = Number(newDebugPort);
         if (!MCUtil.isGoodPort(newDebugPort)) {
-            Log.w(`Invalid debug port ${newDebugPort} given to project ${this.name}`);
+            Log.w(`Invalid debug port ${newDebugPort} given to project ${this.name}, ignoring it`);
             return false;
         }
         else if (this._debugPort !== newDebugPort) {
@@ -363,6 +368,8 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             Log.d(`New debug port for ${this.name} is ${newDebugPort}`);
             return true;
         }
-        return false;
+        else {
+            return false;
+        }
     }
 }
