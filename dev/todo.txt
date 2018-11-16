@@ -1,24 +1,28 @@
-Important:
+New:
 - Attach Debugger command to Starting state
     - Works
     - New 'starting debug' state
     - Should have this in the other UIs
     - startMode is updated AFTER Starting state is reached, so it briefly shows the wrong startMode, but then it gets corrected when the restartResult is received
-- I need help testing
-    - At what point can we pull in SVT?
-
 - When Microclimate restarts when logs are open, the logs are reset properly
-    - New log names - "Microclimate" is too long :V
+    - New log names - "Microclimate" is too long :|
     - Now displays a warning if you open app logs for Stopped app
         - but we still want to allow this for nodemon output - and probably should in the web UI too!
-- Show command that's running in promptForResource
 - Preference to show logs when updated
     - Separate prefs for build and app logs
+    - Default behaviour: show build on change, but not app
+    - Settings descriptions need work
+
+Important:
+- I need help testing
+    - At what point do we pull in SVT?
+- When is my DCUT?
+    - Can I do code sweep / cleanup after that, since it will likely be mostly comment changes?
+        - Won't release these changes, will lock a release branch first)
 - Better button labels when connection fails
-- externalize all strings :(
+- externalize strings
 - Make start mode strings user friendly again
 - Don't offer to open the microclimate-workspace if user's in a subdirectory of it
-- Expose log file location to user
 
 Annoying Release Stuff:
 - Icons
@@ -26,9 +30,11 @@ Annoying Release Stuff:
 - Open Source-ability
     - Remove any internal issue links
     - Remove any references to other devs, teams
-    - Add file headers and generally improve documentation
+    - Add file headers and generally improve code documentation
 
 Less Important:
+- Show command that's running in promptForResource
+- Expose log file location to user (but where?)
 - Tests
     - Debug, restart tests are good
     - Would be great to get coverage for other commands - but for most of them, it's hard to test if the API calls worked

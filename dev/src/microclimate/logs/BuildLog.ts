@@ -42,12 +42,13 @@ export default class BuildLog extends MCLog {
             // Logger.log("buildlog-lastModified", lastModifiedStr, lastModified);
 
             if (lastModified == null || lastModified > this.lastUpdated) {
-                Log.d("Updating " + this.outputChannel.name); // new body", getResult.body);
+                Log.d("Updating " + this.outputChannel.name);
                 this.lastUpdated = new Date(lastModified);
                 // The build log doesn't get appended to, it's always totally new
                 this.outputChannel.clear();
                 this.outputChannel.appendLine(getResult.body);
-                // this.showOutputChannel();
+
+                this.onChange();
             }
             /*
             else {
@@ -61,11 +62,11 @@ export default class BuildLog extends MCLog {
                 return this.stopUpdating();
             }
 
-            // Allow the user to kill this log so it doesn't spam them with error messages.
-            const removeLogBtn: string = "Stop updating";
-            vscode.window.showErrorMessage("Error updating build log: " + err, removeLogBtn)
+            // Allow the user to kill this log so it doesn't spam them with error messages if there's a network problem or something.
+            const stopUpdatingBtn: string = "Stop updating";
+            vscode.window.showErrorMessage("Error updating build log: " + err, stopUpdatingBtn)
                 .then( (btn) => {
-                    if (btn === removeLogBtn) {
+                    if (btn === stopUpdatingBtn) {
                         this.stopUpdating(false);
                     }
                 });

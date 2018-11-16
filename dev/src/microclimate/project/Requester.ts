@@ -79,15 +79,20 @@ namespace Requester {
         const url = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
         return doProjectRequest(project, url, body, request.post, "Generate Dockerfile")
             // request a validate after the generate so that the validation errors go away faster
-            .then( (_: any) => requestValidate(project));
+            .then( () => requestValidate(project));
     }
 
+    /**
+     * Perform a REST request of the type specific by `requestFunc` to the project endpoint for the given project.
+     * Displays a message to the user that the request succeeded if userOperationName is not null.
+     * Always displays a message to the user in the case of an error.
+     */
     export async function doProjectRequest(
             project: Project, url: string, body: {},
             requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
             userOperationName?: string): Promise<any> {
 
-        Log.i(`Doing ${userOperationName} request to ${url}`);
+        Log.i(`Doing ${userOperationName != null ? userOperationName + " " : ""}request to ${url}`);
 
         const options = {
             json: true,
@@ -104,7 +109,7 @@ namespace Requester {
                 return result;
             })
             .catch( (err: any) => {
-                Log.i(`Error doing ${userOperationName} project request for ${project.name}:`, err);
+                Log.w(`Error doing ${userOperationName} project request for ${project.name}:`, err);
 
                 // If the server provided a specific message, present the user with that,
                 // otherwise show them the whole error (but it will be ugly)

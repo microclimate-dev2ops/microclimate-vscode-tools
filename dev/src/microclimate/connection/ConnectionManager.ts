@@ -4,11 +4,9 @@ import * as MCUtil from "../../MCUtil";
 import Connection from "./Connection";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
 import { Log } from "../../Logger";
+import Settings from "../../constants/Settings";
 
 export default class ConnectionManager {
-
-    private static readonly CONFIG_SECTION: string = "microclimate";
-    private static readonly CONNECTIONS_KEY: string = "connections";
 
     private static _instance: ConnectionManager;
 
@@ -72,8 +70,8 @@ export default class ConnectionManager {
     }
 
     public static loadConnections(): MCUtil.IConnectionInfo[] {
-        const loaded = vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
-                .get(ConnectionManager.CONNECTIONS_KEY, []);
+        const loaded = vscode.workspace.getConfiguration(Settings.CONFIG_SECTION)
+                .get(Settings.CONNECTIONS_KEY, []);
 
         // Logger.log("LOADED CONNECTIONS", loaded);
         return loaded;
@@ -100,8 +98,8 @@ export default class ConnectionManager {
 
         Log.i("Saving connections", connectionInfos);
         try {
-            return vscode.workspace.getConfiguration(ConnectionManager.CONFIG_SECTION)
-                    .update(ConnectionManager.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Global);
+            return vscode.workspace.getConfiguration(Settings.CONFIG_SECTION)
+                    .update(Settings.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Global);
         }
         catch (err) {
             const msg = "Error saving connections: " + err;

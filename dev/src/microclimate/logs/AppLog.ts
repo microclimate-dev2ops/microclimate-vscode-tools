@@ -1,3 +1,5 @@
+// import * as vscode from "vscode";
+
 import MCLog from "./MCLog";
 import Log from "../../Logger";
 
@@ -45,5 +47,6 @@ export default class AppLog extends MCLog {
 
         this.outputChannel.append(newContents);
         this.previousLength = contents.length;
+        this.onChange();
     }
 }

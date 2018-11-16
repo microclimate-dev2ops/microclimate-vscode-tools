@@ -37,6 +37,16 @@
                     "type": "array",
                     "default": [],
                     "description": "%settingDesc_connections%"
+                },
+                "microclimate.openLogsOnChange.app": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "%settingDesc_showLogOnChange_app%"
+                },
+                "microclimate.openLogsOnChange.build": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "%settingDesc_showLogOnChange_build%"
                 }
             }
         },

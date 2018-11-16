@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 import Log from "../../Logger";
+import Settings from "../../constants/Settings";
 
 export class MCLog {
 
@@ -50,6 +51,17 @@ export class MCLog {
         Log.d("Destroy log " + this.outputChannel.name);
         this.stopUpdating();
         this.outputChannel.dispose();
+    }
+
+    protected onChange(): void {
+        const setting: string = this.logType === MCLog.LogTypes.APP ? Settings.OPEN_ON_CHANGE_APP : Settings.OPEN_ON_CHANGE_BUILD;
+
+        const showOnChange: boolean = vscode.workspace.getConfiguration(Settings.CONFIG_SECTION)
+            .get(setting, false);
+
+        if (showOnChange) {
+            this.showOutputChannel();
+        }
     }
 }
 
