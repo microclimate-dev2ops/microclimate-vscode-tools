@@ -2,14 +2,13 @@ import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Log from "../Logger";
 import ProjectState from "../microclimate/project/ProjectState";
 import Connection from "../microclimate/connection/Connection";
-import Project from "../microclimate/project/Project";
 
-interface ProjectCreationAwaiting {
+interface IProjectCreationAwaiting {
     projectName: string;
     resolveFunc: ( (projectID: string) => void );
 }
 
-interface ProjectStateAwaiting {
+interface IProjectStateAwaiting {
     projectID: string;
     states: ProjectState.AppStates[];
     resolveFunc: ( () => void );
@@ -17,8 +16,8 @@ interface ProjectStateAwaiting {
 
 export default class ProjectObserver {
 
-    private readonly projectsPendingState: ProjectStateAwaiting[] = [];
-    private readonly projectsPendingCreation: ProjectCreationAwaiting[] = [];
+    private readonly projectsPendingState: IProjectStateAwaiting[] = [];
+    private readonly projectsPendingCreation: IProjectCreationAwaiting[] = [];
 
     private static _instance: ProjectObserver;
 
@@ -52,7 +51,7 @@ export default class ProjectObserver {
         });
 
         // Check if any of the projects awaiting a state have reached that state.
-        this.projectsPendingState.forEach( async (pendingProject: ProjectStateAwaiting, index: number) => {
+        this.projectsPendingState.forEach( async (pendingProject: IProjectStateAwaiting, index: number) => {
             this.connection.getProjectByID(pendingProject.projectID)
                 .then( (project) => {
                     if (project == null) {

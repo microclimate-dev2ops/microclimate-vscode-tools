@@ -7,20 +7,20 @@ import wildcard = require("socketio-wildcard");
 import EventTypes from "../constants/EventTypes";
 import Log from "../Logger";
 
-export interface ExpectedSocketEvent {
+export interface IExpectedSocketEvent {
     readonly eventType: EventTypes;
     readonly projectID?: string;
     readonly expectedData?: { key: string, value: any };
-    resolveFn?: (result: SocketEventData) => void;
+    resolveFn?: (result: ISocketEventData) => void;
 }
 
-interface SocketEvent {
+interface ISocketEvent {
     type: string;
     nsp?: string;
-    data: SocketEventData;
+    data: ISocketEventData;
 }
 
-interface SocketEventData {
+interface ISocketEventData {
     [key: string]: string;
     projectID: string;
 }
@@ -44,11 +44,11 @@ namespace SocketTestUtil {
         });
     }
 
-    const expectedSocketEvents: ExpectedSocketEvent[] = [];
+    const expectedSocketEvents: IExpectedSocketEvent[] = [];
     // let _expectedSocketEvent: ExpectedSocketEvent | undefined;
 
     async function onSocketEvent(rawEvent: any): Promise<void> {
-        const event: SocketEvent = {
+        const event: ISocketEvent = {
             type: rawEvent.data[0],
             data: rawEvent.data[1]
         };
@@ -79,7 +79,7 @@ namespace SocketTestUtil {
         }
     }
 
-    function eventMatches(expectedEvent: ExpectedSocketEvent, event: SocketEvent): boolean {
+    function eventMatches(expectedEvent: IExpectedSocketEvent, event: ISocketEvent): boolean {
 
         // First check that the event is of the correct type
         if (expectedEvent.eventType === event.type) {
@@ -106,13 +106,13 @@ namespace SocketTestUtil {
         return false;
     }
 
-    export async function expectSocketEvent(event: ExpectedSocketEvent): Promise<SocketEventData> {
+    export async function expectSocketEvent(event: IExpectedSocketEvent): Promise<ISocketEventData> {
         expectedSocketEvents.push(event);
 
         Log.t(`Now waiting for socket event of type ${event.eventType} and data: ${JSON.stringify(event.expectedData)}`);
         Log.t(`Events being waited for are now: ${JSON.stringify(expectedSocketEvents)}`);
 
-        return new Promise<SocketEventData>( (resolve) => {
+        return new Promise<ISocketEventData>( (resolve) => {
             // This promise will be resolved with the socket event's 'data' in onSocketEvent above when a matching event is received
             event.resolveFn = resolve;
         });

@@ -16,8 +16,8 @@ namespace TestUtil {
     export const LONG_TIMEOUT = 2 * 60 * 1000;
     const PROJECT_PREFIX = "test";
 
-    export async function createTestProjects(connection: Connection, projectTypes: ProjectType[]): Promise<(Project | undefined)[]> {
-        const result: Promise<Project | undefined>[] = [];
+    export async function createTestProjects(connection: Connection, projectTypes: ProjectType[]): Promise<Array<Project | undefined>> {
+        const result: Array<Promise<Project | undefined>> = [];
         for (const projectType of projectTypes) {
             result.push(TestUtil.createProject(connection, projectType));
         }
@@ -61,16 +61,12 @@ namespace TestUtil {
         try {
             await request.post(uri, options);
         }
-        catch(err) {
+        catch (err) {
             Log.t("Create project failure!", err);
         }
 
         Log.t("Awaiting project creation");
         const projectID = await ProjectObserver.instance.awaitCreate(projectName);
-
-        //expect(creationResult).to.exist;
-
-        //const projectID = creationResult.projectID;
 
         const createdProject: Project | undefined = await connection.getProjectByID(projectID);
         expect(createdProject, `Failed to get newly created project ${projectName}`).to.exist;
@@ -148,7 +144,7 @@ namespace TestUtil {
      * Make sure you set the timeout in the calling test to be at least this long.
      */
     export async function wait(ms: number, reason?: string): Promise<void> {
-        const msg: string = `Waiting ${ms}ms` + (reason ? ": " + reason : "");
+        const msg: string = `Waiting ${ms}ms` + (reason != null ? ": " + reason : "");
         Log.t(msg);
         return new Promise<void> ( (resolve) => setTimeout(resolve, ms));
     }
@@ -166,8 +162,7 @@ namespace TestUtil {
 
         testContext.timeout(0);
 
-        // this will never resolve :(
-        return new Promise<void> ( () => {} );
+        return new Promise<void> ( () => { /* never resolves */ } );
     }
 
     /*
@@ -190,7 +185,7 @@ namespace TestUtil {
             // These parameters are not documented, see the code linked below for Java. Seems to work for Node too.
             // tslint:disable-next-line:max-line-length
             // https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L169
-            return activeDbSession.customRequest("disconnect", { "terminateDebuggee": false, "restart": false })
+            return activeDbSession.customRequest("disconnect", { terminateDebuggee: false, restart: false })
                 .then(
                     ()      => Log.t(`Disconnected debug session "${activeDbSession.name}"`),
                     (err)   => Log.t(`Error disconnecting from debug session ${activeDbSession.name}:`, err)

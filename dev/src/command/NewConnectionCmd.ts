@@ -33,7 +33,7 @@ export async function newConnectionCmd(): Promise<void> {
     const hostname = "localhost";
 
     let tryAgain = true;
-    let port: number | undefined = undefined;
+    let port: number | undefined;
     while (tryAgain) {
         const portStr = await vscode.window.showInputBox( {
             prompt: "Enter the Port for the local Microclimate instance you wish to connect to.",

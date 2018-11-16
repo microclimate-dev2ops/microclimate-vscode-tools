@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import * as assert from "assert";
 import * as vscode from "vscode";
 
 // import this so that mocha will execute this file second
 // Don't worry about it being unused.
 import * as base from "./base.test";
+base;
 
 import Project from "../microclimate/project/Project";
 import Log from "../Logger";

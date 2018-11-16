@@ -1,4 +1,4 @@
-import { Uri } from "vscode";
+// import { Uri } from "vscode";
 import Connection from "../microclimate/connection/Connection";
 
 /**

@@ -27,7 +27,10 @@ before_install:
   # any more issues due to git not handling case-sensitive fileames very well
   - ls -AR src/
   # Make sure compilation will succeed ( vsce package won't show the compilation failures >:( )
+  # Fail the build if compile fails
   - npm run compile
+  # Run the linter, but don't let that block the build (might change this later)
+  - npm run lint-f
 
 script:
   - vsce package

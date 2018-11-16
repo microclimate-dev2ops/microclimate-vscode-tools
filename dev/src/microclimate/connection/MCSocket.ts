@@ -5,14 +5,11 @@ import Connection from "./Connection";
 import AppLog from "../logs/AppLog";
 import Project from "../project/Project";
 import ProjectState from "../project/ProjectState";
-import * as MCUtil from "../../MCUtil";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
 import EventTypes from "./EventTypes";
-import StartModes, { allStartModes, isDebugMode } from "../../constants/StartModes";
-import ProjectTreeDataProvider from "../../view/ProjectTree";
-import projectInfoCmd from "../../command/ProjectInfoCmd";
+import { allStartModes, isDebugMode } from "../../constants/StartModes";
 
 export default class MCSocket {
 
@@ -57,13 +54,13 @@ export default class MCSocket {
         this.socket.disconnect();
     }
 
-    private onProjectStatusChanged = async (payload: any): Promise<void> => {
+    private readonly onProjectStatusChanged = async (payload: any): Promise<void> => {
         // Logger.log("onProjectStatusChanged", payload);
         // I don't see any reason why these should be handled differently
         this.onProjectChanged(payload);
     }
 
-    private onProjectChanged = async (payload: any): Promise<void> => {
+    private readonly onProjectChanged = async (payload: any): Promise<void> => {
         // Logger.log("onProjectChanged", payload);
         // Logger.log(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
                 // `buildState=${payload.buildStatus} startMode=${payload.startMode}`);
@@ -85,7 +82,7 @@ export default class MCSocket {
         project.update(payload);
     }
 
-    private onProjectClosed = async (payload: any): Promise<void> => {
+    private readonly onProjectClosed = async (payload: any): Promise<void> => {
         const project = await this.getProject(payload);
         if (project == null) {
             return;
@@ -95,7 +92,7 @@ export default class MCSocket {
         this.onProjectChanged(payload);
     }
 
-    private onProjectDeleted = async (payload: any): Promise<void> => {
+    private readonly onProjectDeleted = async (payload: any): Promise<void> => {
         Log.i("PROJECT DELETED", payload);
 
         const project = await this.getProject(payload);
@@ -107,7 +104,7 @@ export default class MCSocket {
         this.connection.forceUpdateProjectList();
     }
 
-    private onProjectRestarted = async (payload: any): Promise<void> => {
+    private readonly onProjectRestarted = async (payload: any): Promise<void> => {
         Log.i("PROJECT RESTARTED", payload);
 
         const projectID: string = payload.projectID;
@@ -162,7 +159,7 @@ export default class MCSocket {
         vscode.window.showInformationMessage(doneRestartMsg);
     }
 
-    private onContainerLogs = async (payload: any): Promise<void> => {
+    private readonly onContainerLogs = async (payload: any): Promise<void> => {
         const projectID = payload.projectID;
         // const projectName = payload.projectName;
         const logContents = payload.logs;
@@ -173,7 +170,7 @@ export default class MCSocket {
         }
     }
 
-    private onProjectValidated = async (payload: any): Promise<void> => {
+    private readonly onProjectValidated = async (payload: any): Promise<void> => {
         const project = await this.getProject(payload);
         if (project == null) {
             return;
@@ -182,7 +179,7 @@ export default class MCSocket {
         Validator.validate(project, payload);
     }
 
-    private getProject = async (payload: any): Promise<Project | undefined> => {
+    private readonly getProject = async (payload: any): Promise<Project | undefined> => {
         const projectID = payload.projectID;
         if (projectID == null) {
             // Should never happen

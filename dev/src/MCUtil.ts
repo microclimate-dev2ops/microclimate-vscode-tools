@@ -1,7 +1,6 @@
 import { Uri } from "vscode";
 import * as path from "path";
-import { ProjectType } from "./microclimate/project/ProjectType";
-import { Log } from "./Logger";
+// import { Log } from "./Logger";
 
 /**
  * Append toAppend to start, removing the last segment of start if the first segment of toAppend matches it.

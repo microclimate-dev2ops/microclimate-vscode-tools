@@ -11,7 +11,7 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
     public readonly treeDataProvider: vscode.TreeDataProvider<{}> = this;
     public readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";        // must match package.json
 
-    private onChangeEmitter: vscode.EventEmitter<ITreeItemAdaptable> = new vscode.EventEmitter<ITreeItemAdaptable>();
+    private readonly onChangeEmitter: vscode.EventEmitter<ITreeItemAdaptable> = new vscode.EventEmitter<ITreeItemAdaptable>();
     public readonly onDidChangeTreeData: vscode.Event<ITreeItemAdaptable> = this.onChangeEmitter.event;
 
     constructor() {
@@ -38,7 +38,7 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
      * TreeDataProvider method to get children for a given TreeItemAdaptable node, or provide the tree's root node.
      */
     public getChildren(node?: ITreeItemAdaptable): ITreeItemAdaptable[] | Promise<ITreeItemAdaptable[]> {
-        if (!node) {
+        if (node == null) {
             const connections = ConnectionManager.instance.connections;
             if (connections.length > 0) {
                 // The top-level nodes of this tree are our Connections, and their children are their Projects
@@ -57,7 +57,8 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
                 return [ noConnectionsRoot ];
             }
         }
-
-        return node.getChildren();
+        else {
+            return node.getChildren();
+        }
     }
 }

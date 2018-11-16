@@ -6,7 +6,9 @@
         {
             "type": "npm",
             "script": "watch",
-            "problemMatcher": "$tsc-watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
             "isBackground": true,
             "group": {
                 "kind": "build",
@@ -33,8 +35,13 @@
             ]
         },
         {
-            "label": "preLaunch",
-            "dependsOn": [ "Copy strings to out dir", "npm: compile" ],
+            "type": "npm",
+            "script": "lint",
+            "problemMatcher": "$tslint5"
+        },
+        {
+            "label": "build",
+            "dependsOn": [ "Copy strings to out dir", "npm: compile", "npm: lint" ],
             "isBackground": true
         }
     ]

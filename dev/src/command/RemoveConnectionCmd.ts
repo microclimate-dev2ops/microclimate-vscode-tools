@@ -1,9 +1,7 @@
-import * as vscode from "vscode";
-
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Connection from "../microclimate/connection/Connection";
 import { promptForConnection } from "./CommandUtil";
-import { Log } from "../Logger";
+import Log from "../Logger";
 
 export default async function removeConnectionCmd(connection: Connection): Promise<void> {
     Log.d("removeConnectionCmd invoked");

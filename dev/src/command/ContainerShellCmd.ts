@@ -18,7 +18,7 @@ export default async function containerShellCmd(project: Project): Promise<void>
         project = selected;
     }
 
-    if (!project.containerID) {
+    if (project.containerID == null || project.containerID === "") {
         vscode.window.showWarningMessage("This project does not have a container running right now. Wait until the project is Started.");
         return;
     }
@@ -36,7 +36,7 @@ export default async function containerShellCmd(project: Project): Promise<void>
         // env: env
     };
 
-    const term: vscode.Terminal = await vscode.window.createTerminal(options);
+    const term: vscode.Terminal = vscode.window.createTerminal(options);
     term.sendText(`docker exec -it ${project.containerID} /usr/bin/env ${toExec}`);
     term.show();
 }

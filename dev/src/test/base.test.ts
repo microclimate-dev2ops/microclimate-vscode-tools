@@ -26,7 +26,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         expect(wsFolders[0].uri.fsPath).to.equal(workspace.fsPath);
 
         Log.t("Loaded extensions:", vscode.extensions.all.map( (ext) => ext.id));
-        const extension = await vscode.extensions.getExtension(extensionName);
+        const extension = vscode.extensions.getExtension(extensionName);
         expect(extension).to.exist;
 
         Log.t("Workspace is good and extension is loaded.");

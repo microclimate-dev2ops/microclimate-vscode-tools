@@ -5,7 +5,6 @@ import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import AppLog from "../microclimate/logs/AppLog";
 import BuildLog from "../microclimate/logs/BuildLog";
-import { ProjectState } from "../microclimate/project/ProjectState";
 
 /**
  *

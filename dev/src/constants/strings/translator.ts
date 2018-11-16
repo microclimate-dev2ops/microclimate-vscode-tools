@@ -25,7 +25,7 @@ export default class Translator {
             if (tResult === key) {
                 Log.e(`Did not find string with key: ${key}`);
             }
-            return <string>tResult;
+            return tResult as string;
         }
         else {
             // Don't think this will ever happen
@@ -51,7 +51,7 @@ export default class Translator {
                         loadPath: path.join(__dirname, "strings-{{lng}}.json")
                     }
                 }, (err: any, translationFn: i18next.TranslationFunction) => {
-                    if (err) {
+                    if (err != null) {
                         return reject(err);
                     }
                     else {
@@ -63,7 +63,3 @@ export default class Translator {
         });
     }
 }
-
-
-
-
