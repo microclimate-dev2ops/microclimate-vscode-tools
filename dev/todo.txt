@@ -1,7 +1,13 @@
 Important:
 - Attach Debugger command to Starting state
+    - New 'starting debug' state
+    - Should have this in the other UIs
+    - startMode is updated AFTER Starting state is reached, so it briefly shows the wrong startMode, but then it gets corrected when the restartResult is received
+
 - What to do with app logs when MC is restarted? Clear them all? Kill the outputStreams?
 - externalize all strings :(
+- Make start mode strings user friendly again
+- Expose log file location to user
 
 Annoying Release Stuff:
 - Icons
@@ -10,14 +16,12 @@ Annoying Release Stuff:
     - Remove any internal issue links
     - Remove any references to other devs, teams
     - Add file headers and generally improve documentation
+    - Finalize tslint.json, hopefully extending "recommended"
 
 Less Important:
-
 - Tests
     - Debug, restart tests are good
     - Would be great to get coverage for other commands - but for most of them, it's hard to test if the API calls worked
-    - Debug tests try to connect the debugger twice for some reason. They still pass because the first connect succeeds, so the assets pass.
-        - The second one failing doesn't matter because VSCode extension API sucks at reporting debugger attach failures (startDebugging still returns 'true')
 - WebView for Overview page
     - Discuss with Portal creating an endpoint which sends a simple HTML page with NO <link rel>s with all the project info
         - Client (IDE) can request which stylesheet should be used for rendering (or provide the stylesheet itself).
@@ -46,3 +50,7 @@ Backlog:
             - OTOH we are rendering the color in the web UI, so we can't just pass --no-color to nodemon
 
 https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L274
+
+- Extension for ANSI colors in OutputStreams
+- Extension for externalizable string detection
+- Extension for optimizing imports

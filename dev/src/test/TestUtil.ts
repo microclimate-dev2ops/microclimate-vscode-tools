@@ -5,17 +5,15 @@ import * as request from "request-promise-native";
 import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 import Project from "../microclimate/project/Project";
-import ProjectState from "../microclimate/project/ProjectState";
-import * as SocketTestUtil from "./SocketTestUtil";
 import Connection from "../microclimate/connection/Connection";
 import Endpoints from "../constants/Endpoints";
-import EventTypes from "../constants/EventTypes";
+import ProjectObserver from "./ProjectObserver";
 
 // tslint:disable:ban no-unused-expression
 
 namespace TestUtil {
 
-    export const longTimeout = 120000;
+    export const LONG_TIMEOUT = 2 * 60 * 1000;
     const PROJECT_PREFIX = "test";
 
     export async function createTestProjects(connection: Connection, projectTypes: ProjectType[]): Promise<(Project | undefined)[]> {
@@ -67,16 +65,12 @@ namespace TestUtil {
             Log.t("Create project failure!", err);
         }
 
-        const creationEvent: SocketTestUtil.ExpectedSocketEvent = {
-            eventType: EventTypes.PROJECT_CREATION,
-            expectedData: { key: "name", value: projectName }
-        };
-
         Log.t("Awaiting project creation");
-        const creationResult = await SocketTestUtil.expectSocketEvent(creationEvent);
-        expect(creationResult).to.exist;
+        const projectID = await ProjectObserver.instance.awaitCreate(projectName);
 
-        const projectID = creationResult.projectID;
+        //expect(creationResult).to.exist;
+
+        //const projectID = creationResult.projectID;
 
         const createdProject: Project | undefined = await connection.getProjectByID(projectID);
         expect(createdProject, `Failed to get newly created project ${projectName}`).to.exist;
@@ -123,21 +117,14 @@ namespace TestUtil {
     }
 
     /**
-     * Wait for the given project to be Started. Will just use regular mocha timeout.
-     * Assets that the project is started before returning.
-     *
-     * This is preferred over using project.waitForState
-     * because we don't want to override/cancel the existing state being awaited in the product code.
+     * Since Project objects will get stale, if you want the actual current state, use this.
      */
-    export async function waitForProjectStarted(project: Project): Promise<void> {
-        if (!project.state.isStarted) {
-            Log.t(`Waiting for ${project.name} to be Started, is currently ${project.state}`);
-            await SocketTestUtil.expectSocketEvent(SocketTestUtil.getAppStateEvent(project.id, ProjectState.AppStates.STARTED));
+    export async function getProjectById(connection: Connection, projectID: string): Promise<Project> {
+        const project = await connection.getProjectByID(projectID);
+        if (project == null) {
+            throw new Error(`Couldn't get project with ID ${projectID} on connection ${connection}`);
         }
-        else {
-            Log.t(`No need to wait, ${project.name} is already Started`);
-        }
-        expect(project.state.isStarted, "Project did not start").to.be.true;
+        return project;
     }
 
     export function expectSuccessStatus(statusCode: number, failMsg?: string): void {

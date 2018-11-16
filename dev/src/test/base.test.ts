@@ -6,14 +6,11 @@ import Log from "../Logger";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Commands from "../constants/Commands";
 
-import * as SocketTestUtil from "./SocketTestUtil";
-
-// tslint:disable:typedef no-unused-expression no-invalid-this ban
+import SocketTestUtil from "./SocketTestUtil";
+import ProjectObserver from "./ProjectObserver";
 
 const workspace: vscode.Uri = vscode.Uri.file("/Users/tim/programs/microclimate/microclimate-workspace");
 const extensionName = "IBM.vscode-microclimate-tools";
-
-export const longTimeout: number = 120000;
 
 describe("Microclimate Tools for VSCode basic test", async function() {
 
@@ -80,11 +77,16 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         expect(connection.mcUri.authority).to.contain("localhost:9090");
     });
 
-    it("should have a socket connection", async function() {
+    it("should have a test socket connection", async function() {
         const uri = ConnectionManager.instance.connections[0].mcUri.toString();
-
         const testSocket = await SocketTestUtil.createTestSocket(uri);
         expect(testSocket.connected, "Socket did not connect").to.be.true;
+    });
+
+    it("should initialize the ProjectObserver", async function() {
+        const obs = new ProjectObserver(ConnectionManager.instance.connections[0]);
+        expect(obs, "Failed to initialize ProjectObserver").to.exist;
+        expect(obs.connection, "Failed to initialize ProjectObserver connection").to.exist;
     });
 });
 
