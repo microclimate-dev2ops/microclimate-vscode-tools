@@ -1,0 +1,16 @@
+{
+	"extends": "../../tslint.json",
+
+	"rules": {
+		"ban": [ true,
+			[ "project", "waitForState", "Banned for tests" ],
+			[ "project", "waitForStarted", "Banned for tests" ],
+			[ "project", "clearPendingState", "Banned for tests" ],
+			[ "Log", "i", "Use Log.t for tests" ],
+			[ "Log", "d", "Use Log.t for tests" ]
+		],
+		"typedef": false,
+		"no-unused-expression": false,
+		"no-invalid-this": false
+	}
+}

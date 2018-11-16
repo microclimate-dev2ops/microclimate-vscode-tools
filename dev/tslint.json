@@ -1,5 +1,7 @@
 {
+	// "extends": "tslint:recommended",
 	"rules": {
+
 		"no-string-throw": true,
 		"no-unused-expression": true,
 		"no-duplicate-variable": true,
@@ -41,11 +43,13 @@
 			[ "Function", "Use (param: type) => type instead"]
 		],
 		"ban": [ true,
-			[ "console", "log", "Use Logger"],
-			[ "console", "warn", "Use Logger.logW"],
-			[ "console", "error", "Use Logger.logE"],
-			[ "Logger", "test", "For test use only"]
+			[ "console", "log", "Use Log.i or Log.d"],
+			[ "console", "warn", "Use Log.w"],
+			[ "console", "error", "Use Log.e"],
+			[ "Log", "t", "For test use only"]
 		]
 	},
-	"defaultSeverity": "warning"
+	"defaultSeverity": "warning",
+
+	"rulesDirectory": [ "src/test/" ]
 }
