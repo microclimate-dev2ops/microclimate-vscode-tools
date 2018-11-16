@@ -1,52 +1,50 @@
 {
-	// "extends": "tslint:recommended",
+	"extends": "tslint:recommended",
 	"rules": {
+		// Disable some recommended rules.
+		"member-ordering": false,
+		"no-namespace": false,
+		"object-literal-sort-keys": false,
+		"one-line": false,
+		"ordered-imports": false,
+		"trailing-comma": false,
+		"typedef-whitespace": false,
+		"variable-name": [ true, "allow-leading-underscore", "allow-trailing-underscore" ],
 
-		"no-string-throw": true,
-		"no-unused-expression": true,
-		"no-duplicate-variable": true,
-		"curly": true,
-		"class-name": true,
-		"semicolon": [
+		// Below are my rules.
+		"await-promise": [
 			true,
-			"always"
+			"Thenable"
 		],
-		"no-unused-variable": true,
-		"triple-equals": [ true, "allow-null-check" ],
-		"quotemark": [ true, "double" ],
-		"prefer-for-of": true,
-		"await-promise": [ true, "Thenable" ],
-		"no-duplicate-super": true,
-		"no-eval": true,
+		"ban": [ true,
+			[ "For test use only", "Log",  "t" ]
+		],
+		"deprecation": true,
+		"max-line-length": [
+			true,
+			150
+		],
+		"no-boolean-literal-compare": true,
+		"no-duplicate-variable": true,
 		"no-floating-promises": true,
 		"no-invalid-template-strings": true,
 		"no-invalid-this": true,
-		"no-var-keyword": true,
-		"no-use-before-declare": true,
-		"prefer-readonly": true,
-		"prefer-const": true,
 		"no-require-imports": true,
-		"max-line-length": [ true, 150 ],
-		"deprecation": true,
-		"switch-default": true,
+		"no-unused-variable": true,
+		"no-use-before-declare": true,
+		"no-var-keyword": true,
+		"prefer-const": true,
+		"prefer-readonly": true,
 		"strict-boolean-expressions": true,
-		"new-parens": true,
-		"no-boolean-literal-compare": true,
-		"typedef": [ true,
-			"call-signature", "parameter",
-			// "arrow-call-signature", // "arrow-parameter",
-			"member-variable-declaration", "property-declaration",
-			"object-destructuring", "array-destructuring"
-		],
-		"ban-types": [ true,
-			// [ "Object", "Use {} instead" ],
-			[ "Function", "Use (param: type) => type instead"]
-		],
-		"ban": [ true,
-			[ "console", "log", "Use Log.i or Log.d"],
-			[ "console", "warn", "Use Log.w"],
-			[ "console", "error", "Use Log.e"],
-			[ "Log", "t", "For test use only"]
+		"switch-default": true,
+		"typedef": [
+			true,
+			"array-destructuring",
+			"call-signature",
+			"member-variable-declaration",
+			"object-destructuring",
+			"parameter",
+			"property-declaration"
 		]
 	},
 	"defaultSeverity": "warning",

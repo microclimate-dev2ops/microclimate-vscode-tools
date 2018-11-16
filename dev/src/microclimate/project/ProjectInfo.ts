@@ -133,7 +133,7 @@ function getNonNull(item: Uri | number | string | undefined, fallback: string, m
     if (item == null || item === "") {
         result = fallback;
     }
-    else if (item instanceof Uri && (<Uri>item).scheme.includes("file")) {
+    else if (item instanceof Uri && (item as Uri).scheme.includes("file")) {
         result = item.fsPath;
     }
     else {

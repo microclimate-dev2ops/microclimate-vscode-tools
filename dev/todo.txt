@@ -17,7 +17,6 @@ Annoying Release Stuff:
     - Remove any internal issue links
     - Remove any references to other devs, teams
     - Add file headers and generally improve documentation
-    - Finalize tslint.json, hopefully extending "recommended"
 
 Less Important:
 - Tests

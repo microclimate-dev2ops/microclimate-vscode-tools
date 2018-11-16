@@ -4,7 +4,7 @@ import * as path from "path";
 import * as util from "util";
 import { ExtensionContext } from "vscode";
 
-// tslint:disable ban
+// tslint:disable no-console
 
 export class Log {
 
@@ -101,7 +101,7 @@ export class Log {
         try {
             caller = " " + getCaller();
         }
-        catch(err) {
+        catch (err) {
             console.error(err);
         }
 
@@ -111,7 +111,7 @@ export class Log {
         return new Promise<void>( (resolve, _) => {
             // Send the message to both the 'console' and the logfile.
             const consoleFn = level === this.Levels.ERROR ? console.error : console.log;
-            if(args.length > 0) {
+            if (args.length > 0) {
                 consoleFn(label, s, ...args);
             }
             else {
@@ -135,12 +135,12 @@ function getCaller(): string {
     const stack = new Error().stack;
     if (stack != null) {
         const stackLines = stack.split("\n");
-        //console.log("stackLines:", stackLines);
+        // console.log("stackLines:", stackLines);
 
         // Work our way UP the stack until we hit a Logger function, then take the function call before that one.
         for (const [i, line] of stackLines.reverse().entries()) {
             if (line.includes(__filename)) {
-                const callerRaw: string = stackLines[i-1].trim();
+                const callerRaw: string = stackLines[i - 1].trim();
                 // the callerRaw line will look like this:
                 // "at activate (/Users/tim/programs/microclimate-vscode/dev/out/extension.js:13:21)"
                 // we want to format it into "extension.js.activate()"

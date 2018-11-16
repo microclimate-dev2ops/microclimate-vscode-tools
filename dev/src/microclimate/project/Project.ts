@@ -29,7 +29,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private _containerID: string | undefined;
     private _appPort: number | undefined;
     private _debugPort: number | undefined;
-    private _autoBuildEnabled: Boolean;
+    private _autoBuildEnabled: boolean;
 
     // Dates below will always be set, but might be "invalid date"s
     private _lastBuild: Date;
@@ -44,7 +44,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     private pendingAppStates: ProjectState.AppStates[] = [];
     private resolvePendingAppState: ( () => void ) | undefined;
 
-    constructor (
+    constructor(
         projectInfo: any,
         public readonly connection: Connection,
     ) {
@@ -150,7 +150,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         this._state = new ProjectState(projectInfo, oldState != null ? oldState : undefined);
 
         // Whether or not this update call has changed the project such that we have to update the UI.
-        let changed: Boolean = false;
+        let changed: boolean = false;
         if (this._state !== oldState) {
             changed = true;
             Log.d(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
@@ -247,7 +247,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
             setTimeout(
                 () => reject(`${this.name} did not reach ` +
                     `${states.length > 1 ? "any of states" : "state"}:` +
-                    ` "${statesAsStr}" within ${timeoutMs/1000}s`),
+                    ` "${statesAsStr}" within ${timeoutMs / 1000}s`),
                 timeoutMs);
 
             this.resolvePendingAppState = resolve;
@@ -264,7 +264,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         Project.diagnostics.delete(this.localPath);
     }
 
-    public setAutoBuild(newAutoBuild: Boolean): void {
+    public setAutoBuild(newAutoBuild: boolean): void {
         if (newAutoBuild != null) {
             this._autoBuildEnabled = newAutoBuild;
             Log.i(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
@@ -283,7 +283,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         return this._debugPort;
     }
 
-    public get autoBuildEnabled(): Boolean {
+    public get autoBuildEnabled(): boolean {
         return this._autoBuildEnabled;
     }
 
@@ -323,7 +323,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
      *
      * @return If this project's app port was changed.
      */
-    private setAppPort(newAppPort: number | undefined): Boolean {
+    private setAppPort(newAppPort: number | undefined): boolean {
         if (newAppPort == null && this._appPort != null) {
             // Should happen when the app stops.
             Log.d("Unset app port for " + this.name);
@@ -350,7 +350,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
      *
      * @return If this project's debug port was changed.
      */
-    private setDebugPort(newDebugPort: number | undefined): Boolean {
+    private setDebugPort(newDebugPort: number | undefined): boolean {
         if (newDebugPort == null && this._appPort != null) {
             // Should happen when the app stops.
             Log.d("Unset debug port for " + this.name);
