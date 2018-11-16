@@ -14,6 +14,16 @@
             },
         },
         {
+            "type": "npm",
+            "script": "compile",
+            "problemMatcher": "$tsc-watch",
+            "isBackground": false,
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+        {
             "label": "Copy strings to out dir",
             "type": "shell",
             "command": "cp",
@@ -24,7 +34,7 @@
         },
         {
             "label": "preLaunch",
-            "dependsOn": [ "Copy strings to out dir", "npm: watch" ],
+            "dependsOn": [ "Copy strings to out dir", "npm: compile" ],
             "isBackground": true
         }
     ]
