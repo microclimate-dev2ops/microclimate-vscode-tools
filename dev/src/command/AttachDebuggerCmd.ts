@@ -3,17 +3,17 @@ import * as vscode from "vscode";
 import * as MCUtil from "../MCUtil";
 import { promptForProject } from "../command/CommandUtil";
 import * as Resources from "../constants/Resources";
-import AppLog from "../microclimate/logs/AppLog";
 import Project from "../microclimate/project/Project";
 import ProjectState from "../microclimate/project/ProjectState";
 import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
+import AppLog from "../microclimate/logs/AppLog";
 
 
 export default async function attachDebuggerCmd(project: Project): Promise<Boolean> {
     Log.d("attachDebuggerCmd");
     if (project == null) {
-        const selected = await promptForProject(ProjectState.AppStates.STARTING, ProjectState.AppStates.DEBUGGING);
+        const selected = await promptForProject(...ProjectState.getDebuggableStates());
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
@@ -66,9 +66,10 @@ export async function startDebugSession(project: Project): Promise<string> {
         throw new Error(`No debug port set for project ${project.name}`);
     }
 
-    // Wait for the server to be Starting or Debugging before we try to connect the debugger, or it may try to connect before the server is ready
+    // Wait for the server to be Starting - Debug or Debugging before we try to connect the debugger,
+    // or it may try to connect before the server is ready
     try {
-        await project.waitForState(30000, ProjectState.AppStates.STARTING, ProjectState.AppStates.DEBUGGING);
+        await project.waitForState(60000, ...ProjectState.getDebuggableStates());
     }
     catch (err) {
         Log.e("Timeout waiting before connecting debugger:", err);
@@ -77,10 +78,15 @@ export async function startDebugSession(project: Project): Promise<string> {
 
     const debugConfig: vscode.DebugConfiguration = await getDebugConfig(project);
     const projectFolder = vscode.workspace.getWorkspaceFolder(project.localPath);
-    Log.i("Running debug launch:", debugConfig, "on project folder:", projectFolder);
+    const pfName: string = projectFolder != null ? projectFolder.name : "undefined";
+    Log.i("Running debug launch on project folder: " + pfName, debugConfig);
 
     const priorDebugSession = vscode.debug.activeDebugSession;
     let debugSuccess = await vscode.debug.startDebugging(projectFolder, debugConfig);
+
+    // Show the app logs again - Usually this will have no effect since we showed them when the restart was initiated,
+    // but sometimes the Language Server outputstream will be opened over the project one, which is annoying, so put ours back on top.
+    AppLog.getOrCreateLog(project.id, project.name).showOutputChannel();
 
     // startDebugging above will often return 'true' before the debugger actually connects, so it could still fail.
     // Do some extra checks here to ensure that a new debug session was actually launched, and report failure if it wasn't.
@@ -94,7 +100,7 @@ export async function startDebugSession(project: Project): Promise<string> {
         debugSuccess = false;
     }
     else if (currentDebugSession.name !== debugConfig.name) {
-        Log.w(`There is an active debug session "${currentDebugSession}", but it's not the one we just tried to launch`);
+        Log.w(`There is an active debug session "${currentDebugSession.name}", but it's not the one we just tried to launch`);
         debugSuccess = false;
     }
     else if (priorDebugSession != null && priorDebugSession.id === currentDebugSession.id) {
@@ -111,8 +117,6 @@ export async function startDebugSession(project: Project): Promise<string> {
     }
 
     if (debugSuccess) {
-        // open the app's logs
-        AppLog.getOrCreateLog(project.id, project.name).showOutputChannel();
         return `Debugging ${project.name} at ${project.debugUrl}`;
     }
     else {

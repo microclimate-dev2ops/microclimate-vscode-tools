@@ -57,6 +57,7 @@ export default class ConnectionManager {
             Log.e(`Request to remove connection ${connection} but it doesn't exist!`);
             return false;
         }
+        connection.destroy();
         this.connections.splice(indexToRemove, 1);
         Log.i("Removed connection", connection);
         ConnectionManager.saveConnections();

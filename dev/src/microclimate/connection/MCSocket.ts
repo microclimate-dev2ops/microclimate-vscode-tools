@@ -48,6 +48,15 @@ export default class MCSocket {
             // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
 
+    /**
+     * This MUST be called when the connection is removed.
+     * If there are multiple sockets listening on the same connection,
+     * the callbacks will be fired multiple times for the same event, which will lead to serious misbehaviour.
+     */
+    public async destroy(): Promise<void> {
+        this.socket.disconnect();
+    }
+
     private onProjectStatusChanged = async (payload: any): Promise<void> => {
         // Logger.log("onProjectStatusChanged", payload);
         // I don't see any reason why these should be handled differently
@@ -173,9 +182,10 @@ export default class MCSocket {
         Validator.validate(project, payload);
     }
 
-    private async getProject(payload: any): Promise<Project | undefined> {
+    private getProject = async(payload: any): Promise<Project | undefined> => {
         const projectID = payload.projectID;
         if (projectID == null) {
+            // Should never happen
             Log.e("No projectID in socket event!", payload);
             return undefined;
         }

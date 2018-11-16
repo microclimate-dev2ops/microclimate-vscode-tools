@@ -45,6 +45,11 @@ export default class Connection implements TreeItemAdaptable, vscode.QuickPickIt
         Log.i(`Created new Connection @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`);
     }
 
+    public async destroy(): Promise<void> {
+        Log.d("Destroy connection " + this);
+        return this.socket.destroy();
+    }
+
     public toString(): string {
         return this.mcUri.toString();
     }

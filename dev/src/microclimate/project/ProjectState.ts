@@ -1,5 +1,12 @@
 import Log from "../../Logger";
-import { isDebugMode } from "../../constants/StartModes";
+import * as StartModes from "../../constants/StartModes";
+
+// projectInfoPayload keys
+const KEY_APP_STATE:    string = "appStatus";
+const KEY_BUILD_STATE:  string = "buildStatus";
+const KEY_CLOSED_STATE: string = "state";
+const KEY_START_MODE:   string = "startMode";
+const KEY_BUILD_DETAIL: string = "detailedBuildStatus";
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
@@ -8,49 +15,37 @@ export class ProjectState {
 
     constructor (
         projectInfoPayload: any,
-        // Use below if the projectInfoPayload may be missing information (eg. from a restart success event)
-        // They will be used as fallback values if the new state is null or UNKNOWN.
-        fallbackState?: ProjectState
+        // Use oldState if the projectInfoPayload is missing state information (eg. from a restart success event)
+        // It will be used as fallback values if the new state is null or UNKNOWN.
+        oldState?: ProjectState
     ) {
-        if (projectInfoPayload == null) {
-            // Logger.logE("Passed null project info to ProjectState");
+        if (projectInfoPayload != null) {
+            if (oldState != null) {
+                if (projectInfoPayload[KEY_APP_STATE] == null) {
+                    projectInfoPayload[KEY_APP_STATE] = oldState.appState.toString();
+                }
+                if (projectInfoPayload[KEY_BUILD_STATE] == null) {
+                    projectInfoPayload[KEY_BUILD_STATE] = oldState.buildState.toString();
+                }
+                if (!projectInfoPayload[KEY_BUILD_DETAIL]) {
+                    projectInfoPayload[KEY_BUILD_DETAIL] = oldState.buildDetail;
+                }
+            }
+
+            this.appState = ProjectState.getAppState(projectInfoPayload);
+            this.buildState = ProjectState.getBuildState(projectInfoPayload);
+            this.buildDetail = projectInfoPayload[KEY_BUILD_DETAIL] || "";
+        }
+        else {
+            Log.e("ProjectState received null ProjectInfo");
             this.appState = ProjectState.AppStates.UNKNOWN;
             this.buildState = ProjectState.BuildStates.UNKNOWN;
             this.buildDetail = "";
         }
-        else {
-            let newAppState = ProjectState.getAppState(projectInfoPayload);
-            let newBuildState = ProjectState.getBuildState(projectInfoPayload);
-            let newBuildDetail: string = projectInfoPayload.detailedBuildStatus || "";
-
-            // use fall-backs if they were provided, and we couldn't determine something
-            if (fallbackState != null) {
-                if (newAppState == null || newAppState === ProjectState.AppStates.UNKNOWN) {
-                    newAppState = fallbackState.appState;
-                    // Somewhat hacky exception for if project is still Started/Debugging but startMode changed
-                    if (newAppState === ProjectState.AppStates.DEBUGGING && !isDebugMode(projectInfoPayload.startMode)) {
-                        newAppState = ProjectState.AppStates.STARTED;
-                    }
-                    else if (newAppState === ProjectState.AppStates.STARTED && isDebugMode(projectInfoPayload.startMode)) {
-                        newAppState = ProjectState.AppStates.DEBUGGING;
-                    }
-                }
-                if (newBuildState == null || newBuildState === ProjectState.BuildStates.UNKNOWN) {
-                    newBuildState = fallbackState.buildState;
-                }
-                if (newBuildDetail == null || newBuildDetail === "") {
-                    newBuildDetail = fallbackState.buildDetail || "";
-                }
-            }
-            this.appState = newAppState;
-            this.buildState = newBuildState;
-            this.buildDetail = newBuildDetail;
-        }
     }
 
     public get isEnabled(): Boolean {
-        return ProjectState.getEnabledStates().indexOf(this.appState) >= 0
-                && this.appState !== ProjectState.AppStates.UNKNOWN;
+        return ProjectState.getEnabledStates().includes(this.appState);
     }
 
     public get isStarted(): Boolean {
@@ -94,14 +89,15 @@ export class ProjectState {
 
 export namespace ProjectState {
 
+    // The AppStates and BuildStates string values are all exposed to the user.
     export enum AppStates {
-        STARTED = "Started",        // maybe should be "Running" to match web UI
+        STARTED = "Running",
         STARTING = "Starting",
         STOPPING = "Stopping",
         STOPPED = "Stopped",
 
-        // Starting/Debug should be different from regular Starting.
         DEBUGGING = "Debugging",
+        DEBUG_STARTING = "Starting - Debug",
 
         DISABLED = "Disabled",
         UNKNOWN = "Unknown"
@@ -117,13 +113,13 @@ export namespace ProjectState {
     }
 
     export function getEnabledStates(): AppStates[] {
-        // All states except Disabled.
         return [
             AppStates.STARTED,
             AppStates.STARTING,
             AppStates.STOPPING,
             AppStates.STOPPED,
             AppStates.DEBUGGING,
+            AppStates.DEBUG_STARTING,
             AppStates.UNKNOWN
         ];
     }
@@ -135,98 +131,80 @@ export namespace ProjectState {
         ];
     }
 
+    export function getDebuggableStates(): AppStates[] {
+        return [
+            ProjectState.AppStates.DEBUGGING,
+            ProjectState.AppStates.DEBUG_STARTING
+        ];
+    }
+
     /**
-     * Convert portal's project info object into a ProjectState.
+     * Convert Microclimate's project info object into a ProjectState.
      */
     export function getAppState(projectInfoPayload: any): ProjectState.AppStates {
 
         // Logger.log("PIP", projectInfoPayload);
-        let appStatus: string = projectInfoPayload.appStatus || "";
-        appStatus = appStatus.toLowerCase();
+        const appStatus: string = <string> projectInfoPayload[KEY_APP_STATE] || "";
 
-        const closedState: string | undefined = projectInfoPayload.state;
-        const startMode:   string | undefined = projectInfoPayload.startMode;
+        const closedState: string | undefined = projectInfoPayload[KEY_CLOSED_STATE];
+        const startMode:   string | undefined = projectInfoPayload[KEY_START_MODE];
 
         // Logger.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
 
-        // First, check if the project is open. If it's not, it's disabled.
+        // First, check if the project is closed (aka Disabled)
         if (closedState === "closed") {
             return ProjectState.AppStates.DISABLED;
         }
-        // Now, check the app states.
-        else if (appStatus === "started") {
-            if (startMode != null && isDebugMode(startMode)) {
+        // Now, check the app states. Compare against both the value we expect from MC,
+        // as well as our own possible values, in case we used the fallbackState in the constructor.
+        else if (appStatus === "started" || appStatus === AppStates.DEBUGGING || appStatus === AppStates.STARTED) {
+            if (startMode != null && StartModes.isDebugMode(startMode)) {
                 return ProjectState.AppStates.DEBUGGING;
             }
             return ProjectState.AppStates.STARTED;
         }
-        else if (appStatus === "starting") {
+        else if (appStatus === "starting" || appStatus === AppStates.STARTING || appStatus === AppStates.DEBUG_STARTING) {
+            if (startMode != null && StartModes.isDebugMode(startMode)) {
+                return ProjectState.AppStates.DEBUG_STARTING;
+            }
             return ProjectState.AppStates.STARTING;
         }
-        else if (appStatus === "stopping") {
+        else if (appStatus === "stopping" || appStatus === AppStates.STOPPING) {
             return ProjectState.AppStates.STOPPING;
         }
-        else if (appStatus === "stopped") {
+        else if (appStatus === "stopped" || appStatus === AppStates.STOPPED) {
             return ProjectState.AppStates.STOPPED;
         }
-        else if (appStatus === "unknown" || appStatus === "") {
+        else if (appStatus === "unknown" || appStatus === "" || appStatus === AppStates.UNKNOWN) {
             return ProjectState.AppStates.UNKNOWN;
         }
-        Log.e("Unknown app state:", appStatus);
-        return ProjectState.AppStates.UNKNOWN;
+        else {
+            Log.e("Unknown app state:", appStatus);
+            return ProjectState.AppStates.UNKNOWN;
+        }
     }
 
     export function getBuildState(projectInfoPayload: any): BuildStates {
-        const buildStatus: string | undefined = projectInfoPayload.buildStatus;
+        const buildStatus: string | undefined = projectInfoPayload[KEY_BUILD_STATE];
 
-        if (buildStatus === "success") {
+        if (buildStatus === "success" || buildStatus === BuildStates.BUILD_SUCCESS) {
             return BuildStates.BUILD_SUCCESS;
         }
-        else if (buildStatus === "inProgress") {
+        else if (buildStatus === "inProgress" || buildStatus === BuildStates.BUILDING) {
             return BuildStates.BUILDING;
         }
-        else if (buildStatus === "queued") {
+        else if (buildStatus === "queued" || buildStatus === BuildStates.BUILD_QUEUED) {
             return BuildStates.BUILD_QUEUED;
         }
-        else if (buildStatus === "failed") {
+        else if (buildStatus === "failed" || buildStatus === BuildStates.BUILD_FAILED) {
             return BuildStates.BUILD_FAILED;
         }
-        else if (buildStatus == null) {
-            // This happens with disabled projects
+        else if (buildStatus == null || buildStatus === "unknown") {
             return BuildStates.UNKNOWN;
         }
-        Log.e("Unknown build state:", buildStatus);
-        return BuildStates.UNKNOWN;
-    }
-
-    export function getAppStatusEmoji(state: ProjectState.AppStates): string {
-        // ⚠ ▶ ⏹ ❌ ❓ ❗ ✅ 🐞
-        switch (state) {
-            case ProjectState.AppStates.DISABLED:
-                return "🚫";
-            case ProjectState.AppStates.STARTED:
-                return "🔵";
-            case ProjectState.AppStates.STOPPED:
-                return "🔴";
-            case ProjectState.AppStates.STARTING:
-            case ProjectState.AppStates.STOPPING:
-                return "⚪";
-            case ProjectState.AppStates.DEBUGGING:
-                return "🐞";
-            default:
-                return "❓";
-        }
-    }
-
-    export function getBuildStatusEmoji(state: ProjectState.BuildStates): string {
-        switch(state) {
-            case ProjectState.BuildStates.BUILDING:
-            case ProjectState.BuildStates.BUILD_QUEUED:
-                return "🔨";
-            case ProjectState.BuildStates.BUILD_FAILED:
-                return "❌";
-            default:
-                return "❓";
+        else {
+            Log.e("Unknown build state:", buildStatus);
+            return BuildStates.UNKNOWN;
         }
     }
 }

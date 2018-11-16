@@ -10,8 +10,6 @@ import Log from "../../Logger";
 import Commands from "../../constants/Commands";
 
 export default class Project implements TreeItemAdaptable, vscode.QuickPickItem {
-    // index signature so we can use Object.keys(project) nicely
-    // [key: string]: any;
 
     // these below must match package.json
     private static readonly CONTEXT_ID_BASE: string = "ext.mc.projectItem";
@@ -41,7 +39,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
     public readonly label: string;
     public readonly detail?: string;
 
-    private _state: ProjectState = new ProjectState(undefined);
+    private _state: ProjectState;
 
     private pendingAppStates: ProjectState.AppStates[] = [];
     private resolvePendingAppState: ( () => void ) | undefined;
@@ -70,7 +68,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
         this.contextRoot = projectInfo.contextroot || "";
 
-        this.update(projectInfo);
+        this._state = this.update(projectInfo);
 
         // QuickPickItem
         this.label = `${this.name} (${this.type} project)`;
@@ -105,7 +103,7 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
 
     private static getContextID(state: ProjectState): string {
         if (state.isEnabled) {
-            if (state.appState === ProjectState.AppStates.DEBUGGING) {
+            if (ProjectState.getDebuggableStates().includes(state.appState)) {
                 return Project.CONTEXT_ID_DEBUGGABLE;
             }
             else {
@@ -135,19 +133,21 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
      *
      * Also signals the ConnectionManager change listener
      */
-    public update = (projectInfo: any): void => {
+    public update = (projectInfo: any): ProjectState => {
         if (projectInfo.projectID !== this.id) {
             // shouldn't happen, but just in case
             Log.e(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
-            return;
+            // return the old state
+            return this._state;
         }
 
         this._containerID = projectInfo.containerId;
         this._lastBuild = new Date(projectInfo.lastbuild);
         this._lastImgBuild = new Date(Number(projectInfo.appImageLastBuild));
 
+        // note oldState can be null if this is the first time update is being invoked.
         const oldState = this._state;
-        this._state = new ProjectState(projectInfo, oldState);
+        this._state = new ProjectState(projectInfo, oldState != null ? oldState : undefined);
 
         // Whether or not this update call has changed the project such that we have to update the UI.
         let changed: Boolean = false;
@@ -180,34 +180,48 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
         if (changed) {
             this.connection.onChange();
         }
+
+        return this._state;
     }
 
     private clearPendingState(): void {
-        Log.i("Clear pending state, pending states are: " + JSON.stringify(this.pendingAppStates));
         if (this.resolvePendingAppState != null) {
-            Log.i("Resolving pending state(s)");
+            Log.d("Resolving pending state(s): " + JSON.stringify(this.pendingAppStates));
             this.resolvePendingAppState();
         }
         else if (this.pendingAppStates.length > 0) {
             // should never happen
             Log.e("Reached pending state(s) but no resolve function was set");
         }
+        else {
+            Log.d("No pending state to clear");
+        }
         this.pendingAppStates = [];
         this.resolvePendingAppState = undefined;
     }
 
+    /**
+     * Shorthand for waitForState() when waiting for Started states.
+     * Again, **DO NOT** call this from test code.
+     */
     public async waitForStarted(timeoutMs: number): Promise<string> {
-        return this.waitForState(timeoutMs, ProjectState.AppStates.STARTED, ProjectState.AppStates.DEBUGGING);
+        return this.waitForState(timeoutMs, ...ProjectState.getStartedStates());
     }
 
     /**
      * Return a promise that resolves when this project enters one of the given AppStates.
      * This is checked when project state changes, in update() above.
      *
-     * Will also clear any previous state being waited for - so be careful calling this from test code.
+     * **DO NOT** call this from test code, since it will also clear any previous state being waited for,
+     * changing how the product code executes.
      */
-    public async waitForState(timeoutMs: number, state: ProjectState.AppStates, ...alternateStates: ProjectState.AppStates[]): Promise<string> {
-        const states: ProjectState.AppStates[] = alternateStates.concat(state);
+    public async waitForState(timeoutMs: number, ...states: ProjectState.AppStates[]): Promise<string> {
+        if (states.length === 0) {
+            // Should never happen
+            const msg = "Empty states array passed to waitForState";
+            Log.e(msg);
+            return msg;
+        }
 
         this.clearPendingState();
 
@@ -237,7 +251,6 @@ export default class Project implements TreeItemAdaptable, vscode.QuickPickItem 
                 timeoutMs);
 
             this.resolvePendingAppState = resolve;
-            return;
         });
 
         const syncIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
