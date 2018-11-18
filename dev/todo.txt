@@ -22,7 +22,6 @@ Important:
 - Better button labels when connection fails
 - externalize strings
 - Make start mode strings user friendly again
-- Don't offer to open the microclimate-workspace if user's in a subdirectory of it
 
 Annoying Release Stuff:
 - Icons

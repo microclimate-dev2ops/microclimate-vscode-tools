@@ -14,6 +14,17 @@ export const DEFAULT_CONNINFO: MCUtil.IConnectionInfo = {
     port: 9090
 };
 
+// From https://github.ibm.com/dev-ex/microclimate/blob/master/docker/portal/server.js#L229
+interface IMicroclimateEnvData {
+    devops_available: boolean;
+    editor_url: string;
+    microclimate_version: string;
+    running_on_icp: boolean;
+    socket_namespace?: string;
+    user_string?: string;
+    workspace_location: string;
+}
+
 export async function newConnectionCmd(): Promise<void> {
     Log.d("New connection command invoked");
 
@@ -79,18 +90,25 @@ export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promis
     return new Promise<void>( (resolve) => {
         testConnection(connInfo)
             .then(async (connection: Connection) => {
-                const successMsg = `New connection to ${connection.mcUri} succeeded.`;
-                const workspaceMsg = `Workspace path is: ${connection.workspacePath.fsPath}`;
-                Log.i(successMsg, workspaceMsg);
-
+                Log.d("TestConnection success to " + connection.mcUri);
                 // Connection succeeded, let the user know.
                 // The ConnectionManager will signal the change and the UI will update accordingly.
 
-                if (vscode.workspace.getWorkspaceFolder(connection.workspacePath) == null) {
-                    // this means the user does not have this connection's workspace folder opened.
-                    // Provide a button to change their workspace to the microclimate-workspace if they wish
+                // Check if the user has this connection's workspace folder opened.
+                let inMcWorkspace = false;
+                const wsFolders = vscode.workspace.workspaceFolders;
+                if (wsFolders != null) {
+                    inMcWorkspace = wsFolders.find( (folder) => folder.uri.fsPath.includes(connection.workspacePath.fsPath)) != null;
+                }
+
+                const successMsg = `New connection to ${connection.mcUri} succeeded.`;
+                const workspaceMsg = `Workspace path is: ${connection.workspacePath.fsPath}`;
+                Log.d(workspaceMsg);
+
+                if (!inMcWorkspace) {
                     const openWsBtn = "Open workspace";
 
+                    // Provide a button to change their workspace to the microclimate-workspace if they wish
                     vscode.window.showInformationMessage(successMsg + " " + workspaceMsg, openWsBtn)
                         .then ( (response) => {
                             if (response === openWsBtn) {
@@ -133,7 +151,7 @@ async function testConnection(connInfo: MCUtil.IConnectionInfo): Promise<Connect
 
     return new Promise<Connection>( (resolve, reject) => {
         request.get(envUri.toString(), { json: true, timeout: connectTimeout })
-            .then( (microclimateData: string) => {
+            .then( (microclimateData: IMicroclimateEnvData) => {
                 // Connected successfully
                 return resolve(onSuccessfulConnection(uri, connInfo.host, microclimateData));
             })
@@ -157,7 +175,7 @@ const requiredVersionStr: string = "18.11";
  * We've determined by this point that Microclimate is running at the given URI,
  * but we have to validate now that it's a new enough version.
  */
-async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: any): Promise<Connection> {
+async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: IMicroclimateEnvData): Promise<Connection> {
 
     return new Promise<Connection>( (resolve, reject) => {
         Log.i("Microclimate ENV data:", mcEnvData);
