@@ -8,7 +8,7 @@ import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
 import EventTypes from "./EventTypes";
-import { allStartModes, isDebugMode } from "../../constants/StartModes";
+import * as StartModes from "../../constants/StartModes";
 
 export default class MCSocket {
 
@@ -127,20 +127,29 @@ export default class MCSocket {
             return;
         }
 
+        Log.d("Restart event is valid");
         const startMode: string = payload.startMode;
-        if (!allStartModes().includes(startMode)) {
+        if (!StartModes.allStartModes().includes(startMode)) {
             Log.e(`Invalid start mode "${startMode}"`);
         }
         // This updates the ports and startMode, because those are what the payload will provide.
         project.update(payload);
 
-        const isDebug = isDebugMode(startMode);
+        const isDebug = StartModes.isDebugMode(startMode);
 
         const timeout = 60000;
         if (isDebug) {
+            Log.d("Attaching debugger after restart");
             try {
-                await attachDebuggerCmd(project);
-                await project.waitForState(timeout, ProjectState.AppStates.DEBUGGING);
+                const success = await attachDebuggerCmd(project);
+                if (success) {
+                    await project.waitForState(timeout, ProjectState.AppStates.DEBUGGING);
+                }
+                else {
+                    // attachDebuggerCmd will display the error message
+                    Log.w("Debugger attach after restart returned failure");
+                    return;
+                }
             }
             catch (err) {
                 // I think all errors should be handled by attachDebuggerCmd, but just in case.

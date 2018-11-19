@@ -56,6 +56,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
         return true;
     }
     catch (err) {
+        // Show our error message here. we can't throw/reject or vscode won't know how to handle it
         const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugUrl} `;
         const extraErrMsg = err.message ? err.message : "";
         Log.e(failMsg, extraErrMsg);
@@ -103,13 +104,15 @@ export async function startDebugSession(project: Project): Promise<string> {
         Log.w("Debug session failed to launch");
         debugSuccess = false;
     }
+    /*
     else if (currentDebugSession.name !== debugConfig.name) {
         Log.w(`There is an active debug session "${currentDebugSession.name}", but it's not the one we just tried to launch`);
         debugSuccess = false;
-    }
-    else if (priorDebugSession != null && priorDebugSession.id === currentDebugSession.id) {
-        // This means we were already debugging this project (since the debug session name did match above),
-        // and we failed to create a new session - the old one is still running
+    }*/
+    else if (currentDebugSession.name === debugConfig.name && priorDebugSession != null && priorDebugSession.id === currentDebugSession.id) {
+        // This means we were already debugging this project (since the debug session name did match),
+        // but failed to create a new session - the old one is still running
+        // This probably happened because we tried to Attach Debugger but the debug port was already blocked by an existing session.
         Log.w("Project already had an active debug session, and a new one was not created");
         debugSuccess = false;
         errDetail = `- is it already being debugged?`;

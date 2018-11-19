@@ -19,7 +19,7 @@ New:
 Important:
 - I need help testing
     - At what point do we pull in SVT?
-- When is my DCUT?
+- When is DCUT?
     - Can I do code sweep / cleanup after that, since it will likely be mostly comment changes?
         - Won't release these changes, will lock a release branch first)
 - Better button labels when connection fails
@@ -70,6 +70,6 @@ Backlog:
 
 https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L274
 
-- Extension for ANSI colors in OutputStreams
-- Extension for externalizable string detection
-- Extension for optimizing imports
+- Extension for ANSI colors in OutputStreams using ansi_up
+- Extension for string externalization
+- Extension for clearing unused imports
