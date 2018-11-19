@@ -85,8 +85,7 @@ export default class DebugUtils {
     /**
      * Updates the existing launch config for debugging this project, or generates and saves a new one if one does not exist.
      *
-     * The launch config will be stored under the workspace root folder,
-     * whether or not this project is the active workspace (eg it could be stored under microclimate-workspace/.vscode)
+     * The launch config will be stored under the workspace folder.
      *
      * @return The new debug configuration which can then be passed to startDebugging
      */
@@ -95,7 +94,7 @@ export default class DebugUtils {
 
         let newLaunch: vscode.DebugConfiguration | undefined;
 
-        const workspaceConfig = vscode.workspace.getConfiguration(DebugUtils.LAUNCH, project.localPath);
+        const workspaceConfig = vscode.workspace.getConfiguration(DebugUtils.LAUNCH, project.connection.workspacePath);
         const launchConfigs = workspaceConfig.get(DebugUtils.CONFIGURATIONS, [{}]) as [vscode.DebugConfiguration];
 
         // See if we already have a debug launch for this project, so we can replace it
@@ -124,7 +123,8 @@ export default class DebugUtils {
             launchConfigs.push(newLaunch);
         }
 
-        await workspaceConfig.update(DebugUtils.CONFIGURATIONS, launchConfigs, vscode.ConfigurationTarget.WorkspaceFolder);
+        await workspaceConfig.update(DebugUtils.CONFIGURATIONS, launchConfigs, vscode.ConfigurationTarget.Workspace);
+        Log.d("Updated launch configs");
         // Logger.log("New config", launchConfig.get(CONFIGURATIONS));
         return newLaunch;
     }
