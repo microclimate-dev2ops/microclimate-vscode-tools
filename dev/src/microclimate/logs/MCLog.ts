@@ -3,6 +3,9 @@ import * as vscode from "vscode";
 import Log from "../../Logger";
 import Settings from "../../constants/Settings";
 
+/**
+ * Type to capture common functionality between AppLogs and BuildLogs
+ */
 export class MCLog {
 
     protected readonly outputChannel: vscode.OutputChannel;
@@ -53,6 +56,9 @@ export class MCLog {
         this.outputChannel.dispose();
     }
 
+    /**
+     * Call this whenever this log gets updated. It will show the log if the user has that preference set.
+     */
     protected onChange(): void {
         const setting: string = this.logType === MCLog.LogTypes.APP ? Settings.OPEN_ON_CHANGE_APP : Settings.OPEN_ON_CHANGE_BUILD;
 

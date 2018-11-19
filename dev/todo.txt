@@ -4,8 +4,11 @@ New:
     - New 'starting debug' state
     - Should have this in the other UIs
     - startMode is updated AFTER Starting state is reached, so it briefly shows the wrong startMode, but then it gets corrected when the restartResult is received
+- Improvements to restart-debug behaviour
+    - Extra delay for liberty
+    - Preserve user edits of launch config, eg step filters, source location
 - When Microclimate restarts when logs are open, the logs are reset properly
-    - New log names - "Microclimate" is too long :|
+    - New log names - "Microclimate" is too long :| (debug name too)
     - Now displays a warning if you open app logs for Stopped app
         - but we still want to allow this for nodemon output - and probably should in the web UI too!
 - Preference to show logs when updated
@@ -63,6 +66,7 @@ Backlog:
         - Super annoying to have ANSI color escapes in app output
             - Applies to Eclipse and manual 'docker logs' too
             - OTOH we are rendering the color in the web UI, so we can't just pass --no-color to nodemon
+        - https://github.com/drudru/ansi_up
 
 https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.core/src/main/java/com/microsoft/java/debug/core/protocol/Requests.java#L274
 

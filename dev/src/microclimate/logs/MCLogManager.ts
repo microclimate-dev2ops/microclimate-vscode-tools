@@ -7,10 +7,11 @@ import Log from "../../Logger";
 
 /**
  * Contains info about app and build logs for a given Connection.
+ * Manages creating logs, and handle properly Microclimate going down while we have logs open.
  */
 export default class MCLogManager {
 
-    // Maps projectIDs to AppLog instances
+    // Maps projectIDs to Log instances
     private readonly appLogMap: Map<string, AppLog> = new Map<string, AppLog>();
     private readonly buildLogMap: Map<string, BuildLog> = new Map<string, BuildLog>();
 

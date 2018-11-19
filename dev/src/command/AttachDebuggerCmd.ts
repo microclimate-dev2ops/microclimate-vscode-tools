@@ -21,12 +21,28 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
     }
 
     try {
-        // This should be longer than the timeout we pass to VSCode through the debug config, or the default (whichever is longer).
-        const timeoutS = 60;
+        // Wait for the server to be Starting - Debug or Debugging before we try to connect the debugger,
+        // or it may try to connect before the server is ready
+        Log.d(`Waiting for ${project.name} to be ready to for debugging`);
+        // often this will resolve instantly
+        await project.waitForState(60 * 1000, ...ProjectState.getDebuggableStates());
 
+        // Intermittently for Microprofile projects, the debugger will try to connect too soon,
+        // so add an extra delay if it's MP and Starting.
+        // This doesn't really slow anything down because the server is still starting anyway.
+        const libertyDelayMs = 2500;
+        if (project.type.type === ProjectType.Types.MICROPROFILE && project.state.appState === ProjectState.AppStates.DEBUG_STARTING) {
+            Log.d(`Waiting extra ${libertyDelayMs}ms for Starting Liberty project`);
+            await new Promise( (resolve) => setTimeout(resolve, libertyDelayMs));
+        }
+
+        // This should be longer than the timeout we pass to VSCode through the debug config, or the default (whichever is longer).
+        const debugConnectTimeoutS = 60;
+
+        Log.d(`${project.name} appears to be ready for debugging`);
         const startDebugWithTimeout = MCUtil.promiseWithTimeout(startDebugSession(project),
-            timeoutS * 1000,
-            `Debugger did not connect within ${timeoutS}s`
+            debugConnectTimeoutS * 1000,
+            `Debugger did not connect within ${debugConnectTimeoutS}s`
         );
 
         vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} Connecting debugger to ${project.name}`,
@@ -35,7 +51,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
         // will throw error if connection fails or timeout
         const successMsg = await startDebugWithTimeout;
 
-        Log.i("Debugger attach success", successMsg);
+        Log.i("Debugger attach success:", successMsg);
         vscode.window.showInformationMessage(successMsg);
         return true;
     }
@@ -62,16 +78,6 @@ export async function startDebugSession(project: Project): Promise<string> {
     }
     else if (project.debugPort == null) {
         throw new Error(`No debug port set for project ${project.name}`);
-    }
-
-    // Wait for the server to be Starting - Debug or Debugging before we try to connect the debugger,
-    // or it may try to connect before the server is ready
-    try {
-        await project.waitForState(60000, ...ProjectState.getDebuggableStates());
-    }
-    catch (err) {
-        Log.e("Timeout waiting before connecting debugger:", err);
-        throw err;
     }
 
     const debugConfig: vscode.DebugConfiguration = await getDebugConfig(project);
@@ -127,7 +133,7 @@ const LAUNCH = "launch";
 const CONFIGURATIONS = "configurations";
 
 /**
- * Generates and saves the launch config for attaching the debugger to this server.
+ * Updates the existing launch config for debugging this project, or generates and saves a new one if one does not exist.
  *
  * The launch config will be stored under the workspace root folder,
  * whether or not this project is the active workspace (eg it could be stored under microclimate-workspace/.vscode)
@@ -136,43 +142,50 @@ const CONFIGURATIONS = "configurations";
  */
 async function getDebugConfig(project: Project): Promise<vscode.DebugConfiguration> {
     const launchConfig = vscode.workspace.getConfiguration(LAUNCH, project.localPath);
-    const config = launchConfig.get(CONFIGURATIONS, [{}]) as Array<{}>;
+    const config = launchConfig.get(CONFIGURATIONS, [{}]) as [vscode.DebugConfiguration];
     // Logger.log("Old config:", config);
 
-    const debugName = `Debug ${project.name}`;
+    const debugName: string = `Debug MC - ${project.name}`;
     // See if we already have a debug launch for this project, so we can replace it.
-    // projectID field is used to compare.
-    let existingIndex = -1;
+
+    let newLaunch: vscode.DebugConfiguration | undefined;
+
     for (let i = 0; i < config.length; i++) {
-        const item: any = config[i];
-        if (item != null && item.name === debugName) {
-            existingIndex = i;
+        const existingLaunch: vscode.DebugConfiguration = config[i];
+        if (existingLaunch != null && existingLaunch.name === debugName) {
+            // The launch already exists, only change what we need to - this preserves any valid user edits
+            const updatedLaunch = updateDebugLaunchConfig(project, existingLaunch);
+            Log.d(`Replacing existing debug launch ${debugName}:`, updatedLaunch);
+            config[i] = updatedLaunch;
+            newLaunch = updatedLaunch;
             break;
         }
     }
 
-    const debugConfig: vscode.DebugConfiguration | undefined = generateDebugConfiguration(debugName, project);
+    if (newLaunch == null) {
+        // We didn't find an existing one; need to generate a new one
+        newLaunch = generateDebugLaunchConfig(debugName, project);
 
-    // already did this in startDebugSession, but just in case
-    if (debugConfig == null) {
-        throw new Error(`No debug type available for project of type ${project.type}`);
-    }
+        // already did this in startDebugSession, but just in case
+        if (newLaunch == null) {
+            const msg = `No debug type available for project of type ${project.type}`;
+            Log.e(msg);
+            throw new Error(msg);
+        }
 
-    if (existingIndex !== -1) {
-        config[existingIndex] = debugConfig;
-    }
-    else {
-        config.push(debugConfig);
+        Log.d("Pushing new debug launch" + newLaunch.name, newLaunch);
+        config.push(newLaunch);
     }
 
     await launchConfig.update(CONFIGURATIONS, config, vscode.ConfigurationTarget.WorkspaceFolder);
     // Logger.log("New config", launchConfig.get(CONFIGURATIONS));
-    return debugConfig;
+    return newLaunch;
 }
 
 const RQ_ATTACH = "attach";
 
-function generateDebugConfiguration(debugName: string, project: Project): vscode.DebugConfiguration | undefined {
+function generateDebugLaunchConfig(debugName: string, project: Project): vscode.DebugConfiguration | undefined {
+
     switch (project.type.debugType) {
         case ProjectType.DebugTypes.JAVA: {
             return {
@@ -201,4 +214,16 @@ function generateDebugConfiguration(debugName: string, project: Project): vscode
         default:
             return undefined;
     }
+}
+
+/**
+ * Update the existingLaunch with the new values of config fields that could have changed since the last launch, then return it.
+ * As far as I can tell, only the port can change.
+ */
+function updateDebugLaunchConfig(project: Project, existingLaunch: vscode.DebugConfiguration): vscode.DebugConfiguration {
+    const newLaunch: vscode.DebugConfiguration = existingLaunch;
+    newLaunch.port = project.debugPort;
+    // could be the same port
+    Log.d(`Changed port from ${existingLaunch.port} to ${newLaunch.port}`);
+    return newLaunch;
 }

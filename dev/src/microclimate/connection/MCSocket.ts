@@ -128,7 +128,7 @@ export default class MCSocket {
         }
 
         const startMode: string = payload.startMode;
-        if (allStartModes().indexOf(startMode) < 0) {
+        if (!allStartModes().includes(startMode)) {
             Log.e(`Invalid start mode "${startMode}"`);
         }
         // This updates the ports and startMode, because those are what the payload will provide.

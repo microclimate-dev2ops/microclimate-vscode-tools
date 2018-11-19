@@ -108,7 +108,7 @@ export class ProjectType {
     }*/
 
     public get providesBuildLog(): boolean {
-        return ProjectType.PROJECTS_WITHOUT_BUILDLOGS.indexOf(this.type) < 0;
+        return !ProjectType.PROJECTS_WITHOUT_BUILDLOGS.includes(this.type);
     }
 }
 
@@ -124,6 +124,7 @@ export namespace ProjectType {
     }
 
     // Possible values of the "language" internal attribute
+    // could be others, but if they're not in this list we'll just treat them as generic docker
     export enum Languages {
         JAVA = "java",
         NODE = "nodejs",

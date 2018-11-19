@@ -159,7 +159,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public async forceUpdateProjectList(): Promise<void> {
         Log.d("forceUpdateProjectList");
         this.needProjectUpdate = true;
-        await this.getProjects();
+        this.getProjects();
     }
 
 }

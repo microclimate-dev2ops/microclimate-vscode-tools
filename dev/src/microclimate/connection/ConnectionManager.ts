@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import * as MCUtil from "../../MCUtil";
 import Connection from "./Connection";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
-import { Log } from "../../Logger";
+import Log from "../../Logger";
 import Settings from "../../constants/Settings";
 
 export default class ConnectionManager {
@@ -78,7 +78,7 @@ export default class ConnectionManager {
     }
 
     public static async saveConnections(): Promise<void> {
-        // We save ConnectionInfo objects since they are simpler and more readable.
+        // We save IConnectionInfo objects since they are simpler and more readable than VSCode URIs.
 
         // This is a bit tough to read - For each connection, convert it to a connInfo we can save nicely.
         // If the convert fails, ignore it and log an error.
@@ -122,6 +122,7 @@ export default class ConnectionManager {
     /**
      * Pass this a function to call whenever a connection is added, removed, or changed,
      * eg to trigger a tree update in the UI.
+     * Test-friendly.
      */
     public addOnChangeListener(callback: () => void): void {
         Log.i("Adding onChangeListener " + callback.name);

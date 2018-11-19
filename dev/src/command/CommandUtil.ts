@@ -116,9 +116,7 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
 
     if (includeProjects) {
         // for now, assume if they want Started, they also accept Debugging. This may change.
-        if (acceptableStates.indexOf(ProjectState.AppStates.STARTED) !== -1
-                && acceptableStates.indexOf(ProjectState.AppStates.DEBUGGING) === -1) {
-
+        if (acceptableStates.includes(ProjectState.AppStates.STARTED) && !acceptableStates.includes(ProjectState.AppStates.DEBUGGING)) {
             acceptableStates.push(ProjectState.AppStates.DEBUGGING);
         }
 
@@ -131,10 +129,7 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
 
             if (acceptableStates.length > 0) {
                 // Filter out projects that are not in one of the acceptable states
-                projects = projects.filter( (p) => {
-                    return acceptableStates.indexOf(p.state.appState) !== -1;
-                    // Logger.log("the index of ", p.state.appState, " in ", acceptableStates, " is ", index);
-                });
+                projects = projects.filter( (p) => acceptableStates.includes(p.state.appState));
             }
             choices.push(...projects);
         }
