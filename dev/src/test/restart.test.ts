@@ -32,10 +32,10 @@ const projectTypesToTest: ITestableProjectType[] = [
         projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
         canRestart: true
     },
-    {
-        projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
-        canRestart: true
-    },
+    // {
+    //     projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
+    //     canRestart: true
+    // },
     // {
     //     projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
     //     canRestart: true
@@ -44,14 +44,14 @@ const projectTypesToTest: ITestableProjectType[] = [
     //     projectType: new ProjectType(ProjectType.InternalTypes.SWIFT, ProjectType.Languages.SWIFT),
     //     canRestart: false
     // },
-    {
-        projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
-        canRestart: false
-    },
-    {
-        projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.GO),
-        canRestart: false
-    }
+    // {
+    //     projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
+    //     canRestart: false
+    // },
+    // {
+    //     projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.GO),
+    //     canRestart: false
+    // }
 ];
 
 describe(`Restart tests`, async function() {

@@ -99,7 +99,7 @@ export default class MCSocket {
             return;
         }
 
-        await project.clearValidationErrors();
+        await project.onDelete();
         this.connection.forceUpdateProjectList();
     }
 
@@ -137,13 +137,12 @@ export default class MCSocket {
 
         const isDebug = StartModes.isDebugMode(startMode);
 
-        const timeout = 60000;
         if (isDebug) {
             Log.d("Attaching debugger after restart");
             try {
                 const success = await attachDebuggerCmd(project);
                 if (success) {
-                    await project.waitForState(timeout, ProjectState.AppStates.DEBUGGING);
+                    Log.d("Debugger attach after restart returned success");
                 }
                 else {
                     // attachDebuggerCmd will display the error message
@@ -159,7 +158,7 @@ export default class MCSocket {
             }
         }
         else {
-            await project.waitForState(timeout, ProjectState.AppStates.STARTED);
+            await project.waitForState(120 * 1000, ProjectState.AppStates.STARTED);
         }
 
         const doneRestartMsg = `Finished restarting ${project.name} in ${startMode} mode.`;

@@ -259,6 +259,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return pendingStatePromise;
     }
 
+    public async onDelete(): Promise<void> {
+        this.clearValidationErrors();
+    }
+
     public async clearValidationErrors(): Promise<void> {
         // Clear all diagnostics for this project's path
         Project.diagnostics.delete(this.localPath);

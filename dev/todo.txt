@@ -1,28 +1,8 @@
 New:
-- Attach Debugger command to Starting state
-    - Works
-    - New 'starting debug' state
-    - Should have this in the other UIs
-    - startMode is updated AFTER Starting state is reached, so it briefly shows the wrong startMode, but then it gets corrected when the restartResult is received
-- Improvements to restart-debug behaviour
-    - Extra delay for liberty
-    - Preserve user edits of launch config, eg step filters, source location
-- When Microclimate restarts when logs are open, the logs are reset properly
-    - New log names - "Microclimate" is too long :| (debug name too)
-    - Now displays a warning if you open app logs for Stopped app
-        - but we still want to allow this for nodemon output - and probably should in the web UI too!
-- Preference to show logs when updated
-    - Separate prefs for build and app logs
-    - Default behaviour: show build on change, but not app
-    - Settings descriptions need work
 
 Important:
-- I need help testing
-    - At what point do we pull in SVT?
-- When is DCUT?
-    - Can I do code sweep / cleanup after that, since it will likely be mostly comment changes?
-        - Won't release these changes, will lock a release branch first)
-- Better button labels when connection fails
+- Portal startMode update
+- Clean launch.json
 - externalize strings
 - Make start mode strings user friendly again
 

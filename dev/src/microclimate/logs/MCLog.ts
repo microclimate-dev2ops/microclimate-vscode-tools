@@ -18,7 +18,8 @@ export class MCLog {
         initialMsg: string,
         private readonly logType: MCLog.LogTypes
     ) {
-        const outputChannelName = `MC ${logType} Log - ${projectName}`;
+        // $MyProject - (App | Build) Log
+        const outputChannelName = `${projectName} - ${logType} Log`;
         this.outputChannel = vscode.window.createOutputChannel(outputChannelName);
         this.outputChannel.appendLine(initialMsg);
     }

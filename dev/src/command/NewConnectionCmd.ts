@@ -126,14 +126,14 @@ export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promis
             .catch(async (s: any) => {
                 Log.w("Connection test failed with message " + s);
 
-                const tryAgainBtn  = "Try again";
-                const reconnectBtn = "Reconnect";
-                const response = await vscode.window.showErrorMessage(s, tryAgainBtn, reconnectBtn);
-                if (response === tryAgainBtn) {
+                const editBtn  = "Edit";
+                const retryBtn = "Retry";
+                const response = await vscode.window.showErrorMessage(s, editBtn, retryBtn);
+                if (response === editBtn) {
                     // start again from the beginning
                     return newConnectionCmd();
                 }
-                else if (response === reconnectBtn) {
+                else if (response === retryBtn) {
                     // try to connect with the same host:port
                     return tryAddConnection(connInfo);
                 }
