@@ -60,7 +60,13 @@ export class ProjectState {
         const appState = this.appState.toString();
 
         if (this.isEnabled) {
-            return `[${appState}] [${this.getBuildString()}]`;
+            let result = `[${appState}]`;
+
+            const buildStr = this.getBuildString();
+            if (buildStr != null) {
+                result += ` [${buildStr}]`;
+            }
+            return result;
         }
         else {
             // don't show build detail for disabled projects
@@ -68,9 +74,9 @@ export class ProjectState {
         }
     }
 
-    public getBuildString(): string {
+    public getBuildString(): string | undefined {
         if (!this.isEnabled) {
-            return "";
+            return undefined;
         }
 
         let buildStateStr = "";
