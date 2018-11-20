@@ -137,33 +137,49 @@ export default class MCSocket {
 
         const isDebug = StartModes.isDebugMode(startMode);
 
+        let restartSuccess = false;
         if (isDebug) {
             Log.d("Attaching debugger after restart");
             try {
-                const success = await attachDebuggerCmd(project);
-                if (success) {
-                    Log.d("Debugger attach after restart returned success");
+                const attachSuccess = await attachDebuggerCmd(project);
+                if (attachSuccess) {
+                    Log.d(`Waiting for ${project.name} to be Debugging after debugger attach`);
+                    // This can take a long time for Microprofile projects.
+                    const desiredState = ProjectState.AppStates.DEBUGGING;
+                    const state = await project.waitForState(120 * 1000, desiredState);
+                    restartSuccess = state === desiredState;
                 }
                 else {
-                    // attachDebuggerCmd will display the error message
-                    Log.w("Debugger attach after restart returned failure");
-                    return;
+                    Log.w(`Debugger attach failed for project ${project.name}, debugUrl is ${project.debugUrl}`);
                 }
             }
             catch (err) {
-                // I think all errors should be handled by attachDebuggerCmd, but just in case.
-                Log.e("Error attaching debugger after restart", err);
-                vscode.window.showErrorMessage(err);
-                return;
+                // I think all errors should be handled by attachDebuggerCmd
+                Log.w("Error attaching debugger after restart:", err);
+                vscode.window.showWarningMessage(err);
             }
         }
         else {
-            await project.waitForState(120 * 1000, ProjectState.AppStates.STARTED);
+            try {
+                const desiredState = ProjectState.AppStates.STARTED;
+                const state = await project.waitForState(120 * 1000, desiredState);
+                restartSuccess = state === desiredState;
+            }
+            catch (err) {
+                Log.w("Run-mode restart did not complete in time, or was cancelled by user:", err);
+                vscode.window.showWarningMessage(err);
+            }
         }
 
-        const doneRestartMsg = `Finished restarting ${project.name} in ${startMode} mode.`;
-        Log.i(doneRestartMsg);
-        vscode.window.showInformationMessage(doneRestartMsg);
+        if (restartSuccess) {
+            const doneRestartMsg = `Finished restarting ${project.name} in ${startMode} mode.`;
+            Log.i(doneRestartMsg);
+            vscode.window.showInformationMessage(doneRestartMsg);
+        }
+        else {
+            // Either the restart failed, or the user cancelled it by initiating another restart
+            Log.w(`Failed to restart ${project.name} in ${startMode} mode.`);
+        }
     }
 
     private readonly onContainerLogs = async (payload: any): Promise<void> => {

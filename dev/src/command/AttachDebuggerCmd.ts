@@ -9,6 +9,9 @@ import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 import DebugUtils from "../microclimate/project/DebugUtils";
 
+/**
+ * Attach the debugger to the given project. Returns if we attached the debugger successfully.
+ */
 export default async function attachDebuggerCmd(project: Project): Promise<boolean> {
     Log.d("attachDebuggerCmd");
     if (project == null) {
@@ -21,13 +24,20 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
         project = selected;
     }
 
+    // Wait for the server to be Starting - Debug or Debugging before we try to connect the debugger,
+    // or it may try to connect before the server is ready
+    Log.d(`Waiting for ${project.name} to be ready to for debugging`);
     try {
-        // Wait for the server to be Starting - Debug or Debugging before we try to connect the debugger,
-        // or it may try to connect before the server is ready
-        Log.d(`Waiting for ${project.name} to be ready to for debugging`);
         // often this will resolve instantly
         await project.waitForState(60 * 1000, ...ProjectState.getDebuggableStates());
+    }
+    catch (err) {
+        // can happen if EG the user requests another restart before this one finishes
+        Log.d("Waiting for debuggable state was rejected");
+        return false;
+    }
 
+    try {
         // Intermittently for Microprofile projects, the debugger will try to connect too soon,
         // so add an extra delay if it's MP and Starting.
         // This doesn't really slow anything down because the server is still starting anyway.
@@ -54,15 +64,12 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
 
         Log.i("Debugger attach success:", successMsg);
         vscode.window.showInformationMessage(successMsg);
-
-        Log.d(`Waiting for ${project.name} to be Debugging after debugger attach`);
-        // This can take a long time for Microprofile projects.
-        await project.waitForState(120 * 1000, ProjectState.AppStates.DEBUGGING);
         return true;
     }
     catch (err) {
+        const debugUrl = project.debugUrl;
         // Show our error message here. we can't throw/reject or vscode won't know how to handle it
-        const failMsg = `Failed to attach debugger to ${project.name} at ${project.debugUrl} `;
+        const failMsg = `Failed to attach debugger to ${project.name}${debugUrl == null ? "" : " at " + debugUrl}`;
         const extraErrMsg = err.message ? err.message : "";
         Log.e(failMsg, extraErrMsg);
         vscode.window.showErrorMessage(failMsg + extraErrMsg);

@@ -37,6 +37,7 @@ export default class DebugUtils {
         project.connection.logManager.getOrCreateAppLog(project.id, project.name).showOutputChannel();
 
         // startDebugging above will often return 'true' before the debugger actually connects, so it could still fail.
+        // EG connection refused / timeout are not handled by startDebugging
         // Do some extra checks here to ensure that a new debug session was actually launched, and report failure if it wasn't.
 
         // optional extra error message
@@ -53,21 +54,20 @@ export default class DebugUtils {
             debugSuccess = false;
         }*/
         else if (currentDebugSession.name === debugConfig.name && priorDebugSession != null && priorDebugSession.id === currentDebugSession.id) {
-            // This means we were already debugging this project (since the debug session name did match),
-            // but failed to create a new session - the old one is still running
+            // This means we were already debugging this project but failed to create a new session - the old one is still running
             // This probably happened because we tried to Attach Debugger but the debug port was already blocked by an existing session.
             Log.w("Project already had an active debug session, and a new one was not created");
             debugSuccess = false;
-            errDetail = `- is it already being debugged?`;
+            errDetail = `- is the debug port already in use?`;
         }
-        // TODO if they are already debugging node and they try to debug another node, we can warn them
+        // TODO if they are already debugging node and they try to debug another node, the debug console will only be for the new session
         // There might be other error scenarios I've missed.
         else {
-            Log.i("Debugger connect ostensibly succeeded");
+            Log.i("Debugger attach appeared to succeed");
         }
 
         if (debugSuccess) {
-            return `Debugger connected to ${project.name} at ${project.debugUrl}`;
+            return `Debugger attached to ${project.name} at ${project.debugUrl}`;
         }
         else {
             throw new Error(errDetail);
@@ -170,8 +170,13 @@ export default class DebugUtils {
     private static updateDebugLaunchConfig(project: Project, existingLaunch: vscode.DebugConfiguration): vscode.DebugConfiguration {
         const newLaunch: vscode.DebugConfiguration = existingLaunch;
         newLaunch.port = project.debugPort;
-        // could be the same port
-        Log.d(`Changed port from ${existingLaunch.port} to ${newLaunch.port}`);
+        if (existingLaunch.port === newLaunch.port) {
+            Log.d(`Debug port for ${project.name} didn't change`);
+        }
+        else {
+            Log.d(`Debug port for ${project.name} changed from ${existingLaunch.port} to ${newLaunch.port}`);
+        }
+
         return newLaunch;
     }
 }

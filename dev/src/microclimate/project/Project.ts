@@ -42,7 +42,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     private _state: ProjectState;
 
     private pendingAppStates: ProjectState.AppStates[] = [];
-    private resolvePendingAppState: ( () => void ) | undefined;
+    private resolvePendingAppState: ( (newState: ProjectState.AppStates) => void ) | undefined;
+    private rejectPendingAppState: ( (err: string) => void ) | undefined;
 
     constructor(
         projectInfo: any,
@@ -173,7 +174,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
         if (this.pendingAppStates.includes(this._state.appState)) {
-            this.clearPendingState();
+            this.resolvePendingStates();
         }
 
         // Logger.log(`${this.name} has a new status:`, this._state);
@@ -184,50 +185,30 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return this._state;
     }
 
-    private clearPendingState(): void {
-        if (this.resolvePendingAppState != null) {
-            Log.d("Resolving pending state(s): " + JSON.stringify(this.pendingAppStates));
-            this.resolvePendingAppState();
-        }
-        else if (this.pendingAppStates.length > 0) {
-            // should never happen
-            Log.e("Reached pending state(s) but no resolve function was set");
-        }
-        else {
-            Log.d("No pending state to clear");
-        }
-        this.pendingAppStates = [];
-        this.resolvePendingAppState = undefined;
-    }
-
     /**
-     * Shorthand for waitForState() when waiting for Started states.
-     * Again, **DO NOT** call this from test code.
-     */
-    public async waitForStarted(timeoutMs: number): Promise<string> {
-        return this.waitForState(timeoutMs, ...ProjectState.getStartedStates());
-    }
-
-    /**
-     * Return a promise that resolves when this project enters one of the given AppStates.
-     * This is checked when project state changes, in update() above.
+     * Return a promise that resolves to the current appState when this project enters one of the given AppStates,
+     * or rejects if waitForState is called again before the previous state is reached.
+     * The state is checked when it changes in update() above.
      *
      * **DO NOT** call this from test code, since it will also clear any previous state being waited for,
      * changing how the product code executes.
      */
-    public async waitForState(timeoutMs: number, ...states: ProjectState.AppStates[]): Promise<string> {
+    public async waitForState(timeoutMs: number, ...states: ProjectState.AppStates[]): Promise<ProjectState.AppStates> {
         if (states.length === 0) {
             // Should never happen
             const msg = "Empty states array passed to waitForState";
             Log.e(msg);
-            return msg;
+            return this._state.appState;
         }
 
-        this.clearPendingState();
+        if (this.pendingAppStates.length > 0) {
+            // If we're waiting for a state before we resolved the previous state, reject the old state.
+            this.rejectPendingStates();
+        }
 
         if (states.includes(this._state.appState)) {
             Log.i("No need to wait, already in state " + this._state.appState);
-            return "Already " + this._state.appState;
+            return this._state.appState;
         }
 
         this.pendingAppStates = states;
@@ -235,31 +216,81 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         Log.i(this.name + " is waiting for states: " + states.join(", "));
         Log.i(this.name + " is currently", this._state.appState);
 
-        let statesAsStr: string;
-        if (states.length > 1) {
-            statesAsStr = states.join(" or ");
-        }
-        else {
-            statesAsStr = states[0].toString();
-        }
-
-        const pendingStatePromise = new Promise<string>( (resolve, reject) => {
+        const pendingStatePromise = new Promise<ProjectState.AppStates>( (resolve, reject) => {
             setTimeout(
-                () => reject(`${this.name} did not reach ` +
-                    `${states.length > 1 ? "any of states" : "state"}:` +
-                    ` "${statesAsStr}" within ${timeoutMs / 1000}s`),
+                () => reject(this.getRejectPendingStateMsg(timeoutMs)),
                 timeoutMs);
 
             this.resolvePendingAppState = resolve;
+            this.rejectPendingAppState = reject;
         });
 
         const syncIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
-        vscode.window.setStatusBarMessage(`${syncIcon} Waiting for ${this.name} to be ${statesAsStr}`, pendingStatePromise);
+        vscode.window.setStatusBarMessage(`${syncIcon} Waiting for ${this.name} to be ${this.pendingStatesAsStr()}`, pendingStatePromise);
 
         return pendingStatePromise;
     }
 
+    private pendingStatesAsStr(): string {
+        if (this.pendingAppStates.length > 1) {
+            return this.pendingAppStates.join(" or ");
+        }
+        else {
+            return this.pendingAppStates[0].toString();
+        }
+    }
+
+    private getRejectPendingStateMsg(timeoutMs?: number): string {
+        let msg = `${this.name} did not reach ` +
+            `${this.pendingAppStates.length > 1 ? "any of states" : "state"}:` +
+            ` "${this.pendingStatesAsStr()}"`;
+
+        if (timeoutMs != null) {
+            msg += ` within ${timeoutMs / 1000}s`;
+        }
+
+        return msg;
+    }
+
+    private resolvePendingStates(): void {
+        if (this.pendingAppStates.length === 0) {
+            Log.w("Resolving pending states, but there are no pending states!");
+        }
+        else if (this.resolvePendingAppState != null) {
+            Log.d("Resolving pending state(s)");
+            this.resolvePendingAppState(this._state.appState);
+        }
+        this.clearPendingStates();
+    }
+
+    private rejectPendingStates(): void {
+        if (this.pendingAppStates.length === 0) {
+            Log.w("Rejecting pending states, but there are no pending states!");
+        }
+        else if (this.rejectPendingAppState != null) {
+            Log.d("Rejecting pending state(s)");
+            this.rejectPendingAppState(this.getRejectPendingStateMsg());
+        }
+        this.clearPendingStates();
+    }
+
+    /**
+     * Only call after (resolve|reject)PendingState
+     */
+    private clearPendingStates(): void {
+        if (this.pendingAppStates.length === 0) {
+            Log.d("No pending state to clear");
+        }
+        else {
+            Log.d("Clearing pending app states: " + JSON.stringify(this.pendingAppStates));
+        }
+        this.pendingAppStates = [];
+        this.resolvePendingAppState = undefined;
+        this.rejectPendingAppState = undefined;
+    }
+
     public async onDelete(): Promise<void> {
+        this.resolvePendingStates();
         this.clearValidationErrors();
     }
 
