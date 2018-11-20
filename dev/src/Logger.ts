@@ -194,7 +194,7 @@ function getCaller(): string {
             }
         }
     }
-    console.error("Couldn't find caller line");
+    console.error("Couldn't find caller line, filename is: " + __filename);
     return "";
 }
 

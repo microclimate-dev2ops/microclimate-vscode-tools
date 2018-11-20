@@ -51,6 +51,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
     public async destroy(): Promise<void> {
         Log.d("Destroy connection " + this);
+        this.logManager.onConnectionDisconnect();
         return this.socket.destroy();
     }
 
