@@ -154,7 +154,7 @@ export default class MCSocket {
                 }
             }
             catch (err) {
-                // I think all errors should be handled by attachDebuggerCmd
+                // Proper errors should be handled by attachDebuggerCmd
                 Log.w("Error attaching debugger after restart:", err);
                 vscode.window.showWarningMessage(err);
             }

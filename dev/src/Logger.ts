@@ -51,23 +51,23 @@ export class Log {
         this.disabledLevels = levels;
     }
 
-    public static d(s: string, ...args: any[]): void{
+    public static async d(s: string, ...args: any[]): Promise<void> {
         this.logInner(Log.Levels.DEBUG, s, args);
     }
 
-    public static i(s: string, ...args: any[]): void {
+    public static async i(s: string, ...args: any[]): Promise<void> {
         this.logInner(Log.Levels.INFO, s, args);
     }
 
-    public static w(s: string, ...args: any[]): void {
+    public static async w(s: string, ...args: any[]): Promise<void> {
         this.logInner(Log.Levels.WARNING, s, args);
     }
 
-    public static e(s: string, ...args: any[]): void {
+    public static async e(s: string, ...args: any[]): Promise<void> {
         this.logInner(Log.Levels.ERROR, s, args);
     }
 
-    public static t(s: string, ...args: any[]): void {
+    public static async t(s: string, ...args: any[]): Promise<void> {
         this.logInner(Log.Levels.TEST, s, args);
     }
 
