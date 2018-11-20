@@ -19,9 +19,11 @@ export class SimpleTreeItem implements ITreeItemAdaptable {
     constructor(
         public readonly label: string,
         public readonly initCollapseState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None,
-        public readonly children: ITreeItemAdaptable[] = []
+        public readonly children: ITreeItemAdaptable[] = [],
+        public readonly contextID?: string,
     ) {
        this.treeItem = new vscode.TreeItem(this.label, this.initCollapseState);
+       this.treeItem.contextValue = contextID;
     }
 
     public toTreeItem(): vscode.TreeItem {

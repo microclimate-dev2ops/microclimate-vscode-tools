@@ -1,4 +1,4 @@
-// import { Uri } from "vscode";
+import { Uri } from "vscode";
 import Connection from "../microclimate/connection/Connection";
 
 /**
@@ -25,7 +25,17 @@ export default class Endpoints {
     public static readonly BUILD_ACTION:    string = "build";
     public static readonly BUILD_LOG:       string = "build-log";
 
-    public static readonly ENABLEMENT_ACTION = (enable: boolean): string => {
+    //public static readonly DELETE: string =
+
+    public static getAppMonitorUrl(connection: Connection, projectID: string): Uri {
+        return connection.mcUri.with({ query: `project=${projectID}&view=monitor` });
+    }
+
+    public static getProjectCreationUrl(connection: Connection): Uri {
+        return connection.mcUri.with({ query: "new-project=true" });
+    }
+
+    public static getEnablementAction(enable: boolean): string {
         return `${enable ? "open" : "close"}`;
     }
 

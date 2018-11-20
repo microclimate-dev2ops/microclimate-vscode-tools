@@ -89,7 +89,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // ti.resourceUri = this.localPath;
         ti.tooltip = this.state.toString();
         // There are different context menu actions available to enabled or disabled or debugging projects
-        ti.contextValue = Project.getContextID(this.state);
+        ti.contextValue = this.getContextID();
         ti.iconPath = this.type.icon;
         // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
         // Focuses on this project in the explorer view. Has no effect if the project is not in the current workspace.
@@ -102,9 +102,9 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return ti;
     }
 
-    private static getContextID(state: ProjectState): string {
-        if (state.isEnabled) {
-            if (ProjectState.getDebuggableStates().includes(state.appState)) {
+    private getContextID(): string {
+        if (this._state.isEnabled) {
+            if (ProjectState.getDebuggableStates().includes(this._state.appState)) {
                 return Project.CONTEXT_ID_DEBUGGABLE;
             }
             else {

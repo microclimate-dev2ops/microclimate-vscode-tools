@@ -88,6 +88,12 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_newMCProject%",
+                "title": "%cmdTitle_newMCProject%",
+                "description": "%cmdDescr_newMCProject%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_openFolder%",
                 "title": "%cmdTitle_openFolder%",
                 "description": "%cmdDescr_openFolder%",
@@ -185,16 +191,23 @@
                     "when": "%isInViewWithNothingSelected%"
                 },
                 {
-                    "command": "%cmdID_removeConn%",
-                    "when": "%isConnection%"
+                    "command": "%cmdID_newMCProject%",
+                    "when": "%isActiveConnection%",
+                    "group": "ext.mc.za"
                 },
                 {
                     "command": "%cmdID_refreshConnection%",
-                    "when": "%isConnection%"
+                    "when": "%isActiveConnection%",
+                    "group": "ext.mc.zb"
+                },
+                {
+                    "command": "%cmdID_removeConn%",
+                    "when": "%isConnection%",
+                    "group": "ext.mc.zc"
                 },
                 {
                     "command": "%cmdID_openInBrowser%",
-                    "when": "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem)/",
+                    "when": "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem.active)/",
                     "group": "ext.mc.a"
                 },
                 {

@@ -22,6 +22,7 @@ import openLogCmd from "./OpenLogCmd";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import openAppMonitorCmd from "./OpenAppMonitor";
 import refreshConnectionCmd from "./RefreshConnectionCmd";
+import newMCProjectCmd from "./NewMCProjectCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -36,6 +37,8 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.REMOVE_CONNECTION,     (selection) => removeConnectionCmd(selection)),
         vscode.commands.registerCommand(Commands.REFRESH_CONNECTION,    (selection) => refreshConnectionCmd(selection)),
+
+        vscode.commands.registerCommand(Commands.CREATE_MC_PROJECT, (selection) => newMCProjectCmd(selection)),
 
         vscode.commands.registerCommand(Commands.OPEN_WS_FOLDER,    (selection) => openWorkspaceFolderCmd(selection)),
 
@@ -85,6 +88,10 @@ export async function promptForProject(...acceptableStates: ProjectState.AppStat
 }
 
 export async function promptForConnection(): Promise<Connection | undefined> {
+    if (ConnectionManager.instance.connections.length === 1) {
+        return ConnectionManager.instance.connections[0];
+    }
+
     const connection = await promptForResourceInner(true, false);
     if (connection instanceof Connection) {
         return connection as Connection;

@@ -12,7 +12,8 @@ import MCLogManager from "../logs/MCLogManager";
 
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
-    private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.json
+    private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.nls.json
+    private static readonly CONTEXT_ID_ACTIVE: string = Connection.CONTEXT_ID + ".active";
 
     public readonly socket: MCSocket;
 
@@ -63,6 +64,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
      * Call this whenever the tree needs to be updated - ie when this connection or any of its projects changes.
      */
     public async onChange(): Promise<void> {
+        Log.d(`Connection ${this.mcUri} changed`);
         ConnectionManager.instance.onChange();
     }
 
@@ -127,7 +129,9 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
     public async getChildren(): Promise<ITreeItemAdaptable[]> {
         if (!this.connected) {
-            return [ new SimpleTreeItem("❌  Disconnected")];
+            // The context ID can be any truthy string.
+            const disconnectedTI = new SimpleTreeItem("❌  Disconnected", undefined, undefined, "disconnectedContextID");
+            return [ disconnectedTI ];
         }
 
         await this.getProjects();
@@ -145,7 +149,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         const ti: vscode.TreeItem = new vscode.TreeItem(tiLabel, vscode.TreeItemCollapsibleState.Expanded);
         // ti.resourceUri = this.workspacePath;
         ti.tooltip = this.workspacePath.fsPath.toString();
-        ti.contextValue = Connection.CONTEXT_ID;
+        ti.contextValue = this.getContextID();
         ti.iconPath = getIconPaths(Icons.Microclimate);
         // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
         /*
@@ -155,6 +159,13 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
             arguments: [ti.resourceUri]
         };*/
         return ti;
+    }
+
+    private getContextID(): string {
+        if (this.connected) {
+            return Connection.CONTEXT_ID_ACTIVE;
+        }
+        return Connection.CONTEXT_ID;
     }
 
     public async forceUpdateProjectList(): Promise<void> {

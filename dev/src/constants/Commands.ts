@@ -5,6 +5,7 @@ enum Commands {
     NEW_DEFAULT_CONNECTION = "ext.mc.newDefaultConnection",
     REMOVE_CONNECTION = "ext.mc.removeConnection",
     REFRESH_CONNECTION = "ext.mc.refreshConnection",
+    CREATE_MC_PROJECT = "ext.mc.createMCProject",
 
     OPEN_WS_FOLDER = "ext.mc.openWorkspaceFolder",
     ATTACH_DEBUGGER = "ext.mc.attachDebugger",

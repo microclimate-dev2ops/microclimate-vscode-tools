@@ -25,6 +25,10 @@
     "cmdTitle_refreshConnection": "Refresh connection",
     "cmdDescr_refreshConnection": "Refresh a Microclimate connection",
 
+    "cmdID_newMCProject": "ext.mc.createMCProject",
+    "cmdTitle_newMCProject": "Create new project",
+    "cmdDescr_newMCProject": "Create a new Microclimate project",
+
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open folder as workspace",
     "cmdDescr_openFolder": "Open this item's folder as your VSCode workspace",
@@ -88,7 +92,8 @@
 
     "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
     "isConnectionOrProject": "viewItem =~ /ext.mc.*/",
-    "isConnection": "viewItem == ext.mc.connectionItem",
+    "isConnection": "viewItem =~ /ext.mc.connectionItem*/",
+    "isActiveConnection": "viewItem == ext.mc.connectionItem.active",
     "isProject": "viewItem =~ /ext.mc.projectItem*/",
     "isEnabledProject":  "viewItem =~ /ext.mc.projectItem.enabled*/",
     "isDisabledProject": "viewItem =~ /ext.mc.projectItem.disabled*/",

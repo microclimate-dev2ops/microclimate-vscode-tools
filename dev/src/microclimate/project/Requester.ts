@@ -54,7 +54,7 @@ namespace Requester {
         const newEnablement: boolean = !project.state.isEnabled;
         const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
 
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.ENABLEMENT_ACTION(newEnablement));
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.getEnablementAction(newEnablement));
         return doProjectRequest(project, url, {}, request.put, newEnablementStr);
     }
 
