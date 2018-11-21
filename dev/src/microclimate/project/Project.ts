@@ -8,6 +8,7 @@ import Connection from "../connection/Connection";
 import * as Resources from "../../constants/Resources";
 import Log from "../../Logger";
 import Commands from "../../constants/Commands";
+import DebugUtils from "./DebugUtils";
 
 export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem {
 
@@ -296,6 +297,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         vscode.window.showInformationMessage(`${this.name} was deleted in Microclimate`);
         this.resolvePendingStates();
         this.clearValidationErrors();
+        DebugUtils.removeDebugLaunchConfigFor(this);
     }
 
     public async clearValidationErrors(): Promise<void> {

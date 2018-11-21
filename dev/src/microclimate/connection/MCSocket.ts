@@ -106,12 +106,19 @@ export default class MCSocket {
     private readonly onProjectRestarted = async (payload: any): Promise<void> => {
         Log.i("PROJECT RESTARTED", payload);
 
+        const project = await this.getProject(payload);
+        if (project == null) {
+            return;
+        }
+
         const projectID: string = payload.projectID;
         if (MCSocket.STATUS_SUCCESS !== payload.status) {
             Log.e(`Restart failed on project ${projectID}, response is`, payload);
-            if (payload.error != null) {
-                vscode.window.showErrorMessage(payload.error.msg);
+            let err = `${project.name} failed to restart`;
+            if (payload.error != null && payload.error.msg != null) {
+                err = payload.error.msg;
             }
+            vscode.window.showErrorMessage(err);
             return;
         }
         else if (payload.ports == null) {
@@ -119,11 +126,6 @@ export default class MCSocket {
             const msg = "Successful restart did not send any ports";
             vscode.window.showErrorMessage(msg);
             Log.e(msg + ", payload:", payload);
-            return;
-        }
-
-        const project = await this.getProject(payload);
-        if (project == null) {
             return;
         }
 

@@ -179,4 +179,35 @@ export default class DebugUtils {
 
         return newLaunch;
     }
+
+    /**
+     * Search the workspace's launch configurations for one that is for this project, and delete it if it exists.
+     * Returns a promise that resolves to whether or not a matching launch config was found and deleted.
+     */
+    public static async removeDebugLaunchConfigFor(project: Project): Promise<boolean> {
+        const workspaceConfig = vscode.workspace.getConfiguration(DebugUtils.LAUNCH, project.connection.workspacePath);
+        const launchConfigs = workspaceConfig.get(DebugUtils.CONFIGURATIONS, [{}]) as [vscode.DebugConfiguration];
+
+        const debugName = this.getDebugName(project);
+        let indexToDelete = -1;
+        for (let i = 0; i < launchConfigs.length; i++) {
+            const existingLaunch: vscode.DebugConfiguration = launchConfigs[i];
+            if (existingLaunch != null && existingLaunch.name === debugName) {
+                indexToDelete = i;
+                break;
+            }
+        }
+
+        if (indexToDelete !== -1) {
+            launchConfigs.splice(indexToDelete, 1);
+
+            Log.d(`Remove debug launch config for project ${project.name}`);
+            await workspaceConfig.update(DebugUtils.CONFIGURATIONS, launchConfigs, vscode.ConfigurationTarget.Workspace);
+            return true;
+        }
+        else {
+            Log.d(`Requested to delete launch for ${project.name}, but no launch was found`);
+            return false;
+        }
+    }
 }
