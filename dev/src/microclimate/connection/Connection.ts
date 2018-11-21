@@ -9,6 +9,7 @@ import ConnectionManager from "./ConnectionManager";
 import { Icons, getIconPaths } from "../../constants/Resources";
 import Log from "../../Logger";
 import MCLogManager from "../logs/MCLogManager";
+import DebugUtils from "../project/DebugUtils";
 
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
@@ -48,6 +49,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.label = "Microclimate @ " + this.mcUri.toString();
         // this.description = this.workspacePath.fsPath.toString();
         Log.i(`Created new Connection @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`);
+        DebugUtils.cleanDebugLaunchConfigsFor(this);
     }
 
     public async destroy(): Promise<void> {

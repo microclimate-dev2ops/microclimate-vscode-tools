@@ -3,7 +3,6 @@ New:
 Important:
 - Portal startMode update
 - Validation action
-- Clean launch.json
 - externalize strings
 - Make start mode strings user friendly again
 
