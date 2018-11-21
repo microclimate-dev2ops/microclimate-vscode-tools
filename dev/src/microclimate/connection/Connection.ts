@@ -64,7 +64,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
      * Call this whenever the tree needs to be updated - ie when this connection or any of its projects changes.
      */
     public async onChange(): Promise<void> {
-        Log.d(`Connection ${this.mcUri} changed`);
+        // Log.d(`Connection ${this.mcUri} changed`);
         ConnectionManager.instance.onChange();
     }
 

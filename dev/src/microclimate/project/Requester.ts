@@ -82,12 +82,17 @@ namespace Requester {
             .then( () => requestValidate(project));
     }
 
+    export async function requestDelete(project: Project): Promise<void> {
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, "");
+        return doProjectRequest(project, url, {}, request.delete, "Delete");
+    }
+
     /**
      * Perform a REST request of the type specific by `requestFunc` to the project endpoint for the given project.
      * Displays a message to the user that the request succeeded if userOperationName is not null.
      * Always displays a message to the user in the case of an error.
      */
-    export async function doProjectRequest(
+    async function doProjectRequest(
             project: Project, url: string, body: {},
             requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
             userOperationName?: string): Promise<any> {

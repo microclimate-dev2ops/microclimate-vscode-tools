@@ -25,8 +25,6 @@ export default class Endpoints {
     public static readonly BUILD_ACTION:    string = "build";
     public static readonly BUILD_LOG:       string = "build-log";
 
-    //public static readonly DELETE: string =
-
     public static getAppMonitorUrl(connection: Connection, projectID: string): Uri {
         return connection.mcUri.with({ query: `project=${projectID}&view=monitor` });
     }

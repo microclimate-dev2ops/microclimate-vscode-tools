@@ -7,6 +7,7 @@ import * as MCUtil from "../../MCUtil";
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
 export const OPEN_MSG: string = "open";
+export const DELETE_MSG: string = "delete";
 
 const resourceScheme = "vscode-resource:";
 
@@ -36,57 +37,56 @@ export function generateHtml(project: Project): string {
             <link rel="stylesheet" href="${getStylesheetPath()}"/>
         </head>
         <body>
-        <div id="top-section">
-            <img id="mc-icon" width="30px" src="${getMCIconPath()}"/>
-            <h2>Project ${project.name}</h2>
-        </div>
-        <table>
-            <!--${buildRow("Name", project.name)}-->
-            ${buildRow("Type", project.type.toString())}
-            <!--${buildRow("Microclimate URL", project.connection.toString())}-->
-            ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
-            ${buildRow("Project ID", project.id)}
-            ${buildRow("Path on Disk", project.localPath.fsPath, Openable.FOLDER)}
-            <tr>
-                <td class="info-label">Auto build:</td>
-                <td>
-                    <input id="auto-build-toggle" type="checkbox" class="btn"
-                        onclick="toggleAutoBuild(this)"
-                        ${project.autoBuildEnabled ? "checked" : ""}
-                        ${project.state.isEnabled ? " " : " disabled"}
-                    />
-                </td>
-            </tr>
-            ${emptyRow}
-            ${buildRow("Application Status", project.state.appState)}
-            ${buildRow("Build Status", getNonNull(project.state.getBuildString(), "Not available"))}
-            ${emptyRow}
-            ${buildRow("Last Image Build", formatDate(project.lastImgBuild, "Not available"))}
-            ${buildRow("Last Build", formatDate(project.lastBuild, "Not available"))}
-            ${emptyRow}
-            ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
-            ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
-            ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
-        </table>
 
-        <input id="refresh-btn" type="button" onclick="refresh()" class="btn" value="Refresh"/></input>
+        <div id="main">
+            <div id="top-section">
+                <img id="mc-icon" width="30px" src="${getMCIconPath()}"/>
+                <h2>Project ${project.name}</h2>
+                <input id="refresh-btn" type="button" onclick="sendMsg('${REFRESH_MSG}')" class="btn" value="Refresh"/>
+            </div>
+
+            <table id="project-info-table">
+                <!--${buildRow("Name", project.name)}-->
+                ${buildRow("Type", project.type.toString())}
+                <!--${buildRow("Microclimate URL", project.connection.toString())}-->
+                ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
+                ${buildRow("Project ID", project.id)}
+                ${buildRow("Path on Disk", project.localPath.fsPath, Openable.FOLDER)}
+                <tr>
+                    <td class="info-label">Auto build:</td>
+                    <td>
+                        <input id="auto-build-toggle" type="checkbox" class="btn"
+                            onclick="sendMsg('${TOGGLE_AUTOBUILD_MSG}')"
+                            ${project.autoBuildEnabled ? "checked" : ""}
+                            ${project.state.isEnabled ? " " : " disabled"}
+                        />
+                    </td>
+                </tr>
+                ${emptyRow}
+                ${buildRow("Application Status", project.state.appState)}
+                ${buildRow("Build Status", getNonNull(project.state.getBuildString(), "Not available"))}
+                ${emptyRow}
+                ${buildRow("Last Image Build", formatDate(project.lastImgBuild, "Not available"))}
+                ${buildRow("Last Build", formatDate(project.lastBuild, "Not available"))}
+                ${emptyRow}
+                ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
+                ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
+                ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
+            </table>
+
+            <div id="bottom-section">
+                <input id="delete-btn"  type="button" onclick="sendMsg('${DELETE_MSG}')" class="btn" value="Delete project"/>
+            </div>
+        </div>
 
         <script type="text/javascript">
             const vscode = acquireVsCodeApi();
-
-            function refresh() {
-                sendMsg("${REFRESH_MSG}");
-            }
-
-            function toggleAutoBuild(toggleAutoBuildBtn) {
-                sendMsg("${TOGGLE_AUTOBUILD_MSG}");
-            }
 
             function vscOpen(element, type) {
                 sendMsg("${OPEN_MSG}", { type: type, value: element.textContent });
             }
 
-            function sendMsg(msg, data) {
+            function sendMsg(msg, data = undefined) {
                 vscode.postMessage({ msg: msg, data: data });
             }
         </script>

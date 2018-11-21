@@ -37,14 +37,28 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
     webPanel.webview.onDidReceiveMessage( (msg: { msg: string, data: { type: string, value: string } }) => {
         try {
             if (msg.msg === ProjectInfo.REFRESH_MSG) {
-                Log.i("Refresh projectInfo for " + project.name);
+                Log.d("Refresh projectInfo for project " + project.name);
                 webPanel.webview.html = ProjectInfo.generateHtml(project);
             }
             else if (msg.msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
+                Log.d("Got msg to toggle autobuild for project " + project.name);
                 Requester.requestToggleAutoBuild(project);
             }
+            else if (msg.msg === ProjectInfo.DELETE_MSG) {
+                Log.d("Got msg to delete for project " + project.name);
+
+                const deleteOption = `Confirm delete ${project.name} in Microclimate`;
+                const options = [ "Cancel", deleteOption ];
+
+                vscode.window.showQuickPick(options, { canPickMany: false })
+                    .then( (response) => {
+                        if (response === deleteOption) {
+                            Requester.requestDelete(project);
+                        }
+                    });
+            }
             else if (msg.msg === ProjectInfo.OPEN_MSG) {
-                Log.i("Got msg to open, data is ", msg.data);
+                Log.d("Got msg to open, data is ", msg.data);
                 let uri: vscode.Uri;
                 if (msg.data.type === ProjectInfo.Openable.FILE || msg.data.type === ProjectInfo.Openable.FOLDER) {
                     uri = vscode.Uri.file(msg.data.value);

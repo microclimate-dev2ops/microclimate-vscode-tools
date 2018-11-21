@@ -1,17 +1,22 @@
+#main {
+    max-width: 600px;
+}
+
+#top-section, #bottom-section {
+    width: 100%;
+
+    display: inline-flex;
+    align-items: center;
+}
 
 #top-section {
-    display: inline-flex;
     padding-bottom: 0.5em;
-    align-items: center
 }
 
 #mc-icon {
     margin-right: 10px;
 }
 
-table {
-    padding-bottom: 2em;
-}
 tr {
     padding-bottom: 0.25em;
 }
@@ -23,12 +28,23 @@ input[type="checkbox"] {
 
 .btn {
     color: var(--vscode-button-foreground);
+    padding: 0.5em;
     padding-left: 10px;
     padding-right: 10px;
     background: var(--vscode-button-background);
     font-size: 110%;
     border: 1px solid var(--vscode-button-background);
     border-radius: 5px;
+}
+
+#refresh-btn {
+    margin-left: auto;
+}
+
+#delete-btn {
+    margin-top: 2em;
+    background: darkred;
+    border: darkred;
 }
 
 .info-label {

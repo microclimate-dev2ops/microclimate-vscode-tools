@@ -289,7 +289,11 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.rejectPendingAppState = undefined;
     }
 
+    /**
+     * Callback for when this project is deleted in Microclimate
+     */
     public async onDelete(): Promise<void> {
+        vscode.window.showInformationMessage(`${this.name} was deleted in Microclimate`);
         this.resolvePendingStates();
         this.clearValidationErrors();
     }
