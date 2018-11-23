@@ -67,7 +67,7 @@ export default class ProjectObserver {
         }
     }
 
-    public onDelete(projectID: string) {
+    public onDelete(projectID: string): void {
         this.projectsPendingState.find( (project, i) => {
             if (project.projectID === projectID) {
                 Log.t("No longer observing project " + projectID);

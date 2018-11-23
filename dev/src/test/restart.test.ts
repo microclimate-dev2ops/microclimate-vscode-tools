@@ -183,7 +183,7 @@ describe(`Restart tests`, async function() {
                 try {
                     const project = await TestUtil.getProjectById(connection, projectID);
                     await Requester.requestDelete(project);
-                    await ProjectObserver.instance.onDelete(projectID);
+                    ProjectObserver.instance.onDelete(projectID);
                 }
                 catch (err) {
                     Log.t(`Error deleting project ${projectName}:`, err);
