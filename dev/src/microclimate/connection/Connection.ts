@@ -10,11 +10,13 @@ import { Icons, getIconPaths } from "../../constants/Resources";
 import Log from "../../Logger";
 import MCLogManager from "../logs/MCLogManager";
 import DebugUtils from "../project/DebugUtils";
+import Translator from "../../constants/strings/translator";
+import StringNamespaces from "../../constants/strings/StringNamespaces";
 
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
-    private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";             // must match package.nls.json
-    private static readonly CONTEXT_ID_ACTIVE: string = Connection.CONTEXT_ID + ".active";
+    private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";       // must match package.nls.json    // non-nls
+    private static readonly CONTEXT_ID_ACTIVE: string = Connection.CONTEXT_ID + ".active";      // non-nls
 
     public readonly socket: MCSocket;
 
@@ -46,7 +48,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.logManager = new MCLogManager(this);
 
         // QuickPickItem
-        this.label = "Microclimate @ " + this.mcUri.toString();
+        this.label = this.getTreeItemLabel();
         // this.description = this.workspacePath.fsPath.toString();
         Log.i(`Created new Connection @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`);
         DebugUtils.cleanDebugLaunchConfigsFor(this);
@@ -101,19 +103,35 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     }
 
     public async getProjects(): Promise<Project[]> {
+        // Log.d("getProjects");
         if (!this.needProjectUpdate) {
             return this.projects;
         }
-        Log.d(`Updating projects list for ${this.mcUri}`);
+        Log.d(`Updating projects list from ${this.mcUri}`);
 
         const result = await request.get(this.projectsApiUri, { json : true });
         Log.d("Get project list result:", result);
 
+        const oldProjects = this.projects;
         this.projects = [];
 
         for (const projectInfo of result) {
-            const newProject: Project = new Project(projectInfo, this);
-            this.projects.push(newProject);
+            let project: Project;
+
+            // If we already have a Project object for this project, just update it, don't make a new object
+            // (since then the old object will go stale while code might still be referencing it)
+            const existing = oldProjects.find( (p) => p.id === projectInfo.projectID);
+
+            if (existing != null) {
+                project = existing;
+                existing.update(projectInfo);
+                // Log.d("Reuse project " + project.name);
+            }
+            else {
+                project = new Project(projectInfo, this);
+                Log.d("New project " + project.name);
+            }
+            this.projects.push(project);
         }
 
         this.needProjectUpdate = false;
@@ -132,23 +150,23 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public async getChildren(): Promise<ITreeItemAdaptable[]> {
         if (!this.connected) {
             // The context ID can be any truthy string.
-            const disconnectedTI = new SimpleTreeItem("❌  Disconnected", undefined, undefined, "disconnectedContextID");
+            const disconnectedLabel = "❌ " + Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel");
+            const disconnectedContextID = "disconnectedContextID"; // non-nls;
+            const disconnectedTI = new SimpleTreeItem(disconnectedLabel, undefined, undefined, disconnectedContextID);
             return [ disconnectedTI ];
         }
 
         await this.getProjects();
         // Logger.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
         if (this.projects.length === 0) {
-            const noProjectsTi: SimpleTreeItem = new SimpleTreeItem("No projects");
+            const noProjectsTi: SimpleTreeItem = new SimpleTreeItem(Translator.t(StringNamespaces.TREEVIEW, "noProjectsLabel"));
             return [ noProjectsTi ];
         }
         return this.projects;
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const tiLabel = `Microclimate @ ${this.mcUri.toString()}`;
-
-        const ti: vscode.TreeItem = new vscode.TreeItem(tiLabel, vscode.TreeItemCollapsibleState.Expanded);
+        const ti: vscode.TreeItem = new vscode.TreeItem(this.getTreeItemLabel(), vscode.TreeItemCollapsibleState.Expanded);
         // ti.resourceUri = this.workspacePath;
         ti.tooltip = this.workspacePath.fsPath.toString();
         ti.contextValue = this.getContextID();
@@ -157,10 +175,14 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         /*
         ti.command = {
             command: Project.ONCLICK_CMD_ID,
-            title: "",
+            title: "",      // non-nls
             arguments: [ti.resourceUri]
         };*/
         return ti;
+    }
+
+    private getTreeItemLabel(): string {
+        return Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
     }
 
     private getContextID(): string {
@@ -175,5 +197,4 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.needProjectUpdate = true;
         this.getProjects();
     }
-
 }

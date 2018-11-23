@@ -4,7 +4,9 @@ import * as vscode from "vscode";
 import { createCommands } from "./command/CommandUtil";
 import createViews from "./view/InitViews";
 import Log from "./Logger";
+
 import Translator from "./constants/strings/translator";
+import StringNamespaces from "./constants/strings/StringNamespaces";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -19,7 +21,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     Log.i("Finished activating logger");
 
     await Translator.init();
-    const msg = Translator.t("activeMsg");
+    const msg = Translator.t(StringNamespaces.DEFAULT, "activeMsg");
     // Make sure i18next loaded the strings properly here.
     Log.i("activeMsg:", msg);
     // vscode.window.showInformationMessage(msg);
@@ -43,18 +45,19 @@ export function deactivate(): void {
     // nothing here
 }
 
-const excludeSection = "exclude";
-const prePattern = "**/";
+const excludeSection = "exclude";       // non-nls
+const prePattern = "**/";               // non-nls
+
 // files or directories, doesn't matter, trailing / not required.
 const filesToIgnore: string[] = [
-    ".Trash-0",
-    ".config",
-    ".extensions",
-    ".idc",
-    ".license-accept",
-    ".logs",
-    ".nyc_output",
-    ".projects"
+    ".Trash-0",                         // non-nls
+    ".config",                          // non-nls
+    ".extensions",                      // non-nls
+    ".idc",                             // non-nls
+    ".license-accept",                  // non-nls
+    ".logs",                            // non-nls
+    ".nyc_output",                      // non-nls
+    ".projects"                         // non-nls
 ];
 
 /**
@@ -62,7 +65,7 @@ const filesToIgnore: string[] = [
  * in the microclimate-workspace that the user probably doesn't want to see.
  */
 async function ignoreMCFiles(): Promise<void> {
-    const filesConfig = vscode.workspace.getConfiguration("files", null);
+    const filesConfig = vscode.workspace.getConfiguration("files", null);       // non-nls
     const existing: any = filesConfig.get<{}>(excludeSection) || {};
 
     filesToIgnore.forEach( (toIgnore) => {

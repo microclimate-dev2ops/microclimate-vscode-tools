@@ -1,4 +1,6 @@
 
+// non-nls-file
+
 enum Commands {
     // all of these must match package.nls.json command IDs
     NEW_CONNECTION = "ext.mc.newConnection",

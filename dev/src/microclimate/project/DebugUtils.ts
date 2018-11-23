@@ -4,6 +4,10 @@ import Project from "./Project";
 import Log from "../../Logger";
 import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
+import StringNamespaces from "../../constants/strings/StringNamespaces";
+import Translator from "../../constants/strings/translator";
+
+const STRING_NS = StringNamespaces.DEBUG;
 
 export default class DebugUtils {
 
@@ -19,15 +23,15 @@ export default class DebugUtils {
         Log.i("startDebugSession for project " + project.name);
         if (project.type.debugType == null) {
             // Just in case.
-            throw new Error(`No debug type available for project of type ${project.type}`);
+            throw new Error(Translator.t(STRING_NS, "noDebugTypeKnown", { type: project.type.type }));
         }
         else if (project.debugPort == null) {
-            throw new Error(`No debug port set for project ${project.name}`);
+            throw new Error(Translator.t(STRING_NS, "noDebugPort", { projectName: project.name }));
         }
 
         const debugConfig: vscode.DebugConfiguration = await DebugUtils.setDebugConfig(project);
         const projectFolder = vscode.workspace.getWorkspaceFolder(project.localPath);
-        const pfName: string = projectFolder != null ? projectFolder.name : "undefined";
+        const pfName: string = projectFolder != null ? projectFolder.name : "undefined";        // non-nls
         Log.i("Running debug launch on project folder: " + pfName, debugConfig);
 
         const priorDebugSession = vscode.debug.activeDebugSession;
@@ -42,7 +46,7 @@ export default class DebugUtils {
         // Do some extra checks here to ensure that a new debug session was actually launched, and report failure if it wasn't.
 
         // optional extra error message
-        let errDetail: string = "";
+        let errDetail: string = "";     // non-nls
         const currentDebugSession = vscode.debug.activeDebugSession;
 
         if (currentDebugSession == null) {
@@ -59,7 +63,7 @@ export default class DebugUtils {
             // This probably happened because we tried to Attach Debugger but the debug port was already blocked by an existing session.
             Log.w("Project already had an active debug session, and a new one was not created");
             debugSuccess = false;
-            errDetail = `- is the debug port already in use?`;
+            errDetail = Translator.t(STRING_NS, "maybeAlreadyDebugging");
         }
         // TODO if they are already debugging node and they try to debug another node, the debug console will only be for the new session
         // There might be other error scenarios I've missed.
@@ -68,7 +72,7 @@ export default class DebugUtils {
         }
 
         if (debugSuccess) {
-            return `Debugger attached to ${project.name} at ${project.debugUrl}`;
+            return Translator.t(STRING_NS, "debuggerAttachSuccess", { projectName: project.name, debugUrl: project.debugUrl });
         }
         else {
             throw new Error(errDetail);
@@ -129,8 +133,8 @@ export default class DebugUtils {
     }
 
     // keys for launch.json
-    private static readonly LAUNCH: string = "launch";
-    private static readonly CONFIGURATIONS: string = "configurations";
+    private static readonly LAUNCH: string = "launch";                      // non-nls
+    private static readonly CONFIGURATIONS: string = "configurations";      // non-nls
 
     private static getWorkspaceConfigFor(connection: Connection): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration(DebugUtils.LAUNCH, connection.workspacePath);
@@ -149,7 +153,7 @@ export default class DebugUtils {
     }
 
     private static getDebugName(project: Project): string {
-        return `Debug ${project.name}`;
+        return Translator.t(STRING_NS, "debugLaunchName", { projectName: project.name });
     }
 
     /**
@@ -184,7 +188,7 @@ export default class DebugUtils {
 
             // already did this in startDebugSession, but just in case
             if (newLaunch == null) {
-                const msg = `No debug type available for project of type ${project.type}`;
+                const msg = Translator.t(STRING_NS, "noDebugTypeKnown", { type: project.type.type });
                 Log.e(msg);
                 throw new Error(msg);
             }
@@ -199,7 +203,7 @@ export default class DebugUtils {
         return newLaunch;
     }
 
-    private static readonly RQ_ATTACH: string = "attach";
+    private static readonly RQ_ATTACH: string = "attach";       // non-nls
 
     private static generateDebugLaunchConfig(debugName: string, project: Project): vscode.DebugConfiguration | undefined {
 
@@ -224,7 +228,7 @@ export default class DebugUtils {
                     port: project.debugPort,
                     localRoot: project.localPath.fsPath,
                     // TODO user could change this in their dockerfile
-                    remoteRoot: "/app",
+                    remoteRoot: "/app",         // non-nls
                     restart: true
                 };
             }

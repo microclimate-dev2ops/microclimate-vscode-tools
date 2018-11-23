@@ -9,14 +9,19 @@ import * as Resources from "../../constants/Resources";
 import Log from "../../Logger";
 import Commands from "../../constants/Commands";
 import DebugUtils from "./DebugUtils";
+import Translator from "../../constants/strings/translator";
+import StringNamespaces from "../../constants/strings/StringNamespaces";
+import ProjectPendingState from "./ProjectPendingState";
+
+const STRING_NS = StringNamespaces.PROJECT;
 
 export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem {
 
-    // these below must match package.json
-    private static readonly CONTEXT_ID_BASE: string = "ext.mc.projectItem";
-    private static readonly CONTEXT_ID_ENABLED:  string = Project.CONTEXT_ID_BASE + ".enabled";
-    private static readonly CONTEXT_ID_DISABLED: string = Project.CONTEXT_ID_BASE + ".disabled";
-    private static readonly CONTEXT_ID_DEBUGGABLE: string = Project.CONTEXT_ID_ENABLED + ".debugging";
+    // these below must match package.nls.json
+    private static readonly CONTEXT_ID_BASE: string = "ext.mc.projectItem";                                 // non-nls
+    private static readonly CONTEXT_ID_ENABLED:  string = Project.CONTEXT_ID_BASE + ".enabled";             // non-nls
+    private static readonly CONTEXT_ID_DISABLED: string = Project.CONTEXT_ID_BASE + ".disabled";            // non-nls
+    private static readonly CONTEXT_ID_DEBUGGABLE: string = Project.CONTEXT_ID_ENABLED + ".debugging";      // non-nls
 
     public readonly name: string;
     public readonly id: string;
@@ -24,13 +29,13 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
 
-    public static readonly diagnostics: vscode.DiagnosticCollection
-            = vscode.languages.createDiagnosticCollection("Microclimate");
-
     private _containerID: string | undefined;
     private _appPort: number | undefined;
     private _debugPort: number | undefined;
     private _autoBuildEnabled: boolean;
+
+    public static readonly diagnostics: vscode.DiagnosticCollection
+        = vscode.languages.createDiagnosticCollection("Microclimate");
 
     // Dates below will always be set, but might be "invalid date"s
     private _lastBuild: Date;
@@ -42,9 +47,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
     private _state: ProjectState;
 
-    private pendingAppStates: ProjectState.AppStates[] = [];
-    private resolvePendingAppState: ( (newState: ProjectState.AppStates) => void ) | undefined;
-    private rejectPendingAppState: ( (err: string) => void ) | undefined;
+    private pendingAppState: ProjectPendingState | undefined;
 
     constructor(
         projectInfo: any,
@@ -68,12 +71,12 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.locOnDisk)
         );
 
-        this.contextRoot = projectInfo.contextroot || "";
+        this.contextRoot = projectInfo.contextroot || "";       // non-nls
 
         this._state = this.update(projectInfo);
 
         // QuickPickItem
-        this.label = `${this.name} (${this.type} project)`;
+        this.label = Translator.t(STRING_NS, "quickPickLabel", { projectName: this.name, projectType: this.type.type });
         // this.detail = this.id;
 
         Log.d(`Created project ${this.name}:`, this);
@@ -85,7 +88,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(`${this.name} ${this.state}`, vscode.TreeItemCollapsibleState.None);
+        const ti = new vscode.TreeItem(
+            Translator.t(StringNamespaces.TREEVIEW, "projectLabel", { projectName: this.name, state: this.state.toString() }),
+            vscode.TreeItemCollapsibleState.None
+        );
 
         // ti.resourceUri = this.localPath;
         ti.tooltip = this.state.toString();
@@ -96,7 +102,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // Focuses on this project in the explorer view. Has no effect if the project is not in the current workspace.
         ti.command = {
             command: Commands.VSC_REVEAL_EXPLORER,
-            title: "",
+            title: "",      // non-nls
             arguments: [this.localPath]
         };
         // Logger.log(`Created TreeItem`, ti);
@@ -124,7 +130,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             return appUrl.toString();
         }
         else {
-            return "[Not running]";
+            return Translator.t(STRING_NS, "quickPickNotRunning");
         }
     }
 
@@ -146,6 +152,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this._containerID = projectInfo.containerId;
         this._lastBuild = new Date(projectInfo.lastbuild);
         this._lastImgBuild = new Date(Number(projectInfo.appImageLastBuild));
+
+        if (projectInfo.autoBuild != null) {
+            this._autoBuildEnabled = projectInfo.autoBuild;
+        }
 
         // note oldState can be null if this is the first time update is being invoked.
         const oldState = this._state;
@@ -174,8 +184,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
 
         // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
-        if (this.pendingAppStates.includes(this._state.appState)) {
-            this.resolvePendingStates();
+        if (this.pendingAppState != null && this.pendingAppState.shouldResolve(this.state)) {
+            this.fullfillPendingState(true);
         }
 
         // Logger.log(`${this.name} has a new status:`, this._state);
@@ -195,108 +205,75 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
      * changing how the product code executes.
      */
     public async waitForState(timeoutMs: number, ...states: ProjectState.AppStates[]): Promise<ProjectState.AppStates> {
+        Log.i(`${this.name} is waiting up to ${timeoutMs}ms for states: ${states.join(", ")}`);
+
         if (states.length === 0) {
             // Should never happen
-            const msg = "Empty states array passed to waitForState";
-            Log.e(msg);
+            Log.e("Empty states array passed to waitForState");
             return this._state.appState;
         }
 
-        if (this.pendingAppStates.length > 0) {
-            // If we're waiting for a state before we resolved the previous state, reject the old state.
-            this.rejectPendingStates();
-        }
+        // If project is given a new state to wait for before we resolved the previous state, reject the old state.
+        this.fullfillPendingState(false);
 
         if (states.includes(this._state.appState)) {
             Log.i("No need to wait, already in state " + this._state.appState);
             return this._state.appState;
         }
 
-        this.pendingAppStates = states;
-
-        Log.i(this.name + " is waiting for states: " + states.join(", "));
         Log.i(this.name + " is currently", this._state.appState);
 
         const pendingStatePromise = new Promise<ProjectState.AppStates>( (resolve, reject) => {
-            setTimeout(
-                () => reject(this.getRejectPendingStateMsg(timeoutMs)),
+            const timeout = setTimeout(
+                () => {
+                    this.fullfillPendingState(false, timeoutMs);
+                },
                 timeoutMs);
 
-            this.resolvePendingAppState = resolve;
-            this.rejectPendingAppState = reject;
+            this.pendingAppState = new ProjectPendingState(this, states, resolve, reject, timeout);
         });
 
+        // Set a status bar msg to tell the user a project is waiting for a state
         const syncIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
-        vscode.window.setStatusBarMessage(`${syncIcon} Waiting for ${this.name} to be ${this.pendingStatesAsStr()}`, pendingStatePromise);
+
+        // pendingAppState will never be null here because we just set it above.
+        const statesStr = this.pendingAppState != null ? this.pendingAppState.pendingStatesAsStr() : "";
+        const waitingMsg = Translator.t(STRING_NS, "waitingForState",
+                { projectName: this.name, pendingStates: statesStr }
+        );
+        vscode.window.setStatusBarMessage(`${syncIcon} ${waitingMsg}`, pendingStatePromise);    // non-nls
 
         return pendingStatePromise;
     }
 
-    private pendingStatesAsStr(): string {
-        if (this.pendingAppStates.length > 1) {
-            return this.pendingAppStates.join(" or ");
-        }
-        else {
-            return this.pendingAppStates[0].toString();
-        }
-    }
-
-    private getRejectPendingStateMsg(timeoutMs?: number): string {
-        let msg = `${this.name} did not reach ` +
-            `${this.pendingAppStates.length > 1 ? "any of states" : "state"}:` +
-            ` "${this.pendingStatesAsStr()}"`;
-
-        if (timeoutMs != null) {
-            msg += ` within ${timeoutMs / 1000}s`;
-        }
-
-        return msg;
-    }
-
-    private resolvePendingStates(): void {
-        if (this.pendingAppStates.length === 0) {
-            Log.w("Resolving pending states, but there are no pending states!");
-        }
-        else if (this.resolvePendingAppState != null) {
-            Log.d("Resolving pending state(s)");
-            this.resolvePendingAppState(this._state.appState);
-        }
-        this.clearPendingStates();
-    }
-
-    private rejectPendingStates(): void {
-        if (this.pendingAppStates.length === 0) {
-            Log.w("Rejecting pending states, but there are no pending states!");
-        }
-        else if (this.rejectPendingAppState != null) {
-            Log.d("Rejecting pending state(s)");
-            this.rejectPendingAppState(this.getRejectPendingStateMsg());
-        }
-        this.clearPendingStates();
-    }
-
     /**
-     * Only call after (resolve|reject)PendingState
+     * If there is a pending state, resolve or reject it depending on the value of `resolve`.
+     * If there is no pending state, do nothing.
      */
-    private clearPendingStates(): void {
-        if (this.pendingAppStates.length === 0) {
-            Log.d("No pending state to clear");
+    private fullfillPendingState(resolve: boolean, timeoutMs?: number): void {
+        if (this.pendingAppState != null) {
+            Log.d(`${this.name} fulfillPendingState: ${resolve ? "resolving" : "rejecting"}`);
+            if (resolve) {
+                this.pendingAppState.resolve();
+            }
+            else {
+                this.pendingAppState.reject(timeoutMs);
+            }
+            this.pendingAppState = undefined;
         }
         else {
-            Log.d("Clearing pending app states: " + JSON.stringify(this.pendingAppStates));
+            Log.d("No pending state to resolve/reject");
         }
-        this.pendingAppStates = [];
-        this.resolvePendingAppState = undefined;
-        this.rejectPendingAppState = undefined;
     }
 
     /**
      * Callback for when this project is deleted in Microclimate
      */
     public async onDelete(): Promise<void> {
-        vscode.window.showInformationMessage(`${this.name} was deleted in Microclimate`);
-        this.resolvePendingStates();
+        vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
+        this.fullfillPendingState(true);
         this.clearValidationErrors();
+        this.connection.logManager.destroyLogsForProject(this.id);
         DebugUtils.removeDebugLaunchConfigFor(this);
     }
 
@@ -339,7 +316,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
 
         return this.connection.mcUri.with({
-            authority: `${this.connection.host}:${this._appPort}`,
+            authority: `${this.connection.host}:${this._appPort}`,      // non-nls
             path: this.contextRoot
         });
     }
@@ -349,7 +326,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             return undefined;
         }
 
-        return this.connection.host + ":" + this._debugPort;
+        return this.connection.host + ":" + this._debugPort;            // non-nls
     }
 
     public get lastBuild(): Date {

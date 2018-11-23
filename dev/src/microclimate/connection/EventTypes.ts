@@ -1,4 +1,6 @@
 
+// non-nls-file
+
 enum EventTypes {
     PROJECT_CHANGED = "projectChanged",
     PROJECT_STATUS_CHANGED = "projectStatusChanged",

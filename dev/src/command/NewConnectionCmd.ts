@@ -8,9 +8,11 @@ import Endpoints from "../constants/Endpoints";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Connection from "../microclimate/connection/Connection";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export const DEFAULT_CONNINFO: MCUtil.IConnectionInfo = {
-    host: "localhost",
+    host: "localhost",      // non-nls
     port: 9090
 };
 
@@ -25,13 +27,15 @@ interface IMicroclimateEnvData {
     workspace_location: string;
 }
 
+const STRING_NS = StringNamespaces.CMD_NEW_CONNECTION;
+
 export async function newConnectionCmd(): Promise<void> {
     Log.d("New connection command invoked");
 
     // Only localhost is permitted. Uncomment this to (start to) support other hosts
     /*
     const inputOpts: vscode.InputBoxOptions = {
-        prompt: "Enter the hostname or IP for the Microclimate instance you wish to connect to.",
+        prompt: Translator.t(STRING_NS, "enterMicroclimateHost"),
         value: DEFAULT_CONNINFO.host,
     };
     const hostname: string | undefined = await vscode.window.showInputBox(inputOpts);
@@ -41,13 +45,13 @@ export async function newConnectionCmd(): Promise<void> {
         return;
     }*/
 
-    const hostname = "localhost";
+    const hostname = DEFAULT_CONNINFO.host;
 
     let tryAgain = true;
     let port: number | undefined;
     while (tryAgain) {
         const portStr = await vscode.window.showInputBox( {
-            prompt: "Enter the Port for the local Microclimate instance you wish to connect to.",
+            prompt: Translator.t(STRING_NS, "enterMicroclimatePort"),
             value: DEFAULT_CONNINFO.port.toString()
         });
 
@@ -58,10 +62,10 @@ export async function newConnectionCmd(): Promise<void> {
 
         port = Number(portStr);
         if (!MCUtil.isGoodPort(port)) {
-            const tryAgainMsg = "Enter a different port number";
+            const tryAgainBtn = Translator.t(STRING_NS, "enterDifferentPortBtn");
 
-            const result = await vscode.window.showErrorMessage(`Invalid port ${portStr} - Must be an integer between 1024 and 65536`, tryAgainMsg);
-            tryAgain = result === tryAgainMsg;
+            const result = await vscode.window.showErrorMessage(Translator.t(STRING_NS, "invalidPortNumber", { port: portStr }), tryAgainBtn);
+            tryAgain = result === tryAgainBtn;
         }
         else {
             // they entered a good port, we can proceed.
@@ -101,15 +105,16 @@ export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promis
                     inMcWorkspace = wsFolders.find( (folder) => folder.uri.fsPath.includes(connection.workspacePath.fsPath)) != null;
                 }
 
-                const successMsg = `New connection to ${connection.mcUri} succeeded.`;
-                const workspaceMsg = `Workspace path is: ${connection.workspacePath.fsPath}`;
-                Log.d(workspaceMsg);
+                const successMsg = Translator.t(STRING_NS, "connectionSucceeded",
+                        { connectionUri: connection.mcUri, workspacePath: connection.workspacePath.fsPath }
+                );
+                Log.d(successMsg);
 
                 if (!inMcWorkspace) {
-                    const openWsBtn = "Open workspace";
+                    const openWsBtn = Translator.t(STRING_NS, "openWorkspaceBtn");
 
                     // Provide a button to change their workspace to the microclimate-workspace if they wish
-                    vscode.window.showInformationMessage(successMsg + " " + workspaceMsg, openWsBtn)
+                    vscode.window.showInformationMessage(successMsg, openWsBtn)    // non-nls
                         .then ( (response) => {
                             if (response === openWsBtn) {
                                 vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, connection.workspacePath);
@@ -126,8 +131,8 @@ export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promis
             .catch(async (s: any) => {
                 Log.w("Connection test failed with message " + s);
 
-                const editBtn  = "Edit";
-                const retryBtn = "Retry";
+                const editBtn  = Translator.t(STRING_NS, "editConnectionBtn");
+                const retryBtn  = Translator.t(STRING_NS, "retryConnectionBtn");
                 const response = await vscode.window.showErrorMessage(s, editBtn, retryBtn);
                 if (response === editBtn) {
                     // start again from the beginning
@@ -158,7 +163,7 @@ async function testConnection(connInfo: MCUtil.IConnectionInfo): Promise<Connect
             .catch( (err: any) => {
                 Log.i(`Request fail - ${err}`);
                 if (err instanceof reqErrors.RequestError) {
-                    return reject(`Connecting to Microclimate at ${uri} failed.`);
+                    return reject(Translator.t(STRING_NS, "connectFailed", { uri: uri }));
                 }
 
                 return reject(err.toString());
@@ -169,7 +174,7 @@ async function testConnection(connInfo: MCUtil.IConnectionInfo): Promise<Connect
 // microclimate_version and workspace_location were both added in Microclimate 18.09
 // Portal Restart API improvement was added in 18.11
 const requiredVersion: number = 1811;
-const requiredVersionStr: string = "18.11";
+const requiredVersionStr: string = "18.11";     // non-nls
 
 /**
  * We've determined by this point that Microclimate is running at the given URI,
@@ -181,7 +186,9 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
         Log.i("Microclimate ENV data:", mcEnvData);
 
         if (mcEnvData == null) {
-            return reject("Null microclimateData passed to onSuccessfulConnection");
+            Log.e("Null microclimateData passed to onSuccessfulConnection");
+            // fail with a generic message because this should never happen
+            reject(Translator.t(STRING_NS, "connectFailed", { uri: mcUri }));
         }
 
         const rawVersion: string = mcEnvData.microclimate_version;
@@ -189,11 +196,11 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
 
         if (rawVersion == null || rawWorkspace == null) {
             Log.e("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
-            return reject(`Your version of Microclimate is not supported. At least ${requiredVersionStr} is required.`);
+            return reject(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: requiredVersionStr }));
         }
 
         let versionNum: number;
-        if (rawVersion === "latest") {
+        if (rawVersion === "latest") {      // non-nls
             // This means it's being hosted by an internal MC dev.
             // There's nothing we can do here but assume they have all the features we need.
             Log.i("Dev version of Microclimate");
@@ -203,12 +210,11 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
             versionNum = Number(rawVersion);
             if (isNaN(versionNum)) {
                 Log.e("Couldn't convert provided version to Number, version is: " + rawVersion);
-                return reject(`Could not determine Microclimate version - version is "${rawVersion}".` +
-                        ` At least ${requiredVersion} is required.`);
+                return reject(Translator.t(STRING_NS, "versionNotRecognized", { rawVersion: rawVersion, requiredVersion: requiredVersionStr}));
             }
             else if (versionNum < requiredVersion) {
                 Log.e(`Microclimate version ${versionNum} is too old.`);
-                return reject(`You are running Microclimate version ${rawVersion}, but at least ${requiredVersion} is required.`);
+                return reject(Translator.t(STRING_NS, "versionTooOld", { rawVersion: rawVersion, requiredVersion: requiredVersionStr}));
             }
         }
 

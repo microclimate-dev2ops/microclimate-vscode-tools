@@ -1,12 +1,12 @@
 import Log from "../../Logger";
 import * as StartModes from "../../constants/StartModes";
 
-// projectInfoPayload keys
-const KEY_APP_STATE:    string = "appStatus";
-const KEY_BUILD_STATE:  string = "buildStatus";
-const KEY_CLOSED_STATE: string = "state";
-const KEY_START_MODE:   string = "startMode";
-const KEY_BUILD_DETAIL: string = "detailedBuildStatus";
+// Project info keys sent by Microclimate. These are the keys in projectInfoPayload
+const KEY_APP_STATE:    string = "appStatus";               // non-nls
+const KEY_BUILD_STATE:  string = "buildStatus";             // non-nls
+const KEY_CLOSED_STATE: string = "state";                   // non-nls
+const KEY_START_MODE:   string = "startMode";               // non-nls
+const KEY_BUILD_DETAIL: string = "detailedBuildStatus";     // non-nls
 
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
@@ -60,17 +60,17 @@ export class ProjectState {
         const appState = this.appState.toString();
 
         if (this.isEnabled) {
-            let result = `[${appState}]`;
+            let result = `[${appState}]`;               // non-nls
 
             const buildStr = this.getBuildString();
-            if (buildStr != null) {
-                result += ` [${buildStr}]`;
+            if (buildStr != null && buildStr.length > 0) {
+                result += ` [${buildStr}]`;             // non-nls
             }
             return result;
         }
         else {
             // don't show build detail for disabled projects
-            return `[${appState}]`;
+            return `[${appState}]`;                     // non-nls
         }
     }
 
@@ -83,11 +83,11 @@ export class ProjectState {
 
         if (this.buildDetail != null && this.buildDetail.trim() !== "") {
             // a detailed status is available
-            buildStateStr = `${this.buildState} - ${this.buildDetail}`;
+            buildStateStr = `${this.buildState} - ${this.buildDetail}`;         // non-nls
         }
-        // Don't display the build state if it's unknown (or could add a case above for disabled projs)
+        // Don't display the build state if it's unknown
         else if (this.buildState !== ProjectState.BuildStates.UNKNOWN) {
-            buildStateStr = `${this.buildState}`;
+            buildStateStr = `${this.buildState}`;                               // non-nls
         }
         return buildStateStr;
     }
@@ -96,6 +96,9 @@ export class ProjectState {
 export namespace ProjectState {
 
     // The AppStates and BuildStates string values are all exposed to the user.
+
+    // These _should_ be translated, but since you can't put computed values in a string enum,
+    // we can cross that bridge when we come to it :)
     export enum AppStates {
         STARTED = "Running",
         STARTING = "Starting",
@@ -158,30 +161,30 @@ export namespace ProjectState {
         // Logger.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
 
         // First, check if the project is closed (aka Disabled)
-        if (closedState === "closed") {
+        if (closedState === "closed") {                                                                                         // non-nls
             return ProjectState.AppStates.DISABLED;
         }
         // Now, check the app states. Compare against both the value we expect from MC,
         // as well as our own possible values, in case we used the fallbackState in the constructor.
-        else if (appStatus === "started" || appStatus === AppStates.DEBUGGING || appStatus === AppStates.STARTED) {
+        else if (appStatus === "started" || appStatus === AppStates.DEBUGGING || appStatus === AppStates.STARTED) {             // non-nls
             if (startMode != null && StartModes.isDebugMode(startMode)) {
                 return ProjectState.AppStates.DEBUGGING;
             }
             return ProjectState.AppStates.STARTED;
         }
-        else if (appStatus === "starting" || appStatus === AppStates.STARTING || appStatus === AppStates.DEBUG_STARTING) {
+        else if (appStatus === "starting" || appStatus === AppStates.STARTING || appStatus === AppStates.DEBUG_STARTING) {      // non-nls
             if (startMode != null && StartModes.isDebugMode(startMode)) {
                 return ProjectState.AppStates.DEBUG_STARTING;
             }
             return ProjectState.AppStates.STARTING;
         }
-        else if (appStatus === "stopping" || appStatus === AppStates.STOPPING) {
+        else if (appStatus === "stopping" || appStatus === AppStates.STOPPING) {                        // non-nls
             return ProjectState.AppStates.STOPPING;
         }
-        else if (appStatus === "stopped" || appStatus === AppStates.STOPPED) {
+        else if (appStatus === "stopped" || appStatus === AppStates.STOPPED) {                          // non-nls
             return ProjectState.AppStates.STOPPED;
         }
-        else if (appStatus === "unknown" || appStatus === "" || appStatus === AppStates.UNKNOWN) {
+        else if (appStatus === "unknown" || appStatus === "" || appStatus === AppStates.UNKNOWN) {      // non-nls
             return ProjectState.AppStates.UNKNOWN;
         }
         else {
@@ -193,19 +196,19 @@ export namespace ProjectState {
     export function getBuildState(projectInfoPayload: any): BuildStates {
         const buildStatus: string | undefined = projectInfoPayload[KEY_BUILD_STATE];
 
-        if (buildStatus === "success" || buildStatus === BuildStates.BUILD_SUCCESS) {
+        if (buildStatus === "success" || buildStatus === BuildStates.BUILD_SUCCESS) {           // non-nls
             return BuildStates.BUILD_SUCCESS;
         }
-        else if (buildStatus === "inProgress" || buildStatus === BuildStates.BUILDING) {
+        else if (buildStatus === "inProgress" || buildStatus === BuildStates.BUILDING) {        // non-nls
             return BuildStates.BUILDING;
         }
-        else if (buildStatus === "queued" || buildStatus === BuildStates.BUILD_QUEUED) {
+        else if (buildStatus === "queued" || buildStatus === BuildStates.BUILD_QUEUED) {        // non-nls
             return BuildStates.BUILD_QUEUED;
         }
-        else if (buildStatus === "failed" || buildStatus === BuildStates.BUILD_FAILED) {
+        else if (buildStatus === "failed" || buildStatus === BuildStates.BUILD_FAILED) {        // non-nls
             return BuildStates.BUILD_FAILED;
         }
-        else if (buildStatus == null || buildStatus === "unknown") {
+        else if (buildStatus == null || buildStatus.toLowerCase() === "unknown") {              // non-nls
             return BuildStates.UNKNOWN;
         }
         else {

@@ -47,6 +47,22 @@ export default class MCLogManager {
         return buildLog;
     }
 
+    private getBuildLog(projectID: string): BuildLog | undefined {
+        return this.buildLogMap.get(projectID);
+    }
+
+    public async destroyLogsForProject(projectID: string): Promise<void> {
+        Log.d("Destroying logs for project " + projectID);
+        const appLog = this.getAppLog(projectID);
+        if (appLog != null) {
+            appLog.destroy();
+        }
+        const buildLog = this.getBuildLog(projectID);
+        if (buildLog != null) {
+            buildLog.destroy();
+        }
+    }
+
     /**
      * When a connection dies, we have to stop updating its logs, but we should keep the logs visible.
      */

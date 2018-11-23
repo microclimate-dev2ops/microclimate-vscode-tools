@@ -8,21 +8,12 @@ import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import Endpoints from "../constants/Endpoints";
 import ProjectObserver from "./ProjectObserver";
-
-// tslint:disable:ban no-unused-expression
+import ProjectState from "../microclimate/project/ProjectState";
 
 namespace TestUtil {
 
-    export const LONG_TIMEOUT = 2 * 60 * 1000;
+    export const LONG_TIMEOUT = 2.5 * 60 * 1000;
     const PROJECT_PREFIX = "test";
-
-    export async function createTestProjects(connection: Connection, projectTypes: ProjectType[]): Promise<Array<Project | undefined>> {
-        const result: Array<Promise<Project | undefined>> = [];
-        for (const projectType of projectTypes) {
-            result.push(TestUtil.createProject(connection, projectType));
-        }
-        return Promise.all(result);
-    }
 
     export async function createProject(connection: Connection, type: ProjectType): Promise<Project> {
         // acquireProject below will only look for projects starting with "test"
@@ -63,6 +54,7 @@ namespace TestUtil {
         }
         catch (err) {
             Log.t("Create project failure!", err);
+            throw err;
         }
 
         Log.t("Awaiting project creation");
@@ -82,36 +74,6 @@ namespace TestUtil {
         return createdProject;
     }
 
-    export async function deleteProject(connection: Connection, projectID: string): Promise<void> {
-        const uri: string = connection.mcUri.with({ path: `${Endpoints.PROJECTS}/${projectID}` }).toString();
-        Log.t("Deleting " + projectID);
-
-        request.delete(uri)
-            .catch( (err) => Log.t(`Error deleting project ${projectID}:`, err));
-    }
-
-    export async function getTestProject(connection: Connection, projectType: ProjectType.Types): Promise<Project | undefined> {
-        Log.t("Acquiring project of type " + projectType);
-
-        const projects = await connection.getProjects();
-        Log.t(`${connection.toString()} has ${projects.length} project(s):`, projects);
-
-        const projectsOfType = projects.filter(
-            (p) => p.type.type === projectType && p.state.isEnabled && p.name.startsWith(PROJECT_PREFIX)
-        );
-
-        Log.t(`Enabled ${projectType} projects:`, projectsOfType);
-        if (projectsOfType.length === 0) {
-            Log.t("No matching projects! All the projects:", projects);
-            return undefined;
-        }
-        else if (projectsOfType.length !== 1) {
-            Log.e("TESTUTIL: Too many matching projects! We might test the wrong project!");
-        }
-
-        return projectsOfType[0];
-    }
-
     /**
      * Since Project objects will get stale, if you want the actual current state, use this.
      */
@@ -121,6 +83,21 @@ namespace TestUtil {
             throw new Error(`Couldn't get project with ID ${projectID} on connection ${connection}`);
         }
         return project;
+    }
+
+    export async function assertProjectInState(connection: Connection, projectID: string, ...states: ProjectState.AppStates[]): Promise<void> {
+        if (states.length === 0) {
+            Log.e("No states passed to assertProjectInState");
+        }
+        const project = await getProjectById(connection, projectID);
+        Log.t(`Assert project ${project.name} is one of ${JSON.stringify(states)}`);
+
+        const failMsg = `assertProjectStarted failure: ` +
+            `Project ${project.name} is not in any of states: ${JSON.stringify(states)}, is instead ${project.state.appState}`;
+
+        expect(states, failMsg).to.include(project.state.appState);
+
+        Log.t(`Assert passed, state is ${project.state.appState}`);
     }
 
     export function expectSuccessStatus(statusCode: number, failMsg?: string): void {

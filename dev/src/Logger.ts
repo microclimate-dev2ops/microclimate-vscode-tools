@@ -4,6 +4,8 @@ import * as path from "path";
 import * as util from "util";
 import { ExtensionContext } from "vscode";
 
+// non-nls-file
+
 // tslint:disable no-console
 
 export class Log {

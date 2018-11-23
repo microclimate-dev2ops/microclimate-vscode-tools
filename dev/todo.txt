@@ -1,10 +1,14 @@
 New:
 
 Important:
+- Update auto build in project.update()
 - Portal startMode update
 - Validation action
 - externalize strings
 - Make start mode strings user friendly again
+- Test Build and Disable/Enable commands
+    - Test manually on older versions of MC
+- Change request.doProjectRequest to return success status so we can pass it through to the caller
 
 Annoying Release Stuff:
 - Icons
@@ -52,4 +56,7 @@ https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.cor
 
 - Extension for ANSI colors in OutputStreams using ansi_up
 - Extension for string externalization
+    - Both detecting strings that should be externalized, and ensuring proper parameters are passed to the translation function
+    - ie if there are two {{ placeholder }}s in the string, two parameters should be provided to t, and the key names should match the placeholders
+    - unused or missing strings before runtime
 - Extension for clearing unused imports

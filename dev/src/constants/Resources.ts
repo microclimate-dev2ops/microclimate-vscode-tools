@@ -1,19 +1,22 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Log } from "../Logger";
 
-const resFolderName = "res";
-const styleFolderName = "css";
-const imgFolderName = "img";
-const lightFolderName = "light";
-const darkFolderName = "dark";
+import Log from "../Logger";
+
+// non-nls-file
+
+const RES_FOLDER_NAME = "res";
+const STYLE_FOLDER_NAME = "css";
+const IMG_FOLDER_NAME = "img";
+const LIGHT_FOLDER_NAME = "light";
+const DARK_FOLDER_NAME = "dark";
 
 function getResourcePath(...paths: string[]): string {
-    return path.join(global.__extRoot, resFolderName, ...paths);
+    return path.join(global.__extRoot, RES_FOLDER_NAME, ...paths);
 }
 
 export function getCss(filename: string): string {
-    return getResourcePath(styleFolderName, filename);
+    return getResourcePath(STYLE_FOLDER_NAME, filename);
 }
 
 /**
@@ -26,7 +29,7 @@ export function getCss(filename: string): string {
  *
  */
 export function getIconPaths(icon: Icons): IconPaths {
-    const darkPath = getResourcePath(imgFolderName, darkFolderName, icon);
+    const darkPath = getResourcePath(IMG_FOLDER_NAME, DARK_FOLDER_NAME, icon);
     // make sure the file exists and is readable
     fs.access(darkPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
         if (err != null) {
@@ -34,7 +37,7 @@ export function getIconPaths(icon: Icons): IconPaths {
         }
     });
 
-    let lightPath = getResourcePath(imgFolderName, lightFolderName, icon);
+    let lightPath = getResourcePath(IMG_FOLDER_NAME, LIGHT_FOLDER_NAME, icon);
     fs.access(lightPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
         if (err != null) {
             // The light icon does not exist or cannot be read, so we use the dark icon.

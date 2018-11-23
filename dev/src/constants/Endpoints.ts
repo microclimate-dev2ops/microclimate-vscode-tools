@@ -1,6 +1,8 @@
 import { Uri } from "vscode";
 import Connection from "../microclimate/connection/Connection";
 
+// non-nls-file
+
 /**
  * Class to hold constants that are Portal API endpoint paths
  */

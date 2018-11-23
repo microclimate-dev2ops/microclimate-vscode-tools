@@ -3,6 +3,8 @@ import * as vscode from "vscode";
 import Log from "../../Logger";
 import Project from "./Project";
 import Requester from "./Requester";
+import Translator from "../../constants/strings/translator";
+import StringNamespaces from "../../constants/strings/StringNamespaces";
 
 namespace Validator {
 
@@ -11,7 +13,7 @@ namespace Validator {
         // severity: Severity;
         severity: string;
         filename: string;
-        filepath?: string;
+        filepath: string;
         // type: ProblemType
         label: string;
         details: string;
@@ -24,7 +26,12 @@ namespace Validator {
 
     export async function validate(project: Project, validationPayload: any): Promise<void> {
 
+        Log.d(`Validating project ${project.name}, payload is:`, validationPayload);
+
         const validationResults: IValidationResult[] = validationPayload.validationResults;
+        if (validationResults == null) {
+            Log.w("No validationResult in payload", validationPayload);
+        }
         // Logger.log("validationresult", validationPayload);
 
         // clicking on the error will take you to this URI
@@ -49,20 +56,21 @@ namespace Validator {
                 continue;
             }
 
-            const sev = validationProblem.severity === "error" ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning;
+            const sev = validationProblem.severity === "error" ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning;       // non-nls
 
             const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(new vscode.Range(0, 0, 0, 0), diagnosticMsg, sev);
-            diagnostic.source = `Microclimate`;
+            diagnostic.source = Translator.t(StringNamespaces.DEFAULT, "microclimateName");
             newDiagnostics.push(diagnostic);
 
-            // The interface declares filePath as optional, but it should always be set.
-            const filePath = validationProblem.filepath || validationProblem.filename;
-            const popupErrMsg = `Microclimate: ${validationProblem.label} ${filePath}`;
+            const seeProblemsViewMsg = Translator.t(StringNamespaces.CMD_MISC, "seeProblemsView");
+            const filePath = validationProblem.filepath;
+            const popupErrMsg = `${diagnostic.source}: ${validationProblem.label} ${filePath}. ${seeProblemsViewMsg}`;     // non-nls
 
             // Allow the user to generate missing files.
-            // Generate only works for dockerfile for some reason, so only display the Generate button if that's what's missing.
-            if (validationProblem.filename === "Dockerfile") {
-                const generateBtn: string = "Generate";
+            // Generate only works for dockerfile, so only display the Generate button if that's what's missing.
+            // Full list of supported files: https://www.npmjs.com/package/generator-ibm-cloud-enablement#artifacts
+            if (validationProblem.filename === "Dockerfile") {      // non-nls
+                const generateBtn: string = Translator.t(StringNamespaces.CMD_MISC, "generateFilesBtn");
 
                 vscode.window.showErrorMessage(popupErrMsg, generateBtn)
                     .then( (response: string | undefined) => {

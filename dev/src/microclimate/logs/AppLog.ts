@@ -2,6 +2,7 @@
 
 import MCLog from "./MCLog";
 import Log from "../../Logger";
+import Translator from "../../constants/strings/translator";
 
 export default class AppLog extends MCLog {
 
@@ -13,7 +14,7 @@ export default class AppLog extends MCLog {
         public readonly projectName: string
     ) {
         super(projectID, projectName,
-            `Waiting for Microclimate to send application logs for ${projectName}...`,
+            Translator.t(MCLog.STRING_NS, "waitingForAppLogs", { projectName }),
             MCLog.LogTypes.APP);
 
         // update will be invoked when we get a container-logs event

@@ -1,4 +1,6 @@
 
+// non-nls-file
+
 enum Settings {
     // these must package.json / package.nls.json
 

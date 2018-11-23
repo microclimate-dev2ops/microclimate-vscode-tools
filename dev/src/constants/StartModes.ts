@@ -1,5 +1,7 @@
 import ProjectType from "../microclimate/project/ProjectType";
 
+// non-nls-file
+
 // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/constants.ts
 
 enum StartModes {

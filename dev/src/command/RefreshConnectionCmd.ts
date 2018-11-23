@@ -3,6 +3,8 @@ import * as vscode from "vscode";
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export default async function refreshConnectionCmd(connection: Connection): Promise<void> {
     Log.d("refreshConnectionCmd");
@@ -16,6 +18,6 @@ export default async function refreshConnectionCmd(connection: Connection): Prom
         connection = selected;
     }
 
-    vscode.window.showInformationMessage(`Refreshing Microclimate at ${connection.mcUri}`);
+    vscode.window.showInformationMessage(Translator.t(StringNamespaces.CMD_MISC, "refreshingConnection", { uri: connection.mcUri }));
     return connection.forceUpdateProjectList();
 }

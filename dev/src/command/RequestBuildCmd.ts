@@ -4,6 +4,8 @@ import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import Log from "../Logger";
 import Requester from "../microclimate/project/Requester";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export default async function requestBuildCmd(project: Project): Promise<void> {
     Log.d("RequestBuildCmd invoked");
@@ -18,11 +20,15 @@ export default async function requestBuildCmd(project: Project): Promise<void> {
     }
 
     if (project.state.isBuilding) {
-        vscode.window.showErrorMessage(`${project.name} is already building`);
+        vscode.window.showWarningMessage(Translator.t(StringNamespaces.CMD_MISC, "projectAlreadyBuilding", { projectName: project.name }));
         return;
     }
+    /*
+    if (project.autoBuildEnabled) {
+        vscode.window.showWarningMessage(Translator.t(StringNamespaces.CMD_MISC, "explicitBuildNotNecessary", { projectName: project.name }));
+        // still do the build, though.
+    }*/
 
     Log.i(`Request build for project ${project.name}`);
-
     Requester.requestBuild(project);
 }

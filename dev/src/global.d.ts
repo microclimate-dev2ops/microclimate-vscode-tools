@@ -1,4 +1,5 @@
 
+// non-nls-file
 
 // This allows extending the Global namespace so we can have our own global variables.
 // The only reason to add stuff here is if we can set it once in extension.activate,

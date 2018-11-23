@@ -4,6 +4,12 @@ import Project from "./Project";
 import * as Resources from "../../constants/Resources";
 import * as MCUtil from "../../MCUtil";
 
+// This file does have a bunch of strings that should be translated,
+// but the stringfinder is not smart enough to pick them out from the regular html strings. So, do this file by hand.
+// non-nls-file
+
+// These are the messages the WebView can send back to its creator in ProjectInfoCmd
+
 export const REFRESH_MSG: string = "refresh";
 export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
 export const OPEN_MSG: string = "open";
@@ -51,7 +57,7 @@ export function generateHtml(project: Project): string {
                 <!--${buildRow("Microclimate URL", project.connection.toString())}-->
                 ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
                 ${buildRow("Project ID", project.id)}
-                ${buildRow("Path on Disk", project.localPath.fsPath, Openable.FOLDER)}
+                ${buildRow("Location on Disk", project.localPath.fsPath, Openable.FOLDER)}
                 <tr>
                     <td class="info-label">Auto build:</td>
                     <td>
@@ -69,9 +75,9 @@ export function generateHtml(project: Project): string {
                 ${buildRow("Last Image Build", formatDate(project.lastImgBuild, "Not available"))}
                 ${buildRow("Last Build", formatDate(project.lastBuild, "Not available"))}
                 ${emptyRow}
-                ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not Running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
-                ${buildRow("Application Port", getNonNull(project.appPort, "Not Running"))}
-                ${buildRow("Debug Port", getNonNull(project.debugPort, "Not Debugging"))}
+                ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
+                ${buildRow("Application Port", getNonNull(project.appPort, "Not running"))}
+                ${buildRow("Debug Port", getNonNull(project.debugPort, "Not debugging"))}
             </table>
 
             <div id="bottom-section">

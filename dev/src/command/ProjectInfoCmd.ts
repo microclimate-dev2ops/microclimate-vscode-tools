@@ -6,6 +6,8 @@ import * as ProjectInfo from "../microclimate/project/ProjectInfo";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export default async function projectInfoCmd(project: Project): Promise<void> {
     Log.d("viewProjectInfoCmd invoked");
@@ -47,13 +49,16 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
             else if (msg.msg === ProjectInfo.DELETE_MSG) {
                 Log.d("Got msg to delete for project " + project.name);
 
-                const deleteOption = `Confirm delete ${project.name} in Microclimate`;
-                const options = [ "Cancel", deleteOption ];
+                // TODO fix this string
+                const deleteMsg = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteProjectMsg", { projectName: project.name });
+                const deleteBtn = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteBtn", { projectName: project.name });
 
-                vscode.window.showQuickPick(options, { canPickMany: false })
+                vscode.window.showWarningMessage(deleteMsg, { modal: true }, deleteBtn)
                     .then( (response) => {
-                        if (response === deleteOption) {
-                            Requester.requestDelete(project);
+                        if (response === deleteBtn) {
+                            // Delete the project, then close the webview since the project is gone.
+                            Requester.requestDelete(project)
+                                .then ( () => webPanel.dispose());
                         }
                     });
             }

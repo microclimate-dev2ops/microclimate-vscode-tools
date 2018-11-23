@@ -8,6 +8,10 @@ import ProjectState from "../microclimate/project/ProjectState";
 import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 import DebugUtils from "../microclimate/project/DebugUtils";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
+
+const STRING_NS = StringNamespaces.DEBUG;
 
 /**
  * Attach the debugger to the given project. Returns if we attached the debugger successfully.
@@ -33,7 +37,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
     }
     catch (err) {
         // can happen if EG the user requests another restart before this one finishes
-        Log.d("Waiting for debuggable state was rejected");
+        Log.w("Waiting for debuggable state was rejected:", err);
         return false;
     }
 
@@ -53,10 +57,11 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
         Log.d(`${project.name} appears to be ready for debugging`);
         const startDebugWithTimeout = MCUtil.promiseWithTimeout(DebugUtils.startDebugSession(project),
             debugConnectTimeoutS * 1000,
-            `Debugger did not connect within ${debugConnectTimeoutS}s`
+            Translator.t(STRING_NS, "didNotConnectInTime", { timeoutS: debugConnectTimeoutS })
         );
 
-        vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} Connecting debugger to ${project.name}`,
+        const connectingMsg = Translator.t(STRING_NS, "connectingToProject", { projectName: project.name });
+        vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} ${connectingMsg}`,     // non-nls
                 startDebugWithTimeout);
 
         // will throw error if connection fails or timeout
@@ -69,10 +74,21 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
     catch (err) {
         const debugUrl = project.debugUrl;
         // Show our error message here. we can't throw/reject or vscode won't know how to handle it
-        const failMsg = `Failed to attach debugger to ${project.name}${debugUrl == null ? "" : " at " + debugUrl}`;
-        const extraErrMsg = err.message ? err.message : "";
+        let failMsg;
+        if (debugUrl != null) {
+            failMsg = Translator.t(STRING_NS, "failedToAttachWithUrl", { projectName: project.name, debugUrl });
+        }
+        else {
+            failMsg = Translator.t(STRING_NS, "failedToAttach", { projectName: project.name });
+        }
+
+        const extraErrMsg: string = err.message ? err.message : "";         // non-nls
         Log.e(failMsg, extraErrMsg);
-        vscode.window.showErrorMessage(failMsg + extraErrMsg);
+
+        if (extraErrMsg != null && extraErrMsg.length > 0) {
+            failMsg += Translator.t(STRING_NS, "errDetailSeparator") + extraErrMsg;
+        }
+        vscode.window.showErrorMessage(failMsg);
         return false;
     }
 }

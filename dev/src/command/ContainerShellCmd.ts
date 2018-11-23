@@ -5,6 +5,8 @@ import { promptForProject } from "./CommandUtil";
 import Project from "../microclimate/project/Project";
 import { Log } from "../Logger";
 import { ProjectType } from "../microclimate/project/ProjectType";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export default async function containerShellCmd(project: Project): Promise<void> {
     Log.d("containerBashCmd invoked");
@@ -19,17 +21,17 @@ export default async function containerShellCmd(project: Project): Promise<void>
     }
 
     if (project.containerID == null || project.containerID === "") {
-        vscode.window.showWarningMessage("This project does not have a container running right now. Wait until the project is Started.");
+        vscode.window.showWarningMessage(Translator.t(StringNamespaces.CMD_MISC, "noContainerForShell", { projectName: project.name }));
         return;
     }
 
     // annoyingly, only python project containers seem to not have bash installed.
     // TODO We could check what's installed by doing docker exec through child_process, if that's worth the trouble.
-    const toExec: string = project.type.type === ProjectType.Types.PYTHON ? "sh" : "bash";
+    const toExec: string = project.type.type === ProjectType.Types.PYTHON ? "sh" : "bash";      // non-nls
     // const env = convertNodeEnvToTerminalEnv(process.env);
 
     const options: vscode.TerminalOptions = {
-        name: `${toExec} - ${project.name}`,
+        name: `${toExec} - ${project.name}`,        // non-nls
 
         // Passing through environment variables is not actually useful,
         // since we'll lose them once we exec into the container anyway.
@@ -37,7 +39,7 @@ export default async function containerShellCmd(project: Project): Promise<void>
     };
 
     const term: vscode.Terminal = vscode.window.createTerminal(options);
-    term.sendText(`docker exec -it ${project.containerID} /usr/bin/env ${toExec}`);
+    term.sendText(`docker exec -it ${project.containerID} /usr/bin/env ${toExec}`);     // non-nls
     term.show();
 }
 

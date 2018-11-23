@@ -35,34 +35,46 @@ export default class ProjectObserver {
         ConnectionManager.instance.addOnChangeListener(this.onChange);
     }
 
-    public onChange = () => {
+    public onChange = async () => {
 
+        const projects = await this.connection.getProjects();
         // Check if any of the projects pending creation have been created.
-        this.projectsPendingCreation.forEach( async (pendingCreation, index) => {
-            this.connection.getProjects()
-                .then( (projects) => {
-                    const findResult = projects.find( (p) => p.name === pendingCreation.projectName);
-                    if (findResult != null) {
-                        Log.t(`Project ${pendingCreation.projectName} was created`);
-                        pendingCreation.resolveFunc(findResult.id);
-                        this.projectsPendingCreation.splice(index, 1);
-                    }
-            });
-        });
+        for (let i = this.projectsPendingCreation.length - 1; i >= 0; i--) {
+            const pendingCreation = this.projectsPendingCreation[i];
+            const findResult = projects.find( (p) => p.name === pendingCreation.projectName);
+            if (findResult != null) {
+                Log.t(`Project ${pendingCreation.projectName} was created`);
+                pendingCreation.resolveFunc(findResult.id);
+                this.projectsPendingCreation.splice(i, 1);
+            }
+        }
 
         // Check if any of the projects awaiting a state have reached that state.
-        this.projectsPendingState.forEach( async (pendingProject: IProjectStateAwaiting, index: number) => {
+        for (let i = this.projectsPendingState.length - 1; i >= 0; i--) {
+            const pendingProject = this.projectsPendingState[i];
             this.connection.getProjectByID(pendingProject.projectID)
                 .then( (project) => {
                     if (project == null) {
                         Log.e("Couldn't get project with ID " + pendingProject.projectID);
+                        this.projectsPendingState.splice(i, 1);
                     }
                     else if (pendingProject.states.includes(project.state.appState)) {
                         Log.t(`Project ${project.name} reached pending state ${project.state}`);
                         pendingProject.resolveFunc();
-                        this.projectsPendingState.splice(index, 1);
+                        this.projectsPendingState.splice(i, 1);
                     }
                 });
+        }
+    }
+
+    public onDelete(projectID: string) {
+        this.projectsPendingState.find( (project, i) => {
+            if (project.projectID === projectID) {
+                Log.t("No longer observing project " + projectID);
+                this.projectsPendingState.splice(i, 1);
+                return true;
+            }
+            return false;
         });
     }
 
@@ -87,7 +99,7 @@ export default class ProjectObserver {
             throw new Error("Could not find project with ID " + projectID);
         }
         if (states.includes(project.state.appState)) {
-            Log.t(`No need to wait, ${project.name} is already ${project.state}`);
+            Log.t(`No need to wait for states ${JSON.stringify(states)}, ${project.name} is already ${project.state}`);
             return;
         }
 
@@ -100,18 +112,18 @@ export default class ProjectObserver {
                 resolveFunc: resolve
             });
 
-            // Log.t(`projectsPendingState are now: ${JSON.stringify(this.projectsPendingState)}`);
+            Log.t(`projectsPendingState are now: ${JSON.stringify(this.projectsPendingState)}`);
         });
     }
 
     public async awaitCreate(name: string): Promise<string> {
-        Log.t(`projectsPendingCreation are now: ${JSON.stringify(this.projectsPendingCreation)}`);
-
         return new Promise<string> ( (resolve) => {
             this.projectsPendingCreation.push({
                 projectName: name,
                 resolveFunc: resolve
             });
+
+            Log.t(`projectsPendingCreation are now: ${JSON.stringify(this.projectsPendingCreation)}`);
         });
     }
 }

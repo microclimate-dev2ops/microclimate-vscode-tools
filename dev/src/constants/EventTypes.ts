@@ -1,4 +1,6 @@
 
+// non-nls-file
+
 /**
  * List of Socket.io event types from Portal that we're interested in.
  */

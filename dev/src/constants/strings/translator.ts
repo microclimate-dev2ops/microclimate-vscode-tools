@@ -4,33 +4,39 @@ import * as i18nextBackend from "i18next-node-fs-backend";
 import * as path from "path";
 
 import Log from "../../Logger";
+import StringNamespaces from "./StringNamespaces";
 
 export default class Translator {
 
     private static _t: i18next.TranslationFunction;
 
     /**
-     * Must explicitly call init before calling this
+     * Use i18next to translate the given string as "$namespace.key".
+     * Must explicitly call init before calling this.
      */
-    public static t(key: string, options?: i18next.TranslationOptions): string {
+    public static t(namespace: StringNamespaces, key: string, options?: i18next.TranslationOptions): string {
+        const hasNamespace = namespace != null && namespace.length > 0;
+        const fullKey = hasNamespace ? `${namespace}.${key}` : key;
+
         if (this._t == null) {
             // init has not been called, or there was an init error
-            Log.e("i18next was not initialized, returning key");
-            return key;
+            Log.e(`i18next was not initialized, returning key "${fullKey}"`);
+            return fullKey;
         }
 
         // _t returns 'any', but seems to always be string. Handle that here so that caller can assume it's a string.
-        const tResult = this._t(key, options);
+        const tResult = this._t(fullKey, options);
+
         if (typeof tResult === typeof "") {
-            if (tResult === key) {
-                Log.e(`Did not find string with key: ${key}`);
+            if (tResult === fullKey) {
+                Log.e(`Did not find string with key: ${fullKey}`);
             }
             return tResult as string;
         }
         else {
             // Don't think this will ever happen
             Log.e(`Unexpected result from translation function, type is ${typeof tResult}, result is:`, tResult);
-            return key;
+            return fullKey;
         }
     }
 

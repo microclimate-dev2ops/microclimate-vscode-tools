@@ -23,6 +23,8 @@ import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import openAppMonitorCmd from "./OpenAppMonitor";
 import refreshConnectionCmd from "./RefreshConnectionCmd";
 import newMCProjectCmd from "./NewMCProjectCmd";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -112,13 +114,24 @@ export async function promptForResource(...acceptableStates: ProjectState.AppSta
 async function promptForResourceInner(includeConnections: boolean, includeProjects: boolean, ...acceptableStates: ProjectState.AppStates[]):
         Promise<Project | Connection | undefined> {
 
-    // TODO Try to get the name of †he selected project, and have it selected initially - if this is possible.
+    if (!includeConnections && !includeProjects) {
+        // One of these must always be set
+        Log.e("Neither connection or projects are to be included!");
+        return undefined;
+    }
+    else if (!includeProjects && acceptableStates.length > 0) {
+        // This is a misuse of this function
+        Log.e("Not including projects, but acceptable states were specified!");
+        acceptableStates = [];
+    }
+
     const choices: vscode.QuickPickItem[] = [];
 
     const connections = ConnectionManager.instance.connections;
     if (includeConnections) {
         // Convert each Connected Connection into a QuickPickItem
-        choices.push(... (connections.filter( (conn) => conn.isConnected)));
+        // choices.push(... (connections.filter( (conn) => conn.isConnected)));
+        choices.push(...connections);
     }
 
     if (includeProjects) {
@@ -142,18 +155,9 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
         }
     }
 
-    // If no choices are available, show a message
+    // If no choices are available, show a popup message
     if (choices.length === 0) {
-        let requiredStatesStr: string = "";
-
-        if (acceptableStates.length !== 0) {
-            requiredStatesStr += acceptableStates.map( (state) => state.toString()).join(", ");
-        }
-
-        // TODO improve the msg.
-        const msg = `There is no ${includeConnections ? " Connection, or" : ""} ${requiredStatesStr} Project ` +
-                `on which to run this command.`;
-        vscode.window.showWarningMessage(msg, /*{ modal: true }*/);
+        showNoValidResourcesMsg(includeProjects, includeConnections, acceptableStates);
         return undefined;
     }
 
@@ -172,4 +176,51 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
         Log.e(`Unsupported type in promptForResource ${typeof(selection)}`);
         return undefined;
     }
+}
+
+const STRING_NS = StringNamespaces.CMD_RES_PROMPT;
+
+/**
+ * Show a message stating that the command to be run can't be run on the current state of the workspace.
+ * The message will be something like:
+ * "There is no Microclimate connection, or Starting - Debug or Debugging project, to run this command on."
+ */
+function showNoValidResourcesMsg(includeProjects: boolean, includeConnections: boolean, acceptableStates: ProjectState.AppStates[]): void {
+    let requiredStatesStr: string = "";     // non-nls
+
+    const statesSpecified: boolean = acceptableStates.length !== 0;
+    if (statesSpecified) {
+        // this builds something like "Starting - Debug or Debugging", to represent the project states this command can run on.
+        const sep = Translator.t(StringNamespaces.DEFAULT, "statesSeparator");
+        requiredStatesStr += acceptableStates.map( (state) => state.toString()).join(sep);
+    }
+
+    // In the case that the user runs a command but there is nothing valid to run that command on, we have to show a message.
+    // There are several slightly different messages depending on the resource types the command accepts.
+    let noValidResourcesMsg: string;
+    if (includeProjects) {
+        if (includeConnections) {
+            if (statesSpecified) {
+                noValidResourcesMsg = Translator.t(STRING_NS, "noConnOrProjToRunOnWithStates", { states: requiredStatesStr });
+            }
+            else {
+                noValidResourcesMsg = Translator.t(STRING_NS, "noConnOrProjToRunOn");
+            }
+        }
+        else if (statesSpecified) {
+            noValidResourcesMsg = Translator.t(STRING_NS, "noProjToRunOnWithStates", { states: requiredStatesStr });
+        }
+        else {
+            noValidResourcesMsg = Translator.t(STRING_NS, "noProjToRunOn");
+        }
+    }
+    else if (includeConnections) {
+        noValidResourcesMsg = Translator.t(STRING_NS, "noConnToRunOn");
+    }
+    else {
+        // this will never happen, it's checked for at the top of promptForResourceInner
+        Log.e("Neither connection or projects are to be included!");
+        return;
+    }
+    vscode.window.showWarningMessage(noValidResourcesMsg);
 }

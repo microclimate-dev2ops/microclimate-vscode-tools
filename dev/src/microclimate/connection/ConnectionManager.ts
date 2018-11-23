@@ -5,6 +5,8 @@ import Connection from "./Connection";
 import { tryAddConnection } from "../../command/NewConnectionCmd";
 import Log from "../../Logger";
 import Settings from "../../constants/Settings";
+import Translator from "../../constants/strings/translator";
+import StringNamespaces from "../../constants/strings/StringNamespaces";
 
 export default class ConnectionManager {
 
@@ -34,7 +36,7 @@ export default class ConnectionManager {
     public async addConnection(uri: vscode.Uri, host: string, mcVersion: number, workspace: vscode.Uri): Promise<Connection> {
         return new Promise<Connection>( (resolve, reject) => {
             if (this.connectionExists(uri)) {
-                return reject("Connection already exists at " + uri);
+                return reject(Translator.t(StringNamespaces.DEFAULT, "connectionAlreadyExists", { uri }));
             }
 
             // all validation that this connection is good must be done by this point
@@ -102,9 +104,9 @@ export default class ConnectionManager {
                     .update(Settings.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Global);
         }
         catch (err) {
-            const msg = "Error saving connections: " + err;
-            Log.e(msg);
-            vscode.window.showErrorMessage(err);
+            const msg = Translator.t(StringNamespaces.DEFAULT, "errorSavingConnections", { err: err.toString() });
+            Log.e(msg, err);
+            vscode.window.showErrorMessage(msg);
         }
     }
 

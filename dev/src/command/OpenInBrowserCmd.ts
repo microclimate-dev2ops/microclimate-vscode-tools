@@ -6,6 +6,10 @@ import { promptForResource } from "./CommandUtil";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import { Log } from "../Logger";
 import Commands from "../constants/Commands";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
+
+const STRING_NS = StringNamespaces.CMD_OPEN_IN_BROWSER;
 
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
     Log.d("OpenInBrowserCmd invoked");
@@ -21,17 +25,15 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
 
     let uriToOpen: vscode.Uri;
     // This will open the project or Microclimate in the external web browser.
-    // We can look into giving the option to open it inside the IDE using a WebView,
-    // but this will be considerably more work and less performant.
     if (resource instanceof Project) {
         const project: Project = resource as Project;
         if (!project.state.isStarted) {
-            vscode.window.showErrorMessage("You can only open projects that are Started in the browser.");
+            vscode.window.showWarningMessage(Translator.t(STRING_NS, "canOnlyOpenStartedProjects"));
             return;
         }
         else if (project.appBaseUrl == null) {
             Log.e("Project is started but has no appBaseUrl: " + project.name);
-            vscode.window.showErrorMessage("Could not determine application URL for " + project.name);
+            vscode.window.showErrorMessage(Translator.t(STRING_NS, "failedDetermineAppUrl", { projectName: project.name }));
             return;
         }
         uriToOpen = project.appBaseUrl;
@@ -39,14 +41,14 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
     else if (resource instanceof Connection) {
         const conn: Connection = resource as Connection;
         if (!conn.isConnected) {
-            vscode.window.showErrorMessage("This connection is Disconnected. You can't connect to Microclimate if it isn't running.");
+            vscode.window.showErrorMessage(Translator.t(STRING_NS, "cantOpenDisconnected"));
             return;
         }
         uriToOpen = conn.mcUri;
     }
     else {
-        // shouldn't happen
-        vscode.window.showErrorMessage(`Don't know how to open object of type ${typeof(resource)} in browser`);
+        // should never happen
+        Log.e(`Don't know how to open object of type ${typeof(resource)} in browser`);
         return;
     }
 

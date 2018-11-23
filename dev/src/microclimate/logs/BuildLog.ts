@@ -5,11 +5,12 @@ import Log from "../../Logger";
 import Endpoints from "../../constants/Endpoints";
 import Connection from "../connection/Connection";
 import MCLog from "./MCLog";
+import Translator from "../../constants/strings/translator";
 
 export default class BuildLog extends MCLog {
 
     private static readonly UPDATE_INTERVAL: number = 5000;
-    private static readonly LAST_UPDATED_HEADER: string = "build-log-last-modified";
+    private static readonly LAST_UPDATED_HEADER: string = "build-log-last-modified";        // non-nls
 
     private readonly timer: NodeJS.Timer;
 
@@ -21,7 +22,7 @@ export default class BuildLog extends MCLog {
         public readonly projectName: string
     ) {
         super(projectID, projectName,
-            `Fetching build logs for ${projectName}...`,
+            Translator.t(MCLog.STRING_NS, "waitingForBuildLogs", { projectName }),
             MCLog.LogTypes.BUILD);
 
         this.update();
@@ -59,12 +60,12 @@ export default class BuildLog extends MCLog {
             Log.e(err);
             if (err.statusCode === 404) {
                 // The project got deleted or disabled
-                return this.stopUpdating();
+                return this.stopUpdating(false);
             }
 
             // Allow the user to kill this log so it doesn't spam them with error messages if there's a network problem or something.
-            const stopUpdatingBtn: string = "Stop updating";
-            vscode.window.showErrorMessage("Error updating build log: " + err, stopUpdatingBtn)
+            const stopUpdatingBtn: string = Translator.t(MCLog.STRING_NS, "stopUpdatingBtn");
+            vscode.window.showErrorMessage(Translator.t(MCLog.STRING_NS, "errUpdatingBuildLog", { err: err.toString() }), stopUpdatingBtn)
                 .then( (btn) => {
                     if (btn === stopUpdatingBtn) {
                         this.stopUpdating(false);

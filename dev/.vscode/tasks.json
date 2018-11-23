@@ -19,11 +19,19 @@
             "type": "npm",
             "script": "compile",
             "problemMatcher": "$tsc-watch",
-            "isBackground": false,
+            // "isBackground": false,
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         },
         {
             "label": "Copy strings to out dir",
@@ -32,12 +40,28 @@
             "args": [
                 "${workspaceFolder}/src/constants/strings/strings-*.json",
                 "${workspaceFolder}/out/constants/strings/"
-            ]
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         },
         {
             "type": "npm",
             "script": "lint",
-            "problemMatcher": "$tslint5"
+            "problemMatcher": "$tslint5",
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         },
         {
             "label": "build",

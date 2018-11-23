@@ -5,6 +5,10 @@ import ITreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import { Icons, getIconPaths } from "../constants/Resources";
 import Commands from "../constants/Commands";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
+
+const STRING_NS = StringNamespaces.TREEVIEW;
 
 export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<ITreeItemAdaptable> {
 
@@ -46,13 +50,13 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
             }
             else {
                 // Provide a root node if no Connections have been created
-                const noConnectionsRoot = new SimpleTreeItem("No Microclimate connections", vscode.TreeItemCollapsibleState.None);
+                const noConnectionsRoot = new SimpleTreeItem(Translator.t(STRING_NS, "noConnectionsLabel"), vscode.TreeItemCollapsibleState.None);
                 noConnectionsRoot.treeItem.iconPath = getIconPaths(Icons.Microclimate);
-                noConnectionsRoot.treeItem.tooltip = "Click to create a new Microclimate connection";
+                noConnectionsRoot.treeItem.tooltip = Translator.t(STRING_NS, "noConnectionsTooltip");
                 // Clicking the no connections item runs the new connection command.
                 noConnectionsRoot.treeItem.command = {
                     command: Commands.NEW_CONNECTION,
-                    title: ""
+                    title: ""       // non-nls
                 };
                 return [ noConnectionsRoot ];
             }

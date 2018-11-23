@@ -5,6 +5,10 @@ import Project from "./Project";
 import StartModes from "../../constants/StartModes";
 import Endpoints from "../../constants/Endpoints";
 import Log from "../../Logger";
+import StringNamespaces from "../../constants/strings/StringNamespaces";
+import Translator from "../../constants/strings/translator";
+
+const STRING_NS = StringNamespaces.REQUESTS;
 
 namespace Requester {
 
@@ -14,28 +18,33 @@ namespace Requester {
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
-        return doProjectRequest(project, url, body, request.post, `Restart into ${body.startMode} mode`);
+        const restartMsg = Translator.t(STRING_NS, "restartIntoMode", { startMode: body.startMode });
+        return doProjectRequest(project, url, body, request.post, restartMsg);
     }
 
     export async function requestBuild(project: Project): Promise<void> {
         const body = {
-            action: "build"
+            action: "build"         // non-nls
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
         // return doProjectRequest(project, url, body, request.post, "Build");
-        return doProjectRequest(project, url, body, request.post, "Build")
+        const buildMsg = Translator.t(STRING_NS, "build");
+        return doProjectRequest(project, url, body, request.post, buildMsg)
             // This is a workaround for the Build action not refreshing validation state.
             // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
-            .then( (_: any) => requestValidate(project));
+            .then( () => requestValidate(project));
     }
 
     export async function requestToggleAutoBuild(project: Project): Promise<void> {
         const newAutoBuild: boolean = !project.autoBuildEnabled;
+
         // user-friendly action
-        const newAutoBuildUserStr:  string = newAutoBuild ? "Enable auto build" : "Disable auto build";
+        const autoBuildMsgKey = newAutoBuild ? "autoBuildEnable" : "autoBuildDisable";                  // non-nls
+        const newAutoBuildUserStr: string = Translator.t(STRING_NS, autoBuildMsgKey);
+
         // action we'll put into the request body   https://github.ibm.com/dev-ex/portal/wiki/API:-Build
-        const newAutoBuildAction:   string = newAutoBuild ? "enableautobuild" : "disableautobuild";
+        const newAutoBuildAction:  string = newAutoBuild ? "enableautobuild" : "disableautobuild";     // non-nls
 
         const body = {
             action: newAutoBuildAction
@@ -52,7 +61,9 @@ namespace Requester {
 
     export async function requestToggleEnablement(project: Project): Promise<void> {
         const newEnablement: boolean = !project.state.isEnabled;
-        const newEnablementStr: string = newEnablement ? "Enable" : "Disable";
+
+        const newEnablementMsgKey = newEnablement ? "projectEnable" : "projectDisable";        // non-nls
+        const newEnablementStr: string = Translator.t(STRING_NS, newEnablementMsgKey);
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.getEnablementAction(newEnablement));
         return doProjectRequest(project, url, {}, request.put, newEnablementStr);
@@ -77,14 +88,17 @@ namespace Requester {
         };
 
         const url = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
-        return doProjectRequest(project, url, body, request.post, "Generate Dockerfile")
+        const generateMsg = Translator.t(STRING_NS, "generateMissingFiles");
+
+        return doProjectRequest(project, url, body, request.post, generateMsg)
             // request a validate after the generate so that the validation errors go away faster
             .then( () => requestValidate(project));
     }
 
     export async function requestDelete(project: Project): Promise<void> {
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, "");
-        return doProjectRequest(project, url, {}, request.delete, "Delete");
+        const deleteMsg = Translator.t(STRING_NS, "delete");
+        return doProjectRequest(project, url, {}, request.delete, deleteMsg);
     }
 
     /**
@@ -109,7 +123,10 @@ namespace Requester {
             .then( (result: any) => {
                 Log.i(`Response code ${result.statusCode} from ${userOperationName} request for ${project.name}:`, result);
                 if (userOperationName != null) {
-                    vscode.window.showInformationMessage(`${userOperationName} requested for ${project.name}`);
+                    vscode.window.showInformationMessage(
+                        Translator.t(STRING_NS, "requestSuccess",
+                        { operationName: userOperationName, projectName: project.name })
+                    );
                 }
                 return result;
             })
@@ -119,7 +136,10 @@ namespace Requester {
                 // If the server provided a specific message, present the user with that,
                 // otherwise show them the whole error (but it will be ugly)
                 const errMsg = err.error ? err.error : err;
-                vscode.window.showErrorMessage(`${userOperationName} failed: ${errMsg}`);
+                vscode.window.showErrorMessage(
+                    Translator.t(STRING_NS, "requestFail",
+                    { operationName: userOperationName, projectName: project.name, err: errMsg })
+                );
                 return err;
             });
     }

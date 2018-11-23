@@ -114,6 +114,21 @@ export class ProjectType {
 
 export namespace ProjectType {
 
+    // These are the project types as exposed to the user.
+    // String value must be user-friendly!
+    export enum Types {
+        MICROPROFILE = "Microprofile",
+        SPRING = "Spring",
+        NODE = "Node.js",
+        SWIFT = "Swift",
+        PYTHON = "Python",
+        GO = "Go",
+        GENERIC_DOCKER = "Docker",
+        UNKNOWN = "Unknown"
+    }
+
+    // non-nls-section-start
+
     // possible values of the "projectType" or "buildType" internal attribute
     export enum InternalTypes {
         MICROPROFILE = "liberty",
@@ -133,24 +148,13 @@ export namespace ProjectType {
         GO = "go"
     }
 
-    // These are the project types as exposed to the user.
-    // String value must be user-friendly!
-    export enum Types {
-        MICROPROFILE = "Microprofile",
-        SPRING = "Spring",
-        NODE = "Node.js",
-        SWIFT = "Swift",
-        PYTHON = "Python",
-        GO = "Go",
-        GENERIC_DOCKER = "Docker",
-        UNKNOWN = "Unknown"
-    }
-
     // VSCode debug types, used as the "type" attribute in a debug launch.
     export enum DebugTypes {
         JAVA = "java",
         NODE = "node"
     }
+
+    // non-nls-section-end
 
     export const PROJECTS_WITHOUT_BUILDLOGS: ReadonlyArray<ProjectType.Types> = [
         ProjectType.Types.NODE

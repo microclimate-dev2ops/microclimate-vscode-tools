@@ -2,11 +2,15 @@ import * as vscode from "vscode";
 
 import Log from "../../Logger";
 import Settings from "../../constants/Settings";
+import StringNamespaces from "../../constants/strings/StringNamespaces";
+import Translator from "../../constants/strings/translator";
 
 /**
  * Type to capture common functionality between AppLogs and BuildLogs
  */
 export class MCLog {
+
+    protected static readonly STRING_NS: StringNamespaces = StringNamespaces.LOGS;
 
     protected readonly outputChannel: vscode.OutputChannel;
 
@@ -18,8 +22,7 @@ export class MCLog {
         initialMsg: string,
         private readonly logType: MCLog.LogTypes
     ) {
-        // $MyProject - (App | Build) Log
-        const outputChannelName = `${projectName} - ${logType} Log`;
+        const outputChannelName = Translator.t(MCLog.STRING_NS, "logName", { projectName, logType: logType.toString() });
         this.outputChannel = vscode.window.createOutputChannel(outputChannelName);
         this.outputChannel.appendLine(initialMsg);
     }
@@ -47,8 +50,10 @@ export class MCLog {
         // prevents printing the 'no more updates' message more than once
         this.doUpdate = false;
 
-        const msgStart = connectionLost ? `The connection to Microclimate was lost, so this` : `This`;
-        this.outputChannel.appendLine(`\n******** ${msgStart} ${this.logType.toLowerCase()} log is no longer updating.`);
+        const msgKey = connectionLost ? "logNotUpdatingNoConnection" : "logNotUpdatingOther";       // non-nls
+        const msg = Translator.t(MCLog.STRING_NS, msgKey, { logType: this.logType.toString().toLowerCase() });
+
+        this.outputChannel.appendLine("\n" + msg);          // non-nls
     }
 
     public async destroy(): Promise<void> {

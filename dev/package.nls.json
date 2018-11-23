@@ -50,7 +50,7 @@
     "cmdDescr_restartDebug": "Restart a Microclimate project into Debug mode",
 
     "cmdID_requestBuild": "ext.mc.requestBuild",
-    "cmdTitle_requestBuild": "Request build",
+    "cmdTitle_requestBuild": "Build",
     "cmdDescr_requestBuild": "Manually kick off a project build in Microclimate",
 
     "cmdID_openBuildLog": "ext.mc.openBuildLog",
@@ -67,11 +67,11 @@
     "cmdDescr_enable": "Enable this project in Microclimate",
 
     "cmdID_disable": "ext.mc.disable",
-    "cmdTitle_disable": "Disable Project",
+    "cmdTitle_disable": "Disable project",
     "cmdDescr_disable": "Disable this project in Microclimate",
 
     "cmdID_containerShell": "ext.mc.containerShell",
-    "cmdTitle_containerShell": "Open shell in container",
+    "cmdTitle_containerShell": "Open container shell",
     "cmdDescr_containerShell": "Open a shell inside this project's application container",
 
     "cmdID_toggleAutoBuild": "ext.mc.toggleAutoBuild",

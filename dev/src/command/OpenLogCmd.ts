@@ -5,6 +5,10 @@ import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import ProjectState from "../microclimate/project/ProjectState";
 import MCLog from "../microclimate/logs/MCLog";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
+
+const STRING_NS = StringNamespaces.CMD_OPEN_LOG;
 
 /**
  *
@@ -13,7 +17,7 @@ import MCLog from "../microclimate/logs/MCLog";
 export default async function openLogCmd(project: Project, isAppLog: boolean): Promise<void> {
     Log.d("OpenLogCmd invoked");
     if (project == null) {
-        const selected = await promptForProject();
+        const selected = await promptForProject(...ProjectState.getEnabledStates());
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
@@ -27,19 +31,20 @@ export default async function openLogCmd(project: Project, isAppLog: boolean): P
         if (!project.state.isEnabled) {
             // If we were to create an app log for a disabled project,
             // it would just say "waiting for Microclimate to send logs" until the app starts.
-            vscode.window.showErrorMessage("App Logs are not available for Disabled projects.");
+            vscode.window.showErrorMessage(Translator.t(STRING_NS, "noLogsForDisabled"));
             return;
         }
-        else if (project.state.appState === ProjectState.AppStates.STOPPED) {
-            vscode.window.showWarningMessage(`${project.name} is ${ProjectState.AppStates.STOPPED};` +
-                ` it might not have any app log output until it starts.`);
+        else if (!project.state.isStarted) {
+            vscode.window.showWarningMessage(Translator.t(STRING_NS, "projectIsNotStarted",
+                { projectName: project.name, projectState: project.state.appState })
+            );
         }
 
         log = project.connection.logManager.getOrCreateAppLog(project.id, project.name);
     }
     else {
         if (!project.type.providesBuildLog) {
-            vscode.window.showErrorMessage(`Build logs are not available for ${project.type} projects.`);
+            vscode.window.showErrorMessage(Translator.t(STRING_NS, "noBuildLogsForType", { projectType: project.type.type }));
             return;
         }
 
