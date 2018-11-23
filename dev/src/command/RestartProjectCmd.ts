@@ -4,7 +4,7 @@ import Project from "../microclimate/project/Project";
 import { promptForProject } from "../command/CommandUtil";
 import ProjectState from "../microclimate/project/ProjectState";
 import Log from "../Logger";
-import StartModes, { getDefaultStartMode, isDebugMode } from "../constants/StartModes";
+import StartModes, { getDefaultStartMode, isDebugMode, getUserFriendlyStartMode } from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
 import * as MCUtil from "../MCUtil";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
@@ -84,13 +84,17 @@ async function onRestartAccepted(project: Project, startMode: StartModes): Promi
     }
 
     if (restartSuccess) {
-        const doneRestartMsg = Translator.t(StringNamespaces.DEFAULT, "restartSuccess", { projectName: project.name, startMode });
+        const doneRestartMsg = Translator.t(StringNamespaces.DEFAULT, "restartSuccess",
+            { projectName: project.name, startMode: getUserFriendlyStartMode(startMode) }
+        );
         Log.i(doneRestartMsg);
         vscode.window.showInformationMessage(doneRestartMsg);
     }
     else {
         // Either the restart failed, or the user cancelled it by initiating another restart
-        const msg = Translator.t(StringNamespaces.DEFAULT, "restartFailure", { projectName: project.name, startMode });
+        const msg = Translator.t(StringNamespaces.DEFAULT, "restartFailure",
+            { projectName: project.name, startMode: getUserFriendlyStartMode(startMode) }
+        );
         Log.w(msg);
         // TODO show this warning or not?
         vscode.window.showWarningMessage(msg);

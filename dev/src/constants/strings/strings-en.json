@@ -106,7 +106,7 @@
 
         "delete": "Delete",
         "requestSuccess":   "{{ projectName }}: {{ operationName }} requested ",
-        "requestFail":      "{{ projectName }}: {{ operationName }} failed for : {{- err }}"
+        "requestFail":      "{{ projectName }}: {{ operationName }} failed: {{- err }}"
     },
 
     "treeView": {

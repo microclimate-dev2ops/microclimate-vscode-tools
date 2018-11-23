@@ -1,4 +1,5 @@
 import ProjectType from "../microclimate/project/ProjectType";
+import Log from "../Logger";
 
 // non-nls-file
 
@@ -8,6 +9,20 @@ enum StartModes {
     RUN = "run",
     DEBUG = "debug",
     DEBUG_NO_INIT = "debugNoInit"
+}
+
+export function getUserFriendlyStartMode(startMode: StartModes): string {
+    switch (startMode) {
+        case StartModes.RUN:
+            return "run";
+        case StartModes.DEBUG:
+            return "debug (with initial break)";
+        case StartModes.DEBUG_NO_INIT:
+            return "debug";
+        default:
+            Log.e(`Unknown start mode "${startMode}"!`);
+            return "unknown";
+    }
 }
 
 export function allStartModes(): string[] {

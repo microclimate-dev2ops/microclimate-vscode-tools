@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
 import Project from "./Project";
-import StartModes from "../../constants/StartModes";
+import StartModes, { getUserFriendlyStartMode } from "../../constants/StartModes";
 import Endpoints from "../../constants/Endpoints";
 import Log from "../../Logger";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
@@ -18,7 +18,7 @@ namespace Requester {
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
-        const restartMsg = Translator.t(STRING_NS, "restartIntoMode", { startMode: body.startMode });
+        const restartMsg = Translator.t(STRING_NS, "restartIntoMode", { startMode: getUserFriendlyStartMode(startMode) });
         return doProjectRequest(project, url, body, request.post, restartMsg);
     }
 
