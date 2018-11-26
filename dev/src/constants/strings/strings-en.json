@@ -1,22 +1,22 @@
 {
     "microclimateName": "Microclimate",
     "activeMsg": "Microclimate Tools for VSCode are active!",
-    "connectionAlreadyExists": "Connection already exists at {{- uri }}",
-    "errorSavingConnections": "Error saving connections: {{- err }}",
+    "connectionAlreadyExists": "Connection already exists at {{- uri }}.",
+    "errorSavingConnections": "Error saving connections: {{- err }}.",
 
     "statesSeparator": " or ",
     "generateFilesBtn": "Generate",
 
-    "genericErrorProjectRestart": "{{ projectName }} failed to restart",
+    "genericErrorProjectRestart": "{{ projectName }} failed to restart.",
     "restartSuccess": "Finished restarting {{ projectName }} in {{ startMode }} mode.",
     "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
 
     "command": {
-        "noContainerForShell": "{{ projectName }} does not have an application container running right now. Wait until the project is Started.",
+        "noContainerForShell": "{{ projectName }} does not have an application container running. Wait until the project is Running.",
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
-        "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Microclimate?",
+        "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Microclimate, and from your filesystem?",
         "confirmDeleteBtn": "Delete {{ projectName }}",
-        "refreshingConnection": "Refreshed Microclimate at {{- uri }}",
+        "refreshingConnection": "Refreshed Microclimate at {{- uri }}.",
         "projectAlreadyBuilding": "{{ projectName }} is already building. Build request cancelled.",
         "explicitBuildNotNecessary": "{{ projectName }} has auto-build enabled. There is no need to request a build.",
         "seeProblemsView": "See the Problems view for details.",
@@ -37,15 +37,15 @@
     },
 
     "debug": {
-        "didNotConnectInTime": "Debugger did not connect within {{ timeoutS }}s",
+        "didNotConnectInTime": "Debugger did not connect within {{ timeoutS }}s.",
         "connectingToProject": "Connecting debugger to {{ projectName }}",
-        "failedToAttach": "Failed to attach debugger to {{ projectName }}",
-        "failedToAttachWithUrl": "Failed to attach debugger to {{ projectName }} at {{- debugUrl }}",
-        "noDebugTypeKnown": "No debug type available for project of type {{ type }}",
-        "noDebugPort": "No debug port set for project {{ projectName }}",
+        "failedToAttach": "Failed to attach debugger to {{ projectName }}.",
+        "failedToAttachWithUrl": "Failed to attach debugger to {{ projectName }} at {{- debugUrl }}.",
+        "noDebugTypeKnown": "No debug type available for project of type {{ type }}.",
+        "noDebugPort": "No debug port set for project {{ projectName }}.",
         "errDetailSeparator": " - ",
         "maybeAlreadyDebugging": "Are you already debugging this project?",
-        "debuggerAttachSuccess": "Debugger attached to {{ projectName }} at {{- debugUrl }}",
+        "debuggerAttachSuccess": "Debugger attached to {{ projectName }} at {{- debugUrl }}.",
         "debugLaunchName": "Debug {{ projectName }}"
     },
 
@@ -53,18 +53,18 @@
         "waitingForAppLogs": "Waiting for Microclimate to send application logs for {{ projectName }}...",
         "waitingForBuildLogs": "Fetching build logs for {{ projectName }}...",
         "stopUpdatingBtn": "Stop updating",
-        "errUpdatingBuildLog": "Error updating build log: {{- err }}",
+        "errUpdatingBuildLog": "Error updating build log: {{- err }}.",
         "logName": "{{ projectName }} - {{ logType }} Log",
         "logNotUpdatingNoConnection": "******** The connection to Microclimate was lost, so this {{ logType }} log is no longer updating.",
         "logNotUpdatingOther": "******** This {{ logType }} log is no longer updating."
     },
 
     "newConnectionCmd": {
-        "enterMicroclimateHost": "Enter the hostname or IP for the Microclimate instance you wish to connect to.",
-        "enterMicroclimatePort": "Enter the Port for the local Microclimate instance you wish to connect to.",
+        "enterMicroclimateHost": "Enter the hostname or IP for the Microclimate instance you want to connect to.",
+        "enterMicroclimatePort": "Enter the Port for the local Microclimate instance you want to connect to.",
         "enterDifferentPortBtn": "Enter a different port",
-        "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be an integer between 1024 and 65536",
-        "connectionSucceeded": "New connection to {{- connectionUri }} succeeded. Workspace path is {{- workspacePath }}",
+        "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be an integer between 1024 and 65536.",
+        "connectionSucceeded": "New connection to {{- connectionUri }} succeeded. Workspace path is: {{- workspacePath }}.",
         "openWorkspaceBtn": "Open workspace",
         "editConnectionBtn": "Edit",
         "retryConnectionBtn": "Retry",
@@ -79,20 +79,20 @@
         "quickPickLabel": "{{ projectName }} ({{ projectType }} project)",
         "quickPickNotRunning": "[Not running]",
         "waitingForState": "Waiting for {{ projectName }} to be {{ pendingStates }}",
-        "didNotReachState":         "{{ projectName }} is not {{ states }}",
-        "didNotReachStateWithTime": "{{ projectName }} is not {{ states }} after {{ timeoutS }} seconds",
-        "onDeletion": "{{ projectName }} was deleted in Microclimate"
+        "didNotReachState":         "{{ projectName }} is not {{ states }}.",
+        "didNotReachStateWithTime": "{{ projectName }} is not {{ states }} after {{ timeoutS }} seconds.",
+        "onDeletion": "{{ projectName }} was deleted in Microclimate."
     },
 
     "openInBrowserCmd": {
         "canOnlyOpenStartedProjects": "You can only open projects that are Started in the browser.",
-        "failedDetermineAppUrl": "Could not determine application URL for {{ projectName }}",
-        "cantOpenDisconnected": "This connection is Disconnected. You can't open Microclimate if it isn't running."
+        "failedDetermineAppUrl": "Could not determine application URL for {{ projectName }}.",
+        "cantOpenDisconnected": "This connection is Disconnected. You cannot open Microclimate if it is not running."
     },
 
     "openLogCmd": {
-        "noLogsForDisabled": "App Logs are not available for Disabled projects.",
-        "projectIsNotStarted": "{{ projectName }} is {{ projectState }}; it might not have any app log output until it starts.",
+        "noLogsForDisabled": "Application Logs are not available for Disabled projects.",
+        "projectIsNotStarted": "{{ projectName }} is {{ projectState }}; it might not have any application log output until it starts.",
         "noBuildLogsForType": "Build logs are not available for {{ projectType }} projects."
     },
 
@@ -105,8 +105,8 @@
         "projectDisable": "Disable",
 
         "delete": "Delete",
-        "requestSuccess":   "{{ projectName }}: {{ operationName }} requested ",
-        "requestFail":      "{{ projectName }}: {{ operationName }} failed: {{- err }}"
+        "requestSuccess":   "{{ projectName }}: {{ operationName }} requested.",
+        "requestFail":      "{{ projectName }}: {{ operationName }} failed: {{- err }}."
     },
 
     "treeView": {

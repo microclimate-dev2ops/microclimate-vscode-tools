@@ -15,7 +15,7 @@
 
     "cmdID_newDefaultConn": "ext.mc.newDefaultConnection",
     "cmdTitle_newDefaultConn": "New default local Microclimate connection",
-    "cmdDescr_newDefaultConn": "Connect to Microclimate at the default local URL, http://localhost:9090",
+    "cmdDescr_newDefaultConn": "Connect to Microclimate at the default local URL http://localhost:9090",
 
     "cmdID_removeConn": "ext.mc.removeConnection",
     "cmdTitle_removeConn": "Remove connection",
@@ -31,11 +31,11 @@
 
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open folder as workspace",
-    "cmdDescr_openFolder": "Open this item's folder as your VSCode workspace",
+    "cmdDescr_openFolder": "Open this folder as your VSCode workspace",
 
     "cmdID_openInBrowser": "ext.mc.openInBrowser",
     "cmdTitle_openInBrowser": "Open in browser",
-    "cmdDescr_openInBrowser": "Open this resource in the browser",
+    "cmdDescr_openInBrowser": "Open this resource in a browser",
 
     "cmdID_attachDebugger": "ext.mc.attachDebugger",
     "cmdTitle_attachDebugger": "Attach debugger",
@@ -43,15 +43,15 @@
 
     "cmdID_restartRun": "ext.mc.restartProjectRun",
     "cmdTitle_restartRun": "Restart in Run mode",
-    "cmdDescr_restartRun": "Restart a Microclimate project into Run (normal) mode",
+    "cmdDescr_restartRun": "Restart a Microclimate project in Run (normal) mode",
 
     "cmdID_restartDebug": "ext.mc.restartProjectDebug",
     "cmdTitle_restartDebug": "Restart in Debug mode",
-    "cmdDescr_restartDebug": "Restart a Microclimate project into Debug mode",
+    "cmdDescr_restartDebug": "Restart a Microclimate project in Debug mode",
 
     "cmdID_requestBuild": "ext.mc.requestBuild",
     "cmdTitle_requestBuild": "Build",
-    "cmdDescr_requestBuild": "Manually kick off a project build in Microclimate",
+    "cmdDescr_requestBuild": "Manually start a project build in Microclimate",
 
     "cmdID_openBuildLog": "ext.mc.openBuildLog",
     "cmdTitle_openBuildLog": "Open build log",
@@ -61,9 +61,10 @@
 
     "cmdID_projectInfo": "ext.mc.viewProjectInfo",
     "cmdTitle_projectInfo": "Open project info",
+    "cmdDescr_projectInfo": "Open this project's Microclimate information",
 
     "cmdID_enable": "ext.mc.enable",
-    "cmdTitle_enable": "Enable Project",
+    "cmdTitle_enable": "Enable project",
     "cmdDescr_enable": "Enable this project in Microclimate",
 
     "cmdID_disable": "ext.mc.disable",
@@ -79,9 +80,9 @@
 
     "cmdID_openAppMonitor": "ext.mc.openAppMonitor",
     "cmdTitle_openAppMonitor": "Open app monitor",
-    "cmdDescr_openAppMonitor": "Open a project's Application Monitor page in the browser",
+    "cmdDescr_openAppMonitor": "Open a project's Application Monitor page in a browser",
 
-    "settingDesc_connections": "URLs of Microclimate instances to connect to. Not intended to be edited by hand.",
+    "settingDesc_connections": "URLs of Microclimate instances to connect to. Not intended to be manually edited.",
     "settingDesc_showLogOnChange_app": "When a Microclimate project's open app logs change, bring that log to the front",
     "settingDesc_showLogOnChange_build": "When a Microclimate project's open build logs change, bring that log to the front",
 

@@ -160,6 +160,7 @@
             {
                 "command": "%cmdID_projectInfo%",
                 "title": "%cmdTitle_projectInfo%",
+                "description": "%cmdDescr_projectInfo%",
                 "category": "%commandCategory%"
             },
             {
@@ -276,7 +277,7 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+        "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test",
         "lint": "tslint -p ./tsconfig.json -t verbose",
