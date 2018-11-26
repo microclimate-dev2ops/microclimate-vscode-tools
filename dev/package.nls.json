@@ -83,7 +83,7 @@
     "cmdDescr_openAppMonitor": "Open a project's Application Monitor page in a browser",
 
     "settingDesc_connections": "URLs of Microclimate instances to connect to. Not intended to be manually edited.",
-    "settingDesc_showLogOnChange_app": "When a Microclimate project's open app logs change, bring that log to the front",
+    "settingDesc_showLogOnChange_app": "When a Microclimate project's open application logs change, bring that log to the front",
     "settingDesc_showLogOnChange_build": "When a Microclimate project's open build logs change, bring that log to the front",
 
     "// None of items below are exposed to user": [
