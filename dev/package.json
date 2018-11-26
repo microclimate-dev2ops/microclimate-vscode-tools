@@ -132,11 +132,13 @@
             {
                 "command": "%cmdID_openBuildLog%",
                 "title": "%cmdTitle_openBuildLog%",
+                "description": "%cmdDescr_openBuildLog%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_openAppLog%",
                 "title": "%cmdTitle_openAppLog%",
+                "description": "%cmdDescr_openAppLog%",
                 "category": "%commandCategory%"
             },
             {
