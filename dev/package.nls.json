@@ -31,11 +31,11 @@
 
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open folder as workspace",
-    "cmdDescr_openFolder": "Open this folder as your VSCode workspace",
+    "cmdDescr_openFolder": "Open a folder as your VSCode workspace",
 
     "cmdID_openInBrowser": "ext.mc.openInBrowser",
     "cmdTitle_openInBrowser": "Open in browser",
-    "cmdDescr_openInBrowser": "Open this resource in a browser",
+    "cmdDescr_openInBrowser": "Open a Microclimate instance or project in a browser",
 
     "cmdID_attachDebugger": "ext.mc.attachDebugger",
     "cmdTitle_attachDebugger": "Attach debugger",
@@ -61,19 +61,19 @@
 
     "cmdID_projectInfo": "ext.mc.viewProjectInfo",
     "cmdTitle_projectInfo": "Open project info",
-    "cmdDescr_projectInfo": "Open this project's Microclimate information",
+    "cmdDescr_projectInfo": "Open a project's Microclimate information",
 
     "cmdID_enable": "ext.mc.enable",
     "cmdTitle_enable": "Enable project",
-    "cmdDescr_enable": "Enable this project in Microclimate",
+    "cmdDescr_enable": "Enable a project in Microclimate",
 
     "cmdID_disable": "ext.mc.disable",
     "cmdTitle_disable": "Disable project",
-    "cmdDescr_disable": "Disable this project in Microclimate",
+    "cmdDescr_disable": "Disable a project in Microclimate",
 
     "cmdID_containerShell": "ext.mc.containerShell",
     "cmdTitle_containerShell": "Open container shell",
-    "cmdDescr_containerShell": "Open a shell inside this project's application container",
+    "cmdDescr_containerShell": "Open a shell inside a project's application container",
 
     "cmdID_toggleAutoBuild": "ext.mc.toggleAutoBuild",
     "cmdTitle_toggleAutoBuild": "Toggle auto build",
