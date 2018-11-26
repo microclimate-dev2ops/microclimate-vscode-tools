@@ -211,12 +211,12 @@
                 {
                     "command": "%cmdID_openInBrowser%",
                     "when": "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem.active)/",
-                    "group": "ext.mc.a"
+                    "group": "ext.mc.a@0"
                 },
                 {
                     "command": "%cmdID_openAppMonitor%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.a"
+                    "group": "ext.mc.a@1"
                 },
                 {
                     "command": "%cmdID_openFolder%",
@@ -241,7 +241,12 @@
                 {
                     "command": "%cmdID_requestBuild%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.d"
+                    "group": "ext.mc.d@0"
+                },
+                {
+                    "command": "%cmdID_toggleAutoBuild%",
+                    "when": "%isEnabledProject%",
+                    "group": "ext.mc.d@1"
                 },
                 {
                     "command": "ext.mc.attachDebugger",

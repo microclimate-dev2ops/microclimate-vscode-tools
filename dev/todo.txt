@@ -9,7 +9,6 @@ Important:
     - Test manually on older versions of MC
 - Change request.doProjectRequest to return success status so we can pass it through to the callergi
 - Don't offer to generate dockerfile for generic docker projects
-- Add toggle auto build to context menu
 
 Annoying Release Stuff:
 - Icons
