@@ -15,8 +15,11 @@ const STRING_NS = StringNamespaces.DEBUG;
 
 /**
  * Attach the debugger to the given project. Returns if we attached the debugger successfully.
+ *
+ * NOTE: Do not throw or reject from this function in case this command is invoked directly - vscode won't handle the rejection.
+ * Show the user our error message here instead, and return a success status since we're also calling this function from the restart project code.
  */
-export default async function attachDebuggerCmd(project: Project): Promise<boolean> {
+export default async function attachDebuggerCmd(project: Project, isRestart: boolean = false): Promise<boolean> {
     Log.d("attachDebuggerCmd");
     if (project == null) {
         const selected = await promptForProject(...ProjectState.getDebuggableStates());
@@ -30,7 +33,7 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
 
     // Wait for the server to be Starting - Debug or Debugging before we try to connect the debugger,
     // or it may try to connect before the server is ready
-    Log.d(`Waiting for ${project.name} to be ready to for debugging`);
+    Log.d(`Waiting for ${project.name} to be ready for debugging`);
     try {
         // often this will resolve instantly
         await project.waitForState(60 * 1000, ...ProjectState.getDebuggableStates());
@@ -40,15 +43,24 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
         Log.w("Waiting for debuggable state was rejected:", err);
         return false;
     }
+    Log.d("Project is ready to be debugged");
 
     try {
-        // Intermittently for Microprofile projects, the debugger will try to connect too soon,
-        // so add an extra delay if it's MP and Starting.
-        // This doesn't really slow anything down because the server is still starting anyway.
-        const libertyDelayMs = 2500;
-        if (project.type.type === ProjectType.Types.MICROPROFILE && project.state.appState === ProjectState.AppStates.DEBUG_STARTING) {
-            Log.d(`Waiting extra ${libertyDelayMs}ms for Starting Liberty project`);
-            await new Promise( (resolve) => setTimeout(resolve, libertyDelayMs));
+        if (isRestart) {
+            Log.d("Attach debugger runnning as part of a restart");
+            // Intermittently for restarting Microprofile projects, the debugger will try to connect too soon,
+            // so add an extra delay if it's MP and Starting.
+            // This doesn't really slow anything down because the server is still starting anyway.
+            const libertyDelayMs = 5000;
+            if (project.type.type === ProjectType.Types.MICROPROFILE && project.state.appState === ProjectState.AppStates.DEBUG_STARTING) {
+                Log.d(`Waiting extra ${libertyDelayMs}ms for Starting Liberty project`);
+
+                const delayPromise: Promise<void> = new Promise( (resolve) => setTimeout(resolve, libertyDelayMs));
+
+                const preDebugDelayMsg = `Waiting before attaching debugger to ${project.name}`;
+                vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} ${preDebugDelayMsg}`, delayPromise);
+                await delayPromise;
+            }
         }
 
         // This should be longer than the timeout we pass to VSCode through the debug config, or the default (whichever is longer).
@@ -73,7 +85,6 @@ export default async function attachDebuggerCmd(project: Project): Promise<boole
     }
     catch (err) {
         const debugUrl = project.debugUrl;
-        // Show our error message here. we can't throw/reject or vscode won't know how to handle it
         let failMsg;
         if (debugUrl != null) {
             failMsg = Translator.t(STRING_NS, "failedToAttachWithUrl", { projectName: project.name, debugUrl });

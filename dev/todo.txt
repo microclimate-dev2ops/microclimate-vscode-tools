@@ -2,13 +2,14 @@ New:
 
 Important:
 - Update auto build in project.update()
+    - Done, test after John gets in iterative-dev/724
 - Portal startMode update
 - Validation action
-- externalize strings
-- Make start mode strings user friendly again
 - Test Build and Disable/Enable commands
     - Test manually on older versions of MC
-- Change request.doProjectRequest to return success status so we can pass it through to the caller
+- Change request.doProjectRequest to return success status so we can pass it through to the callergi
+- Don't offer to generate dockerfile for generic docker projects
+- Add toggle auto build to context menu
 
 Annoying Release Stuff:
 - Icons

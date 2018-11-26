@@ -57,20 +57,30 @@ async function onRestartAccepted(project: Project, startMode: StartModes): Promi
 
     const isDebug = isDebugMode(startMode);
 
-    let restartSuccess = false;
     if (isDebug) {
         Log.d("Attaching debugger after restart");
         try {
             // will wait for Starting
-            restartSuccess = await attachDebuggerCmd(project);
+            const debuggerAttached: boolean = await attachDebuggerCmd(project, true);
+            if (!debuggerAttached && startMode === StartModes.DEBUG) {
+                // If we're debugging initialization and the debugger failed to attach, the server will get stuck Starting,
+                // so we should end the restart here, indicating to the user they should attach the debugger again.
+                // Note that the attach command will already have shown its own error message.
+                vscode.window.showWarningMessage(
+                    Translator.t(StringNamespaces.DEFAULT, "restartDebugAttachFailure",
+                    { startMode: getUserFriendlyStartMode(startMode) })
+                );
+                return;
+            }
         }
         catch (err) {
-            // Most errors should be handled by attachDebuggerCmd
+            // attachDebuggerCmd shouldn't throw/reject, but just in case:
             Log.w("Debugger attach failed or was cancelled by user", err);
-            vscode.window.showWarningMessage(err);
+            vscode.window.showErrorMessage(err);
         }
     }
 
+    let restartSuccess = false;
     // Expect the project to restart into this state
     try {
         const terminalState = isDebug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;

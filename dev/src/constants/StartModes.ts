@@ -16,7 +16,8 @@ export function getUserFriendlyStartMode(startMode: StartModes): string {
         case StartModes.RUN:
             return "run";
         case StartModes.DEBUG:
-            return "debug (with initial break)";
+            // For now, debug vs debugNoInit is not exposed to the user. So in both cases it's just "Debug" to them.
+            // return "debug (with initial break)";
         case StartModes.DEBUG_NO_INIT:
             return "debug";
         default:

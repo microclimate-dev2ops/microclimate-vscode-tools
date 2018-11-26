@@ -78,6 +78,7 @@ export function generateHtml(project: Project): string {
                 ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
                 ${buildRow("Application Port", getNonNull(project.appPort, "Not running"))}
                 ${buildRow("Debug Port", getNonNull(project.debugPort, "Not debugging"))}
+                ${buildRow("Debug URL", getNonNull(project.debugUrl, "Not debugging"))}
             </table>
 
             <div id="bottom-section">

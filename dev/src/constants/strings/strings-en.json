@@ -5,22 +5,22 @@
     "errorSavingConnections": "Error saving connections: {{- err }}.",
 
     "statesSeparator": " or ",
-    "generateFilesBtn": "Generate",
 
     "genericErrorProjectRestart": "{{ projectName }} failed to restart.",
     "restartSuccess": "Finished restarting {{ projectName }} in {{ startMode }} mode.",
     "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
+    "restartDebugAttachFailure": "Attaching the debugger while restarting into {{ startMode }} mode failed. Try attaching the debugger again.",
 
     "command": {
         "noContainerForShell": "{{ projectName }} does not have an application container running. Wait until the project is Running.",
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
         "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Microclimate, and from your filesystem?",
-        "confirmDeleteBtn": "Delete {{ projectName }}",
+        "confirmDeleteBtn": "Delete project",
         "refreshingConnection": "Refreshed Microclimate at {{- uri }}.",
         "projectAlreadyBuilding": "{{ projectName }} is already building. Build request cancelled.",
         "explicitBuildNotNecessary": "{{ projectName }} has auto-build enabled. There is no need to request a build.",
         "seeProblemsView": "See the Problems view for details.",
-        "generateMissingFiles": "Generate Dockerfile"
+        "generateFilesBtn": "Generate"
     },
 
     "cmdResourcePrompt": {
@@ -103,6 +103,7 @@
         "autoBuildDisable": "Disable auto build",
         "projectEnable": "Enable",
         "projectDisable": "Disable",
+        "generateMissingFiles": "Generate Dockerfile",
 
         "delete": "Delete",
         "requestSuccess":   "{{ projectName }}: {{ operationName }} requested.",
