@@ -22,7 +22,8 @@
         "projectAlreadyBuilding": "{{ projectName }} is already building. Build request cancelled.",
         "explicitBuildNotNecessary": "{{ projectName }} has auto-build enabled. There is no need to request a build.",
         "seeProblemsView": "See the Problems view for details.",
-        "generateFilesBtn": "Generate"
+        "generateFilesBtn": "Generate",
+        "validate": "Validate"
     },
 
     "cmdResourcePrompt": {

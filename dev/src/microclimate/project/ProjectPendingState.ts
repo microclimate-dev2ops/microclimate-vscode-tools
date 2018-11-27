@@ -6,6 +6,10 @@ import Project from "./Project";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
+/**
+ * Wrapper for a Promise which resolves when the project reaches one of the states set in the constructor,
+ * or rejects when the project does not reach one of those states in time.
+ */
 export default class ProjectPendingState {
 
     // if the promise this pending state is tied to has resolved or rejected

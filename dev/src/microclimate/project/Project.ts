@@ -24,32 +24,36 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     private static readonly CONTEXT_ID_DISABLED: string = Project.CONTEXT_ID_BASE + ".disabled";            // non-nls
     private static readonly CONTEXT_ID_DEBUGGABLE: string = Project.CONTEXT_ID_ENABLED + ".debugging";      // non-nls
 
+    // Immutable project data
     public readonly name: string;
     public readonly id: string;
     public readonly type: ProjectType;
     public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
 
+    // Mutable project data, will change with calls to update()
     private _containerID: string | undefined;
     private _appPort: number | undefined;
     private _debugPort: number | undefined;
     private _autoBuildEnabled: boolean;
-
-    public static readonly diagnostics: vscode.DiagnosticCollection
-        = vscode.languages.createDiagnosticCollection("Microclimate");
-
     // Dates below will always be set, but might be "invalid date"s
     private _lastBuild: Date;
     private _lastImgBuild: Date;
 
-    // QuickPickItem
+    public static readonly diagnostics: vscode.DiagnosticCollection
+        = vscode.languages.createDiagnosticCollection("Microclimate");
+
+    // QuickPickItem fields
     public readonly label: string;
     public readonly detail?: string;
 
+    // Represents current app state and build state
     private _state: ProjectState;
 
     private pendingAppState: ProjectPendingState | undefined;
 
+    // Active ProjectInfo webviewPanel. Only one per project.
+    // Track this so we can refresh it when update() is called, and prevent multiple webviews being open for one project.
     private activeProjectInfo: vscode.WebviewPanel | undefined;
 
     constructor(
@@ -60,13 +64,6 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
 
-        this._containerID = projectInfo.containerId;
-        this._autoBuildEnabled = projectInfo.autoBuild;
-        // lastbuild is a number
-        this._lastBuild = new Date(projectInfo.lastbuild);
-        // appImageLastBuild is a string
-        this._lastImgBuild = new Date(Number(projectInfo.appImgLastBuild));
-
         // TODO should use projectType not buildType but it's missing sometimes
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
 
@@ -75,6 +72,13 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         );
 
         this.contextRoot = projectInfo.contextroot || "";       // non-nls
+
+        // These will be overridden by the call to update(), but we set them here too so the compiler can see they're always set.
+        this._autoBuildEnabled = projectInfo.autoBuild;
+        // lastbuild is a number
+        this._lastBuild = new Date(projectInfo.lastbuild);
+        // appImageLastBuild is a string
+        this._lastImgBuild = new Date(Number(projectInfo.appImgLastBuild));
 
         this._state = this.update(projectInfo);
 
@@ -155,10 +159,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // Whether or not this update call has changed the project such that we have to update the UI.
         let changed: boolean = false;
 
-        changed = this.setContainerID(projectInfo.containerID) || changed;
-        changed = this.setLastBuild(new Date(projectInfo.lastbuild)) || changed;
+        changed = this.setContainerID(projectInfo.containerId) || changed;
+        changed = this.setLastBuild(projectInfo.lastbuild) || changed;
         // appImageLastBuild is a string
-        changed = this.setLastImgBuild(new Date(Number(projectInfo.appImageLastBuild))) || changed;
+        changed = this.setLastImgBuild(Number(projectInfo.appImageLastBuild)) || changed;
         changed = this.setAutoBuild(projectInfo.autoBuild) || changed;
 
         // note oldState can be null if this is the first time update is being invoked.
@@ -187,14 +191,17 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // Logger.log(`${this.name} has a new status:`, this._state);
         if (changed) {
             this.connection.onChange();
-
-            if (this.activeProjectInfo != null) {
-                Log.d("Refreshing projectinfo");
-                refreshProjectInfo(this.activeProjectInfo, this);
-            }
+            this.tryRefreshProjectInfoPage();
         }
 
         return this._state;
+    }
+
+    private tryRefreshProjectInfoPage(): void {
+        if (this.activeProjectInfo != null) {
+            Log.d("Refreshing projectinfo");
+            refreshProjectInfo(this.activeProjectInfo, this);
+        }
     }
 
     /**
@@ -421,9 +428,12 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return changed;
     }
 
-    private setLastBuild(newLastBuild: Date): boolean {
+    private setLastBuild(newLastBuild: number | undefined): boolean {
+        if (newLastBuild == null) {
+            return false;
+        }
         const oldlastBuild = this._lastBuild;
-        this._lastBuild = newLastBuild;
+        this._lastBuild = new Date(newLastBuild);
 
         const changed = this._lastBuild !== oldlastBuild;
         if (changed) {
@@ -432,9 +442,12 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return changed;
     }
 
-    private setLastImgBuild(newLastImgBuild: Date): boolean {
+    private setLastImgBuild(newLastImgBuild: number | undefined): boolean {
+        if (newLastImgBuild == null) {
+            return false;
+        }
         const oldlastImgBuild = this._lastImgBuild;
-        this._lastImgBuild = newLastImgBuild;
+        this._lastImgBuild = new Date(newLastImgBuild);
 
         const changed = this._lastImgBuild !== oldlastImgBuild;
         if (changed) {
@@ -450,10 +463,12 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         const oldAutoBuild = this._autoBuildEnabled;
         this._autoBuildEnabled = newAutoBuild;
 
-        const changed = this._autoBuildEnabled === oldAutoBuild;
+        const changed = this._autoBuildEnabled !== oldAutoBuild;
         if (changed) {
+            this.tryRefreshProjectInfoPage();
             Log.d(`New autoBuild for ${this.name} is ${this._autoBuildEnabled}`);
         }
+
         return changed;
     }
 }

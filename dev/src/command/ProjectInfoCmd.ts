@@ -26,7 +26,7 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
     const wvOptions: vscode.WebviewOptions & vscode.WebviewPanelOptions = {
         enableScripts: true,
         retainContextWhenHidden: true,
-        enableCommandUris: true
+
     };
 
     const webPanel = vscode.window.createWebviewPanel(project.name, project.name, vscode.ViewColumn.Active, wvOptions);

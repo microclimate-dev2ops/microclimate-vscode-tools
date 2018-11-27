@@ -7,6 +7,7 @@ import Endpoints from "../../constants/Endpoints";
 import Log from "../../Logger";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Translator from "../../constants/strings/translator";
+import * as MCUtil from "../../MCUtil";
 
 const STRING_NS = StringNamespaces.REQUESTS;
 
@@ -53,7 +54,8 @@ namespace Requester {
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
         return doProjectRequest(project, url, body, request.post, newAutoBuildUserStr)
             .then( (result: any) => {
-                if (result != null && result.statusCode === 200) {
+                if (result != null && MCUtil.isGoodStatusCode(result.statusCode)) {
+                    Log.d("Received good status from autoBuild request, new auto build is: " + newAutoBuild);
                     project.setAutoBuild(newAutoBuild);
                 }
             });
@@ -76,7 +78,7 @@ namespace Requester {
         };
 
         const url = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
-        const userOperation = silent ? undefined : "Validate";
+        const userOperation = silent ? undefined : Translator.t(StringNamespaces.CMD_MISC, "validate");
         return doProjectRequest(project, url, body, request.post, userOperation);
     }
 
