@@ -198,7 +198,7 @@ export default class MCSocket {
             );
             Log.w(msg);
             // TODO show this warning or not?
-            vscode.window.showWarningMessage(msg);
+            // vscode.window.showWarningMessage(msg);g
         }
     }
 
