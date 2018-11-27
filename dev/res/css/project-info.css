@@ -26,18 +26,41 @@ input[type="checkbox"] {
     margin: 0;
 }
 
+input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+}
+
 .btn {
     color: var(--vscode-button-foreground);
-    padding: 0.5em;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 0.6em;
+    padding-left: 1.5em;
+    padding-right: 1.5em;
     background: var(--vscode-button-background);
     font-size: 110%;
-    border: 1px solid var(--vscode-button-background);
+    border: 1x solid var(--vcode-button-background);
     border-radius: 5px;
 }
 
-#refresh-btn {
+.btn:hover, a:hover, .btn:focus, a:focus{
+    text-decoration: underline;
+    cursor: pointer;
+    outline: var(--vcode-button-background);
+}
+
+.btn-disabled {
+    --disabled-btn-color: #444;
+    background: var(--disabled-btn-color);
+    border-color: var(--disabled-btn-color);
+}
+
+/* Override btn hover behaviour defined above */
+.btn-disabled:hover, .btn-disabled:focus {
+    outline: var(--disabled-btn-color);
+    text-decoration: none;
+    cursor: not-allowed;
+}
+
+#build-btn {
     margin-left: auto;
 }
 
@@ -57,9 +80,4 @@ input[type="checkbox"] {
 .info-label {
     font-weight: bold;
     padding-right: 1em;
-}
-
-.btn:hover, a:hover, .btn:focus, a:focus {
-    text-decoration: underline;
-    cursor: pointer;
 }

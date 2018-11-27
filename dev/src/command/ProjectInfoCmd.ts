@@ -10,6 +10,7 @@ import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
+import requestBuildCmd from "./RequestBuildCmd";
 
 export default async function projectInfoCmd(project: Project): Promise<void> {
     Log.d("viewProjectInfoCmd invoked");
@@ -55,14 +56,14 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
     webPanel.webview.onDidReceiveMessage( (msg: { type: string, data: { type: string, value: string } }) => {
         Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type}`);
         try {
-            if (msg.type === ProjectInfo.Messages.REFRESH) {
-                ProjectInfo.refreshProjectInfo(webPanel, project);
-            }
-            else if (msg.type === ProjectInfo.Messages.TOGGLE_AUTOBUILD) {
+            if (msg.type === ProjectInfo.Messages.TOGGLE_AUTOBUILD) {
                 toggleAutoBuildCmd(project);
             }
             else if (msg.type === ProjectInfo.Messages.TOGGLE_ENABLEMENT) {
                 toggleEnablementCmd(project, !project.state.isEnabled);
+            }
+            else if (msg.type === ProjectInfo.Messages.BUILD) {
+                requestBuildCmd(project);
             }
             else if (msg.type === ProjectInfo.Messages.DELETE) {
 

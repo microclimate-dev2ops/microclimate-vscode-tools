@@ -12,7 +12,7 @@ import * as MCUtil from "../../MCUtil";
  * These are the messages the WebView can send back to its creator in ProjectInfoCmd
  */
 export enum Messages {
-    REFRESH = "refresh",
+    BUILD = "build",
     TOGGLE_AUTOBUILD = "toggleAutoBuild",
     OPEN = "open",
     DELETE = "delete",
@@ -56,15 +56,17 @@ export function generateHtml(project: Project): string {
             <div id="top-section">
                 <img id="mc-icon" width="30px" src="${getMCIconPath()}"/>
                 <h2>Project ${project.name}</h2>
-                <!--input id="refresh-btn" type="button" onclick="sendMsg('${Messages.REFRESH}')" class="btn" value="Refresh"/-->
+                <input id="build-btn" type="button" value="Build"
+                    onclick="${project.state.isEnabled ? `sendMsg('${Messages.BUILD}')` : ""}"
+                    class="btn ${project.state.isEnabled ? "" : "btn-disabled"}"/>
             </div>
 
             <table id="project-info-table">
                 <!--${buildRow("Name", project.name)}-->
                 ${buildRow("Type", project.type.toString())}
                 <!--${buildRow("Microclimate URL", project.connection.toString())}-->
-                ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
                 ${buildRow("Project ID", project.id)}
+                ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
                 ${buildRow("Location on Disk", project.localPath.fsPath, Openable.FOLDER)}
                 <tr>
                     <td class="info-label">Auto build:</td>
@@ -92,7 +94,7 @@ export function generateHtml(project: Project): string {
             <div id="bottom-section">
                 <input id="delete-btn"  type="button" onclick="sendMsg('${Messages.DELETE}')" class="btn" value="Delete project"/>
                 <input id="enablement-btn" type="button" onclick="sendMsg('${Messages.TOGGLE_ENABLEMENT}')" class="btn"
-                    value="${(project.state.isEnabled ? "Disable" : "Enable") + " Project"}"/>
+                    value="${(project.state.isEnabled ? "Disable" : "Enable") + " project"}"/>
             </div>
         </div>
 
