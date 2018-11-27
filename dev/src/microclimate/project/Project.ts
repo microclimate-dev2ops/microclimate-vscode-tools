@@ -152,29 +152,22 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             return this._state;
         }
 
-        this._containerID = projectInfo.containerId;
-        this._lastBuild = new Date(projectInfo.lastbuild);
-        this._lastImgBuild = new Date(Number(projectInfo.appImageLastBuild));
+        // Whether or not this update call has changed the project such that we have to update the UI.
+        let changed: boolean = false;
 
-        if (projectInfo.autoBuild != null) {
-            this._autoBuildEnabled = projectInfo.autoBuild;
-        }
+        changed = this.setContainerID(projectInfo.containerID) || changed;
+        changed = this.setLastBuild(new Date(projectInfo.lastbuild)) || changed;
+        // appImageLastBuild is a string
+        changed = this.setLastImgBuild(new Date(Number(projectInfo.appImageLastBuild))) || changed;
+        changed = this.setAutoBuild(projectInfo.autoBuild) || changed;
 
         // note oldState can be null if this is the first time update is being invoked.
         const oldState = this._state;
         this._state = new ProjectState(projectInfo, oldState != null ? oldState : undefined);
 
-        // Whether or not this update call has changed the project such that we have to update the UI.
-        let changed: boolean = false;
         if (this._state !== oldState) {
             changed = true;
-            Log.d(`${this.name} went from ${oldState} to ${this._state} startMode=${projectInfo.startMode}`);
-        }
-
-        const newContainerID: string | undefined = projectInfo.containerID;
-        if (newContainerID != null) {
-            this._containerID = newContainerID;
-            Log.i(`New containerID for ${this.name} is ${this._containerID.substring(0, 8)}`);
+            Log.d(`${this.name} went from ${oldState} to ${this._state}, new startMode=${projectInfo.startMode}`);
         }
 
         const ports = projectInfo.ports;
@@ -314,13 +307,6 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
     }
 
-    public setAutoBuild(newAutoBuild: boolean): void {
-        if (newAutoBuild != null) {
-            this._autoBuildEnabled = newAutoBuild;
-            Log.i(`Auto build status changed for ${this.name} to ${this._autoBuildEnabled}`);
-        }
-    }
-
     public get containerID(): string | undefined {
         return this._containerID;
     }
@@ -421,5 +407,53 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             return true;
         }
         return false;
+    }
+
+    private setContainerID(newContainerID: string | undefined): boolean {
+        const oldContainerID = this._containerID;
+        this._containerID = newContainerID;
+
+        const changed = this._containerID !== oldContainerID;
+        if (changed) {
+            const asStr: string = this._containerID == null ? "undefined" : this._containerID.substring(0, 8);
+            Log.d(`New containerID for ${this.name} is ${asStr}`);
+        }
+        return changed;
+    }
+
+    private setLastBuild(newLastBuild: Date): boolean {
+        const oldlastBuild = this._lastBuild;
+        this._lastBuild = newLastBuild;
+
+        const changed = this._lastBuild !== oldlastBuild;
+        if (changed) {
+            Log.d(`New lastBuild for ${this.name} is ${this._lastBuild}`);
+        }
+        return changed;
+    }
+
+    private setLastImgBuild(newLastImgBuild: Date): boolean {
+        const oldlastImgBuild = this._lastImgBuild;
+        this._lastImgBuild = newLastImgBuild;
+
+        const changed = this._lastImgBuild !== oldlastImgBuild;
+        if (changed) {
+            Log.d(`New lastImgBuild for ${this.name} is ${this._lastImgBuild}`);
+        }
+        return changed;
+    }
+
+    public setAutoBuild(newAutoBuild: boolean | undefined): boolean {
+        if (newAutoBuild == null) {
+            return false;
+        }
+        const oldAutoBuild = this._autoBuildEnabled;
+        this._autoBuildEnabled = newAutoBuild;
+
+        const changed = this._autoBuildEnabled === oldAutoBuild;
+        if (changed) {
+            Log.d(`New autoBuild for ${this.name} is ${this._autoBuildEnabled}`);
+        }
+        return changed;
     }
 }
