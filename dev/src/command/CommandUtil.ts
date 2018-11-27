@@ -25,6 +25,7 @@ import refreshConnectionCmd from "./RefreshConnectionCmd";
 import newMCProjectCmd from "./NewMCProjectCmd";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
+import validateCmd from "./ValidateCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -63,7 +64,9 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.VIEW_PROJECT_INFO, (selection) => projectInfoCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR,  (selection) => openAppMonitorCmd(selection))
+        vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR,  (selection) => openAppMonitorCmd(selection)),
+
+        vscode.commands.registerCommand(Commands.VALIDATE,          (selection) => validateCmd(selection))
     ];
 }
 

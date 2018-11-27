@@ -24,6 +24,7 @@ enum Commands {
     CONTAINER_SHELL = "ext.mc.containerShell",
     VIEW_PROJECT_INFO = "ext.mc.viewProjectInfo",
     OPEN_APP_MONITOR = "ext.mc.openAppMonitor",
+    VALIDATE = "ext.mc.validate",
 
     // VSCode commands, kept here for easy reference. These will never change.
     VSC_OPEN = "vscode.open",

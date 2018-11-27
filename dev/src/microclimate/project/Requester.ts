@@ -33,7 +33,7 @@ namespace Requester {
         return doProjectRequest(project, url, body, request.post, buildMsg)
             // This is a workaround for the Build action not refreshing validation state.
             // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
-            .then( () => requestValidate(project));
+            .then( () => requestValidate(project, true));
     }
 
     export async function requestToggleAutoBuild(project: Project): Promise<void> {
@@ -69,15 +69,15 @@ namespace Requester {
         return doProjectRequest(project, url, {}, request.put, newEnablementStr);
     }
 
-    export async function requestValidate(project: Project): Promise<void> {
+    export async function requestValidate(project: Project, silent: boolean): Promise<void> {
         const body = {
             projectID: project.id,
             projectType: project.type.internalType
         };
 
         const url = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
-        // validate requests are silent.
-        return doProjectRequest(project, url, body, request.post);
+        const userOperation = silent ? undefined : "Validate";
+        return doProjectRequest(project, url, body, request.post, userOperation);
     }
 
     export async function requestGenerate(project: Project): Promise<void> {
@@ -92,7 +92,7 @@ namespace Requester {
 
         return doProjectRequest(project, url, body, request.post, generateMsg)
             // request a validate after the generate so that the validation errors go away faster
-            .then( () => requestValidate(project));
+            .then( () => requestValidate(project, true));
     }
 
     export async function requestDelete(project: Project): Promise<void> {
