@@ -51,7 +51,7 @@ export default async function attachDebuggerCmd(project: Project, isRestart: boo
             // Intermittently for restarting Microprofile projects, the debugger will try to connect too soon,
             // so add an extra delay if it's MP and Starting.
             // This doesn't really slow anything down because the server is still starting anyway.
-            const libertyDelayMs = 5000;
+            const libertyDelayMs = 2500;
             if (project.type.type === ProjectType.Types.MICROPROFILE && project.state.appState === ProjectState.AppStates.DEBUG_STARTING) {
                 Log.d(`Waiting extra ${libertyDelayMs}ms for Starting Liberty project`);
 

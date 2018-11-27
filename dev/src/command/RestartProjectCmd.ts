@@ -1,15 +1,11 @@
-import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "../command/CommandUtil";
 import ProjectState from "../microclimate/project/ProjectState";
 import Log from "../Logger";
-import StartModes, { getDefaultStartMode, isDebugMode, getUserFriendlyStartMode } from "../constants/StartModes";
+import StartModes, { getDefaultStartMode } from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
 import * as MCUtil from "../MCUtil";
-import attachDebuggerCmd from "./AttachDebuggerCmd";
-import Translator from "../constants/strings/translator";
-import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export default async function restartProjectCmd(project: Project, debug: boolean): Promise<boolean> {
     Log.d("RestartProjectCmd invoked");
@@ -35,14 +31,14 @@ export default async function restartProjectCmd(project: Project, debug: boolean
             // just whether or not it was accepted by the server and therefore initiated.
             if (MCUtil.isGoodStatusCode(statusCode)) {
                 Log.d("Restart was accepted by server");
-                onRestartAccepted(project, startMode);
+                onRestartAccepted(project);
                 return true;
             }
             return false;
     });
 }
 
-async function onRestartAccepted(project: Project, startMode: StartModes): Promise<void> {
+async function onRestartAccepted(project: Project): Promise<void> {
     // first, expect the app to Stop
     try {
         await project.waitForState(60 * 1000, ProjectState.AppStates.STOPPED);
@@ -55,58 +51,6 @@ async function onRestartAccepted(project: Project, startMode: StartModes): Promi
     // open the app's logs so we can watch the restart execute
     project.connection.logManager.getOrCreateAppLog(project.id, project.name).showOutputChannel();
 
-    const isDebug = isDebugMode(startMode);
-
-    if (isDebug) {
-        Log.d("Attaching debugger after restart");
-        try {
-            // will wait for Starting
-            const debuggerAttached: boolean = await attachDebuggerCmd(project, true);
-            if (!debuggerAttached && startMode === StartModes.DEBUG) {
-                // If we're debugging initialization and the debugger failed to attach, the server will get stuck Starting,
-                // so we should end the restart here, indicating to the user they should attach the debugger again.
-                // Note that the attach command will already have shown its own error message.
-                vscode.window.showWarningMessage(
-                    Translator.t(StringNamespaces.DEFAULT, "restartDebugAttachFailure",
-                    { startMode: getUserFriendlyStartMode(startMode) })
-                );
-                return;
-            }
-        }
-        catch (err) {
-            // attachDebuggerCmd shouldn't throw/reject, but just in case:
-            Log.w("Debugger attach failed or was cancelled by user", err);
-            vscode.window.showErrorMessage(err);
-        }
-    }
-
-    let restartSuccess = false;
-    // Expect the project to restart into this state
-    try {
-        const terminalState = isDebug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
-        Log.d(`Waiting for terminal state ${terminalState} after restart`);
-        const state = await project.waitForState(120 * 1000, terminalState);
-        restartSuccess = state === terminalState;
-    }
-    catch (err) {
-        Log.w("Run-mode restart did not complete in time, or was cancelled by user:", err);
-        vscode.window.showWarningMessage(err);
-    }
-
-    if (restartSuccess) {
-        const doneRestartMsg = Translator.t(StringNamespaces.DEFAULT, "restartSuccess",
-            { projectName: project.name, startMode: getUserFriendlyStartMode(startMode) }
-        );
-        Log.i(doneRestartMsg);
-        vscode.window.showInformationMessage(doneRestartMsg);
-    }
-    else {
-        // Either the restart failed, or the user cancelled it by initiating another restart
-        const msg = Translator.t(StringNamespaces.DEFAULT, "restartFailure",
-            { projectName: project.name, startMode: getUserFriendlyStartMode(startMode) }
-        );
-        Log.w(msg);
-        // TODO show this warning or not?
-        vscode.window.showWarningMessage(msg);
-    }
+    // The rest of the restart will proceed once the restart result event is received by the MCSocket.
+    // See MCSocket.onProjectRestarted
 }

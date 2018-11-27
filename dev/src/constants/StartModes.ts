@@ -11,7 +11,7 @@ enum StartModes {
     DEBUG_NO_INIT = "debugNoInit"
 }
 
-export function getUserFriendlyStartMode(startMode: StartModes): string {
+export function getUserFriendlyStartMode(startMode: StartModes | string): string {
     switch (startMode) {
         case StartModes.RUN:
             return "run";

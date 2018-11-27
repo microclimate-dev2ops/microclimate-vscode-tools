@@ -1,9 +1,6 @@
 New:
 
 Important:
-- Update auto build in project.update()
-    - Done, test after John gets in iterative-dev/724
-- Portal startMode update
 - Test Build and Disable/Enable commands
     - Test manually on older versions of MC
 
