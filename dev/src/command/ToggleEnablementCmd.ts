@@ -32,5 +32,5 @@ export default async function toggleEnablementCmd(project: Project, enable: bool
 
     Log.i(`Toggle enablement for project ${project.name}`);
 
-    Requester.requestToggleEnablement(project);
+    return Requester.requestToggleEnablement(project);
 }

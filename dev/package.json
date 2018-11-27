@@ -269,11 +269,6 @@
                     "group": "ext.mc.f"
                 },
                 {
-                    "command": "%cmdID_disable%",
-                    "when": "%isEnabledProject%",
-                    "group": "ext.mc.z"
-                },
-                {
                     "command": "%cmdID_enable%",
                     "when": "%isDisabledProject%",
                     "group": "ext.mc.z"

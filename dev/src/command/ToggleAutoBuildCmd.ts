@@ -17,5 +17,5 @@ export default async function toggleAutoBuildCmd(project: Project): Promise<void
         project = selected;
     }
 
-    Requester.requestToggleAutoBuild(project);
+    return Requester.requestToggleAutoBuild(project);
 }

@@ -1,4 +1,4 @@
-import { Uri } from "vscode";
+import * as vscode from "vscode";
 
 import Project from "./Project";
 import * as Resources from "../../constants/Resources";
@@ -8,17 +8,25 @@ import * as MCUtil from "../../MCUtil";
 // but the stringfinder is not smart enough to pick them out from the regular html strings. So, do this file by hand.
 // non-nls-file
 
-// These are the messages the WebView can send back to its creator in ProjectInfoCmd
-
-export const REFRESH_MSG: string = "refresh";
-export const TOGGLE_AUTOBUILD_MSG: string = "toggleAutoBuild";
-export const OPEN_MSG: string = "open";
-export const DELETE_MSG: string = "delete";
+/**
+ * These are the messages the WebView can send back to its creator in ProjectInfoCmd
+ */
+export enum Messages {
+    REFRESH = "refresh",
+    TOGGLE_AUTOBUILD = "toggleAutoBuild",
+    OPEN = "open",
+    DELETE = "delete",
+    TOGGLE_ENABLEMENT = "toggleEnablement"
+}
 
 const resourceScheme = "vscode-resource:";
 
 export enum Openable {
     WEB = "web", FILE = "file", FOLDER = "folder"
+}
+
+export function refreshProjectInfo(webviewPanel: vscode.WebviewPanel, project: Project): void {
+    webviewPanel.webview.html = generateHtml(project);
 }
 
 export function generateHtml(project: Project): string {
@@ -48,7 +56,7 @@ export function generateHtml(project: Project): string {
             <div id="top-section">
                 <img id="mc-icon" width="30px" src="${getMCIconPath()}"/>
                 <h2>Project ${project.name}</h2>
-                <input id="refresh-btn" type="button" onclick="sendMsg('${REFRESH_MSG}')" class="btn" value="Refresh"/>
+                <!--input id="refresh-btn" type="button" onclick="sendMsg('${Messages.REFRESH}')" class="btn" value="Refresh"/-->
             </div>
 
             <table id="project-info-table">
@@ -62,7 +70,7 @@ export function generateHtml(project: Project): string {
                     <td class="info-label">Auto build:</td>
                     <td>
                         <input id="auto-build-toggle" type="checkbox" class="btn"
-                            onclick="sendMsg('${TOGGLE_AUTOBUILD_MSG}')"
+                            onclick="sendMsg('${Messages.TOGGLE_AUTOBUILD}')"
                             ${project.autoBuildEnabled ? "checked" : ""}
                             ${project.state.isEnabled ? " " : " disabled"}
                         />
@@ -82,7 +90,9 @@ export function generateHtml(project: Project): string {
             </table>
 
             <div id="bottom-section">
-                <input id="delete-btn"  type="button" onclick="sendMsg('${DELETE_MSG}')" class="btn" value="Delete project"/>
+                <input id="delete-btn"  type="button" onclick="sendMsg('${Messages.DELETE}')" class="btn" value="Delete project"/>
+                <input id="enablement-btn" type="button" onclick="sendMsg('${Messages.TOGGLE_ENABLEMENT}')" class="btn"
+                    value="${(project.state.isEnabled ? "Disable" : "Enable") + " Project"}"/>
             </div>
         </div>
 
@@ -90,11 +100,11 @@ export function generateHtml(project: Project): string {
             const vscode = acquireVsCodeApi();
 
             function vscOpen(element, type) {
-                sendMsg("${OPEN_MSG}", { type: type, value: element.textContent });
+                sendMsg("${Messages.OPEN}", { type: type, value: element.textContent });
             }
 
-            function sendMsg(msg, data = undefined) {
-                vscode.postMessage({ msg: msg, data: data });
+            function sendMsg(type, data = undefined) {
+                vscode.postMessage({ type: type, data: data });
             }
         </script>
 
@@ -135,12 +145,12 @@ function buildRow(label: string, data: string, openable?: Openable): string {
     `;
 }
 
-function getNonNull(item: Uri | number | string | undefined, fallback: string, maxLength?: number): string {
+function getNonNull(item: vscode.Uri | number | string | undefined, fallback: string, maxLength?: number): string {
     let result: string;
     if (item == null || item === "") {
         result = fallback;
     }
-    else if (item instanceof Uri && (item as Uri).scheme.includes("file")) {
+    else if (item instanceof vscode.Uri && (item as vscode.Uri).scheme.includes("file")) {
         result = item.fsPath;
     }
     else {

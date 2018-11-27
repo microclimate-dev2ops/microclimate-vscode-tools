@@ -8,6 +8,8 @@ import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
+import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
+import toggleEnablementCmd from "./ToggleEnablementCmd";
 
 export default async function projectInfoCmd(project: Project): Promise<void> {
     Log.d("viewProjectInfoCmd invoked");
@@ -28,6 +30,20 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
     };
 
     const webPanel = vscode.window.createWebviewPanel(project.name, project.name, vscode.ViewColumn.Active, wvOptions);
+
+    const existingPI = project.onOpenProjectInfo(webPanel);
+    if (existingPI != null) {
+        // Just focus them on the existing one, and do nothing more.
+        existingPI.reveal();
+        webPanel.dispose();
+        return;
+    }
+
+    webPanel.reveal();
+    webPanel.onDidDispose( () => {
+        project.onCloseProjectInfo();
+    });
+
     const icons = project.type.icon;
     webPanel.iconPath = {
         light: vscode.Uri.file(icons.light),
@@ -36,20 +52,20 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
 
     // const ed = vscode.window.activeTextEditor;
     webPanel.webview.html = ProjectInfo.generateHtml(project);
-    webPanel.webview.onDidReceiveMessage( (msg: { msg: string, data: { type: string, value: string } }) => {
+    webPanel.webview.onDidReceiveMessage( (msg: { type: string, data: { type: string, value: string } }) => {
+        Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type}`);
         try {
-            if (msg.msg === ProjectInfo.REFRESH_MSG) {
-                Log.d("Refresh projectInfo for project " + project.name);
-                webPanel.webview.html = ProjectInfo.generateHtml(project);
+            if (msg.type === ProjectInfo.Messages.REFRESH) {
+                ProjectInfo.refreshProjectInfo(webPanel, project);
             }
-            else if (msg.msg === ProjectInfo.TOGGLE_AUTOBUILD_MSG) {
-                Log.d("Got msg to toggle autobuild for project " + project.name);
-                Requester.requestToggleAutoBuild(project);
+            else if (msg.type === ProjectInfo.Messages.TOGGLE_AUTOBUILD) {
+                toggleAutoBuildCmd(project);
             }
-            else if (msg.msg === ProjectInfo.DELETE_MSG) {
-                Log.d("Got msg to delete for project " + project.name);
+            else if (msg.type === ProjectInfo.Messages.TOGGLE_ENABLEMENT) {
+                toggleEnablementCmd(project, !project.state.isEnabled);
+            }
+            else if (msg.type === ProjectInfo.Messages.DELETE) {
 
-                // TODO fix this string
                 const deleteMsg = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteProjectMsg", { projectName: project.name });
                 const deleteBtn = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteBtn", { projectName: project.name });
 
@@ -62,7 +78,7 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
                         }
                     });
             }
-            else if (msg.msg === ProjectInfo.OPEN_MSG) {
+            else if (msg.type === ProjectInfo.Messages.OPEN) {
                 Log.d("Got msg to open, data is ", msg.data);
                 let uri: vscode.Uri;
                 if (msg.data.type === ProjectInfo.Openable.FILE || msg.data.type === ProjectInfo.Openable.FOLDER) {
@@ -85,6 +101,4 @@ export default async function projectInfoCmd(project: Project): Promise<void> {
             Log.e("Error processing msg from WebView", err);
         }
     });
-
-    webPanel.reveal();
 }

@@ -7,15 +7,13 @@ Important:
 - Validation action
 - Test Build and Disable/Enable commands
     - Test manually on older versions of MC
-- Change request.doProjectRequest to return success status so we can pass it through to the callergi
 - Don't offer to generate dockerfile for generic docker projects
 
 Annoying Release Stuff:
 - Icons
 - Copyrights
 - Open Source-ability
-    - Remove any internal issue links
-    - Remove any references to other devs, teams
+    - Be nice
     - Add file headers and generally improve code documentation
 
 Less Important:

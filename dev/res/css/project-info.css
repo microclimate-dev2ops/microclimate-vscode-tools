@@ -41,10 +41,17 @@ input[type="checkbox"] {
     margin-left: auto;
 }
 
-#delete-btn {
+#bottom-section {
     margin-top: 2em;
+}
+
+#bottom-section > .btn {
+    margin-right: 15px;
+}
+
+#delete-btn {
     background: darkred;
-    border: darkred;
+    border-color: darkred;
 }
 
 .info-label {

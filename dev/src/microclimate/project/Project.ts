@@ -12,6 +12,7 @@ import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ProjectPendingState from "./ProjectPendingState";
+import { refreshProjectInfo } from "./ProjectInfo";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -48,6 +49,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     private _state: ProjectState;
 
     private pendingAppState: ProjectPendingState | undefined;
+
+    private activeProjectInfo: vscode.WebviewPanel | undefined;
 
     constructor(
         projectInfo: any,
@@ -191,6 +194,11 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // Logger.log(`${this.name} has a new status:`, this._state);
         if (changed) {
             this.connection.onChange();
+
+            if (this.activeProjectInfo != null) {
+                Log.d("Refreshing projectinfo");
+                refreshProjectInfo(this.activeProjectInfo, this);
+            }
         }
 
         return this._state;
@@ -280,6 +288,30 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     public async clearValidationErrors(): Promise<void> {
         // Clear all diagnostics for this project's path
         Project.diagnostics.delete(this.localPath);
+    }
+
+    /**
+     * To be called when the user tries to open this project's Project Info page.
+     *
+     * If the user already has a Project Info page open for this project, returns the existing page.
+     * In this case, the webview should be re-revealed, but a new one should not be created.
+     * If the user does not already have an info page open for this project, returns undefined,
+     * and sets the given webview to be this project's project info panel.
+     */
+    public onOpenProjectInfo(wvPanel: vscode.WebviewPanel): vscode.WebviewPanel | undefined {
+        if (this.activeProjectInfo != null) {
+            return this.activeProjectInfo;
+        }
+        Log.d(`Info opened for project ${this.name}`);
+        this.activeProjectInfo = wvPanel;
+        return undefined;
+    }
+
+    public onCloseProjectInfo(): void {
+        Log.d(`Dispose project info for project ${this.name}`);
+        if (this.activeProjectInfo != null) {
+            this.activeProjectInfo = undefined;
+        }
     }
 
     public setAutoBuild(newAutoBuild: boolean): void {
