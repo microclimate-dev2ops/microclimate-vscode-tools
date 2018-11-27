@@ -31,6 +31,7 @@ enum Commands {
     VSC_OPEN_FOLDER = "vscode.openFolder",
     VSC_REVEAL_IN_OS = "revealFileInOS",
     VSC_REVEAL_EXPLORER = "revealInExplorer",
+    VSC_FOCUS_PROBLEMS = "workbench.action.problems.focus",
 }
 
 export default Commands;

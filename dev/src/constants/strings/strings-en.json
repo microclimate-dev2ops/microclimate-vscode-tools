@@ -11,6 +11,8 @@
     "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
     "restartDebugAttachFailure": "Attaching the debugger while restarting into {{ startMode }} mode failed. Try attaching the debugger again.",
 
+    "focusOnProblems": "Go to Problems",
+
     "command": {
         "noContainerForShell": "{{ projectName }} does not have an application container running. Wait until the project is Running.",
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
