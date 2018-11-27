@@ -88,6 +88,7 @@ export class ProjectType {
             case ProjectType.Types.GO:
                 return Resources.getIconPaths(Resources.Icons.Go);
             case ProjectType.Types.GENERIC_DOCKER:
+                // Could return the Java icon for Lagom
                 // This is our fall-back, we could possibly use a more generic icon.
                 return Resources.getIconPaths(Resources.Icons.Docker);
             default:

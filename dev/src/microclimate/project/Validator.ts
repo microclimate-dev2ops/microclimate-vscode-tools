@@ -5,6 +5,7 @@ import Project from "./Project";
 import Requester from "./Requester";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
+import ProjectType from "./ProjectType";
 
 namespace Validator {
 
@@ -69,7 +70,7 @@ namespace Validator {
             // Allow the user to generate missing files.
             // Generate only works for dockerfile, so only display the Generate button if that's what's missing.
             // Full list of supported files: https://www.npmjs.com/package/generator-ibm-cloud-enablement#artifacts
-            if (validationProblem.filename === "Dockerfile") {      // non-nls
+            if (validationProblem.filename === "Dockerfile" && project.type.internalType !== ProjectType.InternalTypes.DOCKER) {      // non-nls
                 const generateBtn: string = Translator.t(StringNamespaces.CMD_MISC, "generateFilesBtn");
 
                 vscode.window.showErrorMessage(popupErrMsg, generateBtn)

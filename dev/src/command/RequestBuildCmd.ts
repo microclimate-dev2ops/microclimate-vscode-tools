@@ -6,11 +6,12 @@ import Log from "../Logger";
 import Requester from "../microclimate/project/Requester";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
+import ProjectState from "../microclimate/project/ProjectState";
 
 export default async function requestBuildCmd(project: Project): Promise<void> {
     Log.d("RequestBuildCmd invoked");
     if (project == null) {
-        const selected = await promptForProject();
+        const selected = await promptForProject(...ProjectState.getEnabledStates());
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
