@@ -24,7 +24,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         await Translator.init();
     }
     catch (err) {
-        Log.e("Error initializing i18next - placeholder strings will be used!", err);
+        // This string can't be translated for obvious reasons :)
+        const errmsg = "Error initializing i18next - placeholder strings will be used!";        // non-nls
+        Log.e(errmsg, err);
+        vscode.window.showErrorMessage(errmsg);
     }
     const msg = Translator.t(StringNamespaces.DEFAULT, "activeMsg");
     // Make sure i18next loaded the strings properly here.
