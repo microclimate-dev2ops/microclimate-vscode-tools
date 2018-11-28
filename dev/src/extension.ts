@@ -20,7 +20,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     Log.setLogFilePath(context);
     Log.i("Finished activating logger");
 
-    await Translator.init();
+    try {
+        await Translator.init();
+    }
+    catch (err) {
+        Log.e("Error initializing i18next - placeholder strings will be used!", err);
+    }
     const msg = Translator.t(StringNamespaces.DEFAULT, "activeMsg");
     // Make sure i18next loaded the strings properly here.
     Log.i("activeMsg:", msg);
@@ -28,7 +33,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     ignoreMCFiles();
 
-    const subscriptions: any[] = [
+    const subscriptions: vscode.Disposable[] = [
         ...createViews(),
         ...createCommands(),
         // ...createDebug()
