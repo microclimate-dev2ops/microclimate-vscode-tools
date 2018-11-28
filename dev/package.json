@@ -18,7 +18,6 @@
     "activationEvents": [
         "onView:ext.mc.mcProjectExplorer",
         "workspaceContains:**/.idc",
-        "workspaceContains:**/.cfignore",
         "onCommand:ext.mc.newConnection",
         "onCommand:ext.mc.newDefaultConnection"
     ],
@@ -62,7 +61,6 @@
             {
                 "command": "%cmdID_newConnection%",
                 "title": "%cmdTitle_newConnection%",
-                "description": "%cmdDescr_newConnection%",
                 "category": "%commandCategory%",
                 "icon": {
                     "light": "res/img/light/new.svg",
@@ -72,97 +70,81 @@
             {
                 "command": "%cmdID_newDefaultConn%",
                 "title": "%cmdTitle_newDefaultConn%",
-                "description": "%cmdDescr_newDefaultConn%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_removeConn%",
                 "title": "%cmdTitle_removeConn%",
-                "description": "%cmdDescr_removeConn%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_refreshConnection%",
                 "title": "%cmdTitle_refreshConnection%",
-                "description": "%cmdDescr_refreshConnection%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_newMCProject%",
                 "title": "%cmdTitle_newMCProject%",
-                "description": "%cmdDescr_newMCProject%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_openFolder%",
                 "title": "%cmdTitle_openFolder%",
-                "description": "%cmdDescr_openFolder%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_openInBrowser%",
                 "title": "%cmdTitle_openInBrowser%",
-                "description": "%cmdDescr_openInBrowser%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "ext.mc.attachDebugger",
                 "title": "%cmdTitle_attachDebugger%",
-                "description": "%cmdDescr_attachDebugger%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_restartRun%",
                 "title": "%cmdTitle_restartRun%",
-                "description": "%cmdDescr_restartRun%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_restartDebug%",
                 "title": "%cmdTitle_restartDebug%",
-                "description": "%cmdDescr_restartDebug%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_requestBuild%",
                 "title": "%cmdTitle_requestBuild%",
-                "description": "%cmdDescr_requestBuild%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_openBuildLog%",
                 "title": "%cmdTitle_openBuildLog%",
-                "description": "%cmdDescr_openBuildLog%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_openAppLog%",
                 "title": "%cmdTitle_openAppLog%",
-                "description": "%cmdDescr_openAppLog%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_enable%",
                 "title": "%cmdTitle_enable%",
-                "description": "%cmdDescr_enable%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_disable%",
                 "title": "%cmdTitle_disable%",
-                "description": "%cmdDescr_disable%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_containerShell%",
                 "title": "%cmdTitle_containerShell%",
-                "description": "%cmdDescr_containerShell%",
                 "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_projectInfo%",
                 "title": "%cmdTitle_projectInfo%",
-                "description": "%cmdDescr_projectInfo%",
                 "category": "%commandCategory%"
             },
             {

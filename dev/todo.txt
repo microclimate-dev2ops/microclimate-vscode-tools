@@ -1,6 +1,7 @@
 New:
 
 Important:
+- Description
 - Nasty liberty bugs
     - Restart in debug mode - all is OK
     - Restart in debug mode again
@@ -11,8 +12,8 @@ Important:
     - Debug mode -> Run mode
         - Project will hang in [Starting], even though startMode = run and there is no debug port set (seems Microclimate is doing everything right)
         - Restarting again fixes it
-- Test Build and Disable/Enable commands
-    - Test manually on older versions of MC
+- Disable/Enable autobuild instead of toggle, and add Validate when autobuild is disabled
+- Should give user a way to remove project logs from output view
 
 Annoying Release Stuff:
 - Icons
@@ -24,6 +25,7 @@ Annoying Release Stuff:
 Less Important:
 - Should always show some status bar message during restart.
     - right now, after Stopped, nothing is shown until the socket receives the restart success
+- Test Build and Disable/Enable commands
 - Show command that's running in promptForResource
 - Expose log file location to user (but where?)
 - Tests
