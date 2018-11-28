@@ -271,7 +271,7 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test",
         "lint": "tslint -p ./tsconfig.json -t verbose",
         "lint-f": "tslint -p ./tsconfig.json -t verbose --force",
-        "copy-strings": "cp ./src/constants/strings/strings-*.json ./out/constants/strings/"
+        "copy-strings": "cp -v ./src/constants/strings/strings-*.json ./out/constants/strings/"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",

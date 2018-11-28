@@ -41,22 +41,23 @@ after_success:
   - ls -a
   # Checkout the 'build' branch, which will have nothing in it except the newest build.
   # We're going to replace that with the build we just created.
-  - git config user.email "travis@travis.ibm.com"
-  - git config user.name "Travis-CI"
-  - git fetch origin build:build
-  - git reset --hard build
-  - git checkout build
+  #- git config user.email "travis@travis.ibm.com"
+  #- git config user.name "Travis-CI"
+  #- git fetch origin build:build
+  #- git reset --hard build
+  #- git checkout build
   # Copy in the build artifact AFTER we do the hard reset
   - cp dev/*.vsix .
   - export artifact_name="$(basename *.vsix)"
   - echo "The new artifact is $artifact_name"
-  - git add -f *.vsix
+  #- git add -f *.vsix
   - git status
   # This will make a commit with a name like "New build @ 6f1ea87 by Tim Etchells - further travis improvements"
   - export build_date="$(date +'%F %H:%M %Z')"
   - export commit_info="$(git log master -1 --pretty='%h by %an - %s')"
-  - 'git commit -m "New build @ $build_date" -m "$commit_info"'
-  - git push origin build
+  - echo "$commit_info"
+  #- 'git commit -m "New build @ $build_date" -m "$commit_info"'
+  #- git push origin build
   # Artifactory push
   # Make sure that PRs cannot echo the artifactory credentials!
   - export build_info_file="build_info.txt"
