@@ -1,6 +1,16 @@
 New:
 
 Important:
+- Nasty liberty bugs
+    - Restart in debug mode - all is OK
+    - Restart in debug mode again
+        - If the previous debug session is still running, it won't close until WELL after Starting - Debug state. You can have 2 debug sessions on the same project for like 30 seconds.
+            - After this, the old session will get closed, the new one will work fine, and the server will go Debugging.
+        - If you killed the previous debug session, debugger connects, then connection get closed. Subsequent attach attempts fail with 'connection closed'
+    - Restart in debug mode a 3rd time - all is OK again
+    - Debug mode -> Run mode
+        - Project will hang in [Starting], even though startMode = run and there is no debug port set (seems Microclimate is doing everything right)
+        - Restarting again fixes it
 - Test Build and Disable/Enable commands
     - Test manually on older versions of MC
 
@@ -12,6 +22,8 @@ Annoying Release Stuff:
     - Add file headers and generally improve code documentation
 
 Less Important:
+- Should always show some status bar message during restart.
+    - right now, after Stopped, nothing is shown until the socket receives the restart success
 - Show command that's running in promptForResource
 - Expose log file location to user (but where?)
 - Tests

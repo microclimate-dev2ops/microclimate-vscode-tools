@@ -23,7 +23,8 @@
         "explicitBuildNotNecessary": "{{ projectName }} has auto-build enabled. There is no need to request a build.",
         "seeProblemsView": "See the Problems view for details.",
         "generateFilesBtn": "Generate",
-        "validate": "Validate"
+        "validate": "Validate",
+        "removedConnection": "Removed Microclimate connection at {{- uri }}."
     },
 
     "cmdResourcePrompt": {
@@ -40,8 +41,8 @@
     },
 
     "debug": {
-        "didNotConnectInTime": "Debugger did not connect within {{ timeoutS }}s.",
-        "connectingToProject": "Connecting debugger to {{ projectName }}",
+        "didNotConnectInTime": "Debugger did not attach within {{ timeoutS }}s.",
+        "connectingToProject": "Attaching debugger to {{ projectName }}",
         "failedToAttach": "Failed to attach debugger to {{ projectName }}.",
         "failedToAttachWithUrl": "Failed to attach debugger to {{ projectName }} at {{- debugUrl }}.",
         "noDebugTypeKnown": "No debug type available for project of type {{ type }}.",

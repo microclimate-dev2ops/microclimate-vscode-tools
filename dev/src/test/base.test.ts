@@ -55,7 +55,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
             Log.t("Clearing " + noConnections + " previous connection(s)");
 
             connMan.connections.forEach( async (conn) => {
-                await connMan.removeConnection(conn);
+                await vscode.commands.executeCommand(Commands.REMOVE_CONNECTION, conn);
             });
         }
 
@@ -63,6 +63,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
     });
 
     it("should create a new default Microclimate connection", async function() {
+        this.timeout(10 * 1000);
         const connMan = ConnectionManager.instance;
         expect(connMan.connections.length).to.eq(0, "Connections exist when there should be none");
 

@@ -148,7 +148,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
      *
      * Also signals the ConnectionManager change listener
      */
-    public update = (projectInfo: any): ProjectState => {
+    public update = (projectInfo: any, isRestart: boolean = false): ProjectState => {
         if (projectInfo.projectID !== this.id) {
             // shouldn't happen, but just in case
             Log.e(`Project ${this.id} received status update request for wrong project ${projectInfo.projectID}`);
@@ -159,11 +159,14 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // Whether or not this update call has changed the project such that we have to update the UI.
         let changed: boolean = false;
 
-        changed = this.setContainerID(projectInfo.containerId) || changed;
-        changed = this.setLastBuild(projectInfo.lastbuild) || changed;
-        // appImageLastBuild is a string
-        changed = this.setLastImgBuild(Number(projectInfo.appImageLastBuild)) || changed;
-        changed = this.setAutoBuild(projectInfo.autoBuild) || changed;
+        if (!isRestart) {
+            // These will all be undefined since the restart event won't have them
+            changed = this.setContainerID(projectInfo.containerId) || changed;
+            changed = this.setLastBuild(projectInfo.lastbuild) || changed;
+            // appImageLastBuild is a string
+            changed = this.setLastImgBuild(Number(projectInfo.appImageLastBuild)) || changed;
+            changed = this.setAutoBuild(projectInfo.autoBuild) || changed;
+        }
 
         // note oldState can be null if this is the first time update is being invoked.
         const oldState = this._state;
@@ -437,7 +440,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         const changed = this._lastBuild !== oldlastBuild;
         if (changed) {
-            Log.d(`New lastBuild for ${this.name} is ${this._lastBuild}`);
+            // Log.d(`New lastBuild for ${this.name} is ${this._lastBuild}`);
         }
         return changed;
     }
@@ -451,7 +454,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         const changed = this._lastImgBuild !== oldlastImgBuild;
         if (changed) {
-            Log.d(`New lastImgBuild for ${this.name} is ${this._lastImgBuild}`);
+            // Log.d(`New lastImgBuild for ${this.name} is ${this._lastImgBuild}`);
         }
         return changed;
     }

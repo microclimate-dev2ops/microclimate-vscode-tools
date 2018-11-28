@@ -34,18 +34,18 @@ const projectTypesToTest: ITestableProjectType[] = [
         projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
         canRestart: true
     },
-    // {
-    //     projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
-    //     canRestart: true
-    // },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
+        canRestart: true
+    },
     // {
     //     projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
     //     canRestart: true
     // },
-    // {
-    //     projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
-    //     canRestart: false
-    // },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
+        canRestart: false
+    },
     // {
     //     projectType: new ProjectType(ProjectType.InternalTypes.SWIFT, ProjectType.Languages.SWIFT),
     //     canRestart: false
@@ -158,7 +158,12 @@ describe(`Restart tests`, async function() {
             // Wait 5 seconds, this helps resolve some timing issues with debugger connection.
             await TestUtil.wait(debugDelay, "Giving debugger connect a chance to complete");
             await assertDebugSessionExists(projectName);
+            Log.t("Debugger connect succeeded");
+
+            // Now wait for it to enter Debugging state (much slower for Liberty)
+            await ProjectObserver.instance.awaitProjectState(projectID, ProjectState.AppStates.DEBUGGING);
             debugReady = true;
+            Log.t("Debug restart test passed");
         });
 
         if (canRestart) {
@@ -168,13 +173,15 @@ describe(`Restart tests`, async function() {
 
                 this.timeout(TestUtil.LONG_TIMEOUT / 2);
 
-                await ProjectObserver.instance.awaitProjectStarted(projectID);
-                const project = await TestUtil.getProjectById(connection, projectID);
-                expect(project.state.appState, `Project is not Debugging, is instead ${project.state}`).to.equal(ProjectState.AppStates.DEBUGGING);
+                // It should have reached Debugging state in the previous test, so this should be fast
+                await ProjectObserver.instance.awaitProjectState(projectID, ProjectState.AppStates.DEBUGGING);
 
+                const project = await TestUtil.getProjectById(connection, projectID);
                 await vscode.commands.executeCommand(Commands.ATTACH_DEBUGGER, project);
                 await TestUtil.wait(debugDelay, "Giving debugger connect a chance to complete again");
                 await assertDebugSessionExists(projectName);
+
+                Log.t("Debugger connect succeeded again");
             });
         }
 

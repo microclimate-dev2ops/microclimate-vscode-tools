@@ -56,7 +56,7 @@ export default class MCSocket {
     }
 
     private readonly onProjectStatusChanged = async (payload: any): Promise<void> => {
-        // Logger.log("onProjectStatusChanged", payload);
+        // Log.d("onProjectStatusChanged", payload);
         // I don't see any reason why these should be handled differently
         this.onProjectChanged(payload);
     }
@@ -137,7 +137,7 @@ export default class MCSocket {
             Log.e(`Invalid start mode "${startMode}"`);
         }
         // This updates the ports and startMode, because those are what the payload will provide.
-        project.update(payload);
+        project.update(payload, true);
 
         // Now we have to attach the debugger if it's a debug mode restart
 
@@ -150,10 +150,7 @@ export default class MCSocket {
                 // will wait for Starting - Debug state - but this is usually not necessary,
                 // since that state will be reached before Microclimate emits the restart event
                 const debuggerAttached: boolean = await attachDebuggerCmd(project, true);
-                if (debuggerAttached) {
-                    restartSuccess = true;
-                }
-                else {
+                if (!debuggerAttached) {
                     vscode.window.showWarningMessage(
                         Translator.t(StringNamespaces.DEFAULT, "restartDebugAttachFailure",
                         { startMode: StartModes.getUserFriendlyStartMode(startMode) })
@@ -166,23 +163,22 @@ export default class MCSocket {
                 vscode.window.showErrorMessage(err);
             }
         }
-        else {
-            // Run mode, wait for project to be Started
-            const terminalState = ProjectState.AppStates.STARTED;
-            Log.d(`Waiting for terminal state ${terminalState} after restart`);
 
-            let state;
-            try {
-                state = await project.waitForState(120 * 1000, terminalState);
-            }
-            catch (err) {
-                Log.w(`Restart into ${startMode} mode did not complete in time, or was cancelled by user:`, err);
-                vscode.window.showWarningMessage(err);
-                return;
-            }
+        // Run mode, wait for project to be Started
+        const terminalState = isDebug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
+        Log.d(`Waiting for terminal state ${terminalState} after restart`);
 
-            restartSuccess = state === terminalState;
+        let state;
+        try {
+            state = await project.waitForState(120 * 1000, terminalState);
         }
+        catch (err) {
+            Log.w(`Restart into ${startMode} mode did not complete in time, or was cancelled by user:`, err);
+            vscode.window.showWarningMessage(err);
+            return;
+        }
+
+        restartSuccess = state === terminalState;
 
         if (restartSuccess) {
             const doneRestartMsg = Translator.t(StringNamespaces.DEFAULT, "restartSuccess",
