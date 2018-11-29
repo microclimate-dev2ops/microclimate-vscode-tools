@@ -217,7 +217,7 @@
                 },
                 {
                     "command": "%cmdID_openInBrowser%",
-                    "when": "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem.active)/",
+                    "when": "%isActiveConnectionOrEnabledProject%",
                     "group": "ext.mc.a@0"
                 },
                 {

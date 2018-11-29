@@ -102,10 +102,13 @@
         "See ProjectContextID.ts and Connection.ts for how the Context IDs are set"
     ],
 
-    "isInViewWithNothingSelected": "view == ext\\.mc\\.mcProjectExplorer && !viewItem",
+    "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
     "isConnectionOrProject": "viewItem =~ /ext\\.mc\\.*/",
     "isConnection": "viewItem =~ /ext\\.mc\\.connectionItem*/",
-    "isActiveConnection": "viewItem == ext\\.mc\\.connectionItem\\.active",
+    "isActiveConnection": "viewItem == ext.mc.connectionItem.active",
+
+    "isActiveConnectionOrEnabledProject":
+        "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem.active)/",
 
     "isProject":                "viewItem =~ /ext\\.mc\\.projectItem*/",
     "isEnabledProject":         "viewItem =~ /ext\\.mc\\.projectItem\\.enabled*/",

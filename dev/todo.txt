@@ -14,6 +14,7 @@ Important:
         - Restarting again fixes it
 - Should give user a way to remove project logs from output view
 - Add a debug init script to generator https://github.com/ibm-developer/generator-ibm-core-node-express/blob/develop/app/templates/package.json
+- Periods at the ends of popup messages
 
 Annoying Release Stuff:
 - Icons

@@ -53,6 +53,7 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.REQUEST_BUILD,     (selection) => requestBuildCmd(selection)),
         vscode.commands.registerCommand(Commands.TOGGLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
+        // Enable and disable AB are the same as Toggle AB - they are just presented to the user differently.
         vscode.commands.registerCommand(Commands.ENABLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
         vscode.commands.registerCommand(Commands.DISABLE_AUTOBUILD, (selection) => toggleAutoBuildCmd(selection)),
 
@@ -73,7 +74,7 @@ export function createCommands(): vscode.Disposable[] {
 }
 
 // Some commands require a project or connection to be selected,
-// if they're launched from the command pallet we have to ask which resource they want to run the command on.
+// if they're launched from the command palette we have to ask which resource they want to run the command on.
 // The functions below handle this use case.
 
 /**

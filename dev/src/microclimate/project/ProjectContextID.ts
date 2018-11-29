@@ -14,7 +14,7 @@ const SEPARATOR = ".";
 enum ContextOptions {
     // (en|dis)abled are mutex
     ENABLED = "enabled",
-    // debuggable implies (enabled and not disabled)
+    // debuggable implies enabled
     DISABLED = "disabled",
 
     DEBUGGABLE = "debuggable",
