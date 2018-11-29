@@ -18,15 +18,14 @@ For the README packaged with this extension, see [the extension README](https://
 
 ## Features
 - View all projects in Microclimate, including their app and build statuses
-    - All projects are always visible, and the list updates automatically
 - Debug **Microprofile, Spring, and Node** Microclimate projects
+- View application and build logs in the Output view
+- View project info (similar to Microclimate Overview page)
+- Open your applications in the system browser
 - Integrate Microclimate validation errors into the Problems view
 - Open a shell session into a Microclimate application container
-- View project info (similar to Microclimate Overview page)
 - Open the App Monitor page
 - Toggle project auto-build
 - Easily scope your VSCode workspace to a Microclimate project or your `microclimate-workspace`
-- Open applications in system browser
-- View application and build logs in the Output view
-- Kick off application builds
-- Disable and Enable projects
+- Manually initiate project builds
+- Disable, Enable, and Delete projects
