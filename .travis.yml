@@ -18,17 +18,12 @@ node_js:
 
 before_install:
   # Copy the LICENSE into the extension directory, so it is included in the build
-  - cp LICENSE.* dev
+  - cp -v LICENSE.* dev
 
   - cd dev
   - npm i -g vsce
   - npm i
 
-  - echo "Working directory $(pwd)"
-  - echo "TSC $(./node_modules/typescript/bin/tsc --version)"
-  # List all our source files, this way we can see if there are
-  # any more issues due to git not handling case-sensitive fileames very well
-  - ls -AR src/
   # Make sure compilation will succeed ( vsce package won't show the compilation failures >:( )
   # Fail the build if compile fails
   - npm run compile
@@ -39,30 +34,5 @@ script:
   - vsce package
 
 after_success:
-  # Go back to top level, then copy the vsix we just built to .
   - cd ..
-  - ls -a
-  # Checkout the 'build' branch, which will have nothing in it except the newest build.
-  # We're going to replace that with the build we just created.
-  #- git config user.email "travis@travis.ibm.com"
-  #- git config user.name "Travis-CI"
-  #- git fetch origin build:build
-  #- git reset --hard build
-  #- git checkout build
-  # Copy in the build artifact AFTER we do the hard reset
-  - cp dev/*.vsix .
-  - export artifact_name="$(basename *.vsix)"
-  - echo "The new artifact is $artifact_name"
-  #- git add -f *.vsix
-  - git status
-  # This will make a commit with a name like "New build @ 6f1ea87 by Tim Etchells - further travis improvements"
-  - export build_date="$(date +'%F %H:%M %Z')"
-  - export commit_info="$(git log master -1 --pretty='%h by %an - %s')"
-  - echo "$commit_info"
-  #- 'git commit -m "New build @ $build_date" -m "$commit_info"'
-  #- git push origin build
-  # Artifactory push
-  # Make sure that PRs cannot echo the artifactory credentials!
-  - export build_info_file="build_info.txt"
-  - printf "$build_date\n$commit_info" > "$build_info_file"
-  - curl -u "$artifactory_username:$artifactory_apikey" "$artifactory_url/$artifact_name" -T "$artifact_name" -X PUT && curl -u "$artifactory_username:$artifactory_apikey" "$artifactory_url/$build_info_file" -T "$build_info_file" -X PUT
+  - ./publish.sh
