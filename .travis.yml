@@ -36,3 +36,22 @@ script:
 after_success:
   - cd ..
   - ./publish.sh
+
+#before_deploy:
+#  # cwd back to repo root
+#  - cd ..
+#  - cp -v dev/*.vsix .
+#  - export artifact_name="$(basename *.vsix)"
+#  - git config --local user.name "tetchel"
+#  - git config --local user.email "timetchells@ibm.com"
+#  - export TRAVIS_TAG="nightly-$(date +'%F_%H-%M_%Z')"
+#  - git tag $TRAVIS_TAG
+#
+#deploy:
+#  on:
+#    branch: master
+#    condition: $TRAVIS_EVENT_TYPE = cron
+#  provider: releases
+#  api_key: ???
+#  file: $artifact_name
+#  skip_cleanup: true
