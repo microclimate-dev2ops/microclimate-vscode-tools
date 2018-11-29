@@ -60,7 +60,8 @@
         "errUpdatingBuildLog": "Error updating build log: {{- err }}.",
         "logName": "{{ projectName }} - {{ logType }} Log",
         "logNotUpdatingNoConnection": "******** The connection to Microclimate was lost, so this {{ logType }} log is no longer updating.",
-        "logNotUpdatingOther": "******** This {{ logType }} log is no longer updating."
+        "logNotUpdatingOther": "******** This {{ logType }} log is no longer updating.",
+        "noLogsToHide": "There are no Microclimate logs open."
     },
 
     "newConnectionCmd": {

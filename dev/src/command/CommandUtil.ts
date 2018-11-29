@@ -26,6 +26,7 @@ import newMCProjectCmd from "./NewMCProjectCmd";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 import validateCmd from "./ValidateCmd";
+import hideLogsCmd from "./HideLogsCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -59,6 +60,7 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.OPEN_APP_LOG,      (selection) => openLogCmd(selection, true)),
         vscode.commands.registerCommand(Commands.OPEN_BUILD_LOG,    (selection) => openLogCmd(selection, false)),
+        vscode.commands.registerCommand(Commands.HIDE_LOGS,         () => hideLogsCmd()),
 
         vscode.commands.registerCommand(Commands.DISABLE_PROJECT,   (selection) => toggleEnablementCmd(selection, false)),
         vscode.commands.registerCommand(Commands.ENABLE_PROJECT,    (selection) => toggleEnablementCmd(selection, true)),

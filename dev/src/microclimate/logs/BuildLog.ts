@@ -19,11 +19,13 @@ export default class BuildLog extends MCLog {
     constructor(
         private readonly connection: Connection,
         public readonly projectID: string,
-        public readonly projectName: string
+        public readonly projectName: string,
+        managerMap: Map<string, MCLog>
     ) {
-        super(projectID, projectName,
+        super(projectID, projectName, MCLog.LogTypes.BUILD,
+            managerMap,
             Translator.t(MCLog.STRING_NS, "waitingForBuildLogs", { projectName }),
-            MCLog.LogTypes.BUILD);
+        );
 
         this.update();
         this.timer = setInterval(this.update, BuildLog.UPDATE_INTERVAL);

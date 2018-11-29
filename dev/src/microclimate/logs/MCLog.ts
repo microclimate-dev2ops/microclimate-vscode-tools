@@ -8,7 +8,7 @@ import Translator from "../../constants/strings/translator";
 /**
  * Type to capture common functionality between AppLogs and BuildLogs
  */
-export class MCLog {
+export class MCLog implements vscode.QuickPickItem {
 
     protected static readonly STRING_NS: StringNamespaces = StringNamespaces.LOGS;
 
@@ -16,15 +16,22 @@ export class MCLog {
 
     protected doUpdate: boolean = true;
 
+    // quickPickItem
+    public readonly label: string;
+
     protected constructor(
         public readonly projectID: string,
         public readonly projectName: string,
-        initialMsg: string,
-        private readonly logType: MCLog.LogTypes
+        public readonly logType: MCLog.LogTypes,
+        private readonly managerMap: Map<string, MCLog>,
+        initialMsg: string
     ) {
         const outputChannelName = Translator.t(MCLog.STRING_NS, "logName", { projectName, logType: logType.toString() });
         this.outputChannel = vscode.window.createOutputChannel(outputChannelName);
         this.outputChannel.appendLine(initialMsg);
+
+        // quickPickItem
+        this.label = this.outputChannel.name;
     }
 
     public async showOutputChannel(): Promise<void> {
@@ -39,7 +46,7 @@ export class MCLog {
      *  A slightly different message is displayed if the updates were cancelled because we lost the MC connection.
      *  It is possible for a user to manually stop the updates of a build log, in which case this should be false.
      */
-    public async stopUpdating(connectionLost: boolean = true): Promise<void> {
+    public stopUpdating(connectionLost: boolean = true): void {
         if (!this.doUpdate) {
             Log.d("Already stopped updating log " + this.outputChannel.name);
             return;
@@ -56,10 +63,17 @@ export class MCLog {
         this.outputChannel.appendLine("\n" + msg);          // non-nls
     }
 
-    public async destroy(): Promise<void> {
+    /**
+     * Disposes of this log's OutputChannel.
+     * Also removes it from the owner manager's log map, which is a nasty coupling I will revisit!
+     */
+    public destroy(): void {
         Log.d("Destroy log " + this.outputChannel.name);
         this.stopUpdating();
         this.outputChannel.dispose();
+        if (this.managerMap.has(this.projectID)) {
+            this.managerMap.delete(this.projectID);
+        }
     }
 
     /**

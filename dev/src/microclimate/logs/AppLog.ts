@@ -11,12 +11,13 @@ export default class AppLog extends MCLog {
 
     constructor(
         public readonly projectID: string,
-        public readonly projectName: string
+        public readonly projectName: string,
+        managerMap: Map<string, MCLog>
     ) {
-        super(projectID, projectName,
+        super(projectID, projectName, MCLog.LogTypes.APP,
+            managerMap,
             Translator.t(MCLog.STRING_NS, "waitingForAppLogs", { projectName }),
-            MCLog.LogTypes.APP);
-
+        );
         // update will be invoked when we get a container-logs event
     }
 

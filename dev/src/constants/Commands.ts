@@ -22,6 +22,7 @@ enum Commands {
 
     OPEN_APP_LOG = "ext.mc.openAppLog",
     OPEN_BUILD_LOG = "ext.mc.openBuildLog",
+    HIDE_LOGS = "ext.mc.hideLogs",
     DISABLE_PROJECT = "ext.mc.disable",
     ENABLE_PROJECT = "ext.mc.enable",
     CONTAINER_SHELL = "ext.mc.containerShell",

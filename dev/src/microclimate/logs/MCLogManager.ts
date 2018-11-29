@@ -4,6 +4,7 @@ import BuildLog from "./BuildLog";
 import Connection from "../connection/Connection";
 // Not to be confused with the other log classes :)
 import Log from "../../Logger";
+import MCLog from "./MCLog";
 
 /**
  * Contains info about app and build logs for a given Connection.
@@ -12,6 +13,7 @@ import Log from "../../Logger";
 export default class MCLogManager {
 
     // Maps projectIDs to Log instances
+    // TODO revist this. I think these can be combined into one array now, but will require an overhaul of this class.
     private readonly appLogMap: Map<string, AppLog> = new Map<string, AppLog>();
     private readonly buildLogMap: Map<string, BuildLog> = new Map<string, BuildLog>();
 
@@ -21,12 +23,22 @@ export default class MCLogManager {
 
     }
 
+    /**
+     * Returns an array of all open logs for this Connection (aka this logManager)
+     */
+    public getAllOpenLogs(): MCLog[] {
+        let openLogs: MCLog[] = [];
+        openLogs = openLogs.concat(Array.from(this.appLogMap.values()));
+        openLogs = openLogs.concat(Array.from(this.buildLogMap.values()));
+        return openLogs;
+    }
+
     public getOrCreateAppLog(projectID: string, projectName: string): AppLog {
         let appLog = this.appLogMap.get(projectID);
         if (appLog == null) {
             Log.i("Creating app log for " + projectName);
             // we have to create it
-            appLog = new AppLog(projectID, projectName);
+            appLog = new AppLog(projectID, projectName, this.appLogMap);
             this.appLogMap.set(projectID, appLog);
         }
         return appLog;
@@ -41,7 +53,7 @@ export default class MCLogManager {
         if (buildLog == null) {
             Log.i("Creating build log for " + projectName);
             // we have to create it
-            buildLog = new BuildLog(this.connection, projectID, projectName);
+            buildLog = new BuildLog(this.connection, projectID, projectName, this.buildLogMap);
             this.buildLogMap.set(projectID, buildLog);
         }
         return buildLog;

@@ -128,6 +128,11 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_hideLogs%",
+                "title": "%cmdTitle_hideLogs%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_enable%",
                 "title": "%cmdTitle_enable%",
                 "category": "%commandCategory%"

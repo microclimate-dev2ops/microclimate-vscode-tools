@@ -12,7 +12,6 @@ Important:
     - Debug mode -> Run mode
         - Project will hang in [Starting], even though startMode = run and there is no debug port set (seems Microclimate is doing everything right)
         - Restarting again fixes it
-- Should give user a way to remove project logs from output view
 - Add a debug init script to generator https://github.com/ibm-developer/generator-ibm-core-node-express/blob/develop/app/templates/package.json
 - Periods at the ends of popup messages
 
@@ -68,3 +67,4 @@ https://github.com/Microsoft/java-debug/blob/master/com.microsoft.java.debug.cor
     - ie if there are two {{ placeholder }}s in the string, two parameters should be provided to t, and the key names should match the placeholders
     - unused or missing strings before runtime
 - Extension for clearing unused imports
+- auto-add command to package.json, .nls.json

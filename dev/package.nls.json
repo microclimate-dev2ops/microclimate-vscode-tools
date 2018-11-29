@@ -61,6 +61,9 @@
     "cmdTitle_openAppLog": "Show application log",
     "cmdDescr_openAppLog": "Show a project's Microclimate application logs in the Output view",
 
+    "cmdID_hideLogs": "ext.mc.hideLogs",
+    "cmdTitle_hideLogs": "Hide logs",
+
     "cmdID_projectInfo": "ext.mc.viewProjectInfo",
     "cmdTitle_projectInfo": "Show project info",
     "cmdDescr_projectInfo": "Show a project's Microclimate information",
