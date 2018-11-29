@@ -153,6 +153,16 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_enableAutoBuild%",
+                "title": "%cmdTitle_enableAutoBuild%",
+                "category": "%commandCategory%"
+            },
+            {
+                "command": "%cmdID_disableAutoBuild%",
+                "title": "%cmdTitle_disableAutoBuild%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_openAppMonitor%",
                 "title": "%cmdTitle_openAppMonitor%",
                 "category": "%commandCategory%"
@@ -164,6 +174,16 @@
             }
         ],
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "%cmdID_enableAutoBuild%",
+                    "when": "never"
+                },
+                {
+                    "command": "%cmdID_disableAutoBuild%",
+                    "when": "never"
+                }
+            ],
             "view/title": [
                 {
                     "command": "%cmdID_newConnection%",
@@ -213,17 +233,17 @@
                 {
                     "command": "%cmdID_projectInfo%",
                     "when": "%isProject%",
-                    "group": "ext.mc.c"
+                    "group": "ext.mc.c@0"
                 },
                 {
                     "command": "%cmdID_openAppLog%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.c"
+                    "group": "ext.mc.c@1"
                 },
                 {
                     "command": "%cmdID_openBuildLog%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.c"
+                    "group": "ext.mc.c@2"
                 },
                 {
                     "command": "%cmdID_requestBuild%",
@@ -231,13 +251,23 @@
                     "group": "ext.mc.d@0"
                 },
                 {
-                    "command": "%cmdID_toggleAutoBuild%",
-                    "when": "%isEnabledProject%",
+                    "command": "%cmdID_validate%",
+                    "when": "%isEnabledAutoBuildOff%",
                     "group": "ext.mc.d@1"
                 },
                 {
-                    "command": "ext.mc.attachDebugger",
-                    "when": "%isDebuggingProject%",
+                    "command": "%cmdID_enableAutoBuild%",
+                    "when": "%isEnabledAutoBuildOff%",
+                    "group": "ext.mc.d@2"
+                },
+                {
+                    "command": "%cmdID_disableAutoBuild%",
+                    "when": "%isEnabledAutoBuildOn%",
+                    "group": "ext.mc.d@2"
+                },
+                {
+                    "command": "%cmdID_attachDebugger%",
+                    "when": "%isDebuggableProject%",
                     "group": "ext.mc.e"
                 },
                 {

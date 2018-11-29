@@ -13,16 +13,11 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ProjectPendingState from "./ProjectPendingState";
 import { refreshProjectInfo } from "./ProjectInfo";
+import getContextID from "./ProjectContextID";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
 export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem {
-
-    // these below must match package.nls.json
-    private static readonly CONTEXT_ID_BASE: string = "ext.mc.projectItem";                                 // non-nls
-    private static readonly CONTEXT_ID_ENABLED:  string = Project.CONTEXT_ID_BASE + ".enabled";             // non-nls
-    private static readonly CONTEXT_ID_DISABLED: string = Project.CONTEXT_ID_BASE + ".disabled";            // non-nls
-    private static readonly CONTEXT_ID_DEBUGGABLE: string = Project.CONTEXT_ID_ENABLED + ".debugging";      // non-nls
 
     // Immutable project data
     public readonly name: string;
@@ -103,31 +98,16 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // ti.resourceUri = this.localPath;
         ti.tooltip = this.state.toString();
         // There are different context menu actions available to enabled or disabled or debugging projects
-        ti.contextValue = this.getContextID();
+        ti.contextValue = getContextID(this);
         ti.iconPath = this.type.icon;
         // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
-        // Focuses on this project in the explorer view. Has no effect if the project is not in the current workspace.
+        // Focuses on this project in the middle of the explorer view. Has no effect if the project is not in the current workspace.
         ti.command = {
             command: Commands.VSC_REVEAL_EXPLORER,
             title: "",      // non-nls
             arguments: [this.localPath]
         };
-        // Logger.log(`Created TreeItem`, ti);
         return ti;
-    }
-
-    private getContextID(): string {
-        if (this._state.isEnabled) {
-            if (ProjectState.getDebuggableStates().includes(this._state.appState)) {
-                return Project.CONTEXT_ID_DEBUGGABLE;
-            }
-            else {
-                return Project.CONTEXT_ID_ENABLED;
-            }
-        }
-        else {
-            return Project.CONTEXT_ID_DISABLED;
-        }
     }
 
     // description used by QuickPickItem

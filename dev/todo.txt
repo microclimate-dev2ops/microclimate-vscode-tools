@@ -12,8 +12,8 @@ Important:
     - Debug mode -> Run mode
         - Project will hang in [Starting], even though startMode = run and there is no debug port set (seems Microclimate is doing everything right)
         - Restarting again fixes it
-- Disable/Enable autobuild instead of toggle, and add Validate when autobuild is disabled
 - Should give user a way to remove project logs from output view
+- Add a debug init script to generator https://github.com/ibm-developer/generator-ibm-core-node-express/blob/develop/app/templates/package.json
 
 Annoying Release Stuff:
 - Icons

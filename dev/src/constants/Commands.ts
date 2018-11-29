@@ -17,6 +17,9 @@ enum Commands {
     OPEN_IN_BROWSER = "ext.mc.openInBrowser",
     REQUEST_BUILD = "ext.mc.requestBuild",
     TOGGLE_AUTOBUILD = "ext.mc.toggleAutoBuild",
+    ENABLE_AUTOBUILD = "ext.mc.enableAutoBuild",
+    DISABLE_AUTOBUILD =  "ext.mc.disableAutoBuild",
+
     OPEN_APP_LOG = "ext.mc.openAppLog",
     OPEN_BUILD_LOG = "ext.mc.openBuildLog",
     DISABLE_PROJECT = "ext.mc.disable",

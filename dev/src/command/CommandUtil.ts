@@ -53,6 +53,8 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.REQUEST_BUILD,     (selection) => requestBuildCmd(selection)),
         vscode.commands.registerCommand(Commands.TOGGLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
+        vscode.commands.registerCommand(Commands.ENABLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
+        vscode.commands.registerCommand(Commands.DISABLE_AUTOBUILD, (selection) => toggleAutoBuildCmd(selection)),
 
         vscode.commands.registerCommand(Commands.OPEN_APP_LOG,      (selection) => openLogCmd(selection, true)),
         vscode.commands.registerCommand(Commands.OPEN_BUILD_LOG,    (selection) => openLogCmd(selection, false)),
