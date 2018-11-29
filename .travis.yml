@@ -17,6 +17,9 @@ node_js:
  - "10"
 
 before_install:
+  # Copy the LICENSE into the extension directory, so it is included in the build
+  - cp LICENSE.* dev
+
   - cd dev
   - npm i -g vsce
   - npm i
