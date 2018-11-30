@@ -190,11 +190,7 @@
                 }
             ],
             "view/title": [
-                {
-                    "command": "%cmdID_newConnection%",
-                    "when": "view == ext.mc.mcProjectExplorer",
-                    "group": "navigation"
-                }
+
             ],
             "view/item/context": [
                 {
