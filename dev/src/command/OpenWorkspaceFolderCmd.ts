@@ -11,7 +11,7 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 export default async function openWorkspaceFolderCmd(resource: Project | Connection): Promise<void> {
     Log.d(`Go to folder command invoked on ${resource}`);
     if (resource == null) {
-        const selected = await promptForResource();
+        const selected = await promptForResource(false);
         if (selected == null) {
             Log.d("User cancelled prompt for resource");
             // user cancelled

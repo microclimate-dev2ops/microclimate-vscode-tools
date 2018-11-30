@@ -84,6 +84,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         }
         this.connected = true;
         Log.d(`${this} is now connected`);
+        await this.forceUpdateProjectList();
         this.logManager.onConnectionReconnect();
 
         this.onChange();
@@ -96,6 +97,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
             return;
         }
         this.connected = false;
+        this.projects = [];
         Log.d(`${this} is now disconnected`);
         this.logManager.onConnectionDisconnect();
 
@@ -192,8 +194,12 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         return Connection.CONTEXT_ID;
     }
 
-    public async forceUpdateProjectList(): Promise<void> {
+    public async forceUpdateProjectList(wipeProjects: boolean = false): Promise<void> {
         Log.d("forceUpdateProjectList");
+        if (wipeProjects) {
+            Log.d(`Wiping ${this.projects.length} projects`);
+            this.projects = [];
+        }
         this.needProjectUpdate = true;
         this.getProjects();
     }

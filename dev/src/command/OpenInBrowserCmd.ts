@@ -14,7 +14,7 @@ const STRING_NS = StringNamespaces.CMD_OPEN_IN_BROWSER;
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
     Log.d("OpenInBrowserCmd invoked");
     if (resource == null) {
-        const selected = await promptForResource(ProjectState.AppStates.STARTED);
+        const selected = await promptForResource(true, ProjectState.AppStates.STARTED);
         if (selected == null) {
             Log.d("User cancelled prompt for resource");
             // user cancelled

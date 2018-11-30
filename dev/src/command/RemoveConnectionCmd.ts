@@ -10,7 +10,7 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 export default async function removeConnectionCmd(connection: Connection): Promise<void> {
     Log.d("removeConnectionCmd invoked");
     if (connection == null) {
-        const selected = await promptForConnection();
+        const selected = await promptForConnection(false);
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");

@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { Log } from "../Logger";
+import Log from "../Logger";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import { ProjectState } from "../microclimate/project/ProjectState";
+import ProjectState from "../microclimate/project/ProjectState";
 
 import Commands from "../constants/Commands";
 
@@ -84,7 +84,7 @@ export function createCommands(): vscode.Disposable[] {
  * @param acceptableStates - If at least one state is passed, only projects in one of these states will be presented to the user.
  */
 export async function promptForProject(...acceptableStates: ProjectState.AppStates[]): Promise<Project | undefined> {
-    const project = await promptForResourceInner(false, true, ...acceptableStates);
+    const project = await promptForResourceInner(false, true, false, ...acceptableStates);
     if (project instanceof Project) {
         return project as Project;
     }
@@ -97,12 +97,16 @@ export async function promptForProject(...acceptableStates: ProjectState.AppStat
     return undefined;
 }
 
-export async function promptForConnection(): Promise<Connection | undefined> {
+export async function promptForConnection(activeOnly: boolean): Promise<Connection | undefined> {
     if (ConnectionManager.instance.connections.length === 1) {
-        return ConnectionManager.instance.connections[0];
+        const onlyConnection = ConnectionManager.instance.connections[0];
+        if (onlyConnection.isConnected || !activeOnly) {
+            return onlyConnection;
+        }
+        // else continue to promptForResource, which will report if there are no suitable connections.
     }
 
-    const connection = await promptForResourceInner(true, false);
+    const connection = await promptForResourceInner(true, false, activeOnly);
     if (connection instanceof Connection) {
         return connection as Connection;
     }
@@ -115,12 +119,19 @@ export async function promptForConnection(): Promise<Connection | undefined> {
     return undefined;
 }
 
-export async function promptForResource(...acceptableStates: ProjectState.AppStates[]): Promise<Project | Connection | undefined> {
-    return promptForResourceInner(true, true, ...acceptableStates);
+export async function promptForResource(activeConnectionsOnly: boolean, ...acceptableStates: ProjectState.AppStates[]):
+                                        Promise<Project | Connection | undefined> {
+
+    return promptForResourceInner(true, true, activeConnectionsOnly, ...acceptableStates);
 }
 
-async function promptForResourceInner(includeConnections: boolean, includeProjects: boolean, ...acceptableStates: ProjectState.AppStates[]):
-        Promise<Project | Connection | undefined> {
+/**
+ * If !includeConnections, activeConnectionsOnly is ignored.
+ * If !includeProjects, acceptableStates is ignored.
+ */
+async function promptForResourceInner(includeConnections: boolean, includeProjects: boolean, activeConnectionsOnly: boolean,
+                                      ...acceptableStates: ProjectState.AppStates[]):
+                                      Promise<Project | Connection | undefined> {
 
     if (!includeConnections && !includeProjects) {
         // One of these must always be set
@@ -128,24 +139,35 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
         return undefined;
     }
     else if (!includeProjects && acceptableStates.length > 0) {
-        // This is a misuse of this function
+        // This doesn't actually matter, but we're going to log this misuse anyway
         Log.e("Not including projects, but acceptable states were specified!");
         acceptableStates = [];
+    }
+    else if (!includeConnections && activeConnectionsOnly) {
+        // This doesn't actually matter, but we're going to log this misuse anyway
+        Log.e("Not including connections, but activeConnectionsOnly is set!");
     }
 
     const choices: vscode.QuickPickItem[] = [];
 
     const connections = ConnectionManager.instance.connections;
     if (includeConnections) {
-        // Convert each Connected Connection into a QuickPickItem
-        // choices.push(... (connections.filter( (conn) => conn.isConnected)));
-        choices.push(...connections);
+        if (activeConnectionsOnly) {
+            choices.push(...(connections.filter( (conn) => conn.isConnected)));
+        }
+        else {
+            choices.push(...connections);
+        }
     }
 
     if (includeProjects) {
         // for now, assume if they want Started, they also accept Debugging. This may change.
         if (acceptableStates.includes(ProjectState.AppStates.STARTED) && !acceptableStates.includes(ProjectState.AppStates.DEBUGGING)) {
             acceptableStates.push(ProjectState.AppStates.DEBUGGING);
+        }
+        // same for Starting / Starting - Debug
+        if (acceptableStates.includes(ProjectState.AppStates.STARTING) && !acceptableStates.includes(ProjectState.AppStates.DEBUG_STARTING)) {
+            acceptableStates.push(ProjectState.AppStates.DEBUG_STARTING);
         }
 
         // Logger.log("Accept states", acceptableStates);

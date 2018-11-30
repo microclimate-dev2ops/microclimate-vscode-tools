@@ -9,7 +9,7 @@ import Endpoints from "../constants/Endpoints";
 export default async function newMCProjectCmd(connection: Connection): Promise<void> {
     Log.d("newMCProjectCmd invoked");
     if (connection == null) {
-        const selected = await promptForConnection();
+        const selected = await promptForConnection(true);
         if (selected == null) {
             Log.d("User cancelled prompt for resource");
             // user cancelled

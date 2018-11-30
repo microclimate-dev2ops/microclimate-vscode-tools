@@ -9,7 +9,7 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 export default async function refreshConnectionCmd(connection: Connection): Promise<void> {
     Log.d("refreshConnectionCmd");
     if (connection == null) {
-        const selected = await promptForConnection();
+        const selected = await promptForConnection(true);
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
@@ -19,5 +19,5 @@ export default async function refreshConnectionCmd(connection: Connection): Prom
     }
 
     vscode.window.showInformationMessage(Translator.t(StringNamespaces.CMD_MISC, "refreshingConnection", { uri: connection.mcUri }));
-    return connection.forceUpdateProjectList();
+    return connection.forceUpdateProjectList(true);
 }
