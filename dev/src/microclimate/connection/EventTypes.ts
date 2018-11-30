@@ -1,6 +1,10 @@
 
 // non-nls-file
 
+/**
+ * Socket events we listen for from Microclimate Portal
+ * See MCSocket
+ */
 enum EventTypes {
     PROJECT_CHANGED = "projectChanged",
     PROJECT_STATUS_CHANGED = "projectStatusChanged",

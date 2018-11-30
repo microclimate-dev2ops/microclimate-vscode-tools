@@ -8,6 +8,11 @@ const KEY_CLOSED_STATE: string = "state";                   // non-nls
 const KEY_START_MODE:   string = "startMode";               // non-nls
 const KEY_BUILD_DETAIL: string = "detailedBuildStatus";     // non-nls
 
+/**
+ * Represents the project's state in Microclimate. This means app state, build state, and any status details.
+ *
+ * Immutable
+ */
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
     public readonly buildState: ProjectState.BuildStates;

@@ -5,3 +5,7 @@ node_modules/
 
 .DS_STORE
 .nyc_output
+
+todo.txt
+unused.txt
+*.code-workspace

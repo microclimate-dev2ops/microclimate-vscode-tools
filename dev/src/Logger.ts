@@ -110,7 +110,7 @@ export class Log {
         const label = `[${level}: ${getDateTime()}${caller}]:`;
         const msg: string = `${label} ${argsStr}${os.EOL}`;
 
-        return new Promise<void>( (resolve, _) => {
+        return new Promise<void>( (resolve) => {
             // Send the message to both the 'console' and the logfile.
             const consoleFn = level === this.Levels.ERROR ? console.error : console.log;
             if (args.length > 0) {

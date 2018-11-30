@@ -12,6 +12,11 @@ import Translator from "../../constants/strings/translator";
 import ProjectState from "../project/ProjectState";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 
+/**
+ * Receives and reacts to socket events from Portal
+ *
+ * Each Connection has exactly one socket
+ */
 export default class MCSocket {
 
     private static readonly STATUS_SUCCESS: string = "success";     // non-nls
@@ -155,6 +160,9 @@ export default class MCSocket {
                         Translator.t(StringNamespaces.DEFAULT, "restartDebugAttachFailure",
                         { startMode: StartModes.getUserFriendlyStartMode(startMode) })
                     );
+
+                    // restart is "done", and failed.
+                    return;
                 }
             }
             catch (err) {
