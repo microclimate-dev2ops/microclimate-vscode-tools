@@ -173,6 +173,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         // Logger.log(`${this.name} has a new status:`, this._state);
         if (changed) {
+            Log.d(`${this.name} has changed`);
             this.connection.onChange();
             this.tryRefreshProjectInfoPage();
         }
@@ -450,6 +451,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         if (changed) {
             this.tryRefreshProjectInfoPage();
             Log.d(`New autoBuild for ${this.name} is ${this._autoBuildEnabled}`);
+            // since setAutoBuild can be called outside of update(), we have to trigger the tree update here too
+            this.connection.onChange();
         }
 
         return changed;
