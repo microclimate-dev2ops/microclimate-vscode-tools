@@ -29,3 +29,6 @@ For the README packaged with this extension, see [the extension README](https://
 - Easily scope your VSCode workspace to a Microclimate project or your `microclimate-workspace`
 - Manually initiate project builds
 - Disable, Enable, and Delete projects
+
+## Contributing
+We welcome issues (make this a link) and contributions from the public! See [CONTRIBUTING.md](https://github.ibm.com/dev-ex/microclimate-vscode/tree/master/CONTRIBUTING.md)
