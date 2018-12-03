@@ -173,8 +173,9 @@ async function testConnection(connInfo: MCUtil.IConnectionInfo): Promise<Connect
 
 // microclimate_version and workspace_location were both added in Microclimate 18.09
 // Portal Restart API improvement was added in 18.11
-const requiredVersion: number = 1811;
-const requiredVersionStr: string = "18.11";     // non-nls
+const requiredVersion: number = 1812;
+const requiredVersionStr: string = "18.12";     // non-nls
+const internalBuildRx: RegExp = /^\d{4}_M\d+_[EI]/;
 
 /**
  * We've determined by this point that Microclimate is running at the given URI,
@@ -194,6 +195,8 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
         const rawVersion: string = mcEnvData.microclimate_version;
         const rawWorkspace: string = mcEnvData.workspace_location;
 
+        Log.d("rawVersion from Microclimate is", rawVersion);
+        Log.d("rawWorkspace from Microclimate is", rawWorkspace);
         if (rawVersion == null || rawWorkspace == null) {
             Log.e("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
             return reject(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: requiredVersionStr }));
@@ -204,6 +207,10 @@ async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData
             // This means it's being hosted by an internal MC dev.
             // There's nothing we can do here but assume they have all the features we need.
             Log.i("Dev version of Microclimate");
+            versionNum = Number.MAX_SAFE_INTEGER;
+        }
+        else if (rawVersion.match(internalBuildRx) != null) {
+            Log.i("Internal build of Microclimate");
             versionNum = Number.MAX_SAFE_INTEGER;
         }
         else {
