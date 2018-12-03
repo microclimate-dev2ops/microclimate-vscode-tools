@@ -77,7 +77,7 @@
 
         "versionNotProvided": "Your version of Microclimate is not supported. At least {{ requiredVersion }} is required.",
         "versionNotRecognized": "Could not determine your Microclimate version. The server is running version \"{{ rawVersion }}\". At least {{ requiredVersion }} is required.",
-        "versionTooOld": "`You are running Microclimate version {{ rawVersion }}, but at least {{ requiredVersion }} is required."
+        "versionTooOld": "You are running Microclimate version {{ rawVersion }}, but at least {{ requiredVersion }} is required."
     },
 
     "project": {
