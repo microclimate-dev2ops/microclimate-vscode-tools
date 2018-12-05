@@ -10,43 +10,43 @@
     "commandCategory": "Microclimate",
 
     "cmdID_newConnection": "ext.mc.newConnection",
-    "cmdTitle_newConnection": "New Microclimate connection",
+    "cmdTitle_newConnection": "New Microclimate Connection",
     "cmdDescr_newConnection": "Connect to a Microclimate instance",
 
     "cmdID_newDefaultConn": "ext.mc.newDefaultConnection",
-    "cmdTitle_newDefaultConn": "New default local Microclimate connection",
+    "cmdTitle_newDefaultConn": "New Default Local Microclimate Connection",
     "cmdDescr_newDefaultConn": "Connect to Microclimate at the default local URL http://localhost:9090",
 
     "cmdID_removeConn": "ext.mc.removeConnection",
-    "cmdTitle_removeConn": "Remove connection",
+    "cmdTitle_removeConn": "Remove Connection",
     "cmdDescr_removeConn": "Remove a Microclimate connection",
 
     "cmdID_refreshConnection": "ext.mc.refreshConnection",
-    "cmdTitle_refreshConnection": "Refresh connection",
+    "cmdTitle_refreshConnection": "Refresh Connection",
     "cmdDescr_refreshConnection": "Refresh a Microclimate connection",
 
     "cmdID_newMCProject": "ext.mc.createMCProject",
-    "cmdTitle_newMCProject": "Create new project",
+    "cmdTitle_newMCProject": "Create New Project",
     "cmdDescr_newMCProject": "Create a new Microclimate project",
 
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
-    "cmdTitle_openFolder": "Open folder as workspace",
+    "cmdTitle_openFolder": "Open Folder as Workspace",
     "cmdDescr_openFolder": "Open a folder as your VSCode workspace",
 
     "cmdID_openInBrowser": "ext.mc.openInBrowser",
-    "cmdTitle_openInBrowser": "Open in browser",
+    "cmdTitle_openInBrowser": "Open in Browser",
     "cmdDescr_openInBrowser": "Open a Microclimate instance or project in a browser",
 
     "cmdID_attachDebugger": "ext.mc.attachDebugger",
-    "cmdTitle_attachDebugger": "Attach debugger",
+    "cmdTitle_attachDebugger": "Attach Debugger",
     "cmdDescr_attachDebugger": "Attach the VSCode debugger to a Microclimate project",
 
     "cmdID_restartRun": "ext.mc.restartProjectRun",
-    "cmdTitle_restartRun": "Restart in Run mode",
+    "cmdTitle_restartRun": "Restart in Run Mode",
     "cmdDescr_restartRun": "Restart a Microclimate project in Run (normal) mode",
 
     "cmdID_restartDebug": "ext.mc.restartProjectDebug",
-    "cmdTitle_restartDebug": "Restart in Debug mode",
+    "cmdTitle_restartDebug": "Restart in Debug Mode",
     "cmdDescr_restartDebug": "Restart a Microclimate project in Debug mode",
 
     "cmdID_requestBuild": "ext.mc.requestBuild",
@@ -54,43 +54,43 @@
     "cmdDescr_requestBuild": "Manually start a project build in Microclimate",
 
     "cmdID_openBuildLog": "ext.mc.openBuildLog",
-    "cmdTitle_openBuildLog": "Show build log",
+    "cmdTitle_openBuildLog": "Show Build Log",
     "cmdDescr_openBuildLog": "Show a project's Microclimate build logs in the Output view",
 
     "cmdID_openAppLog": "ext.mc.openAppLog",
-    "cmdTitle_openAppLog": "Show application log",
+    "cmdTitle_openAppLog": "Show Application Log",
     "cmdDescr_openAppLog": "Show a project's Microclimate application logs in the Output view",
 
     "cmdID_hideLogs": "ext.mc.hideLogs",
-    "cmdTitle_hideLogs": "Hide logs",
+    "cmdTitle_hideLogs": "Hide Logs",
 
     "cmdID_projectInfo": "ext.mc.viewProjectInfo",
-    "cmdTitle_projectInfo": "Show project info",
-    "cmdDescr_projectInfo": "Show a project's Microclimate information",
+    "cmdTitle_projectInfo": "Open Project Overview",
+    "cmdDescr_projectInfo": "Open a project's Microclimate information",
 
     "cmdID_enable": "ext.mc.enable",
-    "cmdTitle_enable": "Enable project",
+    "cmdTitle_enable": "Enable Project",
     "cmdDescr_enable": "Enable a project in Microclimate",
 
     "cmdID_disable": "ext.mc.disable",
-    "cmdTitle_disable": "Disable project",
+    "cmdTitle_disable": "Disable Project",
     "cmdDescr_disable": "Disable a project in Microclimate",
 
     "cmdID_containerShell": "ext.mc.containerShell",
-    "cmdTitle_containerShell": "Open container shell",
+    "cmdTitle_containerShell": "Open Container Shell",
     "cmdDescr_containerShell": "Open a shell inside a project's application container",
 
     "cmdID_toggleAutoBuild": "ext.mc.toggleAutoBuild",
-    "cmdTitle_toggleAutoBuild": "Toggle auto build",
+    "cmdTitle_toggleAutoBuild": "Toggle Auto Build",
 
     "cmdID_enableAutoBuild": "ext.mc.enableAutoBuild",
-    "cmdTitle_enableAutoBuild": "Enable auto build",
+    "cmdTitle_enableAutoBuild": "Enable Auto Build",
 
     "cmdID_disableAutoBuild": "ext.mc.disableAutoBuild",
-    "cmdTitle_disableAutoBuild": "Disable auto build",
+    "cmdTitle_disableAutoBuild": "Disable Auto Build",
 
     "cmdID_openAppMonitor": "ext.mc.openAppMonitor",
-    "cmdTitle_openAppMonitor": "Open app monitor",
+    "cmdTitle_openAppMonitor": "Open Application Monitor",
     "cmdDescr_openAppMonitor": "Open a project's Application Monitor page in a browser",
 
     "cmdID_validate": "ext.mc.validate",
@@ -110,7 +110,7 @@
     "isConnection": "viewItem =~ /ext\\.mc\\.connectionItem*/",
     "isActiveConnection": "viewItem == ext.mc.connectionItem.active",
 
-    "isActiveConnectionOrEnabledProject":
+    "notused-isActiveConnectionOrEnabledProject":
         "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem.active)/",
 
     "isProject":                "viewItem =~ /ext\\.mc\\.projectItem*/",
