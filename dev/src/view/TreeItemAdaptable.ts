@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { IconPaths } from "../constants/Resources";
 
 /**
  * Interface to allow easily converting any object to a vscode TreeItem.
@@ -21,9 +22,11 @@ export class SimpleTreeItem implements ITreeItemAdaptable {
         public readonly initCollapseState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None,
         public readonly children: ITreeItemAdaptable[] = [],
         public readonly contextID?: string,
+        public readonly iconPaths?: IconPaths,
     ) {
        this.treeItem = new vscode.TreeItem(this.label, this.initCollapseState);
        this.treeItem.contextValue = contextID;
+       this.treeItem.iconPath = iconPaths;
     }
 
     public toTreeItem(): vscode.TreeItem {

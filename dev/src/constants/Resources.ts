@@ -62,6 +62,7 @@ export interface IconPaths {
 
 export enum Icons {
     Microclimate = "microclimate.svg",
+    Disconnected = "disconnected.svg",
     // project types
     Microprofile = "lang_java.svg",
     Spring       = "lang_java.svg",

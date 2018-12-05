@@ -151,10 +151,12 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
     public async getChildren(): Promise<ITreeItemAdaptable[]> {
         if (!this.connected) {
+            const disconnectedLabel = Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel");
             // The context ID can be any truthy string.
-            const disconnectedLabel = "❌  " + Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel");
             const disconnectedContextID = "disconnectedContextID"; // non-nls;
-            const disconnectedTI = new SimpleTreeItem(disconnectedLabel, undefined, undefined, disconnectedContextID);
+            const disconnectedTI = new SimpleTreeItem(
+                disconnectedLabel, undefined, undefined, disconnectedContextID, getIconPaths(Icons.Disconnected)
+            );
             return [ disconnectedTI ];
         }
 
