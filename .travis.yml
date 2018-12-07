@@ -1,15 +1,23 @@
-distro: Xenial
 env:
-  matrix:
-    secure: FA7K+PfQh4DOHnSGBYORZcj816+wrryFv3GBvYBHbXAd27Or0V8PyTRxm6SEwL79wC9EtNla8r0OZ/xZHMGYn86JFEGQNYvMWZXxH7nom4cV85tQTL2RIbQPC4U8TjEbQDr1aEj1O97SFjw/UfgIjcs1Kuuxu/VNx4zWO1Wcs8xbvXiuQAveWraCLV41ZEpzJrCm7ljnwBGpKTJ1fb3odneBngDBWw6ilJNkyZ0/Y4KJxuBG/H0YYAdyf4Z26JuAgdOcqvSZ1L1qIp5t4NRTuE9nhg0bnL2aAXvUq3DKK4twpAxaCNz+31qy6WeNYvhHvK0+mVXze7O0d35/tpq1NV7ta6q02WCh570KBrsEO57Lb0PbSSOm+37z5GBRAXDUrwTRZgKXI9BdlFeJ2DYzwv+nVaJrUkxOuWgGJzsJ/EZBf3XBiIFHvLqq/lTnf1Zfo0JoLIgBQqtG4uKg3NUzGl7b5KytBCcYVJGA52QwfyxKfAi0Dg8ts6wVDjAt0eVjpdeDTavXG0PeFyZ+vNofEfC1FkXaMJv03yOd4UMMcipGgJScSg18YqhU6rmeglLW9i6GzqbdfIA/2N3vnd1XGOjyAyS8GzvtLY5kylKFpQpdswvjw8LB1NCT+jmqZoEWPvtlG7Sv0iRf9K238Xc6Qc6nXYaiPMQEgoAusToJ3CQ=
+  global:
+  - do_artifactory_deploy="true"
+  - user_name="devexbld"
+  - user_email="devexbld@us.ibm.com"
+  - artifactory_url="https://sys-mcs-docker-local.artifactory.swg-devops.com/artifactory/sys-mcs-docker-local/microclimate-vscode/"
+  - secure: FA7K+PfQh4DOHnSGBYORZcj816+wrryFv3GBvYBHbXAd27Or0V8PyTRxm6SEwL79wC9EtNla8r0OZ/xZHMGYn86JFEGQNYvMWZXxH7nom4cV85tQTL2RIbQPC4U8TjEbQDr1aEj1O97SFjw/UfgIjcs1Kuuxu/VNx4zWO1Wcs8xbvXiuQAveWraCLV41ZEpzJrCm7ljnwBGpKTJ1fb3odneBngDBWw6ilJNkyZ0/Y4KJxuBG/H0YYAdyf4Z26JuAgdOcqvSZ1L1qIp5t4NRTuE9nhg0bnL2aAXvUq3DKK4twpAxaCNz+31qy6WeNYvhHvK0+mVXze7O0d35/tpq1NV7ta6q02WCh570KBrsEO57Lb0PbSSOm+37z5GBRAXDUrwTRZgKXI9BdlFeJ2DYzwv+nVaJrUkxOuWgGJzsJ/EZBf3XBiIFHvLqq/lTnf1Zfo0JoLIgBQqtG4uKg3NUzGl7b5KytBCcYVJGA52QwfyxKfAi0Dg8ts6wVDjAt0eVjpdeDTavXG0PeFyZ+vNofEfC1FkXaMJv03yOd4UMMcipGgJScSg18YqhU6rmeglLW9i6GzqbdfIA/2N3vnd1XGOjyAyS8GzvtLY5kylKFpQpdswvjw8LB1NCT+jmqZoEWPvtlG7Sv0iRf9K238Xc6Qc6nXYaiPMQEgoAusToJ3CQ=
+  - secure: kbpIOMjRjd7pnLn6bj6aIBs3dojVPzpz6Q4HhlnFBcvfUCCMiNZZXn2p66IHl724aS4NUocWv2zwypJGivmCvIWi9QxQ5WJWRTqlF4AvQxgRDUen0c5wDZ9+X/J1PthvnS2a21Yq1vwMJmnXjonlQ2ZpeEy7bJUB+cbofvckR1Qe6FEBWXWVTvv59JrqyqjMu9e1aUYXF8qlEUUBF3NF1V8AewyHg51Y7h7Ngn7nCeGkc0mgc5HVLnkhKCuOW3DT3hjgpwiCWkkrLsDgCscgI9Hv0EJKliHSOkwsENYMaSM29ZUYcusiraYxl369FwH6KTYw35jG+PL0Sj7lD6uQiOxwZWX2PZ+dbvlEUsATyzrfwghuyVkG7vaCPdpm0dK0FfMgVsd+tPlvgUWLfJ1lHpkOxiLXwg5eDQ3Tn60iU143DuCEGytx8jCaUbKz27nYLbtNDYDvz8AziHEL7//v25QPnDKbfwF34+vfYD6PwvAeQXEZeBfGJM1SyuNNdyGSP5tsPv4wTXSte3jmgcwcOgd+su31L//krTGoivoeS4MVE7f0PVLx7V3Xc6/3hUewXyGnb0FGydKMYx6LIYQzsFov0Ap/mk2QUQSz6ix1yzuVAVRcpBk/UVxKhA2B+A6aqPpLOEL7H/U5ifu4YJzz94B6UY1Tzs8hY1kny5O/hYM=
 
 branches:
   only:
   - master
 
 notifications:
-  on_success: change
-  on_failure: change
+  email:
+    recipients:
+      - timetchells@ibm.com
+      - devexbld@us.ibm.com
+    on_success: change
+    on_failure: change
 
 os:
 - linux
@@ -27,27 +35,31 @@ before_install:
 # Make sure compilation will succeed (vsce package won't show the compilation failures)
 # Fail the build if compile fails
 - npm run compile
-- npm run lint-f
+# Run the linter, could switch to lint-f to not fail the build
+- npm run lint
 
 script:
 - vsce package
 
 before_deploy:
-- git config --local user.name "devexbld"
-- git config --local user.email "devexbld@us.ibm.com"
-- export TRAVIS_TAG="nightly-$(date +'%F')"
+- git config --local user.name "$user_name"
+- git config --local user.email "$user_email"
+
+- export TRAVIS_TAG="nightly-$(date +'%F-%H%M')"
 - git tag $TRAVIS_TAG
 - export artifact_name="$(basename *.vsix)"
-- export tagged_artifact_name="${artifact_name/.vsix/$TRAVIS_TAG.vsix}"
+# Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07.vsix"
+- export tagged_artifact_name="${artifact_name/.vsix/_$TRAVIS_TAG.vsix}"
+
 - cd ..
 - cp -v dev/*.vsix "./$tagged_artifact_name"
-- "./publish.sh"
+- ./publish-artifactory.sh || true
 
 deploy:
   on:
     branch: master
+    condition: $TRAVIS_EVENT_TYPE = cron
   provider: releases
   api_key: "$gh_apikey"
   file: "$tagged_artifact_name"
   skip_cleanup: true
-
