@@ -1,57 +1,53 @@
 distro: Xenial
+env:
+  matrix:
+    secure: FA7K+PfQh4DOHnSGBYORZcj816+wrryFv3GBvYBHbXAd27Or0V8PyTRxm6SEwL79wC9EtNla8r0OZ/xZHMGYn86JFEGQNYvMWZXxH7nom4cV85tQTL2RIbQPC4U8TjEbQDr1aEj1O97SFjw/UfgIjcs1Kuuxu/VNx4zWO1Wcs8xbvXiuQAveWraCLV41ZEpzJrCm7ljnwBGpKTJ1fb3odneBngDBWw6ilJNkyZ0/Y4KJxuBG/H0YYAdyf4Z26JuAgdOcqvSZ1L1qIp5t4NRTuE9nhg0bnL2aAXvUq3DKK4twpAxaCNz+31qy6WeNYvhHvK0+mVXze7O0d35/tpq1NV7ta6q02WCh570KBrsEO57Lb0PbSSOm+37z5GBRAXDUrwTRZgKXI9BdlFeJ2DYzwv+nVaJrUkxOuWgGJzsJ/EZBf3XBiIFHvLqq/lTnf1Zfo0JoLIgBQqtG4uKg3NUzGl7b5KytBCcYVJGA52QwfyxKfAi0Dg8ts6wVDjAt0eVjpdeDTavXG0PeFyZ+vNofEfC1FkXaMJv03yOd4UMMcipGgJScSg18YqhU6rmeglLW9i6GzqbdfIA/2N3vnd1XGOjyAyS8GzvtLY5kylKFpQpdswvjw8LB1NCT+jmqZoEWPvtlG7Sv0iRf9K238Xc6Qc6nXYaiPMQEgoAusToJ3CQ=
 
 branches:
   only:
-    - master
+  - master
 
 notifications:
   on_success: change
   on_failure: change
 
 os:
-  - linux
+- linux
 
 language: node_js
-
 node_js:
- - "10"
+- '10'
 
 before_install:
-  # Copy the LICENSE into the extension directory, so it is included in the build
-  - cp -v LICENSE.* dev
-
-  - cd dev
-  - npm i -g vsce
-  - npm i
-
-  # Make sure compilation will succeed ( vsce package won't show the compilation failures >:( )
-  # Fail the build if compile fails
-  - npm run compile
-  # Run the linter, but don't let that block the build (might change this later)
-  - npm run lint-f
+#  Copy the LICENSE into the extension directory, so it is included in the build
+- cp -v LICENSE.* dev
+- cd dev
+- npm i -g vsce
+- npm i
+# Make sure compilation will succeed (vsce package won't show the compilation failures)
+# Fail the build if compile fails
+- npm run compile
+- npm run lint-f
 
 script:
-  - vsce package
+- vsce package
 
-after_success:
-  - cd ..
-  - ./publish.sh
+before_deploy:
+- git config --local user.name "devexbld"
+- git config --local user.email "devexbld@us.ibm.com"
+- export TRAVIS_TAG="nightly-$(date +'%F')"
+- git tag $TRAVIS_TAG
+- export artifact_name="$(basename *.vsix)"
+- export tagged_artifact_name="${artifact_name/.vsix/$TRAVIS_TAG.vsix}"
+- cd ..
+- cp -v dev/*.vsix "./$tagged_artifact_name"
+- "./publish.sh"
 
-#before_deploy:
-#  # cwd back to repo root
-#  - cd ..
-#  - cp -v dev/*.vsix .
-#  - export artifact_name="$(basename *.vsix)"
-#  - git config --local user.name "tetchel"
-#  - git config --local user.email "timetchells@ibm.com"
-#  - export TRAVIS_TAG="nightly-$(date +'%F_%H-%M_%Z')"
-#  - git tag $TRAVIS_TAG
-#
-#deploy:
-#  on:
-#    branch: master
-#    condition: $TRAVIS_EVENT_TYPE = cron
-#  provider: releases
-#  api_key: ???
-#  file: $artifact_name
-#  skip_cleanup: true
+deploy:
+  on:
+    branch: master
+  provider: releases
+  api_key: "$gh_apikey"
+  file: "$tagged_artifact_name"
+  skip_cleanup: true
+
