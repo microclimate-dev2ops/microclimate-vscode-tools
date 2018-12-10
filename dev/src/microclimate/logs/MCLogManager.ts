@@ -9,7 +9,6 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-
 import AppLog from "./AppLog";
 import BuildLog from "./BuildLog";
 import Connection from "../connection/Connection";

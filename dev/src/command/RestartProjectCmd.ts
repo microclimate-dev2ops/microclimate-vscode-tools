@@ -9,7 +9,6 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "../command/CommandUtil";
 import ProjectState from "../microclimate/project/ProjectState";

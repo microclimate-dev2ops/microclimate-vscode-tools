@@ -9,7 +9,6 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-
 // All of these must obviously match the namespace object keys in strings.json
 // Refer to these so that if the namespace names change we only have to update them here instead of everywhere we use that string.
 enum StringNamespaces {

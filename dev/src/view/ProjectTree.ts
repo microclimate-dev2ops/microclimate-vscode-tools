@@ -9,7 +9,6 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-
 import * as vscode from "vscode";
 
 import ITreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
