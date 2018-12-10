@@ -212,8 +212,7 @@ export default class MCSocket {
                 { projectName: project.name, startMode: StartModes.getUserFriendlyStartMode(startMode) }
             );
             Log.w(msg);
-            // TODO show this warning or not?
-            // vscode.window.showWarningMessage(msg);g
+            // vscode.window.showWarningMessage(msg);
         }
     }
 

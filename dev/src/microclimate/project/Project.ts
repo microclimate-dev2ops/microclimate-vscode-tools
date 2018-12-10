@@ -70,7 +70,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
 
-        // TODO should use projectType not buildType but it's missing sometimes
+        // should use projectType not buildType but it's missing sometimes
+        // https://github.ibm.com/dev-ex/portal/issues/520
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
 
         this.localPath = vscode.Uri.file(

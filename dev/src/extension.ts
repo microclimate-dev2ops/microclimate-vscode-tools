@@ -23,7 +23,6 @@ import StringNamespaces from "./constants/strings/StringNamespaces";
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
-    // TODO Any issue with having this in production?
     process.on("unhandledRejection", (err) => Log.e("Unhandled promise rejection:", err));
 
     // Initialize our globals

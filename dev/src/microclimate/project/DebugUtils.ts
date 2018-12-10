@@ -238,7 +238,8 @@ export default class DebugUtils {
                     address: project.connection.host,
                     port: project.debugPort,
                     localRoot: project.localPath.fsPath,
-                    // TODO user could change this in their dockerfile
+                    // User could change this in their dockerfile - but that would not fit with our import instructions
+                    // https://microclimate-dev2ops.github.io/importedprojects#nodejs-projects
                     remoteRoot: "/app",         // non-nls
                     restart: true
                 };
