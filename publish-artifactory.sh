@@ -6,6 +6,9 @@
 if [[ "$do_artifactory_deploy" != "true" ]]; then
     echo "$(basename $0): do_artifactory_deploy is not set to 'true', skipping."
     exit 0
+elif [[ "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
+    echo "$(basename $0): not a cronjob, skipping."
+    exit 0
 fi
 
 set -e

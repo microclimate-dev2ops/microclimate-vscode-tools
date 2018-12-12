@@ -41,25 +41,40 @@ before_install:
 script:
 - vsce package
 
-before_deploy:
+after_success:
 - git config --local user.name "$user_name"
 - git config --local user.email "$user_email"
 
-- export TRAVIS_TAG="nightly-$(date +'%F-%H%M')"
-- git tag $TRAVIS_TAG
+- export tag="nightly-$(date +'%F-%H%M')"
 - export artifact_name="$(basename *.vsix)"
 # Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07.vsix"
-- export tagged_artifact_name="${artifact_name/.vsix/_$TRAVIS_TAG.vsix}"
+- export tagged_artifact_name="${artifact_name/.vsix/_$tag.vsix}"
 
+# Back to repo root
 - cd ..
 - cp -v dev/*.vsix "./$tagged_artifact_name"
 - ./publish-artifactory.sh || true
 
-deploy:
-  on:
-    branch: master
-    condition: $TRAVIS_EVENT_TYPE = cron
-  provider: releases
-  api_key: "$gh_apikey"
-  file: "$tagged_artifact_name"
-  skip_cleanup: true
+#before_deploy:
+#- git config --local user.name "$user_name"
+#- git config --local user.email "$user_email"
+
+#- export TRAVIS_TAG="nightly-$(date +'%F-%H%M')"
+#- git tag $TRAVIS_TAG
+#- export artifact_name="$(basename *.vsix)"
+## Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07.vsix"
+#- export tagged_artifact_name="${artifact_name/.vsix/_$TRAVIS_TAG.vsix}"
+
+# Back to repo root
+#- cd ..
+#- cp -v dev/*.vsix "./$tagged_artifact_name"
+#- ./publish-artifactory.sh || true
+
+#deploy:
+  #on:
+    #branch: master
+    #condition: $TRAVIS_EVENT_TYPE = cron
+  #provider: releases
+  #api_key: "$gh_apikey"
+  #file: "$tagged_artifact_name"
+  #skip_cleanup: true
