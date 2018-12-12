@@ -1,44 +1,17 @@
 # Contributing
 
-Anyone can contribute to the Microclimate Tools for VSCode project, and we welcome your contributions!
+Anyone can contribute to the Microclimate Tools for VSCode project, and we welcome your contributions! [Visit us on Slack](https://slack-invite-ibm-cloud-tech.mybluemix.net/) if you have any questions.
 
 ## Raising issues
 
-Please raise any bug reports on the project's (put a link here). Be sure to search the list to see if your issue has already been raised.
+Please raise any bug reports [here](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues). Be sure to search the list to see if your issue has already been raised, and visit our [troubleshooting page](https://microclimate-dev2ops.github.io/mdt-vsc-troubleshooting) too.
 
-A good bug report is one that make it easy for everyone to understand what you were trying to do and what went wrong. Provide as much context as possible so we can try to recreate the issue.
+A good bug report is one that make it easy for everyone to understand what you were trying to do and what went wrong. Provide as much context as possible so we can try to recreate the issue. Please upload your extension logs with your issue report; instructions for this are also available on the [troubleshooting page](https://microclimate-dev2ops.github.io/mdt-vsc-troubleshooting).
 
 ## Developer Certificate of Origin
 
-If you are contributing changes via a pull request, you must sign-off those changes against the *Developer Certificate of Origin*
+If you are contributing changes via a pull request, you must sign-off those changes against the [Developer Certificate of Origin](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/DCO1.1.txt).
 
-```
-Developer's Certificate of Origin 1.1
-
-       By making a contribution to this project, I certify that:
-
-       (a) The contribution was created in whole or in part by me and I
-           have the right to submit it under the open source license
-           indicated in the file; or
-
-       (b) The contribution is based upon previous work that, to the best
-           of my knowledge, is covered under an appropriate open source
-           license and I have the right under that license to submit that
-           work with modifications, whether created in whole or in part
-           by me, under the same open source license (unless I am
-           permitted to submit under a different license), as indicated
-           in the file; or
-
-       (c) The contribution was provided directly to me by some other
-           person who certified (a), (b) or (c) and I have not modified
-           it.
-
-       (d) I understand and agree that this project and the contribution
-           are public and that a record of the contribution (including all
-           personal information I submit with it, including my sign-off) is
-           maintained indefinitely and may be redistributed consistent with
-           this project or the open source license(s) involved.
-```
-To sign off and indicate you have agreed to the DCO, include a message in the following format on each commit in the pull request
+To indicate you have read and agreed to the DCO, use [`git commit --signoff`](https://git-scm.com/docs/git-commit#git-commit---signoff). It should result in something like the following at the bottom of your commit message:
 
 ```DCO 1.1 Signed-off-by: Random J Developer <random@developer.org>```
