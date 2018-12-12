@@ -13,7 +13,9 @@
     ],
     "keywords": [
         "IBM",
-        "Microclimate"
+        "microclimate",
+        "docker",
+        "cicd"
     ],
     "activationEvents": [
         "onView:ext.mc.mcProjectExplorer",
@@ -24,7 +26,7 @@
     "main": "./out/extension",
     "repository": {
         "type": "git",
-        "url": "https://github.ibm.com/dev-ex/microclimate-vscode"
+        "url": "https://github.com/microclimate-dev2ops/microclimate-vscode-tools"
     },
     "icon": "res/img/microclimate.png",
     "contributes": {

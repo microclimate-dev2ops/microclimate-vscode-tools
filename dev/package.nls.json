@@ -1,6 +1,6 @@
 {
     "displayName": "Microclimate Tools for VSCode",
-    "description": "Download me to improve your Microclimate workflow :)",
+    "description": "Develop your Microclimate projects from within the comfort of your IDE.",
 
     "// Items starting with cmdID or viewID are not exposed to user": "",
 

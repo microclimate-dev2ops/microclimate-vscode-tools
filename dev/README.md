@@ -1,34 +1,29 @@
-# Microclimate Developer Tools for VSCode
+# Microclimate Developer Tools for VS Code
 
-Welcome to Microclimate Developer Tools for VSCode!
+You can use [Microclimate Developer Tools for Visual Studio Code](https://github.com/microclimate-dev2ops/microclimate-vscode-tools) to develop your [Microclimate](https://microclimate-dev2ops.github.io) projects from within VS Code. Use the tools to access Microclimate features in the comfort of your IDE.
 
-This is the README that is packaged into our extension.
+Join us [on Slack](https://slack-invite-ibm-cloud-tech.mybluemix.net) if you have any questions.
 
-## How to install
-1. [Download the newest build from the build branch](https://github.ibm.com/dev-ex/microclimate-vscode/raw/build/vscode-microclimate-tools-0.0.2.vsix)
-2. In VSCode, go `View` > `Extensions` > `...` overflow menu > `Install from VSIX...`
+## How to install [(Documentation)](https://microclimate-dev2ops.github.io/mdt-vsc-getting-started)
 
-## How to use
-- Open the Microclimate Projects view within the Explorer view group (`Ctrl/Cmd + Shift + E`),
-    - Right-click to create a default local connection.
-    - Right-click a project to see the actions available (see below)
-- Open the Command Pallete (`Ctrl/Cmd + Shift + P`) and type "Microclimate" to see the actions available
+1. Install [VS Code version 1.27 or later](https://code.visualstudio.com/download) and [local Microclimate version 18.12 or later](https://microclimate-dev2ops.github.io/installlocally).
+2. Install Microclimate Developer Tools for VS Code from the [VS Code Marketplace](https://marketplace.visualstudio.com/VSCode) or by searching for "Microclimate" in the [VS Code Extensions view](https://code.visualstudio.com/docs/editor/extension-gallery#_browse-for-extensions).
 
-## Features
-- View all projects in Microclimate, including their app and build statuses
-    - No linking required
-    - All projects are always visible, and the list updates automatically
-- Debug **Microprofile, Spring, and Node** Microclimate projects
-- Integrate Microclimate validation errors into the VSCode Problems view
-- Open a shell session into a Microclimate application container
-- View project info (similar to Microclimate Overview page)
-- Toggle project auto-build
-- Easily scope your VSCode workspace to a Microclimate project or your `microclimate-workspace`
-- Open applications in system browser
-- View application and build logs
-- Kick off application builds
-- Disable and Enable projects
+For development builds, see the [releases page](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/releases). Follow the [Install from a VSIX](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix) instructions to install.
 
-## Screenshots
+## How to use [(Documentation)](https://microclimate-dev2ops.github.io/mdt-vsc-tutorial)
+- Navigate to the **Explorer** view group and open the **Microclimate** view.
+    - Right-click the background of the Microclimate view to access the **New connection** commands.
+    - Right-click a connection or project to access the other commands.
+- Open the **Command Palette** keys and type "Microclimate" to see the actions available.
 
-![Project Actions:](https://github.ibm.com/dev-ex/microclimate-vscode/raw/master/img/project-context.png)
+## Features [(Documentation)](https://microclimate-dev2ops.github.io/mdt-vsc-commands-overview)
+- View all projects in Microclimate, including application and build statuses.
+- Debug Microprofile, Spring, and Node.js Microclimate projects.
+- View application and build logs in the VS Code **Output** view.
+- View project information similar to the information on the Microclimate **Overview** page.
+- Integrate Microclimate validation errors into the VS Code **Problems** view.
+- Open a shell session into a Microclimate application container.
+- Toggle project auto build and manually initiate project builds.
+- Scope your VS Code workspace to a Microclimate project or to your `microclimate-workspace`.
+- Disable, enable, and delete projects.
