@@ -1,7 +1,7 @@
 # Microclimate Developer Tools for VS Code
 
 [![Build Status](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools.svg?token=wpsJvyUkyhtfRa9prmMq&branch=master)](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools)
-[![License](https://img.shields.io/badge/License-EPL%201.0-red.svg)](https://opensource.org/licenses/EPL-1.0)
+[![License](https://img.shields.io/badge/License-EPL%202.0-red.svg)](https://www.eclipse.org/legal/epl-2.0/)
 [![Marketplace](https://img.shields.io/vscode-marketplace/v/IBM.microclimate-tools.svg)](https://marketplace.visualstudio.com/VSCode)
 
 - **[Marketplace](https://marketplace.visualstudio.com/VSCode)**

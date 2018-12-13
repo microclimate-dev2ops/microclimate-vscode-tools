@@ -15,7 +15,8 @@
         "IBM",
         "microclimate",
         "docker",
-        "cicd"
+        "cicd",
+        "cloud"
     ],
     "activationEvents": [
         "onView:ext.mc.mcProjectExplorer",
