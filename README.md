@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools.svg?token=wpsJvyUkyhtfRa9prmMq&branch=master)](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools)
 [![License](https://img.shields.io/badge/License-EPL%202.0-red.svg)](https://www.eclipse.org/legal/epl-2.0/)
-[![Marketplace](https://img.shields.io/vscode-marketplace/v/IBM.microclimate-tools.svg)](https://marketplace.visualstudio.com/VSCode)
+[![Marketplace](https://img.shields.io/vscode-marketplace/v/IBM.microclimate-tools.svg)](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)
 
-- **[Marketplace](https://marketplace.visualstudio.com/VSCode)**
+- **[Marketplace](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)**
 - **[Documentation](https://microclimate-dev2ops.github.io/mdt-vsc-overview)**
 - **[Slack](https://slack-invite-ibm-cloud-tech.mybluemix.net/)**
 - **[Extension README](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/dev/README.md)**
@@ -14,7 +14,7 @@ You can use Microclimate Developer Tools for Visual Studio Code to develop your 
 ## How to install [(Documentation)](https://microclimate-dev2ops.github.io/mdt-vsc-getting-started)
 
 1. Install [VS Code version 1.27 or later](https://code.visualstudio.com/download) and [local Microclimate version 18.12 or later](https://microclimate-dev2ops.github.io/installlocally).
-2. Install Microclimate Developer Tools for VS Code from the [VS Code Marketplace](https://marketplace.visualstudio.com/VSCode) or by searching for "Microclimate" in the [VS Code Extensions view](https://code.visualstudio.com/docs/editor/extension-gallery#_browse-for-extensions).
+2. Install Microclimate Developer Tools for VS Code from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools) or by searching for "Microclimate" in the [VS Code Extensions view](https://code.visualstudio.com/docs/editor/extension-gallery#_browse-for-extensions).
 
 For development builds, see the [releases page](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/releases). Follow the [Install from a VSIX](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix) instructions to install.
 
