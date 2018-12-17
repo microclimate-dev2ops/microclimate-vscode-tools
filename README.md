@@ -16,7 +16,7 @@ You can use Microclimate Developer Tools for Visual Studio Code to develop your 
 1. Install [VS Code version 1.27 or later](https://code.visualstudio.com/download) and [local Microclimate version 18.12 or later](https://microclimate-dev2ops.github.io/installlocally).
 2. Install Microclimate Developer Tools for VS Code from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools) or by searching for "Microclimate" in the [VS Code Extensions view](https://code.visualstudio.com/docs/editor/extension-gallery#_browse-for-extensions).
 
-For development builds, see the [releases page](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/releases). Follow the [Install from a VSIX](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix) instructions to install.
+If you want to host or build the extension yourself, see [Contributing](#contributing).
 
 ## How to use [(Documentation)](https://microclimate-dev2ops.github.io/mdt-vsc-tutorial)
 - Navigate to the **Explorer** view group and open the **Microclimate** view.
@@ -37,3 +37,7 @@ For development builds, see the [releases page](https://github.com/microclimate-
 
 ## Contributing
 We welcome [issues](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues) and contributions. For more information, see [CONTRIBUTING.md](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/tree/master/CONTRIBUTING.md).
+
+To host the extension yourself, clone this repository and run the **Extension** launch in `dev/.vscode/launch.json`. See [Developing Extensions](https://code.visualstudio.com/docs/extensions/developing-extensions) for more information.
+
+You can also build the extension yourself by running `vsce package` from `dev/`. Refer to the `before_install` and `script` sections of [`.travis.yml`](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/.travis.yml) to see the exact steps the build runs. After packaging, follow the [Install from a VSIX](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix) instructions to install your `.vsix`.
