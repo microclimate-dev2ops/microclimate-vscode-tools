@@ -22,7 +22,7 @@ import StringNamespaces from "./constants/strings/StringNamespaces";
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-blah
+// blah
     process.on("unhandledRejection", (err) => Log.e("Unhandled promise rejection:", err));
 
     // Initialize our globals
