@@ -19,17 +19,25 @@ fi
 
 echo "Build tag is $tag"
 
+# Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07-2330.vsix"
+tagged_artifact_name="${artifact_name/.vsix/_$tag.vsix}"
+mv -v "$artifact_name" "$tagged_artifact_name"
+
 # Update the last_build file linking to the most recent vsix
 build_info_file="last_build.html"
 #build_date="$(date +'%F_%H-%M_%Z')"
 commit_info="$(git log $TRAVIS_BRANCH -3 --pretty='%h by %an - %s<br>')"
+# This link is only really useful on DHE
 artifact_link="<a href=\"./$tagged_artifact_name\">$tagged_artifact_name</a>"
 printf "Last build: $artifact_link<br><br><b>Latest commits on $TRAVIS_BRANCH:<b><br>$commit_info" > "$build_info_file"
 
-artifactory_path="$artifactory_url/$deploy_dir"
+artifactory_path="${artifactory_path}${deploy_dir}"
+artifactory_full_url="${artifactory_url}/${artifactory_path}"
+echo "artifactory_full_url is $artifactory_full_url"
+
 artifactory_cred_header="X-JFrog-Art-Api: $artifactory_apikey"
 
-artf_resp=$(curl -X PUT -sS -H "$artifactory_cred_header" -T "$tagged_artifact_name" "$artifactory_path/$tagged_artifact_name"
+artf_resp=$(curl -X PUT -sS -H "$artifactory_cred_header" -T "$tagged_artifact_name" "$artifactory_full_url/$tagged_artifact_name")
 echo "$artf_resp"
 
 if [[ "$artf_resp" != *"created"* ]]; then
@@ -37,4 +45,4 @@ if [[ "$artf_resp" != *"created"* ]]; then
     exit 1
 fi
 
-curl -X PUT -sS  -H "$artifactory_cred_header" -T "$build_info_file" "$artifactory_path/$build_info_file"
+curl -X PUT -sS  -H "$artifactory_cred_header" -T "$build_info_file" "$artifactory_full_url/$build_info_file"

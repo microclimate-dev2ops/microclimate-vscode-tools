@@ -1,6 +1,7 @@
 branches:
   only:
   - master
+  - travis-test
 
 notifications:
   email:
