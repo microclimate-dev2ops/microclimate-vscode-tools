@@ -358,6 +358,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return this._lastImgBuild;
     }
 
+    public get hasContextRoot(): boolean {
+        return this.contextRoot != null && this.contextRoot !== "/";
+    }
+
     /**
      *
      * @return If this project's app port was changed.

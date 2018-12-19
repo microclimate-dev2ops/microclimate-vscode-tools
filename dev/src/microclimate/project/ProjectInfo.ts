@@ -96,6 +96,7 @@ export function generateHtml(project: Project): string {
                 ${buildRow("Last Image Build", formatDate(project.lastImgBuild, "Not available"))}
                 ${buildRow("Last Build", formatDate(project.lastBuild, "Not available"))}
                 ${emptyRow}
+                ${project.hasContextRoot ? buildRow("Context Root", "/" + project.contextRoot) : ""}
                 ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
                 ${buildRow("Application Port", getNonNull(project.appPort, "Not running"))}
                 ${buildRow("Debug Port", getNonNull(project.debugPort, "Not debugging"))}
