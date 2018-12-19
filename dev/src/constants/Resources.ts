@@ -43,18 +43,15 @@ export function getIconPaths(icon: Icons): IconPaths {
     const darkPath = getResourcePath(IMG_FOLDER_NAME, DARK_FOLDER_NAME, icon);
     // make sure the file exists and is readable
     fs.access(darkPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
-        if (err != null) {
-            Log.e(`Icon not found! ${icon} - error:`, err);
+        if (err) {
+            Log.e(`Dark icon not found! ${icon} - error:`, err);
         }
     });
 
-    let lightPath = getResourcePath(IMG_FOLDER_NAME, LIGHT_FOLDER_NAME, icon);
+    const lightPath = getResourcePath(IMG_FOLDER_NAME, LIGHT_FOLDER_NAME, icon);
     fs.access(lightPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
-        if (err != null) {
-            // The light icon does not exist or cannot be read, so we use the dark icon.
-            // This is normal if there is no corresponding light icon.
-            // Logger.log(`Light Icon not found! ${icon} - error:`, err);
-            lightPath = darkPath;
+        if (err) {
+            Log.e(`Light icon not found! ${icon} - error:`, err);
         }
     });
 

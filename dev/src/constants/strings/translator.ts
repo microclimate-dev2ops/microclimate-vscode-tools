@@ -9,7 +9,6 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-
 import * as i18next from "i18next";
 import * as i18nextBackend from "i18next-node-fs-backend";
 import * as path from "path";
