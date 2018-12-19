@@ -44,11 +44,11 @@ else
 fi
 
 # Update the last_build file linking to the most recent vsix
-build_info_file="last_build.txt"
+build_info_file="last_build.html"
 #build_date="$(date +'%F_%H-%M_%Z')"
 commit_info="$(git log master -3 --pretty='%h by %an - %s')"
-artifact_link="<a href=\"./$tagged_artifact_name\">Download</a>"
-printf "Last build: $tagged_artifact_name - $artifact_link\n\nLatest commits:\n$commit_info" > "$build_info_file"
+artifact_link="<a href=\"./$tagged_artifact_name\">$tagged_artifact_name</a>"
+printf "Last build: $artifact_link\n\nLatest commits:\n$commit_info" > "$build_info_file"
 
 pw_file=".password"
 echo $dhe_pw > $pw_file

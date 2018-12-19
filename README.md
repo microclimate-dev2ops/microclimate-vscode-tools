@@ -38,6 +38,8 @@ If you want to host or build the extension yourself, see [Contributing](#contrib
 ## Contributing
 We welcome [issues](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues) and contributions. For more information, see [CONTRIBUTING.md](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/tree/master/CONTRIBUTING.md).
 
-To host the extension yourself, clone this repository and run the **Extension** launch in `dev/.vscode/launch.json`. See [Developing Extensions](https://code.visualstudio.com/docs/extensions/developing-extensions) for more information.
+Development builds are available [here](https://public.dhe.ibm.com/ibmdl/export/pub/software/microclimate/vscode-tools/nightly/). Follow the [Install from a VSIX](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix) instructions to install a `.vsix`.
 
-You can also build the extension yourself by running `vsce package` from `dev/`. Refer to the `before_install` and `script` sections of [`.travis.yml`](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/.travis.yml) to see the exact steps the build runs. After packaging, follow the [Install from a VSIX](https://code.visualstudio.com/docs/editor/extension-gallery#_install-from-a-vsix) instructions to install your `.vsix`.
+To host the extension yourself so you can develop or debug it, clone this repository and run the **Extension** launch in `dev/.vscode/launch.json`. See [Developing Extensions](https://code.visualstudio.com/docs/extensions/developing-extensions) for more information.
+
+You can also build the extension `.vsix` yourself by running `vsce package` from `dev/`. Refer to the `before_install` and `script` sections of [`.travis.yml`](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/.travis.yml) to see the exact steps the build runs.
