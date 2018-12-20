@@ -7,7 +7,7 @@
     "engines": {
         "vscode": "^1.27.0"
     },
-    "license": "SEE LICENSE IN LICENSE.md",
+    "license": "See LICENSE",
     "categories": [
         "Other"
     ],
@@ -21,6 +21,7 @@
     "activationEvents": [
         "onView:ext.mc.mcProjectExplorer",
         "workspaceContains:**/.idc",
+        "workspaceContains:**/.cfignore",
         "onCommand:ext.mc.newConnection",
         "onCommand:ext.mc.newDefaultConnection"
     ],
@@ -319,7 +320,7 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test",
         "lint": "tslint -p ./tsconfig.json -t verbose",
         "lint-f": "tslint -p ./tsconfig.json -t verbose --force",
-        "copy-strings": "cp -v ./src/constants/strings/strings-*.json ./out/constants/strings/"
+        "copy-strings": "mkdir -p ./out/constants/strings/; cp -v ./src/constants/strings/strings-*.json ./out/constants/strings/"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",

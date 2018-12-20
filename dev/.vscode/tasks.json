@@ -9,59 +9,33 @@
             "problemMatcher": [
                 "$tsc-watch"
             ],
-            "isBackground": true,
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "isBackground": true
         },
         {
             "type": "npm",
             "script": "compile",
-            "problemMatcher": "$tsc-watch",
-            // "isBackground": false,
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "isBackground": false,
             "presentation": {
-                "echo": true,
                 "reveal": "silent",
-                "focus": false,
                 "panel": "shared",
                 "showReuseMessage": true,
-                "clear": false
+                "clear": true
             }
         },
         {
             "type": "npm",
             "script": "copy-strings",
+            "isBackground": false,
             "presentation": {
-                "echo": true,
                 "reveal": "silent",
-                "focus": false,
                 "panel": "shared",
                 "showReuseMessage": true,
-                "clear": false
-            }
-        },
-        {
-            "type": "npm",
-            "script": "lint",
-            "problemMatcher": "$tslint5",
-            "presentation": {
-                "echo": true,
-                "reveal": "silent",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
+                "clear": true
             }
         },
         {
             "label": "build",
-            "dependsOn": [ "npm: copy-strings", "npm: compile", "npm: lint" ],
-            "isBackground": true
+            "dependsOn": [ "npm: compile", "npm: copy-strings" ]
         }
     ]
 }

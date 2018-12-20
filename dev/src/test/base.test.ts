@@ -20,8 +20,7 @@ import Commands from "../constants/Commands";
 import SocketTestUtil from "./SocketTestUtil";
 import ProjectObserver from "./ProjectObserver";
 
-const workspace: vscode.Uri = vscode.Uri.file("/Users/tim/programs/microclimate/microclimate-workspace");
-const extensionName = "IBM.vscode-microclimate-tools";
+const extensionName = "IBM.microclimate-tools";
 
 describe("Microclimate Tools for VSCode basic test", async function() {
 
@@ -31,14 +30,12 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         const wsFolders = vscode.workspace.workspaceFolders;
         Log.t("Workspace folders:", wsFolders);
         expect(wsFolders).to.have.length.greaterThan(0);
-        if (wsFolders == null) {
-            throw new Error("WSFolders can't be null after here.");
-        }
-        expect(wsFolders[0].uri.fsPath).to.equal(workspace.fsPath);
+        const badWsMsg = "Active workspace is not a microclimate-workspace. Point the test launch configuration to your microclimate-workspace.";
+        expect(wsFolders![0].uri.fsPath.endsWith("microclimate-workspace"), badWsMsg).to.be.true;
 
         Log.t("Loaded extensions:", vscode.extensions.all.map( (ext) => ext.id));
         const extension = vscode.extensions.getExtension(extensionName);
-        expect(extension).to.exist;
+        expect(extension, `Extension ${extensionName} wasn't activated!`).to.exist;
 
         Log.t("Workspace is good and extension is loaded.");
         // Logger.silenceLevels(Logger.Levels.INFO);
