@@ -23,7 +23,10 @@ import ProjectState from "../microclimate/project/ProjectState";
 
 namespace TestUtil {
 
-    export const LONG_TIMEOUT = 2.5 * 60 * 1000;
+    export function getMinutes(mins: number): number {
+        return mins * 60 * 1000;
+    }
+
     const PROJECT_PREFIX = "test";
 
     export async function createProject(connection: Connection, type: ProjectType): Promise<Project> {
@@ -41,11 +44,12 @@ namespace TestUtil {
         if (type.language === ProjectType.Languages.JAVA) {
             // framework is "microprofile" or "spring"
             payload["framework"] = type.type.toLowerCase();
+            /*
             if (type.type === ProjectType.Types.MICROPROFILE) {
                 payload["contextroot"] = projectName;
-            }
+            }*/
         }
-        // I don't know where these strings come from.
+        // These strings must match the extension names in microclimate-workspace/.extensions
         else if (type.language === ProjectType.Languages.PYTHON) {
             payload["extension"] = "templateExample";
         }
@@ -103,7 +107,7 @@ namespace TestUtil {
         const project = await getProjectById(connection, projectID);
         Log.t(`Assert project ${project.name} is one of ${JSON.stringify(states)}`);
 
-        const failMsg = `assertProjectStarted failure: ` +
+        const failMsg = `assertProjectInState failure: ` +
             `Project ${project.name} is not in any of states: ${JSON.stringify(states)}, is instead ${project.state.appState}`;
 
         expect(states, failMsg).to.include(project.state.appState);

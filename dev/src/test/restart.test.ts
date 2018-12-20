@@ -42,17 +42,17 @@ interface ITestableProjectType {
 
 const projectTypesToTest: ITestableProjectType[] = [
     {
-        projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
+        projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
         canRestart: true
     },
     {
         projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
         canRestart: true
     },
-    // {
-    //     projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
-    //     canRestart: true
-    // },
+    {
+        projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
+        canRestart: true
+    },
     {
         projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
         canRestart: false
@@ -72,7 +72,7 @@ describe(`Restart tests`, async function() {
 
     before("Create test projects", async function() {
         // Long timeout because project creation is slow
-        this.timeout(60 * 10 * 1000);
+        this.timeout(TestUtil.getMinutes(10));
 
         connection = ConnectionManager.instance.connections[0];
         expect(connection, "No Microclimate connection").to.exist;
@@ -107,9 +107,9 @@ describe(`Restart tests`, async function() {
     });
 
     for (const testType of projectTypesToTest) {
-        let projectID:   string;
+        let projectID: string;
         let projectName: string;
-        const canRestart:  boolean = testType.canRestart;
+        const canRestart: boolean = testType.canRestart;
 
         it(`${testType.projectType} - should be able to acquire the test project we created, and wait for it to be Started`, async function() {
             Log.t(`Acquiring project of type ${testType.projectType}`);
@@ -120,7 +120,7 @@ describe(`Restart tests`, async function() {
             expect(projectID).to.exist;
             expect(projectName).to.exist;
             // Extra long timeout because it can take a long time for project to start the first time as the image builds
-            this.timeout(60 * 10 * 1000);
+            this.timeout(TestUtil.getMinutes(10));
 
             await ProjectObserver.instance.awaitProjectStarted(projectID);
             await TestUtil.assertProjectInState(connection, projectID, ...ProjectState.getStartedStates());
@@ -132,7 +132,7 @@ describe(`Restart tests`, async function() {
             Log.t(`Using ${testType.projectType} project ${projectName}`);
             await TestUtil.assertProjectInState(connection, projectID, ...ProjectState.getStartedStates());
 
-            this.timeout(TestUtil.LONG_TIMEOUT);
+            this.timeout(TestUtil.getMinutes(5));
 
             const success = await testRestart(await TestUtil.getProjectById(connection, projectID), false, canRestart);
             const failMsg = canRestart ? "Restart unexpectedly failed" : "Restart succeeded, but should have failed!";
@@ -149,8 +149,8 @@ describe(`Restart tests`, async function() {
 
         it(`${testType.projectType} - should ${canRestart ? "" : "NOT "}be able to restart the project in Debug mode`, async function() {
             expect(projectID, "Failed to get test project").to.exist;
-            await TestUtil.assertProjectInState(connection, projectID, ProjectState.AppStates.STARTED, ProjectState.AppStates.STARTING);
-            this.timeout(TestUtil.LONG_TIMEOUT);
+            await TestUtil.assertProjectInState(connection, projectID, ...ProjectState.getStartedStates());
+            this.timeout(TestUtil.getMinutes(5));
 
             Log.t(`Using ${testType.projectType} project ${projectName}`);
 
@@ -182,7 +182,7 @@ describe(`Restart tests`, async function() {
                 expect(projectID, "Failed to get test project").to.exist;
                 expect(debugReady, "Restart into debug mode failed, so we can't attach the debugger.").to.be.true;
 
-                this.timeout(TestUtil.LONG_TIMEOUT / 2);
+                this.timeout(TestUtil.getMinutes(2));
 
                 // It should have reached Debugging state in the previous test, so this should be fast
                 await ProjectObserver.instance.awaitProjectState(projectID, ProjectState.AppStates.DEBUGGING);

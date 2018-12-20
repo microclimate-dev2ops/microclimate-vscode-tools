@@ -93,7 +93,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.label = Translator.t(STRING_NS, "quickPickLabel", { projectName: this.name, projectType: this.type.type });
         // this.detail = this.id;
 
-        Log.d(`Created project ${this.name}:`, this);
+        Log.i(`Created project ${this.name}:`, this);
     }
 
     public getChildren(): ITreeItemAdaptable[] {
@@ -185,7 +185,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         // Logger.log(`${this.name} has a new status:`, this._state);
         if (changed) {
-            Log.d(`${this.name} has changed`);
+            // Log.d(`${this.name} has changed`);
             this.connection.onChange();
             this.tryRefreshProjectInfoPage();
         }
@@ -359,7 +359,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public get hasContextRoot(): boolean {
-        return this.contextRoot != null && this.contextRoot !== "/";
+        return this.contextRoot != null && this.contextRoot.length > 0 && this.contextRoot !== "/";
     }
 
     /**

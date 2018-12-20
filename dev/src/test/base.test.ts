@@ -20,7 +20,7 @@ import Commands from "../constants/Commands";
 import SocketTestUtil from "./SocketTestUtil";
 import ProjectObserver from "./ProjectObserver";
 
-const extensionName = "IBM.microclimate-tools";
+const extensionID = "IBM.microclimate-tools";
 
 describe("Microclimate Tools for VSCode basic test", async function() {
 
@@ -34,11 +34,12 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         expect(wsFolders![0].uri.fsPath.endsWith("microclimate-workspace"), badWsMsg).to.be.true;
 
         Log.t("Loaded extensions:", vscode.extensions.all.map( (ext) => ext.id));
-        const extension = vscode.extensions.getExtension(extensionName);
-        expect(extension, `Extension ${extensionName} wasn't activated!`).to.exist;
+        const extension = vscode.extensions.getExtension(extensionID);
+        expect(extension, `Extension ${extensionID} wasn't found!`).to.exist;
+        expect(extension!.isActive, `Extension ${extensionID} wasn't activated!`).to.be.true;
 
         Log.t("Workspace is good and extension is loaded.");
-        // Logger.silenceLevels(Logger.Levels.INFO);
+        // Log.silenceLevels(Log.Levels.DEBUG);
     });
 
     it("should have a log file file that is readable and non-empty", async function() {

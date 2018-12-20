@@ -26,6 +26,7 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test",
+                // Replace below with your local microclimate-workspace
                 "/Users/tim/programs/microclimate/microclimate-workspace/"
             ],
             "outFiles": [
