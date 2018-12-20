@@ -17,8 +17,18 @@
     margin-right: 10px;
 }
 
+table {
+    table-layout: fixed;
+}
+
 tr {
     padding-bottom: 0.25em;
+}
+
+.info-label {
+    font-weight: bold;
+    padding-right: 1em;
+    width: 125px;
 }
 
 input[type="checkbox"] {
@@ -75,9 +85,4 @@ input[type="checkbox"]:disabled {
 #delete-btn {
     background: darkred;
     border-color: darkred;
-}
-
-.info-label {
-    font-weight: bold;
-    padding-right: 1em;
 }
