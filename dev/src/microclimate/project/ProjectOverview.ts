@@ -36,7 +36,7 @@ export enum Openable {
     WEB = "web", FILE = "file", FOLDER = "folder"
 }
 
-export function refreshProjectInfo(webviewPanel: vscode.WebviewPanel, project: Project): void {
+export function refreshProjectOverview(webviewPanel: vscode.WebviewPanel, project: Project): void {
     webviewPanel.webview.html = generateHtml(project);
 }
 
@@ -128,7 +128,7 @@ export function generateHtml(project: Project): string {
 }
 
 function getStylesheetPath(): string {
-    return resourceScheme + Resources.getCss("project-info.css");
+    return resourceScheme + Resources.getCss("project-overview.css");
 }
 
 function getMCIconPath(): string {

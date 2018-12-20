@@ -152,8 +152,8 @@
                 "category": "%commandCategory%"
             },
             {
-                "command": "%cmdID_projectInfo%",
-                "title": "%cmdTitle_projectInfo%",
+                "command": "%cmdID_projectOverview%",
+                "title": "%cmdTitle_projectOverview%",
                 "category": "%commandCategory%"
             },
             {
@@ -240,7 +240,7 @@
                     "group": "ext.mc.a@0"
                 },
                 {
-                    "command": "%cmdID_projectInfo%",
+                    "command": "%cmdID_projectOverview%",
                     "when": "%isProject%",
                     "group": "ext.mc.a@1"
                 },

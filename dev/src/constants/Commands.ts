@@ -36,7 +36,7 @@ enum Commands {
     DISABLE_PROJECT = "ext.mc.disable",
     ENABLE_PROJECT = "ext.mc.enable",
     CONTAINER_SHELL = "ext.mc.containerShell",
-    VIEW_PROJECT_INFO = "ext.mc.viewProjectInfo",
+    PROJECT_OVERVIEW = "ext.mc.projectOverview",
     OPEN_APP_MONITOR = "ext.mc.openAppMonitor",
     VALIDATE = "ext.mc.validate",
 

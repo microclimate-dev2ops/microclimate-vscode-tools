@@ -23,7 +23,7 @@ import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ProjectPendingState from "./ProjectPendingState";
-import { refreshProjectInfo } from "./ProjectInfo";
+import { refreshProjectOverview } from "./ProjectOverview";
 import getContextID from "./ProjectContextID";
 
 const STRING_NS = StringNamespaces.PROJECT;
@@ -196,7 +196,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     private tryRefreshProjectInfoPage(): void {
         if (this.activeProjectInfo != null) {
             Log.d("Refreshing projectinfo");
-            refreshProjectInfo(this.activeProjectInfo, this);
+            refreshProjectOverview(this.activeProjectInfo, this);
         }
     }
 

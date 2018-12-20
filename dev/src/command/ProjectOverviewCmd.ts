@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import * as ProjectInfo from "../microclimate/project/ProjectInfo";
+import * as ProjectInfo from "../microclimate/project/ProjectOverview";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
@@ -23,8 +23,8 @@ import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import requestBuildCmd from "./RequestBuildCmd";
 
-export default async function projectInfoCmd(project: Project): Promise<void> {
-    Log.d("viewProjectInfoCmd invoked");
+export default async function projectOverviewCmd(project: Project): Promise<void> {
+    Log.d("projectOverviewCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
