@@ -42,4 +42,4 @@ Development builds are available [here](https://public.dhe.ibm.com/ibmdl/export/
 
 To host the extension yourself so you can develop or debug it, clone this repository and run the **Extension** launch in `dev/.vscode/launch.json`. See [Developing Extensions](https://code.visualstudio.com/docs/extensions/developing-extensions) for more information.
 
-You can also build the extension `.vsix` yourself by running `vsce package` from `dev/`. Refer to the `before_install` and `script` sections of [`.travis.yml`](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/.travis.yml) to see the exact steps the build runs.
+You can also build the extension `.vsix` yourself by running [`vsce package`](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#packaging-extensions) from `dev/`. Refer to the `before_install` and `script` sections of [`.travis.yml`](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/.travis.yml) to see the exact steps the build runs.
