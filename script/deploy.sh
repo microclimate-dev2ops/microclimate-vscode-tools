@@ -29,7 +29,7 @@ build_info_file="last_build.html"
 commit_info="$(git log $TRAVIS_BRANCH -3 --pretty='%h by %an - %s<br>')"
 # This link is only really useful on DHE
 artifact_link="<a href=\"./$tagged_artifact_name\">$tagged_artifact_name</a>"
-printf "Last build: $artifact_link<br><br><b>Latest commits on $TRAVIS_BRANCH:<b><br>$commit_info" > "$build_info_file"
+printf "Last build: $artifact_link<br><br><b>Latest commits on $TRAVIS_BRANCH:</b><br>$commit_info" > "$build_info_file"
 
 artifactory_path="${artifactory_path}${deploy_dir}"
 artifactory_full_url="${artifactory_url}/${artifactory_path}"
