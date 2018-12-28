@@ -14,6 +14,7 @@ import * as os from "os";
 import * as path from "path";
 import * as util from "util";
 import { ExtensionContext } from "vscode";
+import * as stacktrace from "stack-trace";
 
 // non-nls-file
 
@@ -97,11 +98,10 @@ export class Log {
         const argsStr: string = args.reduce( (result: string, arg: any): string => {
             if (arg instanceof Object) {
                 try {
+                    // Can fail eg on objects with circular references
                     arg = JSON.stringify(arg, undefined, 2);
                 }
                 catch (err) {
-                    // Can fail eg on objects with circular references
-                    // console.error("Error logging object:", arg);
                     arg = `*** Failed to log object`;
                 }
             }
@@ -112,13 +112,13 @@ export class Log {
 
         let caller = "";
         try {
-            caller = " " + getCaller();
+            caller = " " + this.getCaller();
         }
         catch (err) {
             console.error(err);
         }
 
-        const label = `[${level}: ${getDateTime()}${caller}]:`;
+        const label: string = `[${level}: ${getDateTime()}${caller}]:`;
         const msg: string = `${label} ${argsStr}${os.EOL}`;
 
         return new Promise<void>( (resolve) => {
@@ -139,76 +139,33 @@ export class Log {
             });
         });
     }
-}
 
-const callingFileRegex: RegExp  = /(\w+\.)?\w+\.(js|ts)/g;
-// const callingFnRegex: string    = `at\s(\w)+\s`;
-
-function getCaller(): string {
-    const stack = new Error().stack;
-    if (stack != null) {
-        const stackLines = stack.split("\n");
-        // console.log("stackLines:", stackLines);
-
-        // Work our way UP the stack until we hit a Logger function, then take the function call before that one.
-        for (const [i, line] of stackLines.reverse().entries()) {
-            if (line.includes(__filename)) {
-                const callerRaw: string = stackLines[i - 1].trim();
-                // the callerRaw line will look like this:
-                // "at activate (/Users/tim/programs/microclimate-vscode/dev/out/extension.js:13:21)"
-                // we want to format it into "extension.js.activate()"
-
-                // console.log("callerRaw", callerRaw);
-
-                // The second word is the function name (after "at")
-                const splitResult: string[] = callerRaw.split(" ");
-                let callerFn = "";
-                // Sometimes the function name will not be available in the stacktrace.
-                // In this case there will only be 2 words: "at /some/path".
-                if (splitResult.length > 2) {
-                    let functionName = splitResult[1];
-                    // console.log("FunctionName: " + functionName);
-                    // If it's a callback, there will be extra stuff we aren't interested in separated by dots
-                    // eg "Project.__dirname.constructor.connection.update"
-                    // strip out everything up to the last dot, if there is one
-                    const splitByPeriod: string[] = functionName.split(".");
-                    if (splitByPeriod.length > 1) {
-                        functionName = splitByPeriod[splitByPeriod.length - 1];
-                        // Ignore anonymous functions, because displaying that is not helpful.
-                        if (functionName !== "<anonymous>") {
-                            callerFn = `.${functionName}()`;
-                        }
-                    }
-                    else if (functionName === "new") {
-                        // This happens when it's a constructor (if the function is named "new", above if should execute instead)
-                        callerFn = `.<init>()`;
-                    }
-                }
-
-                // filepath will be like "(/Users/tim/programs/microclimate-vscode/dev/out/extension.js:13:21)"
-                // extract "extension.js"
-                const filepath = splitResult[splitResult.length - 1];
-
-                let callerFile = "";
-                const filenameMatches: RegExpMatchArray | null = filepath.match(callingFileRegex);
-                if (filenameMatches != null && filenameMatches.length > 0) {
-                    callerFile = filenameMatches[0];
-                }
-                // console.log(`callerFn "${callerFn}" callerFile "${callerFile}"`);
-
-                let lineNo: string = "";
-                const splitByColon = callerRaw.split(":");
-                if (splitByColon.length > 1) {
-                    // The last value is the column. The second-to-last value is the line number.
-                    lineNo = ":" + splitByColon[splitByColon.length - 2];
-                }
-
-                return `${callerFile}${callerFn}${lineNo}`;
-            }
+    private static getCaller(): string {
+        const stack = stacktrace.get(Log.logInner as unknown as () => void);
+        // 6 frames is the magic number to get around __awaiters, past the Log.x function, and up to the frame we care about.
+        const frame = stack[6];
+        if (frame == null) {
+            return "N/A";
         }
+
+        let methodName = frame.getMethodName() || frame.getFunctionName();
+        if (methodName != null) {
+            // If it's a callback, there will be extra stuff we aren't interested in separated by dots
+            // eg "Project.__dirname.constructor.connection.update"
+            // strip out everything up to the last dot, if there is one
+            const splitByPeriod: string[] = methodName.split(".");
+            if (splitByPeriod.length > 1) {
+                methodName = splitByPeriod[splitByPeriod.length - 1];
+            }
+            methodName = `.${methodName}()`;
+        }
+        else {
+            methodName = "";
+        }
+
+        const fileName = path.basename(frame.getFileName());
+        return `${fileName}${methodName}:${frame.getLineNumber()}`;
     }
-    console.error("Couldn't find caller line, filename is: " + __filename);
-    return "";
 }
 
 function getDateTime(): string {

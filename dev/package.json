@@ -193,9 +193,7 @@
                     "when": "never"
                 }
             ],
-            "view/title": [
-
-            ],
+            "view/title": [],
             "view/item/context": [
                 {
                     "command": "%cmdID_newConnection%",
@@ -205,8 +203,6 @@
                     "command": "%cmdID_newDefaultConn%",
                     "when": "%isInViewWithNothingSelected%"
                 },
-
-
                 {
                     "command": "%cmdID_openInBrowser%",
                     "when": "%isActiveConnection%",
@@ -232,8 +228,6 @@
                     "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.c@1"
                 },
-
-
                 {
                     "command": "%cmdID_openInBrowser%",
                     "when": "%isEnabledProject%",
@@ -332,6 +326,7 @@
         "@types/request-promise-native": "^1.0.15",
         "@types/socket.io-client": "^1.4.32",
         "@types/socketio-wildcard": "^2.0.1",
+        "@types/stack-trace": "0.0.29",
         "chai": "^4.2.0",
         "socketio-wildcard": "^2.0.0",
         "ts-node": "^7.0.1",
@@ -344,6 +339,7 @@
         "i18next-node-fs-backend": "^2.1.0",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",
-        "socket.io-client": "^2.1.1"
+        "socket.io-client": "^2.1.1",
+        "stack-trace": "0.0.10"
     }
 }
