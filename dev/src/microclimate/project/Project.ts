@@ -152,7 +152,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         let changed: boolean = false;
 
         if (!isRestart) {
-            // These will all be undefined since the restart event won't have them
+            // Ignore these if it's a restart because the restart event won't have them
             changed = this.setContainerID(projectInfo.containerId) || changed;
             changed = this.setLastBuild(projectInfo.lastbuild) || changed;
             // appImageLastBuild is a string

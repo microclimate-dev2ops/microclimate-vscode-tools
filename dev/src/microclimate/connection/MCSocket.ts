@@ -16,7 +16,7 @@ import Connection from "./Connection";
 import Project from "../project/Project";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
-import EventTypes from "./EventTypes";
+import SocketEvents from "./SocketEvents";
 import * as StartModes from "../../constants/StartModes";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Translator from "../../constants/strings/translator";
@@ -47,15 +47,15 @@ export default class MCSocket {
             .on("connect",      this.connection.onConnect)      // non-nls
             .on("disconnect",   this.connection.onDisconnect)   // non-nls
 
-            .on(EventTypes.PROJECT_CHANGED,         this.onProjectChanged)
-            .on(EventTypes.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
-            .on(EventTypes.PROJECT_CLOSED,          this.onProjectClosed)
+            .on(SocketEvents.Types.PROJECT_CHANGED,         this.onProjectChanged)
+            .on(SocketEvents.Types.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
+            .on(SocketEvents.Types.PROJECT_CLOSED,          this.onProjectClosed)
 
-            .on(EventTypes.PROJECT_DELETION,        this.onProjectDeleted)
-            .on(EventTypes.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
+            .on(SocketEvents.Types.PROJECT_DELETION,        this.onProjectDeleted)
+            .on(SocketEvents.Types.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
 
-            .on(EventTypes.CONTAINER_LOGS,          this.onContainerLogs)
-            .on(EventTypes.PROJECT_VALIDATED,       this.onProjectValidated);
+            .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
+            .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated);
 
             // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
@@ -107,7 +107,7 @@ export default class MCSocket {
         project.update(payload);
     }
 
-    private readonly onProjectClosed = async (payload: any): Promise<void> => {
+    private readonly onProjectClosed = async (payload: { projectID: string }): Promise<void> => {
         const project = await this.getProject(payload);
         if (project == null) {
             return;
@@ -117,7 +117,7 @@ export default class MCSocket {
         this.onProjectChanged(payload);
     }
 
-    private readonly onProjectDeleted = async (payload: any): Promise<void> => {
+    private readonly onProjectDeleted = async (payload: { projectID: string }): Promise<void> => {
         Log.i("PROJECT DELETED", payload);
 
         const project = await this.getProject(payload);
@@ -129,7 +129,7 @@ export default class MCSocket {
         this.connection.forceUpdateProjectList();
     }
 
-    private readonly onProjectRestarted = async (payload: any): Promise<void> => {
+    private readonly onProjectRestarted = async (payload: SocketEvents.IProjectRestartedEvent): Promise<void> => {
         Log.i("PROJECT RESTARTED", payload);
 
         const project = await this.getProject(payload);
@@ -141,14 +141,14 @@ export default class MCSocket {
         if (MCSocket.STATUS_SUCCESS !== payload.status) {
             Log.e(`Restart failed on project ${projectID}, response is`, payload);
             let err = Translator.t(StringNamespaces.DEFAULT, "genericErrorProjectRestart", { projectName: project.name });
-            if (payload.error != null && payload.error.msg != null) {
-                err = payload.error.msg;
+            if (payload.errorMsg != null) {
+                err = payload.errorMsg;
             }
             vscode.window.showErrorMessage(err);
             return;
         }
-        else if (payload.ports == null) {
-            // Should never happen
+        else if (payload.ports == null || payload.startMode == null) {
+            // If the status is "success" (as we just checked), these must both be set
             const msg = Translator.t(StringNamespaces.DEFAULT, "genericErrorProjectRestart", { projectName: project.name });
             vscode.window.showErrorMessage(msg);
             Log.e(msg + ", payload:", payload);
@@ -224,7 +224,7 @@ export default class MCSocket {
         }
     }
 
-    private readonly onContainerLogs = async (payload: any): Promise<void> => {
+    private readonly onContainerLogs = async (payload: { projectID: string, logs: string }): Promise<void> => {
         const projectID = payload.projectID;
         // const projectName = payload.projectName;
         const logContents = payload.logs;
@@ -235,13 +235,15 @@ export default class MCSocket {
         }
     }
 
-    private readonly onProjectValidated = async (payload: any): Promise<void> => {
+    private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
+        : Promise<void> => {
+
         const project = await this.getProject(payload);
         if (project == null) {
             return;
         }
 
-        Validator.validate(project, payload);
+        Validator.validate(project, payload.validationResults);
     }
 
     private readonly getProject = async (payload: any): Promise<Project | undefined> => {

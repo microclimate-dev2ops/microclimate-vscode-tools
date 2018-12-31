@@ -15,11 +15,11 @@ import * as io from "socket.io-client";
 // tslint:disable-next-line:no-require-imports
 import wildcard = require("socketio-wildcard");
 
-import EventTypes from "../constants/EventTypes";
 import Log from "../Logger";
+import SocketEvents from "../microclimate/connection/SocketEvents";
 
 export interface IExpectedSocketEvent {
-    readonly eventType: EventTypes;
+    readonly eventType: SocketEvents.Types;
     readonly projectID?: string;
     readonly expectedData?: { key: string, value: any };
     resolveFn?: (result: ISocketEventData) => void;

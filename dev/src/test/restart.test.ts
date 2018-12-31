@@ -28,7 +28,7 @@ import Connection from "../microclimate/connection/Connection";
 import TestUtil from "./TestUtil";
 import ProjectObserver from "./ProjectObserver";
 import SocketTestUtil from "./SocketTestUtil";
-import EventTypes from "../microclimate/connection/EventTypes";
+import SocketEvents from "../microclimate/connection/SocketEvents";
 import Requester from "../microclimate/project/Requester";
 
 interface ITestableProjectType {
@@ -232,7 +232,7 @@ export async function testRestart(project: Project, debug: boolean, shouldSuccee
     Log.t("Restart result matched expected; waiting now for Restart Result event");
 
     const socketData = await SocketTestUtil.expectSocketEvent({
-        eventType: EventTypes.PROJECT_RESTART_RESULT,
+        eventType: SocketEvents.Types.PROJECT_RESTART_RESULT,
         projectID: project.id
     });
 

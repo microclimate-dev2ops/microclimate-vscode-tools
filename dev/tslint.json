@@ -3,6 +3,7 @@
 	"rules": {
 		// Disable some recommended rules.
 		"member-ordering": false,
+		"no-consecutive-blank-lines": false,
 		"no-namespace": false,
 		"object-literal-sort-keys": false,
 		"object-literal-shorthand": false,

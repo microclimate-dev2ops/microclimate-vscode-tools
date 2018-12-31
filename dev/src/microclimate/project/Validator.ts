@@ -18,33 +18,14 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ProjectType from "./ProjectType";
 import Commands from "../../constants/Commands";
+import SocketEvents from "../connection/SocketEvents";
 
 namespace Validator {
 
-    // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts#L144
-    interface IValidationResult {
-        // severity: Severity;
-        severity: string;
-        filename: string;
-        filepath: string;
-        // type: ProblemType
-        label: string;
-        details: string;
-        quickfix?: {
-            fixID: string,
-            name: string,
-            description: string
-        };
-    }
+    export async function validate(project: Project, validationResult: SocketEvents.IValidationResult[]): Promise<void> {
 
-    export async function validate(project: Project, validationPayload: any): Promise<void> {
+        Log.d(`Validating project ${project.name}, validationResult is:`, validationResult);
 
-        Log.d(`Validating project ${project.name}, payload is:`, validationPayload);
-
-        const validationResults: IValidationResult[] = validationPayload.validationResults;
-        if (validationResults == null) {
-            Log.w("No validationResult in payload", validationPayload);
-        }
         // Logger.log("validationresult", validationPayload);
 
         // clicking on the error will take you to this URI
@@ -57,7 +38,7 @@ namespace Validator {
 
         // For each validation problem, see if we already have an error for it. If so, do nothing.
         // If we don't, create an error and display a pop-up notifying the user of the new error.
-        for (const validationProblem of validationResults) {
+        for (const validationProblem of validationResult) {
             Log.i("ValidationProblem:", validationProblem);
             const diagnosticMsg: string = validationProblem.details;
 
