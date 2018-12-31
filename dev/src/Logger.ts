@@ -13,8 +13,10 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as util from "util";
-import { ExtensionContext } from "vscode";
-import * as stacktrace from "stack-trace";
+import { ExtensionContext, Uri } from "vscode";
+import * as Stacktrace from "stack-trace";
+import * as CircularJson from "circular-json";
+import Project from "./microclimate/project/Project";
 
 // non-nls-file
 
@@ -99,10 +101,16 @@ export class Log {
             if (arg instanceof Object) {
                 try {
                     // Can fail eg on objects with circular references
-                    arg = JSON.stringify(arg, undefined, 2);
+                    // arg = JSON.stringify(arg, undefined, 2);
+                    arg = CircularJson.stringify(arg, replacer, 2);
                 }
                 catch (err) {
-                    arg = `*** Failed to log object`;
+                    if (err.message && err.message.includes("circular")) {
+                        arg = "*** Couldn't stringify circular object";
+                    }
+                    else {
+                        arg = `*** Failed to log object`;
+                    }
                 }
             }
 
@@ -141,7 +149,8 @@ export class Log {
     }
 
     private static getCaller(): string {
-        const stack = stacktrace.get(Log.logInner as unknown as () => void);
+        // get the stack trace above logInner. casting is necessary because the stack trace package only accepts () => void functions.
+        const stack = Stacktrace.get(Log.logInner as unknown as () => void);
         // 6 frames is the magic number to get around __awaiters, past the Log.x function, and up to the frame we care about.
         const frame = stack[6];
         if (frame == null) {
@@ -166,6 +175,17 @@ export class Log {
         const fileName = path.basename(frame.getFileName());
         return `${fileName}${methodName}:${frame.getLineNumber()}`;
     }
+}
+
+function replacer(name: string, val: any): string | undefined {
+    // Don't log the Connection fields on the Projects because they recur infinitely
+    if (name === "connection" && val instanceof Project) {
+        return undefined;
+    }
+    else if (val instanceof Uri) {
+        return val.toString();
+    }
+    return val;
 }
 
 function getDateTime(): string {

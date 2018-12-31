@@ -62,6 +62,14 @@ export default class MCSocket {
             // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
 
+    public toString(): string {
+        return "MCSocket @ " + this.uri;
+    }
+
+    public toJSON(): string {
+        return this.toString();
+    }
+
     /**
      * This MUST be called when the connection is removed.
      * If there are multiple sockets listening on the same connection,
