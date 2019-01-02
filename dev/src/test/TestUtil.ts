@@ -30,7 +30,7 @@ namespace TestUtil {
     const PROJECT_PREFIX = "test";
 
     export async function createProject(connection: Connection, type: ProjectType): Promise<Project> {
-        // acquireProject below will only look for projects starting with "test"
+        // acquireProject below will only look for projects starting with the project prefix
         const projectName: string = PROJECT_PREFIX + type.type.toLowerCase().replace(".", "") + Date.now().toString().slice(-8);
         Log.t(`Create project of type ${type} at ${connection.mcUri} named ${projectName}`);
 

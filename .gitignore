@@ -3,7 +3,7 @@ node_modules/
 .vscode-test/
 *.vsix
 
-.DS_STORE
+.DS_Store
 .nyc_output
 
 todo.txt

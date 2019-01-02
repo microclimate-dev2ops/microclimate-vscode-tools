@@ -423,6 +423,9 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         const changed = this._containerID !== oldContainerID;
         if (changed) {
             const asStr: string = this._containerID == null ? "undefined" : this._containerID.substring(0, 8);
+            if (asStr.length === 0) {
+                Log.w(`Empty containerID for ${this.name}`);
+            }
             Log.d(`New containerID for ${this.name} is ${asStr}`);
         }
         return changed;

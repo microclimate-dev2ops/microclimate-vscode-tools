@@ -46,7 +46,7 @@ export default class ProjectObserver {
         ConnectionManager.instance.addOnChangeListener(this.onChange);
     }
 
-    public onChange = async () => {
+    private onChange = async () => {
 
         const projects = await this.connection.getProjects();
         // Check if any of the projects pending creation have been created.
