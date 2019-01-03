@@ -89,22 +89,10 @@ namespace TestUtil {
         return createdProject;
     }
 
-    /**
-     * Since Project objects will get stale, if you want the actual current state, use this.
-     */
-    export async function getProjectById(connection: Connection, projectID: string): Promise<Project> {
-        const project = await connection.getProjectByID(projectID);
-        if (project == null) {
-            throw new Error(`Couldn't get project with ID ${projectID} on connection ${connection}`);
-        }
-        return project;
-    }
-
-    export async function assertProjectInState(connection: Connection, projectID: string, ...states: ProjectState.AppStates[]): Promise<void> {
+    export async function assertProjectInState(project: Project, ...states: ProjectState.AppStates[]): Promise<void> {
         if (states.length === 0) {
             Log.e("No states passed to assertProjectInState");
         }
-        const project = await getProjectById(connection, projectID);
         Log.t(`Assert project ${project.name} is one of ${JSON.stringify(states)}`);
 
         const failMsg = `assertProjectInState failure: ` +

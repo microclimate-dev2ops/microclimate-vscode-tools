@@ -25,14 +25,16 @@ describe(`Extended tests`, async function() {
 
         it(`${testType.projectType} - should be able to acquire the test project we created, and wait for it to be Started`, async function() {
             Log.t(`Acquiring project of type ${testType.projectType}`);
-            project = await TestUtil.getProjectById(Base.testConnection, testType.projectID!);
-            expect(project, "Failed to get test project").to.exist;
+            const project_ = await Base.testConnection.getProjectByID(testType.projectID!);
+            expect(project_, "Failed to get test project").to.exist;
+
+            project = project_!;
 
             // Extra long timeout because it can take a long time for project to start the first time as the image builds
             this.timeout(TestUtil.getMinutes(10));
 
             await ProjectObserver.instance.awaitProjectStarted(project.id);
-            await TestUtil.assertProjectInState(Base.testConnection, project.id, ...ProjectState.getStartedStates());
+            await TestUtil.assertProjectInState(project, ...ProjectState.getStartedStates());
             Log.t(`Acquisition of project ${project.name} succeeded`);
         });
 

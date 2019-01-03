@@ -43,26 +43,28 @@ describe(`Restart tests`, async function() {
 
         it(`${testType.projectType} - should be able to acquire the test project we created, and wait for it to be Started`, async function() {
             Log.t(`Acquiring project of type ${testType.projectType}`);
-            project = await TestUtil.getProjectById(Base.testConnection, testType.projectID!);
-            expect(project, "Failed to get test project").to.exist;
+            const project_ = await Base.testConnection.getProjectByID(testType.projectID!);
+            expect(project_, "Failed to get test project").to.exist;
+
+            project = project_!;
             Log.t(`Project name is ${project.name} and projectID is ${project.id}`);
 
             // Extra long timeout because it can take a long time for project to start the first time as the image builds
             this.timeout(TestUtil.getMinutes(10));
 
             await ProjectObserver.instance.awaitProjectStarted(project.id);
-            await TestUtil.assertProjectInState(Base.testConnection, project.id, ...ProjectState.getStartedStates());
+            await TestUtil.assertProjectInState(project, ...ProjectState.getStartedStates());
             Log.t(`Acquisition of project ${project.name} succeeded`);
         });
 
         it(`${testType.projectType} - should ${canRestart ? "" : "NOT "}be able to restart the project in Run mode`, async function() {
             expect(project, "Failed to get test project").to.exist;
             Log.t(`Using ${testType.projectType} project ${project.name}`);
-            await TestUtil.assertProjectInState(Base.testConnection, project.id, ...ProjectState.getStartedStates());
+            await TestUtil.assertProjectInState(project, ...ProjectState.getStartedStates());
 
             this.timeout(TestUtil.getMinutes(5));
 
-            const success = await testRestart(await TestUtil.getProjectById(Base.testConnection, project.id), false, canRestart);
+            const success = await testRestart(project, false, canRestart);
             const failMsg = canRestart ? "Restart unexpectedly failed" : "Restart succeeded, but should have failed!";
             Log.t(`Restart into run mode ${success ? "succeeded" : "failed"}`);
             expect(success, failMsg).to.equal(canRestart);
@@ -77,12 +79,12 @@ describe(`Restart tests`, async function() {
 
         it(`${testType.projectType} - should ${canRestart ? "" : "NOT "}be able to restart the project in Debug mode`, async function() {
             expect(project.id, "Failed to get test project").to.exist;
-            await TestUtil.assertProjectInState(Base.testConnection, project.id, ...ProjectState.getStartedStates());
+            await TestUtil.assertProjectInState(project, ...ProjectState.getStartedStates());
             this.timeout(TestUtil.getMinutes(5));
 
             Log.t(`Using ${testType.projectType} project ${project.name}`);
 
-            const success = await testRestart(await TestUtil.getProjectById(Base.testConnection, project.id), true, canRestart);
+            const success = await testRestart(project, true, canRestart);
 
             const failMsg = canRestart ? "Restart unexpectedly failed" : "Restart succeeded, but should have failed!";
             expect(success, failMsg).to.equal(canRestart);
@@ -174,7 +176,7 @@ export async function testRestart(project: Project, debug: boolean, shouldSuccee
     await ProjectObserver.instance.awaitAppState(project.id, terminalState);
     Log.t("Project restart was successful");
 
-    const state = (await TestUtil.getProjectById(project.connection, project.id)).state;
+    const state = project.state;
     expect(state.appState, `Project restart appeared to succeed, but project is not ${terminalState}, is instead ${state}`).to.equal(terminalState);
 
     Log.t(`Done testing restart for ${project.name} into ${terminalState} mode`);
