@@ -27,8 +27,8 @@ interface IProjectStateAwaiting {
 
 export default class ProjectObserver {
 
-    private readonly projectsPendingState: IProjectStateAwaiting[] = [];
-    private readonly projectsPendingCreation: IProjectCreationAwaiting[] = [];
+    private projectPendingState: IProjectStateAwaiting | undefined;
+    private projectsPendingCreation: IProjectCreationAwaiting[] = [];
 
     private static _instance: ProjectObserver;
 
@@ -44,6 +44,15 @@ export default class ProjectObserver {
     ) {
         ProjectObserver._instance = this;
         ConnectionManager.instance.addOnChangeListener(this.onChange);
+
+        setInterval( () => {
+            if (this.projectPendingState != null) {
+                Log.t(`Waiting for ${this.projectPendingState.projectID} to be ${this.projectPendingState.states.join(" or ")}`);
+            }
+            if (this.projectsPendingCreation.length > 0) {
+                Log.t("Project(s) pending creation: " + this.projectsPendingCreation.join(", "));
+            }
+        }, 30000);
     }
 
     private onChange = async () => {
@@ -60,46 +69,45 @@ export default class ProjectObserver {
             }
         }
 
-        // Check if any of the projects awaiting a state have reached that state.
-        for (let i = this.projectsPendingState.length - 1; i >= 0; i--) {
-            const pendingProject = this.projectsPendingState[i];
-            this.connection.getProjectByID(pendingProject.projectID)
+        if (this.projectPendingState != null) {
+            this.connection.getProjectByID(this.projectPendingState.projectID)
                 .then( (project) => {
                     if (project == null) {
-                        Log.e("Couldn't get project with ID " + pendingProject.projectID);
-                        this.projectsPendingState.splice(i, 1);
+                        Log.e("Couldn't get project with ID " + this.projectPendingState!.projectID);
+                        this.projectPendingState = undefined;
                     }
-                    else if (pendingProject.states.includes(project.state.appState)) {
+                    else if (this.projectPendingState!.states.includes(project.state.appState)) {
                         Log.t(`Project ${project.name} reached pending state ${project.state}`);
-                        pendingProject.resolveFunc();
-                        this.projectsPendingState.splice(i, 1);
+                        this.projectPendingState!.resolveFunc();
+                        this.projectPendingState = undefined;
                     }
                 });
         }
     }
 
     public onDelete(projectID: string): void {
-        this.projectsPendingState.find( (project, i) => {
-            if (project.projectID === projectID) {
-                Log.t("No longer observing project " + projectID);
-                this.projectsPendingState.splice(i, 1);
-                return true;
-            }
-            return false;
-        });
+        if (this.projectPendingState != null && projectID === this.projectPendingState.projectID) {
+            Log.t("No longer observing project " + projectID);
+            this.projectPendingState = undefined;
+        }
     }
 
     public async awaitProjectStarted(projectID: string): Promise<void> {
-        return this.awaitProjectState(projectID, ...ProjectState.getStartedStates());
+        return this.awaitAppState(projectID, ...ProjectState.getStartedStates());
     }
 
     /**
      * This is really similar to Project.waitForState,
      * but we don't want to have to call that from tests because it will interfere with normal execution.
      */
-    public async awaitProjectState(projectID: string, ...states: ProjectState.AppStates[]): Promise<void> {
+    public async awaitAppState(projectID: string, ...states: ProjectState.AppStates[]): Promise<void> {
         if (states.length === 0) {
             const msg = "ProjectObserver: Must provide at least one state to wait for";
+            Log.e(msg);
+            throw new Error(msg);
+        }
+        else if (this.projectPendingState != null) {
+            const msg = "Already awaiting on another project: " + JSON.stringify(this.projectPendingState);
             Log.e(msg);
             throw new Error(msg);
         }
@@ -117,13 +125,13 @@ export default class ProjectObserver {
         Log.t(`Wait for ${project.name} to be ${JSON.stringify(states)}, is currently ${project.state.appState}`);
 
         return new Promise<void> ( (resolve) => {
-            this.projectsPendingState.push({
+            this.projectPendingState = {
                 projectID: project.id,
                 states: states,
                 resolveFunc: resolve
-            });
+            };
 
-            Log.t(`projectsPendingState are now: ${JSON.stringify(this.projectsPendingState)}`);
+            Log.t(`projectPendingState is now: ${JSON.stringify(this.projectPendingState)}`);
         });
     }
 
@@ -134,7 +142,7 @@ export default class ProjectObserver {
                 resolveFunc: resolve
             });
 
-            Log.t(`projectsPendingCreation are now: ${JSON.stringify(this.projectsPendingCreation)}`);
+            Log.t(`projectsPendingCreation are now:`, this.projectsPendingCreation);
         });
     }
 }

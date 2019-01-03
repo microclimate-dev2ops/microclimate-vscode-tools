@@ -13,44 +13,51 @@ import ProjectType from "../microclimate/project/ProjectType";
 
 namespace TestConfig {
     interface ITestableProjectType {
-        // change this variable to run the tests on this type
+        // change this to run the tests on this type
         runTest: boolean;
 
         projectType: ProjectType;
         // We want to tests projects that can't be restarted too,
         // so tell the test whether or not the restart should succeed here.
         canRestart: boolean;
+
+        // Set this after the project is created
         projectID?: string;
-        projectName?: string;
     }
 
     const allProjectTypes: ITestableProjectType[] = [
         {
             runTest: true,
+            // runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
             canRestart: true
         },
         {
-            runTest: false,
+            runTest: true,
+            // runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
             canRestart: true
         },
         {
-            runTest: false,
+            runTest: true,
+            // runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
             canRestart: true
         },
         {
-            runTest: false,
-            projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
-            canRestart: false
-        },
-        {
+            // runTest: true,
             runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.SWIFT, ProjectType.Languages.SWIFT),
             canRestart: false
         },
         {
+            runTest: true,
+            // runTest: false,
+            projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
+            canRestart: false
+        },
+        {
+            // runTest: true,
             runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.GO),
             canRestart: false

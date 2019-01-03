@@ -13,6 +13,9 @@ import { expect } from "chai";
 import * as vscode from "vscode";
 
 import * as Base from "./Base.test";
+// Import Extended tests so Restart tests execute after Extended.
+import * as Extended from "./Extended.test";
+Extended;
 
 import Project from "../microclimate/project/Project";
 import Log from "../Logger";
@@ -34,34 +37,32 @@ describe(`Restart tests`, async function() {
     });
 
     for (const testType of TestConfig.projectTypesToTest) {
-        let projectID: string;
-        let projectName: string;
+        // These can't be set here because the base test has to execute first
+        let project: Project;
         const canRestart: boolean = testType.canRestart;
 
         it(`${testType.projectType} - should be able to acquire the test project we created, and wait for it to be Started`, async function() {
             Log.t(`Acquiring project of type ${testType.projectType}`);
-            projectID = testType.projectID!;
-            projectName = testType.projectName!;
-            Log.t(`Project name is ${projectName} and projectID is ${projectID}`);
+            project = await TestUtil.getProjectById(Base.testConnection, testType.projectID!);
+            expect(project, "Failed to get test project").to.exist;
+            Log.t(`Project name is ${project.name} and projectID is ${project.id}`);
 
-            expect(projectID).to.exist;
-            expect(projectName).to.exist;
             // Extra long timeout because it can take a long time for project to start the first time as the image builds
             this.timeout(TestUtil.getMinutes(10));
 
-            await ProjectObserver.instance.awaitProjectStarted(projectID);
-            await TestUtil.assertProjectInState(Base.testConnection, projectID, ...ProjectState.getStartedStates());
-            Log.t(`Acquisition of project ${projectName} succeeded`);
+            await ProjectObserver.instance.awaitProjectStarted(project.id);
+            await TestUtil.assertProjectInState(Base.testConnection, project.id, ...ProjectState.getStartedStates());
+            Log.t(`Acquisition of project ${project.name} succeeded`);
         });
 
         it(`${testType.projectType} - should ${canRestart ? "" : "NOT "}be able to restart the project in Run mode`, async function() {
-            expect(projectID, "Failed to get test project").to.exist;
-            Log.t(`Using ${testType.projectType} project ${projectName}`);
-            await TestUtil.assertProjectInState(Base.testConnection, projectID, ...ProjectState.getStartedStates());
+            expect(project, "Failed to get test project").to.exist;
+            Log.t(`Using ${testType.projectType} project ${project.name}`);
+            await TestUtil.assertProjectInState(Base.testConnection, project.id, ...ProjectState.getStartedStates());
 
             this.timeout(TestUtil.getMinutes(5));
 
-            const success = await testRestart(await TestUtil.getProjectById(Base.testConnection, projectID), false, canRestart);
+            const success = await testRestart(await TestUtil.getProjectById(Base.testConnection, project.id), false, canRestart);
             const failMsg = canRestart ? "Restart unexpectedly failed" : "Restart succeeded, but should have failed!";
             Log.t(`Restart into run mode ${success ? "succeeded" : "failed"}`);
             expect(success, failMsg).to.equal(canRestart);
@@ -75,13 +76,13 @@ describe(`Restart tests`, async function() {
         const debugDelay = 10000;
 
         it(`${testType.projectType} - should ${canRestart ? "" : "NOT "}be able to restart the project in Debug mode`, async function() {
-            expect(projectID, "Failed to get test project").to.exist;
-            await TestUtil.assertProjectInState(Base.testConnection, projectID, ...ProjectState.getStartedStates());
+            expect(project.id, "Failed to get test project").to.exist;
+            await TestUtil.assertProjectInState(Base.testConnection, project.id, ...ProjectState.getStartedStates());
             this.timeout(TestUtil.getMinutes(5));
 
-            Log.t(`Using ${testType.projectType} project ${projectName}`);
+            Log.t(`Using ${testType.projectType} project ${project.name}`);
 
-            const success = await testRestart(await TestUtil.getProjectById(Base.testConnection, projectID), true, canRestart);
+            const success = await testRestart(await TestUtil.getProjectById(Base.testConnection, project.id), true, canRestart);
 
             const failMsg = canRestart ? "Restart unexpectedly failed" : "Restart succeeded, but should have failed!";
             expect(success, failMsg).to.equal(canRestart);
@@ -95,43 +96,41 @@ describe(`Restart tests`, async function() {
 
             // Wait 5 seconds, this helps resolve some timing issues with debugger base.testConnection.
             await TestUtil.wait(debugDelay, "Giving debugger connect a chance to complete");
-            await assertDebugSessionExists(projectName);
+            await assertDebugSessionExists(project.name);
             Log.t("Debugger connect succeeded");
 
             // Now wait for it to enter Debugging state (much slower for Liberty)
-            await ProjectObserver.instance.awaitProjectState(projectID, ProjectState.AppStates.DEBUGGING);
+            await ProjectObserver.instance.awaitAppState(project.id, ProjectState.AppStates.DEBUGGING);
             debugReady = true;
             Log.t("Debug restart test passed");
         });
 
         if (canRestart) {
             it(`${testType.projectType} - should be able to attach the debugger to the same Debugging project`, async function() {
-                expect(projectID, "Failed to get test project").to.exist;
+                expect(project, "Failed to get test project").to.exist;
                 expect(debugReady, "Restart into debug mode failed, so we can't attach the debugger.").to.be.true;
 
                 this.timeout(TestUtil.getMinutes(2));
 
                 // It should have reached Debugging state in the previous test, so this should be fast
-                await ProjectObserver.instance.awaitProjectState(projectID, ProjectState.AppStates.DEBUGGING);
+                await ProjectObserver.instance.awaitAppState(project.id, ProjectState.AppStates.DEBUGGING);
 
-                const project = await TestUtil.getProjectById(Base.testConnection, projectID);
                 await vscode.commands.executeCommand(Commands.ATTACH_DEBUGGER, project);
                 await TestUtil.wait(debugDelay, "Giving debugger connect a chance to complete again");
-                await assertDebugSessionExists(projectName);
+                await assertDebugSessionExists(project.name);
 
                 Log.t("Debugger connect succeeded again");
             });
         }
 
         it(`should clean up the test project`, async function() {
-            if (projectID != null) {
+            if (project != null) {
                 try {
-                    const project = await TestUtil.getProjectById(Base.testConnection, projectID);
                     await Requester.requestDelete(project);
-                    ProjectObserver.instance.onDelete(projectID);
+                    ProjectObserver.instance.onDelete(project.id);
                 }
                 catch (err) {
-                    Log.t(`Error deleting project ${projectName}:`, err);
+                    Log.t(`Error deleting project ${project.name}:`, err);
                 }
             }
             else {
@@ -167,12 +166,12 @@ export async function testRestart(project: Project, debug: boolean, shouldSuccee
 
     Log.t("Received good Restart Result event, waiting now for project restart state changes");
 
-    // There _might_ be a timing issue here if the project exits the Starting state really quickly.
-    const startingState = debug ? ProjectState.AppStates.DEBUG_STARTING : ProjectState.AppStates.STARTING;
-    await ProjectObserver.instance.awaitProjectState(project.id, startingState);
+    // I have seen timing issues here if the project exits the Starting state really quickly.
+    // const startingState = debug ? ProjectState.AppStates.DEBUG_STARTING : ProjectState.AppStates.STARTING;
+    // await ProjectObserver.instance.awaitProjectState(project.id, startingState);
 
     const terminalState = debug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
-    await ProjectObserver.instance.awaitProjectState(project.id, terminalState);
+    await ProjectObserver.instance.awaitAppState(project.id, terminalState);
     Log.t("Project restart was successful");
 
     const state = (await TestUtil.getProjectById(project.connection, project.id)).state;

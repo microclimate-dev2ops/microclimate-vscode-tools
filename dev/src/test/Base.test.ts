@@ -116,7 +116,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         const createPromises: Array<Promise<Project | undefined>> = [];
         TestConfig.projectTypesToTest.forEach( (_, i) => {
             const testType = TestConfig.projectTypesToTest[i];
-            Log.t("Create project of type: " + JSON.stringify(testType.projectType));
+            Log.t(`Create ${testType.projectType.type} project`);
 
             const createPromise = TestUtil.createProject(testConnection, testType.projectType);
             createPromises.push(createPromise);
@@ -125,7 +125,6 @@ describe("Microclimate Tools for VSCode basic test", async function() {
                 .then( (p) => {
                     if (p != null) {
                         testType.projectID = p.id;
-                        testType.projectName = p.name;
                         Log.t(`Created test project of type ${p.type.type} with name ${p.name} and ID ${p.id}`);
                     }
                     else {

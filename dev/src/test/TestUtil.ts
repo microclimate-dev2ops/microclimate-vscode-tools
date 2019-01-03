@@ -180,7 +180,8 @@ namespace TestUtil {
             return activeDbSession.customRequest("disconnect", { terminateDebuggee: false, restart: false })
                 .then(
                     ()      => Log.t(`Disconnected debug session "${activeDbSession.name}"`),
-                    (err)   => Log.t(`Error disconnecting from debug session ${activeDbSession.name}:`, err)
+                    // Sometimes this will fail, don't worry about it
+                    (err)   => Log.t(`Error disconnecting from debug session ${activeDbSession.name}:`, err.message || err)
                 );
         }
 
