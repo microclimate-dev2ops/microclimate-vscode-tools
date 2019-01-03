@@ -60,6 +60,18 @@ describe(`Extended tests`, async function() {
             Log.t(project.name + " restarted after a build request");
         });
 
+        it(`${testType.projectType} - should disable and re-enable auto-build`, async function() {
+            expect(project, "Failed to get test project").to.exist;
+
+            this.timeout(TestUtil.getMinutes(1));
+            expect(project.autoBuildEnabled).to.be.true;
+
+            // Disable auto build
+            await testAutobuild(project);
+            // Enable auto build
+            await testAutobuild(project);
+        });
+
         it(`${testType.projectType} - should disable and re-enable a project`, async function() {
             expect(project, "Failed to get test project").to.exist;
             this.timeout(TestUtil.getMinutes(5));
@@ -74,3 +86,24 @@ describe(`Extended tests`, async function() {
         });
     }
 });
+
+async function testAutobuild(project: Project): Promise<void> {
+    const currentEnablement = project.autoBuildEnabled;
+    const newEnablement = !project.autoBuildEnabled;
+
+    Log.t(`${project.name}: auto build is ${currentEnablement}`);
+    await vscode.commands.executeCommand(Commands.TOGGLE_AUTOBUILD, project);
+    Log.t(`${project.name}: waiting for auto build to be ${newEnablement}`);
+
+    // Relies on calling test timeout to terminate
+    await new Promise<void>( (resolve) => {
+        setInterval( () => {
+            if (project.autoBuildEnabled === newEnablement) {
+                return resolve();
+            }
+        }, 5000);
+    });
+
+    expect(project.autoBuildEnabled).to.equal(newEnablement);
+    Log.t(`${project.name}: auto build is now ${newEnablement}`);
+}

@@ -39,8 +39,8 @@ namespace TestConfig {
             canRestart: true
         },
         {
-            runTest: true,
-            // runTest: false,
+            // runTest: true,
+            runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
             canRestart: true
         },
@@ -51,8 +51,8 @@ namespace TestConfig {
             canRestart: false
         },
         {
-            runTest: true,
-            // runTest: false,
+            // runTest: true,
+            runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
             canRestart: false
         },
