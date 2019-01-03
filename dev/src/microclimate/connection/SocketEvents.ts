@@ -56,6 +56,17 @@ namespace SocketEvents {
         CONTAINER_LOGS = "container-logs",
         PROJECT_VALIDATED = "projectValidated"
     }
+
+    /**
+     * Property keys we check in Microclimate socket events
+     */
+    export enum Keys {
+        APP_STATE = "appStatus",
+        BUILD_STATE = "buildStatus",
+        CLOSED_STATE = "state",
+        START_MODE = "startMode",
+        BUILD_DETAIL = "detailedBuildStatus"
+    }
 }
 
 export default SocketEvents;

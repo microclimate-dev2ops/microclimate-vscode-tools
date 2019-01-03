@@ -243,7 +243,12 @@ export default class MCSocket {
             return;
         }
 
-        Validator.validate(project, payload.validationResults);
+        if (payload.validationResults != null) {
+            Validator.validate(project, payload.validationResults);
+        }
+        else {
+            Log.e("Microclimate didn't send result with validation event");
+        }
     }
 
     private readonly getProject = async (payload: any): Promise<Project | undefined> => {

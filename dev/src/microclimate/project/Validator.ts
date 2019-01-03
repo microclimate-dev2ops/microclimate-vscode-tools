@@ -24,9 +24,10 @@ namespace Validator {
 
     export async function validate(project: Project, validationResult: SocketEvents.IValidationResult[]): Promise<void> {
 
-        Log.d(`Validating project ${project.name}, validationResult is:`, validationResult);
-
-        // Logger.log("validationresult", validationPayload);
+        Log.d(`Validating ${project.name}`);
+        if (validationResult != null && validationResult.length > 0) {
+            Log.i(`ValidationResult is:`, validationResult);
+        }
 
         // clicking on the error will take you to this URI
         // it's the project folder path -

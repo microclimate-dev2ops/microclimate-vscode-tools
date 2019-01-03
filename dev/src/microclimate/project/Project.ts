@@ -164,9 +164,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         const oldState = this._state;
         this._state = new ProjectState(projectInfo, oldState != null ? oldState : undefined);
 
-        if (this._state !== oldState) {
+        if (!this._state.equals(oldState)) {
             changed = true;
-            Log.d(`${this.name} went from ${oldState} to ${this._state}, new startMode=${projectInfo.startMode}`);
+            const startModeMsg = projectInfo.startMode == null ? "" : `, startMode=${projectInfo.startMode}`;
+            Log.d(`${this.name} went from ${oldState} to ${this._state}${startModeMsg}`);
         }
 
         const ports = projectInfo.ports;
@@ -266,7 +267,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             this.pendingAppState = undefined;
         }
         else {
-            Log.d("No pending state to resolve/reject");
+            Log.d("No pending state to fulfill");
         }
     }
 

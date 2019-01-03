@@ -11,13 +11,7 @@
 
 import Log from "../../Logger";
 import * as StartModes from "../../constants/StartModes";
-
-// Project info keys sent by Microclimate. These are the keys in projectInfoPayload
-const KEY_APP_STATE:    string = "appStatus";               // non-nls
-const KEY_BUILD_STATE:  string = "buildStatus";             // non-nls
-const KEY_CLOSED_STATE: string = "state";                   // non-nls
-const KEY_START_MODE:   string = "startMode";               // non-nls
-const KEY_BUILD_DETAIL: string = "detailedBuildStatus";     // non-nls
+import SocketEvents from "../connection/SocketEvents";
 
 /**
  * Represents the project's state in Microclimate. This means app state, build state, and any status details.
@@ -37,20 +31,20 @@ export class ProjectState {
     ) {
         if (projectInfoPayload != null) {
             if (oldState != null) {
-                if (projectInfoPayload[KEY_APP_STATE] == null) {
-                    projectInfoPayload[KEY_APP_STATE] = oldState.appState.toString();
+                if (projectInfoPayload[SocketEvents.Keys.APP_STATE] == null) {
+                    projectInfoPayload[SocketEvents.Keys.APP_STATE] = oldState.appState.toString();
                 }
-                if (projectInfoPayload[KEY_BUILD_STATE] == null) {
-                    projectInfoPayload[KEY_BUILD_STATE] = oldState.buildState.toString();
+                if (projectInfoPayload[SocketEvents.Keys.BUILD_STATE] == null) {
+                    projectInfoPayload[SocketEvents.Keys.BUILD_STATE] = oldState.buildState.toString();
                 }
-                if (!projectInfoPayload[KEY_BUILD_DETAIL]) {
-                    projectInfoPayload[KEY_BUILD_DETAIL] = oldState.buildDetail;
+                if (!projectInfoPayload[SocketEvents.Keys.BUILD_DETAIL]) {
+                    projectInfoPayload[SocketEvents.Keys.BUILD_DETAIL] = oldState.buildDetail;
                 }
             }
 
             this.appState = ProjectState.getAppState(projectInfoPayload);
             this.buildState = ProjectState.getBuildState(projectInfoPayload);
-            this.buildDetail = projectInfoPayload[KEY_BUILD_DETAIL] || "";
+            this.buildDetail = projectInfoPayload[SocketEvents.Keys.BUILD_DETAIL] || "";
         }
         else {
             Log.e("ProjectState received null ProjectInfo");
@@ -58,6 +52,13 @@ export class ProjectState {
             this.buildState = ProjectState.BuildStates.UNKNOWN;
             this.buildDetail = "";
         }
+    }
+
+    public equals(other: ProjectState): boolean {
+        return other != null &&
+            this.appState === other.appState &&
+            this.buildState === other.buildState &&
+            this.buildDetail === other.buildDetail;
     }
 
     public get isEnabled(): boolean {
@@ -169,10 +170,10 @@ export namespace ProjectState {
     export function getAppState(projectInfoPayload: any): ProjectState.AppStates {
 
         // Logger.log("PIP", projectInfoPayload);
-        const appStatus: string = projectInfoPayload[KEY_APP_STATE] as string || "";
+        const appStatus: string = projectInfoPayload[SocketEvents.Keys.APP_STATE] as string || "";
 
-        const closedState: string | undefined = projectInfoPayload[KEY_CLOSED_STATE];
-        const startMode:   string | undefined = projectInfoPayload[KEY_START_MODE];
+        const closedState: string | undefined = projectInfoPayload[SocketEvents.Keys.CLOSED_STATE];
+        const startMode:   string | undefined = projectInfoPayload[SocketEvents.Keys.START_MODE];
 
         // Logger.log(`Convert - appStatus=${appStatus}, closedState=${closedState}, startMode=${startMode}`);
 
@@ -210,7 +211,7 @@ export namespace ProjectState {
     }
 
     export function getBuildState(projectInfoPayload: any): BuildStates {
-        const buildStatus: string | undefined = projectInfoPayload[KEY_BUILD_STATE];
+        const buildStatus: string | undefined = projectInfoPayload[SocketEvents.Keys.BUILD_STATE];
 
         if (buildStatus === "success" || buildStatus === BuildStates.BUILD_SUCCESS) {           // non-nls
             return BuildStates.BUILD_SUCCESS;
