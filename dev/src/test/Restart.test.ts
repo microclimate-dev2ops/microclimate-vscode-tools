@@ -95,15 +95,15 @@ describe(`Restart tests`, async function() {
             }
 
             Log.t("Restart into debug mode succeeded.");
+            debugReady = true;
 
-            // Wait 5 seconds, this helps resolve some timing issues with debugger base.testConnection.
+            // Wait 5 seconds, this helps resolve some timing issues with debugger connection
             await TestUtil.wait(debugDelay, "Giving debugger connect a chance to complete");
             await assertDebugSessionExists(project.name);
             Log.t("Debugger connect succeeded");
 
             // Now wait for it to enter Debugging state (much slower for Liberty)
             await ProjectObserver.instance.awaitAppState(project.id, ProjectState.AppStates.DEBUGGING);
-            debugReady = true;
             Log.t("Debug restart test passed");
         });
 
@@ -188,7 +188,7 @@ export async function assertDebugSessionExists(projectName: string): Promise<voi
     const debugSession = vscode.debug.activeDebugSession;
     expect(debugSession, `${projectName} There should be an active debug session`).to.exist;
     Log.t(`Active debug session is named "${debugSession!.name}"`);
-    expect(debugSession!.name).to.contain(projectName, "Active debug session is not for this project");
+    expect(debugSession!.name).to.contain(projectName, "Active debug session is not for this project, is: " + debugSession);
     const threads = await debugSession!.customRequest("threads");
     Log.t("Debugger threads", threads);
     // only 1 thread for node projects

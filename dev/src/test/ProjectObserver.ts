@@ -70,18 +70,16 @@ export default class ProjectObserver {
         }
 
         if (this.projectPendingState != null) {
-            this.connection.getProjectByID(this.projectPendingState.projectID)
-                .then( (project) => {
-                    if (project == null) {
-                        Log.e("Couldn't get project with ID " + this.projectPendingState!.projectID);
-                        this.projectPendingState = undefined;
-                    }
-                    else if (this.projectPendingState!.states.includes(project.state.appState)) {
-                        Log.t(`Project ${project.name} reached pending state ${project.state}`);
-                        this.projectPendingState!.resolveFunc();
-                        this.projectPendingState = undefined;
-                    }
-                });
+            const project = await this.connection.getProjectByID(this.projectPendingState.projectID);
+            if (project == null) {
+                Log.e("Couldn't get project with ID " + this.projectPendingState.projectID);
+                this.projectPendingState = undefined;
+            }
+            else if (this.projectPendingState.states.includes(project.state.appState)) {
+                Log.t(`Project ${project.name} reached pending state ${project.state}`);
+                this.projectPendingState!.resolveFunc();
+                this.projectPendingState = undefined;
+            }
         }
     }
 
