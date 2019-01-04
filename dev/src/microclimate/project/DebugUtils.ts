@@ -177,7 +177,7 @@ export default class DebugUtils {
     private static async setDebugConfig(project: Project): Promise<vscode.DebugConfiguration> {
         const debugName: string = DebugUtils.getDebugName(project);
 
-        let newLaunch: vscode.DebugConfiguration | undefined;
+        let launchToWrite: vscode.DebugConfiguration | undefined;
 
         const workspaceConfig = this.getWorkspaceConfigFor(project.connection);
         const launchConfigs = this.getLaunchConfigurationsFrom(workspaceConfig);
@@ -186,32 +186,41 @@ export default class DebugUtils {
         for (let i = 0; i < launchConfigs.length; i++) {
             const existingLaunch: vscode.DebugConfiguration = launchConfigs[i];
             if (existingLaunch != null && existingLaunch.name === debugName) {
-                const updatedLaunch = DebugUtils.updateDebugLaunchConfig(project, existingLaunch);
-                Log.d(`Replacing existing debug launch ${debugName}:`, updatedLaunch);
-                launchConfigs[i] = updatedLaunch;
-                newLaunch = updatedLaunch;
+                // updatedLaunch might be the same as existingLaunch.
+                const updatedLaunch: vscode.DebugConfiguration = DebugUtils.updateDebugLaunchConfig(project, existingLaunch);
+
+                const changed = updatedLaunch !== existingLaunch;
+                if (changed) {
+                    Log.d(`Replacing existing debug launch ${debugName}:`, updatedLaunch);
+                    launchConfigs[i] = updatedLaunch;
+                }
+                else {
+                    Log.d(`No change to debug launch ${debugName}`);
+                }
+                launchToWrite = updatedLaunch;
+                break;
             }
         }
 
-        if (newLaunch == null) {
+        if (launchToWrite == null) {
             // We didn't find an existing launch; need to generate a new one
-            newLaunch = DebugUtils.generateDebugLaunchConfig(debugName, project);
+            launchToWrite = DebugUtils.generateDebugLaunchConfig(debugName, project);
 
             // already did this in startDebugSession, but just in case
-            if (newLaunch == null) {
+            if (launchToWrite == null) {
                 const msg = Translator.t(STRING_NS, "noDebugTypeKnown", { type: project.type.type });
                 Log.e(msg);
                 throw new Error(msg);
             }
 
-            Log.d("Pushing new debug launch" + newLaunch.name, newLaunch);
-            launchConfigs.push(newLaunch);
+            Log.d("Pushing new debug launch: " + launchToWrite.name, launchToWrite);
+            launchConfigs.push(launchToWrite);
         }
 
         await this.updateWorkspaceLaunchConfigs(workspaceConfig, launchConfigs);
         Log.d("Updated launch configs");
         // Logger.log("New config", launchConfig.get(CONFIGURATIONS));
-        return newLaunch;
+        return launchToWrite;
     }
 
     private static readonly RQ_ATTACH: string = "attach";       // non-nls
@@ -252,17 +261,22 @@ export default class DebugUtils {
     /**
      * Update the existingLaunch with the new values of config fields that could have changed since the last launch, then return it.
      * As far as I can tell, only the port can change.
+     *
+     * @return Either the new, or existing, launch config depending on whether an update was necessary.
      */
     private static updateDebugLaunchConfig(project: Project, existingLaunch: vscode.DebugConfiguration): vscode.DebugConfiguration {
+        let changed = false;
         const newLaunch: vscode.DebugConfiguration = existingLaunch;
-        newLaunch.port = project.debugPort;
+
         if (existingLaunch.port === newLaunch.port) {
             Log.d(`Debug port for ${project.name} didn't change`);
         }
         else {
             Log.d(`Debug port for ${project.name} changed from ${existingLaunch.port} to ${newLaunch.port}`);
+            newLaunch.port = project.debugPort;
+            changed = true;
         }
 
-        return newLaunch;
+        return changed ? newLaunch : existingLaunch;
     }
 }
