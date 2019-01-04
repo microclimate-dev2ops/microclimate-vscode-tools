@@ -17,7 +17,7 @@ import Project from "../project/Project";
 import Endpoints from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
-import { Icons, getIconPaths } from "../../constants/Resources";
+import Resources from "../../constants/Resources";
 import Log from "../../Logger";
 import MCLogManager from "../logs/MCLogManager";
 import DebugUtils from "../project/DebugUtils";
@@ -173,7 +173,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
             // The context ID can be any truthy string.
             const disconnectedContextID = "disconnectedContextID"; // non-nls;
             const disconnectedTI = new SimpleTreeItem(
-                disconnectedLabel, undefined, undefined, disconnectedContextID, getIconPaths(Icons.Disconnected)
+                disconnectedLabel, undefined, undefined, disconnectedContextID, Resources.getIconPaths(Resources.Icons.Disconnected)
             );
             return [ disconnectedTI ];
         }
@@ -192,7 +192,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         // ti.resourceUri = this.workspacePath;
         ti.tooltip = this.workspacePath.fsPath.toString();
         ti.contextValue = this.getContextID();
-        ti.iconPath = getIconPaths(Icons.Microclimate);
+        ti.iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
         // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
         /*
         ti.command = {

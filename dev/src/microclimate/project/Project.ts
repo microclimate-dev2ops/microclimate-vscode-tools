@@ -16,15 +16,16 @@ import ITreeItemAdaptable from "../../view/TreeItemAdaptable";
 import ProjectState from "./ProjectState";
 import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
-import * as Resources from "../../constants/Resources";
 import Log from "../../Logger";
 import Commands from "../../constants/Commands";
 import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
-import ProjectPendingState from "./ProjectPendingState";
 import { refreshProjectOverview } from "./ProjectOverview";
 import getContextID from "./ProjectContextID";
+import ProjectPendingRestart from "./ProjectPendingRestart";
+import StartModes from "../../constants/StartModes";
+import SocketEvents from "../connection/SocketEvents";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -56,7 +57,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     // Represents current app state and build state
     private _state: ProjectState;
 
-    private pendingAppState: ProjectPendingState | undefined;
+    // private pendingAppState: ProjectPendingState | undefined;
+    private pendingRestart: ProjectPendingRestart | undefined;
 
     // Active ProjectInfo webviewPanel. Only one per project.
     // Track this so we can refresh it when update() is called, and prevent multiple webviews being open for one project.
@@ -179,9 +181,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             Log.e("No ports were provided for an app that is supposed to be started");
         }
 
-        // If we're waiting for a state, check if we've reached one the states, and resolve the pending state promise if so.
-        if (this.pendingAppState != null && this.pendingAppState.shouldResolve(this.state)) {
-            this.fullfillPendingState(true);
+        if (this.pendingRestart != null) {
+            this.pendingRestart.onStateChange(this.state.appState);
         }
 
         // Logger.log(`${this.name} has a new status:`, this._state);
@@ -194,81 +195,61 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return this._state;
     }
 
-    private tryRefreshProjectInfoPage(): void {
-        if (this.activeProjectInfo != null) {
-            Log.d("Refreshing projectinfo");
-            refreshProjectOverview(this.activeProjectInfo, this);
-        }
+    public get isRestarting(): boolean {
+        return this.pendingRestart != null;
     }
 
-    /**
-     * Return a promise that resolves to the current appState when this project enters one of the given AppStates,
-     * or rejects if waitForState is called again before the previous state is reached.
-     * The state is checked when it changes in update() above.
-     *
-     * **DO NOT** call this from test code, since it will also clear any previous state being waited for,
-     * changing how the product code executes.
-     */
-    public async waitForState(timeoutMs: number, ...states: ProjectState.AppStates[]): Promise<ProjectState.AppStates> {
-        Log.i(`${this.name} is waiting up to ${timeoutMs}ms for states: ${states.join(", ")}`);
-
-        if (states.length === 0) {
-            // Should never happen
-            Log.e("Empty states array passed to waitForState");
-            return this._state.appState;
+    public doRestart(mode: StartModes.Modes): boolean {
+        if (this.pendingRestart != null) {
+            Log.e(this.name + ": doRestart called when already restarting");
+            return false;
         }
 
-        // If project is given a new state to wait for before we resolved the previous state, reject the old state.
-        this.fullfillPendingState(false);
-
-        if (states.includes(this._state.appState)) {
-            Log.i("No need to wait, already in state " + this._state.appState);
-            return this._state.appState;
-        }
-
-        Log.i(this.name + " is currently", this._state.appState);
-
-        const pendingStatePromise = new Promise<ProjectState.AppStates>( (resolve, reject) => {
-            const timeout = setTimeout(
-                () => {
-                    this.fullfillPendingState(false, timeoutMs);
-                },
-                timeoutMs);
-
-            this.pendingAppState = new ProjectPendingState(this, states, resolve, reject, timeout);
-        });
-
-        // Set a status bar msg to tell the user a project is waiting for a state
-        const syncIcon: string = Resources.getOcticon(Resources.Octicons.sync, true);
-
-        // pendingAppState will never be null here because we just set it above.
-        const statesStr = this.pendingAppState != null ? this.pendingAppState.pendingStatesAsStr() : "";
-        const waitingMsg = Translator.t(STRING_NS, "waitingForState",
-                { projectName: this.name, pendingStates: statesStr }
-        );
-        vscode.window.setStatusBarMessage(`${syncIcon} ${waitingMsg}`, pendingStatePromise);    // non-nls
-
-        return pendingStatePromise;
+        this.pendingRestart = new ProjectPendingRestart(this, mode, 180 * 1000);
+        return true;
     }
 
-    /**
-     * If there is a pending state, resolve or reject it depending on the value of `resolve`.
-     * If there is no pending state, do nothing.
-     */
-    private fullfillPendingState(resolve: boolean, timeoutMs?: number): void {
-        if (this.pendingAppState != null) {
-            Log.d(`${this.name} fulfillPendingState: ${resolve ? "resolving" : "rejecting"}`);
-            if (resolve) {
-                this.pendingAppState.resolve();
+    public onRestartFinish(): void {
+        this.pendingRestart = undefined;
+    }
+
+    public onRestartEvent(event: SocketEvents.IProjectRestartedEvent): void {
+        let success: boolean;
+        let errMsg: string | undefined;
+
+        if (this.pendingRestart == null) {
+            // I have seen Run mode restarts  be quick enough that the event will fire after the restart finishes
+            // Not sure why this happens, or if it is a problem
+            Log.w(this.name + ": received restart event without a pending restart", event);
+            return;
+        }
+        else if (SocketEvents.STATUS_SUCCESS !== event.status) {
+            Log.e(`${this.name}: Restart failed, response is`, event);
+
+            errMsg = Translator.t(StringNamespaces.DEFAULT, "genericErrorProjectRestart", { thisName: this.name });
+            if (event.errorMsg != null) {
+                errMsg = event.errorMsg;
             }
-            else {
-                this.pendingAppState.reject(timeoutMs);
-            }
-            this.pendingAppState = undefined;
+
+            success = false;
+        }
+        else if (event.ports == null || event.startMode == null || !StartModes.allStartModes().includes(event.startMode)) {
+            // If the status is "success" (as we just checked), these must all be set and valid
+            errMsg = Translator.t(StringNamespaces.DEFAULT, "genericErrorProjectRestart", { thisName: this.name });
+            Log.e(errMsg + ", payload:", event);
+
+            success = false;
         }
         else {
-            Log.d("No pending state to fulfill");
+            Log.d("Restart event is valid", event);
+
+            this.setAppPort(event.ports.exposedPort);
+            this.setDebugPort(event.ports.exposedDebugPort);
+
+            success = true;
         }
+
+        this.pendingRestart.onReceiveRestartEvent(success, errMsg);
     }
 
     /**
@@ -276,14 +257,15 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
      */
     public async onDelete(): Promise<void> {
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
-        this.fullfillPendingState(true);
         this.clearValidationErrors();
         this.connection.logManager.destroyLogsForProject(this.id);
         DebugUtils.removeDebugLaunchConfigFor(this);
     }
 
+    /**
+     * Clear all diagnostics for this project's path
+     */
     public async clearValidationErrors(): Promise<void> {
-        // Clear all diagnostics for this project's path
         Project.diagnostics.delete(this.localPath);
     }
 
@@ -308,6 +290,13 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         Log.d(`Dispose project info for project ${this.name}`);
         if (this.activeProjectInfo != null) {
             this.activeProjectInfo = undefined;
+        }
+    }
+
+    private tryRefreshProjectInfoPage(): void {
+        if (this.activeProjectInfo != null) {
+            Log.d("Refreshing projectinfo");
+            refreshProjectOverview(this.activeProjectInfo, this);
         }
     }
 

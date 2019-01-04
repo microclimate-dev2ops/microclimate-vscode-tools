@@ -35,7 +35,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
     catch (err) {
         // This string can't be translated for obvious reasons :)
-        const errmsg = "Error initializing i18next - placeholder strings will be used!";        // non-nls
+        const errmsg = "Error initializing i18next - placeholder strings will be used! " + (err.message || err);        // non-nls
         Log.e(errmsg, err);
         vscode.window.showErrorMessage(errmsg);
     }

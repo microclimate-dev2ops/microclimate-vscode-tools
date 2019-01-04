@@ -10,7 +10,7 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
-import { IconPaths } from "../constants/Resources";
+import Resources from "../constants/Resources";
 
 /**
  * Interface to allow easily converting any object to a vscode TreeItem.
@@ -33,7 +33,7 @@ export class SimpleTreeItem implements ITreeItemAdaptable {
         public readonly initCollapseState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None,
         public readonly children: ITreeItemAdaptable[] = [],
         public readonly contextID?: string,
-        public readonly iconPaths?: IconPaths,
+        public readonly iconPaths?: Resources.IconPaths,
     ) {
        this.treeItem = new vscode.TreeItem(this.label, this.initCollapseState);
        this.treeItem.contextValue = contextID;

@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import * as Resources from "../../constants/Resources";
+import Resources from "../../constants/Resources";
 import Log from "../../Logger";
 
 export class ProjectType {

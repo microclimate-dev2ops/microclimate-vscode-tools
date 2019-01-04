@@ -6,11 +6,6 @@
 
     "statesSeparator": " or ",
 
-    "genericErrorProjectRestart": "{{ projectName }} failed to restart.",
-    "restartSuccess": "Finished restarting {{ projectName }} in {{ startMode }} mode.",
-    "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
-    "restartDebugAttachFailure": "Attaching the debugger while restarting into {{ startMode }} mode failed. Try attaching the debugger again.",
-
     "focusOnProblems": "Go to Problems",
 
     "command": {
@@ -83,10 +78,13 @@
     "project": {
         "quickPickLabel": "{{ projectName }} ({{ projectType }} project)",
         "quickPickNotRunning": "[Not running]",
-        "waitingForState": "Waiting for {{ projectName }} to be {{ pendingStates }}",
-        "didNotReachState":         "{{ projectName }} is not {{ states }}.",
-        "didNotReachStateWithTime": "{{ projectName }} is not {{ states }} after {{ timeoutS }} seconds.",
-        "onDeletion": "{{ projectName }} was deleted in Microclimate."
+        "onDeletion": "{{ projectName }} was deleted in Microclimate.",
+
+        "genericErrorProjectRestart": "{{ projectName }} failed to restart.",
+        "restartSuccess": "Finished restarting {{ projectName }} in {{ startMode }} mode.",
+        "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
+        "restartFailureWithReason": "Failed to restart {{ projectName }} in {{ startMode }} mode: {{ reason }}.",
+        "restartDebugAttachFailure": "Attaching the debugger while restarting into {{ startMode }} mode failed. Try attaching the debugger again."
     },
 
     "openInBrowserCmd": {

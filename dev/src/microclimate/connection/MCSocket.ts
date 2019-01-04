@@ -10,18 +10,12 @@
  *******************************************************************************/
 
 import * as io from "socket.io-client";
-import * as vscode from "vscode";
 
 import Connection from "./Connection";
 import Project from "../project/Project";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
 import SocketEvents from "./SocketEvents";
-import * as StartModes from "../../constants/StartModes";
-import StringNamespaces from "../../constants/strings/StringNamespaces";
-import Translator from "../../constants/strings/translator";
-import ProjectState from "../project/ProjectState";
-import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 
 /**
  * Receives and reacts to socket events from Portal
@@ -29,8 +23,6 @@ import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
  * Each Connection has exactly one socket
  */
 export default class MCSocket {
-
-    private static readonly STATUS_SUCCESS: string = "success";     // non-nls
 
     private readonly socket: SocketIOClient.Socket;
 
@@ -118,7 +110,7 @@ export default class MCSocket {
     }
 
     private readonly onProjectDeleted = async (payload: { projectID: string }): Promise<void> => {
-        Log.i("PROJECT DELETED", payload);
+        Log.d("PROJECT DELETED", payload);
 
         const project = await this.getProject(payload);
         if (project == null) {
@@ -130,98 +122,16 @@ export default class MCSocket {
     }
 
     private readonly onProjectRestarted = async (payload: SocketEvents.IProjectRestartedEvent): Promise<void> => {
-        Log.i("PROJECT RESTARTED", payload);
+        Log.d("PROJECT RESTARTED", payload);
 
+        // Validate the restart event
         const project = await this.getProject(payload);
         if (project == null) {
+            Log.e("Received restart event for unrecognized project:", payload);
             return;
         }
 
-        const projectID: string = payload.projectID;
-        if (MCSocket.STATUS_SUCCESS !== payload.status) {
-            Log.e(`Restart failed on project ${projectID}, response is`, payload);
-            let err = Translator.t(StringNamespaces.DEFAULT, "genericErrorProjectRestart", { projectName: project.name });
-            if (payload.errorMsg != null) {
-                err = payload.errorMsg;
-            }
-            vscode.window.showErrorMessage(err);
-            return;
-        }
-        else if (payload.ports == null || payload.startMode == null) {
-            // If the status is "success" (as we just checked), these must both be set
-            const msg = Translator.t(StringNamespaces.DEFAULT, "genericErrorProjectRestart", { projectName: project.name });
-            vscode.window.showErrorMessage(msg);
-            Log.e(msg + ", payload:", payload);
-            return;
-        }
-
-        Log.d("Restart event is valid");
-        const startMode: string = payload.startMode;
-        if (!StartModes.allStartModes().includes(startMode)) {
-            Log.e(`Invalid start mode "${startMode}"`);
-        }
-        // This updates the ports and startMode, because those are what the payload will provide.
-        project.update(payload, true);
-
-        // Now we have to attach the debugger if it's a debug mode restart
-
-        const isDebug = StartModes.isDebugMode(startMode);
-
-        let restartSuccess = false;
-        if (isDebug) {
-            Log.d("Attaching debugger after restart");
-            try {
-                // will wait for Starting - Debug state - but this is usually not necessary,
-                // since that state will be reached before Microclimate emits the restart event
-                const debuggerAttached: boolean = await attachDebuggerCmd(project, true);
-                if (!debuggerAttached) {
-                    vscode.window.showWarningMessage(
-                        Translator.t(StringNamespaces.DEFAULT, "restartDebugAttachFailure",
-                        { startMode: StartModes.getUserFriendlyStartMode(startMode) })
-                    );
-
-                    // restart is "done", and failed.
-                    return;
-                }
-            }
-            catch (err) {
-                // attachDebuggerCmd shouldn't throw/reject, but just in case:
-                Log.w("Debugger attach failed or was cancelled by user", err);
-                vscode.window.showErrorMessage(err);
-            }
-        }
-
-        // Run mode, wait for project to be Started
-        const terminalState = isDebug ? ProjectState.AppStates.DEBUGGING : ProjectState.AppStates.STARTED;
-        Log.d(`Waiting for terminal state ${terminalState} after restart`);
-
-        let state;
-        try {
-            state = await project.waitForState(120 * 1000, terminalState);
-        }
-        catch (err) {
-            Log.w(`Restart into ${startMode} mode did not complete in time, or was cancelled by user:`, err);
-            vscode.window.showWarningMessage(err);
-            return;
-        }
-
-        restartSuccess = state === terminalState;
-
-        if (restartSuccess) {
-            const doneRestartMsg = Translator.t(StringNamespaces.DEFAULT, "restartSuccess",
-                { projectName: project.name, startMode: StartModes.getUserFriendlyStartMode(startMode) }
-            );
-            Log.i(doneRestartMsg);
-            vscode.window.showInformationMessage(doneRestartMsg);
-        }
-        else {
-            // Either the restart failed, or the user cancelled it by initiating another restart
-            const msg = Translator.t(StringNamespaces.DEFAULT, "restartFailure",
-                { projectName: project.name, startMode: StartModes.getUserFriendlyStartMode(startMode) }
-            );
-            Log.w(msg);
-            // vscode.window.showWarningMessage(msg);
-        }
+        project.onRestartEvent(payload);
     }
 
     private readonly onContainerLogs = async (payload: { projectID: string, logs: string }): Promise<void> => {

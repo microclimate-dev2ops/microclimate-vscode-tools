@@ -12,6 +12,9 @@
 // non-nls-file
 
 namespace SocketEvents {
+
+    export const STATUS_SUCCESS: string = "success";
+
     // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/actions.ts - "restart" function
     export interface IProjectRestartedEvent {
         operationID: string;
@@ -20,10 +23,11 @@ namespace SocketEvents {
         errorMsg?: string;
         startMode?: string;
         ports?: {
-            exposedPort: string;
-            internalPort: string;
-            exposedDebugPort?: string;
-            internalDebugPort?: string;
+            // these are actually sent as strings, and will be coerced to numbers.
+            exposedPort: number;
+            internalPort: number;
+            exposedDebugPort?: number;
+            internalDebugPort?: number;
         };
     }
 

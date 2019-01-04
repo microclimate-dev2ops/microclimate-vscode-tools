@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import ITreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import { Icons, getIconPaths } from "../constants/Resources";
+import Resources from "../constants/Resources";
 import Commands from "../constants/Commands";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
@@ -61,7 +61,7 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
             else {
                 // Provide a root node if no Connections have been created
                 const noConnectionsRoot = new SimpleTreeItem(Translator.t(STRING_NS, "noConnectionsLabel"), vscode.TreeItemCollapsibleState.None);
-                noConnectionsRoot.treeItem.iconPath = getIconPaths(Icons.Microclimate);
+                noConnectionsRoot.treeItem.iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
                 noConnectionsRoot.treeItem.tooltip = Translator.t(STRING_NS, "noConnectionsTooltip");
                 // Clicking the no connections item runs the new connection command.
                 noConnectionsRoot.treeItem.command = {

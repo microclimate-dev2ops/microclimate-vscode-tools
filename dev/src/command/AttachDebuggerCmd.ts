@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import * as MCUtil from "../MCUtil";
 import { promptForProject } from "../command/CommandUtil";
-import * as Resources from "../constants/Resources";
+import Resources from "../constants/Resources";
 import Project from "../microclimate/project/Project";
 import ProjectState from "../microclimate/project/ProjectState";
 import Log from "../Logger";
@@ -41,20 +41,6 @@ export default async function attachDebuggerCmd(project: Project, isRestart: boo
         }
         project = selected;
     }
-
-    // Wait for the server to be Starting - Debug or Debugging before we try to connect the debugger,
-    // or it may try to connect before the server is ready
-    Log.d(`Waiting for ${project.name} to be ready for debugging`);
-    try {
-        // often this will resolve instantly
-        await project.waitForState(60 * 1000, ...ProjectState.getDebuggableStates());
-    }
-    catch (err) {
-        // can happen if EG the user requests another restart before this one finishes
-        Log.w("Waiting for debuggable state was rejected:", err);
-        return false;
-    }
-    Log.d("Project is ready to be debugged");
 
     try {
         if (isRestart) {

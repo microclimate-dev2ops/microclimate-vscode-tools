@@ -10,7 +10,7 @@
  *******************************************************************************/
 
 import Log from "../../Logger";
-import * as StartModes from "../../constants/StartModes";
+import StartModes from "../../constants/StartModes";
 import SocketEvents from "../connection/SocketEvents";
 
 /**

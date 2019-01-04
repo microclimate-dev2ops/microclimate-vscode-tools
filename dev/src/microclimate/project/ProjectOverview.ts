@@ -12,7 +12,7 @@
 import * as vscode from "vscode";
 
 import Project from "./Project";
-import * as Resources from "../../constants/Resources";
+import Resources from "../../constants/Resources";
 import * as MCUtil from "../../MCUtil";
 
 // This file does have a bunch of strings that should be translated,

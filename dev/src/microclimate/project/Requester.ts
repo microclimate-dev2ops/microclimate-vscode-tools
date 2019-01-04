@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
 import Project from "./Project";
-import StartModes, { getUserFriendlyStartMode } from "../../constants/StartModes";
+import StartModes from "../../constants/StartModes";
 import Endpoints from "../../constants/Endpoints";
 import Log from "../../Logger";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
@@ -24,13 +24,13 @@ const STRING_NS = StringNamespaces.REQUESTS;
 
 namespace Requester {
 
-    export async function requestProjectRestart(project: Project, startMode: StartModes): Promise<request.RequestPromise<any>> {
+    export async function requestProjectRestart(project: Project, startMode: StartModes.Modes): Promise<request.RequestPromise<any>> {
         const body = {
             startMode: startMode.toString()
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
-        const restartMsg = Translator.t(STRING_NS, "restartIntoMode", { startMode: getUserFriendlyStartMode(startMode) });
+        const restartMsg = Translator.t(STRING_NS, "restartIntoMode", { startMode: StartModes.getUserFriendlyStartMode(startMode) });
         return doProjectRequest(project, url, body, request.post, restartMsg);
     }
 
