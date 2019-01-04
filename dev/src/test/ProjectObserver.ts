@@ -21,6 +21,7 @@ interface IProjectCreationAwaiting {
 
 interface IProjectStateAwaiting {
     projectID: string;
+    projectName: string;
     states: ProjectState.AppStates[];
     resolveFunc: ( () => void );
 }
@@ -47,7 +48,7 @@ export default class ProjectObserver {
 
         setInterval( () => {
             if (this.projectPendingState != null) {
-                Log.t(`Waiting for ${this.projectPendingState.projectID} to be ${this.projectPendingState.states.join(" or ")}`);
+                Log.t(`Waiting for ${this.projectPendingState.projectName} to be ${this.projectPendingState.states.join(" or ")}`);
             }
             if (this.projectsPendingCreation.length > 0) {
                 Log.t("Project(s) pending creation: " + this.projectsPendingCreation.join(", "));
@@ -125,6 +126,7 @@ export default class ProjectObserver {
         return new Promise<void> ( (resolve) => {
             this.projectPendingState = {
                 projectID: project.id,
+                projectName: project.name,
                 states: states,
                 resolveFunc: resolve
             };
