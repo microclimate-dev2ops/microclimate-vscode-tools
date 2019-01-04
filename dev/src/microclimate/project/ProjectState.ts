@@ -15,8 +15,7 @@ import SocketEvents from "../connection/SocketEvents";
 
 /**
  * Represents the project's state in Microclimate. This means app state, build state, and any status details.
- *
- * Immutable
+ * Immutable.
  */
 export class ProjectState {
     public readonly appState: ProjectState.AppStates;
@@ -154,6 +153,13 @@ export namespace ProjectState {
         return [
             ProjectState.AppStates.STARTED,
             ProjectState.AppStates.DEBUGGING
+        ];
+    }
+
+    export function getStartingStates(): AppStates[] {
+        return [
+            ProjectState.AppStates.STARTING,
+            ProjectState.AppStates.DEBUG_STARTING
         ];
     }
 

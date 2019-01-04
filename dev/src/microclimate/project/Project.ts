@@ -38,7 +38,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
 
-    // Mutable project data, will change with calls to update()
+    // Mutable project data, will change with calls to update(). Prefixed with _ because these all have getters.
+    private _state: ProjectState;
     private _containerID: string | undefined;
     private _appPort: number | undefined;
     private _debugPort: number | undefined;
@@ -54,13 +55,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     public readonly label: string;
     public readonly detail?: string;
 
-    // Represents current app state and build state
-    private _state: ProjectState;
-
-    // private pendingAppState: ProjectPendingState | undefined;
+    // Represents a pending restart operation. Only set if the project is currently restarting.
     private pendingRestart: ProjectPendingRestart | undefined;
 
-    // Active ProjectInfo webviewPanel. Only one per project.
+    // Active ProjectInfo webviewPanel. Only one per project. Undefined if no project overview page is active.
     // Track this so we can refresh it when update() is called, and prevent multiple webviews being open for one project.
     private activeProjectInfo: vscode.WebviewPanel | undefined;
 
@@ -201,6 +199,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
     public doRestart(mode: StartModes.Modes): boolean {
         if (this.pendingRestart != null) {
+            // should be prevented by the RestartProjectCommand
             Log.e(this.name + ": doRestart called when already restarting");
             return false;
         }
@@ -210,20 +209,24 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public onRestartFinish(): void {
+        Log.d(this.name + ": onRestartFinish");
         this.pendingRestart = undefined;
     }
 
+    /**
+     * Validate the restart event. If it succeeded, update ports.
+     * Notifies the pendingRestart.
+     */
     public onRestartEvent(event: SocketEvents.IProjectRestartedEvent): void {
         let success: boolean;
         let errMsg: string | undefined;
 
         if (this.pendingRestart == null) {
-            // I have seen Run mode restarts  be quick enough that the event will fire after the restart finishes
-            // Not sure why this happens, or if it is a problem
-            Log.w(this.name + ": received restart event without a pending restart", event);
+            Log.e(this.name + ": received restart event without a pending restart", event);
             return;
         }
-        else if (SocketEvents.STATUS_SUCCESS !== event.status) {
+
+        if (SocketEvents.STATUS_SUCCESS !== event.status) {
             Log.e(`${this.name}: Restart failed, response is`, event);
 
             errMsg = Translator.t(StringNamespaces.DEFAULT, "genericErrorProjectRestart", { thisName: this.name });
@@ -241,7 +244,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             success = false;
         }
         else {
-            Log.d("Restart event is valid", event);
+            Log.d("Restart event is valid");
 
             this.setAppPort(event.ports.exposedPort);
             this.setDebugPort(event.ports.exposedDebugPort);
@@ -256,6 +259,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
      * Callback for when this project is deleted in Microclimate
      */
     public async onDelete(): Promise<void> {
+        Log.d("Deleting project " + this.name);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
         this.clearValidationErrors();
         this.connection.logManager.destroyLogsForProject(this.id);

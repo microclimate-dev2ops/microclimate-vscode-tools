@@ -22,6 +22,7 @@ import Resources from "../../constants/Resources";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
+// States that a project cycles through during a Run mode restart
 const RESTART_STATES_RUN = [
     ProjectState.AppStates.STOPPED,
     ProjectState.AppStates.STARTING,
@@ -34,12 +35,18 @@ const RESTART_STATES_DEBUG = [
     ProjectState.AppStates.DEBUGGING
 ];
 
+/**
+ * Wraps a promise which resolves (see `fulfill` function) when the project restarts, fails to restart, or has its restart time out.
+ * Displays a status bar message tied to the restart promise.
+ * Each project should have either one or zero of these at a time. Concurrent restarts on one project does not make sense and should be prevented.
+ */
 export default class ProjectPendingRestart {
 
-    // These are set in the constructor, but the compiler doesn't see that. These will never be undefined.
+    // This is set in the constructor, but the compiler doesn't see that. Will never be undefined.
     private resolve: (() => void) | undefined;
-    private reject:  (() => void) | undefined;
-    private timeoutID: NodeJS.Timeout | undefined;
+
+    // Restart timeout, length specified by timeoutMs constructor parameter
+    private readonly timeoutID: NodeJS.Timeout;
 
     // Expect the project to go through this set of states in this order.
     // Will be set to one of the RESTART_STATES arrays above.
@@ -47,80 +54,89 @@ export default class ProjectPendingRestart {
     // Index in expectedStates pointing to the state we expect next.
     private nextStateIndex: number = 0;
 
-    private hasReceivedRestartEvent: boolean = false;
-    private restartEventInterval: NodeJS.Timeout | undefined;
+    // This promise is resolved by the below function when this project receives the projectRestartResult event
+    // The restart cannot complete until this promise resolves.
+    private restartEventPromise: Promise<void>;
+    // Like resolve above, also in the constructor. Will never be undefined.
+    private resolveRestartEvent: (() => void) | undefined;
 
     constructor(
         private readonly project: Project,
         private readonly startMode: StartModes.Modes,
         timeoutMs: number,
     ) {
+        Log.d(`${project.name}: New pendingRestart into ${startMode} mode`);
+
         this.expectedStates = StartModes.isDebugMode(startMode) ? RESTART_STATES_DEBUG : RESTART_STATES_RUN;
 
-        const restartPromise = new Promise<void>( (resolve_, reject_) => {
+        // Resolved when the restart completes or times out. Displayed in the status bar.
+        const restartPromise = new Promise<void>( (resolve_) => {
             this.resolve = resolve_;
-            this.reject = reject_;
-
-            this.timeoutID = setTimeout( () => {
-                Log.i("Rejecting restart");
-                this.fulfill(false, `failed to restart within ${timeoutMs / 1000} seconds`);
-            }, timeoutMs);
         });
 
+        this.restartEventPromise = new Promise<void> ( (resolve_) => {
+            this.resolveRestartEvent = resolve_;
+        });
+
+        // Fails the restart when the timeout expires
+        this.timeoutID = setTimeout( () => {
+            Log.i("Rejecting restart");
+            this.fulfill(false, `failed to restart within ${timeoutMs / 1000} seconds`);        // nls
+        }, timeoutMs);
+
         const restartMsg = `${Resources.getOcticon(Resources.Octicons.sync, true)}` +
-            ` Restarting ${project.name} into ${StartModes.getUserFriendlyStartMode(startMode)} mode`;
+            ` Restarting ${project.name} into ${StartModes.getUserFriendlyStartMode(startMode)} mode`;      // nls
 
         vscode.window.setStatusBarMessage(restartMsg, restartPromise);
     }
 
+    /**
+     * Parent project object calls this in update().
+     */
     public async onStateChange(currentState: ProjectState.AppStates): Promise<void> {
         if (currentState === this.expectedStates[this.nextStateIndex]) {
             this.nextStateIndex++;
-
             if (this.nextStateIndex === this.expectedStates.length) {
-                // The restart was successful
-                Log.i("Resolving restart");
-                this.fulfill(true);
-                return;
-            }
-            else if (this.hasReceivedRestartEvent && currentState === ProjectState.AppStates.DEBUG_STARTING) {
-                this.attachDebugger();
-            }
-            else if (!this.hasReceivedRestartEvent &&
-                    (currentState === ProjectState.AppStates.STARTING || currentState === ProjectState.AppStates.DEBUG_STARTING)) {
-                this.waitForRestartEvent();
-            }
+                Log.d("Reached restart terminal state");
 
-            Log.d("Restart expecting next state: " + this.expectedStates[this.nextStateIndex]);
+                // Might already be resolved depending on timing
+                await this.restartEventPromise;
+                Log.d("Done waiting for restart event");
+
+                // The restart was successful
+                this.fulfill(true);
+            }
+            else {
+                Log.d("Restart expecting next state: " + this.expectedStates[this.nextStateIndex]);
+            }
         }
     }
 
-    public onReceiveRestartEvent(success: boolean, error?: string): void {
-        Log.d(this.project.name + ": pending restart received restart event");
+    /**
+     * Parent Project calls this when the restartResult socket event is received.
+     * Should only be called once per instance of this class (ie, per restart).
+     */
+    public async onReceiveRestartEvent(success: boolean, error?: string): Promise<void> {
+        Log.d(`${this.project.name}: pending restart received restart event, success=${success}`);
 
-        if (this.hasReceivedRestartEvent) {
-            Log.e(this.project.name + ": multiple restart events!");
-        }
-
-        this.hasReceivedRestartEvent = true;
         if (!success) {
+            // The restart failed in Microclimate
             this.fulfill(success, error);
         }
-        else if (ProjectState.getDebuggableStates().includes(this.project.state.appState)) {
-            this.attachDebugger();
+        else {
+            if (StartModes.isDebugMode(this.startMode)) {
+                await this.attachDebugger();
+            }
         }
-    }
 
-    private async waitForRestartEvent(): Promise<void> {
-        // no rejection because it shares this instance's timeout
-        return new Promise<void>( (resolve) => {
-            Log.d(this.project.name + ": waiting for restart event");
-            this.restartEventInterval = setInterval( () => {
-                if (this.hasReceivedRestartEvent) {
-                    resolve();
-                }
-            }, 2500);
-        });
+        if (this.resolveRestartEvent != null) {
+            Log.d("Resolving restart event promise");
+            this.resolveRestartEvent();
+        }
+        else {
+            // will never happen
+            Log.e("Null resolveRestartEvent");
+        }
     }
 
     private async attachDebugger(): Promise<void> {
@@ -129,46 +145,49 @@ export default class ProjectPendingRestart {
         try {
             const debuggerAttached: boolean = await attachDebuggerCmd(this.project, true);
             if (!debuggerAttached) {
-                vscode.window.showErrorMessage(
-                    Translator.t(STRING_NS, "restartDebugAttachFailure",
-                    { startMode: StartModes.Modes.DEBUG })
-                );
+                const errMsg = Translator.t(STRING_NS, "restartDebugAttachFailure", { startMode: StartModes.Modes.DEBUG });
+                Log.w(errMsg);
+                vscode.window.showErrorMessage(errMsg);
 
                 // If we're debugging init, the restart fails here because it will get stuck without the debugger attach
                 if (this.startMode === StartModes.Modes.DEBUG) {
-                    this.fulfill(false, "Debugger attach failed");
+                    this.fulfill(false, "Debugger attach failed");      // nls
                 }
             }
         }
         catch (err) {
             // attachDebuggerCmd shouldn't throw/reject, but just in case:
             Log.w("Debugger attach failed or was cancelled by user", err);
-            vscode.window.showErrorMessage(err);
+            const errMsg = err.message || err;
+            vscode.window.showErrorMessage(errMsg);
         }
     }
 
+    /**
+     * Resolves this class's restart promise, removing the status bar item and rendering this pending restart "done".
+     * Also calls onRestartFinish which removes the Project's reference to this instance.
+     *
+     * Displays a success or failure message to the user depending on the value of `success`.
+     */
     private fulfill(success: boolean, error?: string): void {
         Log.d("Fulfilling pending restart for " + this.project.name);
 
-        if (this.resolve == null || this.reject == null || this.timeoutID == null) {
+        if (this.resolve == null || this.timeoutID == null) {
             // will never happen
             Log.e("Cannot fulfill pending restart because of an initialization failure");
             return;
         }
 
+        this.resolve();
         if (success) {
-            this.resolve();
-
             const successMsg = Translator.t(STRING_NS, "restartSuccess",
                 { projectName: this.project.name, startMode: StartModes.getUserFriendlyStartMode(this.startMode) }
             );
-            Log.i(successMsg);
 
+            Log.i(successMsg);
             vscode.window.showInformationMessage(successMsg);
         }
         else {
-            this.reject();
-
             let failMsg: string;
             if (error != null) {
                 failMsg = Translator.t(STRING_NS, "restartFailureWithReason",
@@ -181,13 +200,11 @@ export default class ProjectPendingRestart {
                 );
             }
 
+            Log.w(failMsg);
             vscode.window.showErrorMessage(failMsg);
         }
 
         clearTimeout(this.timeoutID);
-        if (this.restartEventInterval != null) {
-            clearInterval(this.restartEventInterval);
-        }
         this.project.onRestartFinish();
     }
 }

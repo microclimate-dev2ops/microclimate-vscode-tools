@@ -36,8 +36,8 @@ export default async function restartProjectCmd(project: Project, debug: boolean
     Log.i(`RestartProject on project ${project.name} into ${startMode} mode`);
 
     if (project.isRestarting) {
-        const alreadyRestartingMsg = project.name + " is already restarting";
-        Log.d(alreadyRestartingMsg);
+        const alreadyRestartingMsg = project.name + " is already restarting.";       // nls
+        Log.i(alreadyRestartingMsg);
         vscode.window.showWarningMessage(alreadyRestartingMsg);
         return false;
     }
@@ -51,7 +51,12 @@ export default async function restartProjectCmd(project: Project, debug: boolean
             if (MCUtil.isGoodStatusCode(statusCode)) {
                 Log.d("Restart was accepted by server");
 
-                project.doRestart(startMode);
+                const restarting = project.doRestart(startMode);
+                if (!restarting) {
+                    // Should never happen
+                    Log.e("Restart was rejected by Project class");
+                    return false;
+                }
 
                 // open the app's logs so we can watch the restart execute
                 project.connection.logManager.getOrCreateAppLog(project.id, project.name).showOutputChannel();

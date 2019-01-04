@@ -110,7 +110,7 @@ export default class MCSocket {
     }
 
     private readonly onProjectDeleted = async (payload: { projectID: string }): Promise<void> => {
-        Log.d("PROJECT DELETED", payload);
+        Log.d("PROJECT DELETED", payload.projectID);
 
         const project = await this.getProject(payload);
         if (project == null) {
@@ -124,7 +124,6 @@ export default class MCSocket {
     private readonly onProjectRestarted = async (payload: SocketEvents.IProjectRestartedEvent): Promise<void> => {
         Log.d("PROJECT RESTARTED", payload);
 
-        // Validate the restart event
         const project = await this.getProject(payload);
         if (project == null) {
             Log.e("Received restart event for unrecognized project:", payload);
@@ -161,7 +160,7 @@ export default class MCSocket {
         }
     }
 
-    private readonly getProject = async (payload: any): Promise<Project | undefined> => {
+    private readonly getProject = async (payload: { projectID: string }): Promise<Project | undefined> => {
         const projectID = payload.projectID;
         if (projectID == null) {
             // Should never happen
