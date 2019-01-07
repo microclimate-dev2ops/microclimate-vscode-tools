@@ -22,6 +22,7 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import requestBuildCmd from "./RequestBuildCmd";
+import Resources from "../constants/Resources";
 
 export default async function projectOverviewCmd(project: Project): Promise<void> {
     Log.d("projectOverviewCmd invoked");
@@ -38,7 +39,7 @@ export default async function projectOverviewCmd(project: Project): Promise<void
     const wvOptions: vscode.WebviewOptions & vscode.WebviewPanelOptions = {
         enableScripts: true,
         retainContextWhenHidden: true,
-
+        localResourceRoots: [vscode.Uri.file(Resources.getBaseResourcePath())]
     };
 
     const webPanel = vscode.window.createWebviewPanel(project.name, project.name, vscode.ViewColumn.Active, wvOptions);

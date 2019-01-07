@@ -24,8 +24,12 @@ const DARK_FOLDER_NAME = "dark";
 
 namespace Resources {
 
+    export function getBaseResourcePath(): string {
+        return path.join(global.__extRoot, RES_FOLDER_NAME);
+    }
+
     function getResourcePath(...paths: string[]): string {
-        return path.join(global.__extRoot, RES_FOLDER_NAME, ...paths);
+        return path.join(getBaseResourcePath(), ...paths);
     }
 
     export function getCss(filename: string): string {
