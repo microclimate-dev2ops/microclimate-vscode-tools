@@ -54,10 +54,10 @@ export default class ProjectPendingRestart {
     // Index in expectedStates pointing to the state we expect next.
     private nextStateIndex: number = 0;
 
-    // This promise is resolved by the below function when this project receives the projectRestartResult event
+    // This promise is resolved by calling resolveRestartEvent when this project receives the projectRestartResult event
     // The restart cannot complete until this promise resolves.
     private restartEventPromise: Promise<void>;
-    // Like resolve above, also in the constructor. Will never be undefined.
+    // Like resolve above, also set in the constructor. Will never be undefined.
     private resolveRestartEvent: (() => void) | undefined;
 
     constructor(
