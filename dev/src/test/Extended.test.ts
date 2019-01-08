@@ -1,5 +1,7 @@
 import { expect } from "chai";
 import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
 
 import * as Base from "./Base.test";
 
@@ -12,6 +14,7 @@ import TestUtil from "./TestUtil";
 import Project from "../microclimate/project/Project";
 import SocketTestUtil from "./SocketTestUtil";
 import SocketEvents from "../microclimate/connection/SocketEvents";
+import Requester from "../microclimate/project/Requester";
 
 describe(`Extended tests`, async function() {
 
@@ -64,8 +67,9 @@ describe(`Extended tests`, async function() {
 
         it(`${testType.projectType} - should disable and re-enable auto-build`, async function() {
             expect(project, "Failed to get test project").to.exist;
-
             this.timeout(TestUtil.getMinutes(1));
+
+            Log.t(`${project.name}: Testing auto build toggle`);
             expect(project.autoBuildEnabled).to.be.true;
 
             // Disable auto build
@@ -85,6 +89,60 @@ describe(`Extended tests`, async function() {
             Log.t("Enabling " + project.name);
             await vscode.commands.executeCommand(Commands.ENABLE_PROJECT, project);
             await ProjectObserver.instance.awaitAppState(project.id, ...ProjectState.getEnabledStates());
+        });
+
+        let validatorWorked = false;
+        it(`${testType.projectType} - should have a validation error after deleting the Dockerfile`, async function() {
+            expect(project, "Failed to get test project").to.exist;
+            this.timeout(TestUtil.getMinutes(1));
+
+            Log.t(`${project.name}: Deleting Dockerfile`);
+            const existingDiagnostics = vscode.languages.getDiagnostics(project.localPath);
+            if (existingDiagnostics.length !== 0) {
+                Log.t(`Project ${project.name} has existing diagnostics`, existingDiagnostics);
+            }
+
+            const dockerfilePath = getDockerfilePath(project);
+            Log.t("Deleting " + dockerfilePath);
+            fs.unlinkSync(dockerfilePath);
+
+            await vscode.commands.executeCommand(Commands.VALIDATE, project);
+            await TestUtil.wait(2500, "Waiting for validation");
+
+            const diagnostics = vscode.languages.getDiagnostics(project.localPath);
+            Log.t(`${project.name} diagnostics after deleting Dockerfile are:`, diagnostics);
+
+            const newDiagnosticIndex = existingDiagnostics.length;
+            expect(diagnostics, "New diagnostic was not created").to.have.length(newDiagnosticIndex + 1);
+
+            const diagnostic = diagnostics[newDiagnosticIndex];
+            expect(diagnostic, "New diagnostic is missing").to.exist;
+            expect(diagnostic!.source!.toLowerCase(), "Diagnostic did not have the right source").to.equal("microclimate");
+            validatorWorked = true;
+        });
+
+        it(`${testType.projectType} - should be able to regenerate the removed Dockerfile`, async function() {
+            expect(project, "Failed to get test project").to.exist;
+            expect(validatorWorked, "Precondition failed").to.be.true;
+            this.timeout(TestUtil.getMinutes(1));
+
+            Log.t(`${project.name}: Testing generating Dockerfile and removing validation error`);
+
+            const existingDiagnostics = vscode.languages.getDiagnostics(project.localPath);
+            Log.t(`${project.name} has ${existingDiagnostics.length} diagnostics`);
+
+            await Requester.requestGenerate(project);
+            await TestUtil.wait(2500, "Waiting for Dockerfile to be regenerated");
+
+            const dockerfilePath = getDockerfilePath(project);
+            expect(fs.existsSync(dockerfilePath), `Dockerfile does not exist at ${dockerfilePath} after generation`).to.be.true;
+            Log.t("Dockerfile was regenerated successfully");
+
+            const diagnostics = vscode.languages.getDiagnostics(project.localPath);
+            if (diagnostics.length > 0) {
+                Log.t("New diagnostics:", diagnostics);
+            }
+            expect(diagnostics, "Diagnostic was not removed").to.have.length(existingDiagnostics.length - 1);
         });
     }
 });
@@ -108,4 +166,8 @@ async function testAutobuild(project: Project): Promise<void> {
 
     expect(project.autoBuildEnabled).to.equal(newEnablement);
     Log.t(`${project.name}: auto build is now ${newEnablement}`);
+}
+
+function getDockerfilePath(project: Project): string {
+    return path.join(project.localPath.fsPath, "Dockerfile");
 }
