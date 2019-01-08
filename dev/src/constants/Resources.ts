@@ -41,8 +41,7 @@ namespace Resources {
      * which can then be assigned to a vscode iconPath (eg on a TreeItem).
      * If an icon cannot be found, an error is will be logged.
      *
-     * A requested icon is always assumed to have a file in the 'dark' folder.
-     * If there is a matching one in the 'light' folder, that will be used for light themes.
+     * A requested icon is assumed to have a file in both 'dark' and 'light' folders.
      *
      */
     export function getIconPaths(icon: Icons): IconPaths {

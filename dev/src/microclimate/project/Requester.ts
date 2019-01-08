@@ -83,29 +83,51 @@ namespace Requester {
     }
 
     export async function requestValidate(project: Project, silent: boolean): Promise<void> {
-        const body = {
-            projectID: project.id,
-            projectType: project.type.internalType
-        };
+        const [url, body]: [string, IValidateRequestBody] = assembleValidateRequest(project, false);
 
-        const url = Endpoints.getEndpoint(project.connection, Endpoints.VALIDATE_ACTION);
         const userOperation = silent ? undefined : Translator.t(StringNamespaces.CMD_MISC, "validate");
         return doProjectRequest(project, url, body, request.post, userOperation);
     }
 
     export async function requestGenerate(project: Project): Promise<void> {
-        const body = {
-            projectID: project.id,
-            projectType: project.type.internalType,
-            autoGenerate: true
-        };
+        const [url, body]: [string, IValidateRequestBody] = assembleValidateRequest(project, true);
 
-        const url = Endpoints.getEndpoint(project.connection, Endpoints.GENERATE_ACTION);
         const generateMsg = Translator.t(STRING_NS, "generateMissingFiles");
 
         return doProjectRequest(project, url, body, request.post, generateMsg)
             // request a validate after the generate so that the validation errors go away faster
             .then( () => requestValidate(project, true));
+    }
+
+    interface IValidateRequestBody {
+        projectType: string;
+        projectID?: string;
+        autoGenerate?: boolean;
+    }
+    // In 1901, the validation API changed
+    const validationAPIChangeVersion = 1901;
+
+    /**
+     * Get the URL and request body for either a Validate or Generate request, they are very similar.
+     */
+    function assembleValidateRequest(project: Project, generate: boolean): [string, IValidateRequestBody] {
+        let url: string;
+        const body: IValidateRequestBody = {
+            projectType: project.type.internalType,
+        };
+
+        if (generate) {
+            body.autoGenerate = true;
+        }
+
+        if (project.connection.version >= validationAPIChangeVersion) {
+            url = Endpoints.getProjectEndpoint(project.connection, project.id, generate ? Endpoints.GENERATE : Endpoints.VALIDATE);
+        }
+        else {
+            url = Endpoints.getEndpoint(project.connection, generate ? Endpoints.GENERATE_OLD : Endpoints.VALIDATE_OLD);
+            body.projectID = project.id;
+        }
+        return [url, body];
     }
 
     export async function requestDelete(project: Project): Promise<void> {
