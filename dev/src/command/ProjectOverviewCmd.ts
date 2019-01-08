@@ -86,8 +86,7 @@ export default async function projectOverviewCmd(project: Project): Promise<void
                     .then( (response) => {
                         if (response === deleteBtn) {
                             // Delete the project, then close the webview since the project is gone.
-                            Requester.requestDelete(project)
-                                .then ( () => webPanel.dispose());
+                            Requester.requestDelete(project);
                         }
                     });
             }

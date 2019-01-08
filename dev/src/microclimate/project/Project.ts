@@ -264,6 +264,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.clearValidationErrors();
         this.connection.logManager.destroyLogsForProject(this.id);
         DebugUtils.removeDebugLaunchConfigFor(this);
+
+        if (this.activeProjectInfo != null) {
+            this.activeProjectInfo.dispose();
+        }
     }
 
     /**
