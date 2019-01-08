@@ -80,11 +80,15 @@
         "quickPickNotRunning": "[Not running]",
         "onDeletion": "{{ projectName }} was deleted in Microclimate.",
 
-        "genericErrorProjectRestart": "{{ projectName }} failed to restart.",
+        "alreadyRestarting": "{{ projectName }} is already restarting.",
+        "restartingStatusMsg": "Restarting {{ projectName }} into {{ startMode }} mode",
+
         "restartSuccess": "Finished restarting {{ projectName }} in {{ startMode }} mode.",
+        "genericErrorProjectRestart": "{{ projectName }} failed to restart.",
         "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
         "restartFailureWithReason": "Failed to restart {{ projectName }} in {{ startMode }} mode: {{ reason }}.",
-        "restartDebugAttachFailure": "Attaching the debugger while restarting into {{ startMode }} mode failed. Try attaching the debugger again."
+        "restartDebugAttachFailure": "attaching the debugger failed. Try attaching the debugger again",
+        "restartFailedReasonTimeout": "failed to restart within {{ timeoutS }} seconds"
     },
 
     "openInBrowserCmd": {

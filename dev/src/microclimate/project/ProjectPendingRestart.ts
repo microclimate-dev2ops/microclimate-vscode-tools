@@ -80,12 +80,13 @@ export default class ProjectPendingRestart {
 
         // Fails the restart when the timeout expires
         this.timeoutID = setTimeout( () => {
-            Log.i("Rejecting restart");
-            this.fulfill(false, `failed to restart within ${timeoutMs / 1000} seconds`);        // nls
+            const failReason = Translator.t(STRING_NS, "restartFailedReasonTimeout", { timeoutS: timeoutMs / 1000 });
+            Log.i("Rejecting restart: " + failReason);
+            this.fulfill(false, failReason);
         }, timeoutMs);
 
-        const restartMsg = `${Resources.getOcticon(Resources.Octicons.sync, true)}` +
-            ` Restarting ${project.name} into ${StartModes.getUserFriendlyStartMode(startMode)} mode`;      // nls
+        const restartMsg = `${Resources.getOcticon(Resources.Octicons.sync, true)} ` +
+            Translator.t(STRING_NS, "restartingStatusMsg", { projectName: project.name, startMode: StartModes.getUserFriendlyStartMode(startMode) });
 
         vscode.window.setStatusBarMessage(restartMsg, restartPromise);
     }
@@ -145,13 +146,12 @@ export default class ProjectPendingRestart {
         try {
             const debuggerAttached: boolean = await attachDebuggerCmd(this.project, true);
             if (!debuggerAttached) {
-                const errMsg = Translator.t(STRING_NS, "restartDebugAttachFailure", { startMode: StartModes.Modes.DEBUG });
-                Log.w(errMsg);
-                vscode.window.showErrorMessage(errMsg);
+                const debuggerAttachFailedMsg = Translator.t(STRING_NS, "restartDebugAttachFailure");
+                Log.w(debuggerAttachFailedMsg);
 
                 // If we're debugging init, the restart fails here because it will get stuck without the debugger attach
                 if (this.startMode === StartModes.Modes.DEBUG) {
-                    this.fulfill(false, "Debugger attach failed");      // nls
+                    this.fulfill(false, debuggerAttachFailedMsg);
                 }
             }
         }

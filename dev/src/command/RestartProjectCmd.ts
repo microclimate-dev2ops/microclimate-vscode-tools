@@ -18,6 +18,8 @@ import Log from "../Logger";
 import StartModes from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
 import * as MCUtil from "../MCUtil";
+import Translator from "../constants/strings/translator";
+import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export default async function restartProjectCmd(project: Project, debug: boolean): Promise<boolean> {
     Log.d("RestartProjectCmd invoked");
@@ -36,7 +38,7 @@ export default async function restartProjectCmd(project: Project, debug: boolean
     Log.i(`RestartProject on project ${project.name} into ${startMode} mode`);
 
     if (project.isRestarting) {
-        const alreadyRestartingMsg = project.name + " is already restarting.";       // nls
+        const alreadyRestartingMsg = Translator.t(StringNamespaces.PROJECT, "alreadyRestarting", { projectName: project.name });
         Log.i(alreadyRestartingMsg);
         vscode.window.showWarningMessage(alreadyRestartingMsg);
         return false;

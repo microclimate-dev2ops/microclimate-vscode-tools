@@ -55,6 +55,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     public readonly label: string;
     public readonly detail?: string;
 
+    // in MS
+    private readonly RESTART_TIMEOUT: number = 180 * 1000;
     // Represents a pending restart operation. Only set if the project is currently restarting.
     private pendingRestart: ProjectPendingRestart | undefined;
 
@@ -204,7 +206,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             return false;
         }
 
-        this.pendingRestart = new ProjectPendingRestart(this, mode, 180 * 1000);
+        this.pendingRestart = new ProjectPendingRestart(this, mode, this.RESTART_TIMEOUT);
         return true;
     }
 
