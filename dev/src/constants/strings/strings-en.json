@@ -45,7 +45,8 @@
         "errDetailSeparator": " - ",
         "maybeAlreadyDebugging": "Are you already debugging this project?",
         "debuggerAttachSuccess": "Debugger attached to {{ projectName }} at {{- debugUrl }}.",
-        "debugLaunchName": "Debug {{ projectName }}"
+        "debugLaunchName": "Debug {{ projectName }}",
+        "waitingBeforeDebugAttach": "Waiting before attaching debugger to {{ projectName }}"
     },
 
     "logs": {

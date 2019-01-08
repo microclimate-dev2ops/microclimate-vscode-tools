@@ -55,7 +55,7 @@ export default class MCSocket {
     }
 
     public toString(): string {
-        return "MCSocket @ " + this.uri;
+        return "MCSocket @ " + this.uri;        // not displayed to user        // non-nls
     }
 
     public toJSON(): string {

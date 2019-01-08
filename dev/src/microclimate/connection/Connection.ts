@@ -131,7 +131,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         for (const projectInfo of result) {
             // This is a hard-coded exception for a Microclimate bug, where projects get stuck in the Deleting or Validating state
             // and don't go away until they're deleted from the workspace and MC is restarted.
-            if (projectInfo.action === "deleting" || projectInfo.action === "validating") {
+            if (projectInfo.action === "deleting" || projectInfo.action === "validating") {     // non-nls
                 Log.e("Project is in a bad state and won't be displayed:", projectInfo);
                 continue;
             }
