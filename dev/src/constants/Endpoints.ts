@@ -46,12 +46,15 @@ export default class Endpoints {
         return connection.mcUri.with({ query: `project=${projectID}&view=monitor` });
     }
 
-    public static getProjectCreationUrl(connection: Connection): Uri {
-        return connection.mcUri.with({ query: "new-project=true" });
+    private static readonly QUERY_NEW_PROJECT:      string = "new-project=true";
+    private static readonly QUERY_IMPORT_PROJECT:   string = "import-project=true";
+
+    public static getCreateOrImportUrl(connection: Connection, create: boolean): Uri {
+        const query = create ? this.QUERY_NEW_PROJECT : this.QUERY_IMPORT_PROJECT;
+        return connection.mcUri.with({ query });
     }
 
     public static getEnablementAction(enable: boolean): string {
         return `${enable ? "open" : "close"}`;
     }
-
 }

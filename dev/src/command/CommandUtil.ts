@@ -33,7 +33,7 @@ import openLogCmd from "./OpenLogCmd";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import openAppMonitorCmd from "./OpenAppMonitor";
 import refreshConnectionCmd from "./RefreshConnectionCmd";
-import newMCProjectCmd from "./NewMCProjectCmd";
+import openCreateOrImportPageCmd from "./NewMCProjectCmd";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 import validateCmd from "./ValidateCmd";
@@ -53,7 +53,8 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand(Commands.REMOVE_CONNECTION,     (selection) => removeConnectionCmd(selection)),
         vscode.commands.registerCommand(Commands.REFRESH_CONNECTION,    (selection) => refreshConnectionCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.CREATE_MC_PROJECT, (selection) => newMCProjectCmd(selection)),
+        vscode.commands.registerCommand(Commands.CREATE_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection, true)),
+        vscode.commands.registerCommand(Commands.IMPORT_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection, false)),
 
         vscode.commands.registerCommand(Commands.OPEN_WS_FOLDER,    (selection) => openWorkspaceFolderCmd(selection)),
 

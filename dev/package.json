@@ -92,6 +92,11 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_importMCProject%",
+                "title": "%cmdTitle_importMCProject%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_openFolder%",
                 "title": "%cmdTitle_openFolder%",
                 "category": "%commandCategory%"
@@ -212,6 +217,11 @@
                     "command": "%cmdID_newMCProject%",
                     "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.a@1"
+                },
+                {
+                    "command": "%cmdID_importMCProject%",
+                    "when": "%isActiveConnection%",
+                    "group": "ext.mc.conn.a@2"
                 },
                 {
                     "command": "%cmdID_openFolder%",
