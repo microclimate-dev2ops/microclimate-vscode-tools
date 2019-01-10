@@ -2,7 +2,7 @@
     "microclimateName": "Microclimate",
     "activeMsg": "Microclimate Tools for VSCode are active!",
     "connectionAlreadyExists": "Connection already exists at {{- uri }}.",
-    "failedToReconnect": "Couldn't reconnect to Microclimate at {{- uri }}, please try re-creating the connection.",
+    "failedToReconnect": "Couldn't reconnect to Microclimate at {{- uri }}. Try re-creating the connection.",
     "versionChanged": "Microclimate at {{- uri }} was previously version {{ oldVersion }}, but is now {{ newVersion }}.",
     "errorSavingConnections": "Error saving connections: {{- err }}.",
 
