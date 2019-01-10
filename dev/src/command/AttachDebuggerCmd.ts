@@ -54,7 +54,7 @@ export default async function attachDebuggerCmd(project: Project, isRestart: boo
 
                 const delayPromise: Promise<void> = new Promise( (resolve) => setTimeout(resolve, libertyDelayMs));
 
-                const preDebugDelayMsg = Translator.t(STRING_NS, "waitingBeforeDebugAttach", { projectName: project.name });
+                const preDebugDelayMsg = Translator.t(STRING_NS, "waitingBeforeDebugAttachStatusMsg", { projectName: project.name });
                 vscode.window.setStatusBarMessage(`${Resources.getOcticon(Resources.Octicons.bug, true)} ${preDebugDelayMsg}`, delayPromise);
                 await delayPromise;
             }

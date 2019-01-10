@@ -48,7 +48,7 @@
         "maybeAlreadyDebugging": "Are you already debugging this project?",
         "debuggerAttachSuccess": "Debugger attached to {{ projectName }} at {{- debugUrl }}.",
         "debugLaunchName": "Debug {{ projectName }}",
-        "waitingBeforeDebugAttach": "Waiting before attaching debugger to {{ projectName }}"
+        "waitingBeforeDebugAttachStatusMsg": "Waiting before attaching debugger to {{ projectName }}"
     },
 
     "logs": {
@@ -90,7 +90,7 @@
         "genericErrorProjectRestart": "{{ projectName }} failed to restart.",
         "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
         "restartFailureWithReason": "Failed to restart {{ projectName }} in {{ startMode }} mode: {{ reason }}.",
-        "restartDebugAttachFailure": "attaching the debugger failed. Try attaching the debugger again",
+        "restartFailedReasonDebugFailure": "attaching the debugger failed. Try attaching the debugger again",
         "restartFailedReasonTimeout": "failed to restart within {{ timeoutS }} seconds"
     },
 

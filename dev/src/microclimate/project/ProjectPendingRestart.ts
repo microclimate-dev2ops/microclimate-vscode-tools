@@ -146,7 +146,7 @@ export default class ProjectPendingRestart {
         try {
             const debuggerAttached: boolean = await attachDebuggerCmd(this.project, true);
             if (!debuggerAttached) {
-                const debuggerAttachFailedMsg = Translator.t(STRING_NS, "restartDebugAttachFailure");
+                const debuggerAttachFailedMsg = Translator.t(STRING_NS, "restartFailedReasonDebugFailure");
                 Log.w(debuggerAttachFailedMsg);
 
                 // If we're debugging init, the restart fails here because it will get stuck without the debugger attach
