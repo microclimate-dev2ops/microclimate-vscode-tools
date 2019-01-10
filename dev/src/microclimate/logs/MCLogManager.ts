@@ -89,7 +89,7 @@ export default class MCLogManager {
      * When a connection dies, we have to stop updating its logs, but we should keep the logs visible.
      */
     public onConnectionDisconnect(): void {
-        Log.d(`LogManager for ${this.connection.mcUri} onDisconnect`);
+        // Log.d(`LogManager for ${this.connection.mcUri} onDisconnect`);
         this.appLogMap.forEach( (log) => {
             log.stopUpdating();
         });
@@ -104,7 +104,7 @@ export default class MCLogManager {
      * The easiest way to is destroy them and start from scratch.
      */
     public onConnectionReconnect(): void {
-        Log.d(`LogManager for ${this.connection.mcUri} onReconnect`);
+        // Log.d(`LogManager for ${this.connection.mcUri} onReconnect`);
         const oldAppLogs = new Map(this.appLogMap);
         this.appLogMap.clear();
         oldAppLogs.forEach( (log) => {
