@@ -23,11 +23,15 @@ import MCLogManager from "../logs/MCLogManager";
 import DebugUtils from "../project/DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
+import MCEnvironment from "./MCEnvironment";
 
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
     private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";       // must match package.nls.json    // non-nls
     private static readonly CONTEXT_ID_ACTIVE: string = Connection.CONTEXT_ID + ".active";      // non-nls
+
+    public readonly workspacePath: vscode.Uri;
+    public readonly versionStr: string;
 
     public readonly socket: MCSocket;
 
@@ -35,8 +39,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
     private readonly projectsApiUri: string;
 
-    // Has this connection ever been able to contact its Microclimate instance
-    // private hasConnected = false;
     // Is this connection CURRENTLY connected to its Microclimate instance
     private connected: boolean = false;
 
@@ -52,27 +54,32 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         public readonly mcUri: vscode.Uri,
         public readonly host: string,
         public readonly version: number,
-        public readonly workspacePath: vscode.Uri
+        workspacePath_: string
     ) {
         this.projectsApiUri = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
         this.socket = new MCSocket(mcUri.toString(), this);
         this.logManager = new MCLogManager(this);
+        this.workspacePath = vscode.Uri.file(workspacePath_);
+        this.versionStr = MCEnvironment.getVersionAsString(version);
 
         // QuickPickItem
         this.label = this.getTreeItemLabel();
         // this.description = this.workspacePath.fsPath.toString();
-        Log.i(`Created new Connection @ ${this.mcUri} - version ${this.version}, workspace ${this.workspacePath}`);
+        Log.i(`Created new Connection @ ${this}, workspace ${this.workspacePath}`);
         DebugUtils.cleanDebugLaunchConfigsFor(this);
     }
 
     public async destroy(): Promise<void> {
         Log.d("Destroy connection " + this);
-        this.logManager.onConnectionDisconnect();
-        return this.socket.destroy();
+        return Promise.all([
+            this.logManager.onConnectionDisconnect(),
+            this.socket.destroy()
+        ])
+        .then(() => Promise.resolve());
     }
 
     public toString(): string {
-        return this.mcUri.toString();
+        return `${this.mcUri} ${this.versionStr}`;
     }
 
     /**
@@ -93,6 +100,13 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
             // we already know we're connected, nothing to do until we disconnect
             return;
         }
+
+        if (!(await ConnectionManager.instance.verifyReconnect(this))) {
+            Log.i(`Connection has changed on reconnect! ${this} is no longer a valid Connection`);
+            // this connection gets destroyed
+            return;
+        }
+
         this.connected = true;
         Log.d(`${this} is now connected`);
         await this.forceUpdateProjectList();
@@ -120,7 +134,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         if (!this.needProjectUpdate) {
             return this.projects;
         }
-        Log.d(`Updating projects list from ${this.mcUri}`);
+        Log.d(`Updating projects list from ${this}`);
 
         const result = await request.get(this.projectsApiUri, { json : true });
         Log.d("Get project list result:", result);
@@ -162,7 +176,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public async getProjectByID(projectID: string): Promise<Project | undefined> {
         const result = (await this.getProjects()).find( (project) => project.id === projectID);
         if (result == null) {
-            // Logger.logE(`Couldn't find project with ID ${projectID} on connection ${this.mcUri}`);
+            // Logger.logE(`Couldn't find project with ID ${projectID} on connection ${this}`);
         }
         return result;
     }
@@ -179,7 +193,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         }
 
         await this.getProjects();
-        // Logger.log(`Connection ${this.mcUri} has ${this.projects.length} projects`);
+        // Logger.log(`Connection ${this} has ${this.projects.length} projects`);
         if (this.projects.length === 0) {
             const noProjectsTi: SimpleTreeItem = new SimpleTreeItem(Translator.t(StringNamespaces.TREEVIEW, "noProjectsLabel"));
             return [ noProjectsTi ];
@@ -190,7 +204,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public toTreeItem(): vscode.TreeItem {
         const ti: vscode.TreeItem = new vscode.TreeItem(this.getTreeItemLabel(), vscode.TreeItemCollapsibleState.Expanded);
         // ti.resourceUri = this.workspacePath;
-        ti.tooltip = this.workspacePath.fsPath.toString();
+        ti.tooltip = `${this.versionStr} • ${this.workspacePath.fsPath}`;
         ti.contextValue = this.getContextID();
         ti.iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
         // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
@@ -217,7 +231,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public async forceUpdateProjectList(wipeProjects: boolean = false): Promise<void> {
         Log.d("forceUpdateProjectList");
         if (wipeProjects) {
-            Log.d(`Wiping ${this.projects.length} projects`);
+            Log.d(`Connection ${this} wiping ${this.projects.length} projects`);
             this.projects = [];
         }
         this.needProjectUpdate = true;

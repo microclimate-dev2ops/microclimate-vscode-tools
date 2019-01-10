@@ -11,6 +11,7 @@
 
 import { Uri } from "vscode";
 import * as path from "path";
+import Log from "./Logger";
 // import { Log } from "./Logger";
 
 /**
@@ -101,7 +102,7 @@ export function buildMCUrl(connInfo: IConnectionInfo): Uri {
  * Convert a URI to a ConnectionInfo (for saving to Settings).
  * A URI type with a 'port' field would be preferable, but vscode does not have this.
  */
-export function getConnInfoFrom(url: Uri): IConnectionInfo | undefined {
+export function getConnInfoFrom(url: Uri): IConnectionInfo {
     const colonIndex: number = url.authority.indexOf(":");      // non-nls
 
     const host = url.authority.substring(0, colonIndex);
@@ -109,7 +110,7 @@ export function getConnInfoFrom(url: Uri): IConnectionInfo | undefined {
 
     const port: number = Number(portStr);
     if (!isGoodPort(port)) {
-        return undefined;
+        Log.e(`Bad port ${portStr} passed to getConnInfoFrom`);
     }
     // Log.i(`Loaded connection info host ${host} port ${port}`);
 
