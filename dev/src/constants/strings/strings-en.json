@@ -126,6 +126,6 @@
         "connectionLabel": "Microclimate @ {{- uri }}",
         "disconnectedConnectionLabel": "Disconnected",
         "noProjectsLabel": "No projects",
-        "projectLabel": "{{ projectName }} {{ state }}"
+        "projectLabel": "{{ projectName }} {{- state }}"
     }
 }
