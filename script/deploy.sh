@@ -3,6 +3,13 @@
 # To be run from the repository root directory
 # $artifact_name must be set and the file it points to must be in the working directory
 
+# If requesting a custom build in the Travis UI, set:
+: '
+env:
+    - release=true
+'
+# to do a release build
+
 if [[ "$release" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
     echo "$(basename $0): not a release or cronjob, skipping deploy"
     exit 0
