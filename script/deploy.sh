@@ -3,24 +3,23 @@
 # To be run from the repository root directory
 # $artifact_name must be set and the file it points to must be in the working directory
 
-if [[ "$force_deploy" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
-    echo "$(basename $0): not a cronjob, skipping deploy"
+if [[ "$release" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
+    echo "$(basename $0): not a release or cronjob, skipping deploy"
     exit 0
 fi
 
-# Builds can be either "nightly" or "release"
 if [[ "$release" == "true" ]]; then
-    tag="RC-$(date +'%F-%H%M')"
+    tag=""
     deploy_dir="release"
 else
-    tag="nightly-$(date +'%F-%H%M')"
+    tag="_nightly-$(date +'%F-%H%M')"
     deploy_dir="nightly"
 fi
 
 echo "Build tag is $tag"
 
 # Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07-2330.vsix"
-tagged_artifact_name="${artifact_name/.vsix/_$tag.vsix}"
+tagged_artifact_name="${artifact_name/.vsix/$tag.vsix}"
 mv -v "$artifact_name" "$tagged_artifact_name"
 
 # Update the last_build file linking to the most recent vsix
