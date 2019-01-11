@@ -83,16 +83,32 @@ const filesToIgnore: string[] = [
  * in the microclimate-workspace that the user probably doesn't want to see.
  */
 async function ignoreMCFiles(): Promise<void> {
+    if (!inMCWorkspace()) {
+        Log.d("Not ignoring Microclimate files, not in a microclimate-workspace");
+        return;
+    }
+
+    Log.d("Ignoring Microclimate files");
     const filesConfig = vscode.workspace.getConfiguration("files", null);       // non-nls
     const existing: any = filesConfig.get<{}>(excludeSection) || {};
 
     filesToIgnore.forEach( (toIgnore) => {
         const newIgnore = prePattern + toIgnore;
+        // If the user already set it to false, don't undo that!
         if (existing[newIgnore] == null) {
-            // If the user already set it to false, don't undo that!
             existing[newIgnore] = true;
         }
     });
 
     filesConfig.update(excludeSection, existing, vscode.ConfigurationTarget.Workspace);
+}
+
+function inMCWorkspace(): boolean {
+    const wsFolders = vscode.workspace.workspaceFolders;
+    if (wsFolders != null) {
+        return wsFolders.some( (folder) => folder.uri.fsPath.endsWith("microclimate-workspace"));       // non-nls
+    }
+    else {
+        return false;
+    }
 }
