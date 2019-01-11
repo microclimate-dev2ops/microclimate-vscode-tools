@@ -1,6 +1,6 @@
 env:
   # Remove when 19.1 is done and tagged
-  - release=true
+  - rc=true
 
 branches:
   only:

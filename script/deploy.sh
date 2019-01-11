@@ -6,17 +6,17 @@
 # If requesting a custom build in the Travis UI, set:
 : '
 env:
-    - release=true
+    - rc=true
 '
-# to do a release build
+# to do an RC build
 
-if [[ "$release" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
+if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
     echo "$(basename $0): not a release or cronjob, skipping deploy"
     exit 0
 fi
 
-if [[ "$release" == "true" ]]; then
-    tag=""
+if [[ "$rc" == "true" ]]; then
+    tag="_rc-$(date +'%F-%H%M')"
     deploy_dir="release"
 else
     tag="_nightly-$(date +'%F-%H%M')"
