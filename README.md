@@ -1,11 +1,13 @@
-[![Microclimate Banner](mc-banner.png)](https://microclimate-dev2ops.github.io/)
+<a href="https://microclimate-dev2ops.github.io/">
+    <img src="mc-banner.png" alt="Microclimate Banner" height="100px" />
+</a>
 
 # Microclimate Developer Tools for VS Code
 
 [![Build Status](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools.svg?token=wpsJvyUkyhtfRa9prmMq&branch=master)](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools)
-[![License](https://img.shields.io/badge/License-EPL%202.0-red.svg)](https://www.eclipse.org/legal/epl-2.0/)
+[![License](https://img.shields.io/badge/License-EPL%202.0-red.svg?label=license)](https://www.eclipse.org/legal/epl-2.0/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
-[![Marketplace](https://img.shields.io/vscode-marketplace/v/IBM.microclimate-tools.svg)](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)
+[![Marketplace](https://img.shields.io/vscode-marketplace/v/IBM.microclimate-tools.svg?label=vscode%20marketplace)](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)
 
 - **[Marketplace](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)**
 - **[Documentation](https://microclimate-dev2ops.github.io/mdt-vsc-overview)**
