@@ -17,7 +17,7 @@ fi
 
 if [[ "$rc" == "true" ]]; then
     tag="_rc-$(date +'%F-%H%M')"
-    deploy_dir="release"
+    deploy_dir="rc"
 else
     tag="_nightly-$(date +'%F-%H%M')"
     deploy_dir="nightly"
