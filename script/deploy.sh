@@ -23,6 +23,9 @@ env:
 if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" && -z "$TRAVIS_TAG" ]]; then
     echo "$(basename $0): not a release or cronjob, skipping deploy"
     exit 0
+elif [[ "$TRAVIS_BRANCH" != "master" ]]; then
+    echo "$(basename $0): not master branch, skipping deploy"
+    exit 0
 fi
 
 if [[ -n "$TRAVIS_TAG" ]]; then
