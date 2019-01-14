@@ -3,19 +3,23 @@
 # To be run from the repository root directory
 # $artifact_name must be set and the file it points to must be in the working directory
 
-# If requesting a custom build in the Travis UI, set:
+# In the Travis UI, set the following to do an RC build:
 : '
 env:
     - rc=true
 '
-# to do an RC build
 
-if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
+if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" && -z "$TRAVIS_TAG" ]]; then
     echo "$(basename $0): not a release or cronjob, skipping deploy"
     exit 0
 fi
 
-if [[ "$rc" == "true" ]]; then
+if [[ -n "$TRAVIS_TAG" ]]; then
+    echo "Releasing $TRAVIS_TAG"
+    # No extra tag; just the version eg. 19.1
+    tag=""
+    deploy_dir="release"
+else if [[ "$rc" == "true" ]]; then
     tag="_rc-$(date +'%F-%H%M')"
     deploy_dir="rc"
 else
@@ -23,7 +27,7 @@ else
     deploy_dir="nightly"
 fi
 
-echo "Build tag is $tag"
+echo "Build tag is \"$tag\""
 
 # Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07-2330.vsix"
 tagged_artifact_name="${artifact_name/.vsix/$tag.vsix}"
