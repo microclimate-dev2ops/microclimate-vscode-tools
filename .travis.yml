@@ -1,6 +1,6 @@
 env:
-  # Remove when 19.1 is done and tagged
-  - rc=true
+  # Uncomment when in release shutdown and building release candidates
+  #- rc=true
 
 notifications:
   email:
