@@ -2,11 +2,6 @@ env:
   # Remove when 19.1 is done and tagged
   - rc=true
 
-branches:
-  only:
-  - master
-  - travis-test
-
 notifications:
   email:
     recipients:

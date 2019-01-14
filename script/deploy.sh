@@ -19,7 +19,7 @@ if [[ -n "$TRAVIS_TAG" ]]; then
     # No extra tag; just the version eg. 19.1
     tag=""
     deploy_dir="release"
-else if [[ "$rc" == "true" ]]; then
+elif [[ "$rc" == "true" ]]; then
     tag="_rc-$(date +'%F-%H%M')"
     deploy_dir="rc"
 else
