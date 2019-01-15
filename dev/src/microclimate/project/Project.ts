@@ -250,6 +250,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
             this.setAppPort(event.ports.exposedPort);
             this.setDebugPort(event.ports.exposedDebugPort);
+            this.tryRefreshProjectInfoPage();
 
             success = true;
         }

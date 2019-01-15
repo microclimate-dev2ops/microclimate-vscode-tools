@@ -1,5 +1,5 @@
 #main {
-    max-width: 600px;
+    max-width: 700px;
 }
 
 #top-section, #bottom-section {
@@ -17,10 +17,6 @@
     margin-right: 10px;
 }
 
-table {
-    table-layout: fixed;
-}
-
 tr {
     padding-bottom: 0.25em;
 }
@@ -28,7 +24,7 @@ tr {
 .info-label {
     font-weight: bold;
     padding-right: 1em;
-    width: 125px;
+    min-width: 125px;
 }
 
 input[type="checkbox"] {
