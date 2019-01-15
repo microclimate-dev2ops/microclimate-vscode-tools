@@ -1,7 +1,3 @@
-<a href="https://microclimate-dev2ops.github.io/">
-    <img src="https://github.com/microclimate-dev2ops/microclimate-vscode-tools/raw/master/mc-banner.png" alt="Microclimate Banner" height="100px" />
-</a>
-
 # Microclimate Developer Tools for VS Code
 
 [![Build Status](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools.svg?token=wpsJvyUkyhtfRa9prmMq&branch=master)](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools)
