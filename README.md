@@ -1,5 +1,5 @@
 <a href="https://microclimate-dev2ops.github.io/">
-    <img src="mc-banner.png" alt="Microclimate Banner" height="100px" />
+    <img src="mc-banner.png" alt="Microclimate Banner" height="75px" />
 </a>
 
 # Microclimate Developer Tools for VS Code
