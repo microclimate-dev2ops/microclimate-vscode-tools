@@ -103,6 +103,8 @@ async function getConnectInfo(): Promise<MCUtil.IConnectionInfo | undefined> {
 }
 
 async function offerToOpenWorkspace(connection: Connection): Promise<void> {
+    Log.d(`offerToOpenWorkspace ${connection.mcUri} workspace=${connection.workspacePath}`);
+
     let inMcWorkspace = false;
     // See if the user has this connection's workspace open
     const wsFolders = vscode.workspace.workspaceFolders;
