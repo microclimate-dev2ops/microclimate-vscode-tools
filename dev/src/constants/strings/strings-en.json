@@ -44,7 +44,7 @@
         "failedToAttachWithUrl": "Failed to attach debugger to {{ projectName }} at {{- debugUrl }}.",
         "noDebugTypeKnown": "No debug type available for project of type {{ type }}.",
         "noDebugPort": "No debug port set for project {{ projectName }}.",
-        "errDetailSeparator": " - ",
+        "errDetailSeparator": " ",
         "maybeAlreadyDebugging": "Are you already debugging this project?",
         "debuggerAttachSuccess": "Debugger attached to {{ projectName }} at {{- debugUrl }}.",
         "debugLaunchName": "Debug {{ projectName }}",
