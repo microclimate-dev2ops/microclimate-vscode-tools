@@ -181,18 +181,29 @@ export async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mc
 
     const rawVersion: string = mcEnvData.microclimate_version;
     const rawWorkspace: string = mcEnvData.workspace_location;
+    const rawPlatform: string = mcEnvData.os_platform;
 
     Log.d("rawVersion from Microclimate is", rawVersion);
     Log.d("rawWorkspace from Microclimate is", rawWorkspace);
+    Log.d("rawPlatform from Microclimate is", rawPlatform);
     if (rawVersion == null || rawWorkspace == null) {
         Log.e("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
         throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
     }
 
+    let workspace = rawWorkspace;
+    // on windows, we have to replace the unix-like workspace path with a windows one. /C/Users/... -> C:/Users/ ...
+    // logic copied from Eclipse plugin
+    // MicroclimateConnection.java#L244
+    if (rawPlatform.toLowerCase() === "windows" && workspace.startsWith("/")) {
+        const deviceLetter = workspace.substring(1, 2);
+        workspace = deviceLetter + ":" + workspace.substring(2);
+    }
+
     const versionNum = MCEnvironment.getVersionNumber(mcEnvData);
 
     try {
-        return await ConnectionManager.instance.addConnection(mcUri, host, versionNum, rawWorkspace);
+        return await ConnectionManager.instance.addConnection(mcUri, host, versionNum, workspace);
     }
     catch (err) {
         Log.i("New connection rejected by ConnectionManager ", err.message || err);

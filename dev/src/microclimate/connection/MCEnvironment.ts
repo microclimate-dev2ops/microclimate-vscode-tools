@@ -28,6 +28,7 @@ namespace MCEnvironment {
         devops_available: boolean;
         editor_url: string;
         microclimate_version: string;
+        os_platform: string;
         running_on_icp: boolean;
         socket_namespace?: string;
         user_string?: string;
@@ -96,7 +97,7 @@ namespace MCEnvironment {
         else {
             const year = Math.floor(versionNum / 100);
             const month = versionNum % 100;
-            return `${year}.${month}`;
+            return `${year}.${month < 10 ? "0" + month : month}`;
         }
     }
 
