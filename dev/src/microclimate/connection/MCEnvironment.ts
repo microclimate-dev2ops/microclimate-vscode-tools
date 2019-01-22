@@ -113,8 +113,8 @@ namespace MCEnvironment {
             return false;
         }
 
-        return connection.version === newVersionNumber &&
-            connection.workspacePath.fsPath === envData.workspace_location;
+        return connection.version === newVersionNumber;
+            // should check workspace too, but need to consider platform when comparing paths
             // more to check once we support ICP
             // envData.user_string
     }
