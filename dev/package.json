@@ -2,7 +2,7 @@
     "name": "microclimate-tools",
     "displayName": "%displayName%",
     "description": "%description%",
-    "version": "19.1.0",
+    "version": "19.1.1",
     "publisher": "IBM",
     "engines": {
         "vscode": "^1.27.0"
