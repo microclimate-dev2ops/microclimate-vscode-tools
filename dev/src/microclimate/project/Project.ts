@@ -77,7 +77,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
 
         this.localPath = vscode.Uri.file(
-            MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, projectInfo.locOnDisk)
+            MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, vscode.Uri.file(projectInfo.locOnDisk).fsPath)
         );
 
         this.contextRoot = projectInfo.contextroot || "";       // non-nls
