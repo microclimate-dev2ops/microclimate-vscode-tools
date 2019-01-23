@@ -170,7 +170,8 @@ namespace Requester {
 
                 // If the server provided a specific message, present the user with that,
                 // otherwise show them the whole error (but it will be ugly)
-                const errMsg = err.error ? err.error : err;
+                // err.error.msg, then err.error, then the whole err
+                const errMsg: string = err.error ? (err.error.msg ? err.error.msg : err.error) : JSON.stringify(err);
                 vscode.window.showErrorMessage(
                     Translator.t(STRING_NS, "requestFail",
                     { operationName: userOperationName, projectName: project.name, err: errMsg })
