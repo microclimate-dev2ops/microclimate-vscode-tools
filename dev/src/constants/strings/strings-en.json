@@ -91,7 +91,8 @@
         "restartFailure": "Failed to restart {{ projectName }} in {{ startMode }} mode.",
         "restartFailureWithReason": "Failed to restart {{ projectName }} in {{ startMode }} mode: {{ reason }}.",
         "restartFailedReasonDebugFailure": "attaching the debugger failed. Try attaching the debugger again",
-        "restartFailedReasonTimeout": "failed to restart within {{ timeoutS }} seconds"
+        "restartFailedReasonTimeout": "failed to restart within {{ timeoutS }} seconds",
+        "restartFailedReasonDisconnect": "Microclimate disconnected"
     },
 
     "openInBrowserCmd": {

@@ -135,6 +135,12 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
     }
 
+    public onConnectionDisconnect(): void {
+        if (this.pendingRestart != null) {
+            this.pendingRestart.onConnectionDisconnect();
+        }
+    }
+
     /**
      * Set this project's status based on the project info event payload passed.
      * This includes checking the appStatus, buildStatus, buildStatusDetail, and startMode.

@@ -122,7 +122,10 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
             return;
         }
         this.connected = false;
+
+        this.projects.forEach((p) => p.onConnectionDisconnect());
         this.projects = [];
+
         Log.d(`${this} is now disconnected`);
         this.logManager.onConnectionDisconnect();
 

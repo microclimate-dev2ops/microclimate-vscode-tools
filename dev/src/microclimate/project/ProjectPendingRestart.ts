@@ -163,6 +163,10 @@ export default class ProjectPendingRestart {
         }
     }
 
+    public onConnectionDisconnect(): void {
+        this.fulfill(false, Translator.t(STRING_NS, "restartFailedReasonDisconnect"));
+    }
+
     /**
      * Resolves this class's restart promise, removing the status bar item and rendering this pending restart "done".
      * Also calls onRestartFinish which removes the Project's reference to this instance.
@@ -170,7 +174,7 @@ export default class ProjectPendingRestart {
      * Displays a success or failure message to the user depending on the value of `success`.
      */
     private fulfill(success: boolean, error?: string): void {
-        Log.d("Fulfilling pending restart for " + this.project.name);
+        Log.d(`Fulfilling pending restart for ${this.project.name}, success=${success}${error ? ", error=" + error : ""}`);
 
         if (this.resolve == null || this.timeoutID == null) {
             // will never happen
