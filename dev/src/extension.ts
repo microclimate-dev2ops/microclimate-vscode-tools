@@ -27,6 +27,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // Initialize our globals
     global.__extRoot = context.extensionPath;
+    // Declared as 'any' type, but will always be assigned globalState which is a vscode.Memento
+    global.extGlobalState = context.globalState;
+
     Log.setLogFilePath(context);
     Log.i("Finished activating logger");
 

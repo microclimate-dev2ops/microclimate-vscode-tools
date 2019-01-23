@@ -40,11 +40,6 @@
             "type": "object",
             "title": "Microclimate Tools",
             "properties": {
-                "microclimate.connections": {
-                    "type": "array",
-                    "default": [],
-                    "description": "%settingDesc_connections%"
-                },
                 "microclimate.openLogsOnChange.app": {
                     "type": "boolean",
                     "default": false,

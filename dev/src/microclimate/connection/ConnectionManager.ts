@@ -143,10 +143,8 @@ export default class ConnectionManager {
     }
 
     public static loadConnections(): MCUtil.IConnectionInfo[] {
-        const loaded = vscode.workspace.getConfiguration(Settings.CONFIG_SECTION)
-                .get(Settings.CONNECTIONS_KEY, []);
-
-        // Logger.log("LOADED CONNECTIONS", loaded);
+        const globalState = global.extGlobalState as vscode.Memento;
+        const loaded = globalState.get<MCUtil.IConnectionInfo[]>(Settings.CONNECTIONS_KEY) || [];
         return loaded;
     }
 
@@ -158,8 +156,9 @@ export default class ConnectionManager {
 
         Log.i("Saving connections", connectionInfos);
         try {
-            return vscode.workspace.getConfiguration(Settings.CONFIG_SECTION)
-                    .update(Settings.CONNECTIONS_KEY, connectionInfos, vscode.ConfigurationTarget.Global);
+            const globalState = global.extGlobalState as vscode.Memento;
+            // connectionInfos must not contain cyclic references (ie, JSON.stringify succeeds)
+            await globalState.update(Settings.CONNECTIONS_KEY, connectionInfos);
         }
         catch (err) {
             const msg = Translator.t(StringNamespaces.DEFAULT, "errorSavingConnections", { err: err.toString() });
