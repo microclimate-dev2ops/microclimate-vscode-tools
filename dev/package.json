@@ -11,7 +11,7 @@
     "bugs": {
         "url": "https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues"
     },
-    "homepage": "https://microclimate-dev2ops.github.io/mdt-vsc-overview#doc",
+    "homepage": "https://microclimate-dev2ops.github.io/mdt-vsc-overview",
     "categories": [
         "Other"
     ],
