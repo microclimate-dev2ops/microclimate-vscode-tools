@@ -12,6 +12,7 @@
 - **[Marketplace](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)**
 - **[Documentation](https://microclimate-dev2ops.github.io/mdt-vsc-overview)**
 - **[Slack](https://slack-invite-ibm-cloud-tech.mybluemix.net/)**
+- **[Changelog](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/CHANGELOG.md)**
 - **[Extension README](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/blob/master/dev/README.md)**
 
 You can use Microclimate Developer Tools for Visual Studio Code to develop your [Microclimate](https://microclimate-dev2ops.github.io) projects from within VS Code. Use the tools to access Microclimate features in the comfort of your IDE.
