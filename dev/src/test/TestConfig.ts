@@ -10,12 +10,10 @@
  *******************************************************************************/
 
 import ProjectType from "../microclimate/project/ProjectType";
+import Log from "../Logger";
 
 namespace TestConfig {
     interface ITestableProjectType {
-        // change this to run the tests on this type
-        runTest: boolean;
-
         projectType: ProjectType;
         // We want to tests projects that can't be restarted too,
         // so tell the test whether or not the restart should succeed here.
@@ -27,44 +25,64 @@ namespace TestConfig {
 
     const allProjectTypes: ITestableProjectType[] = [
         {
-            runTest: true,
-            // runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
             canRestart: true
         },
         {
-            runTest: true,
-            // runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
             canRestart: true
         },
         {
-            runTest: true,
-            // runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
             canRestart: true
         },
         {
-            // runTest: true,
-            runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.SWIFT, ProjectType.Languages.SWIFT),
             canRestart: false
         },
         {
-            // runTest: true,
-            runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
             canRestart: false
         },
         {
-            // runTest: true,
-            runTest: false,
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.GO),
             canRestart: false
         }
     ];
 
-    export const projectTypesToTest: ITestableProjectType[] = allProjectTypes.filter( (t) => t.runTest);
+    const TYPES_ENV_VAR = "projectTypes";
+    const SCOPE_ENV_VAR = "testScope";
+
+    export function getProjectTypesToTest(): ITestableProjectType[] {
+        const envProjectTypes = process.env[TYPES_ENV_VAR];
+
+        if (!envProjectTypes) {
+            Log.e(`No project types set! You have to set the environment variable "${TYPES_ENV_VAR}". `
+                + `See ProjectType.Types for supported types.`);
+            return [];
+        }
+
+        const rawTypes = splitByComma(envProjectTypes);
+        return allProjectTypes.filter((type) => {
+            return rawTypes.includes(type.projectType.toString().toLowerCase());
+        });
+    }
+
+    export function isScopeEnabled(scope: string): boolean {
+        const envScope = process.env[SCOPE_ENV_VAR];
+        if (!envScope) {
+            Log.t(`${SCOPE_ENV_VAR} environment variable is not set`);
+            // if nothing is set, run all scopes
+            return true;
+        }
+        else {
+            return splitByComma(envScope).includes(scope);
+        }
+    }
+
+    function splitByComma(s: string): string[] {
+        return s.split(",").map((s_) => s_.toLowerCase().trim());
+    }
 }
 
 export default TestConfig;

@@ -32,6 +32,10 @@
             "outFiles": [
                 "${workspaceFolder}/dev/out/test/**/*.js"
             ],
+            "env": {
+                "projectTypes": "node.js",
+                "testScope": "extended, restart"
+            },
             "preLaunchTask": "build"
         }
     ]

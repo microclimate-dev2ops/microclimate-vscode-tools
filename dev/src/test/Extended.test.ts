@@ -32,9 +32,14 @@ describe(`Extended tests`, async function() {
     before("Check initialization", function() {
         expect(Base.initializeSucceeded, "Initialize failed in base test").to.be.true;
         expect(Base.testConnection, "Test Connection is null").to.exist;
+
+        if (!TestConfig.isScopeEnabled("extended")) {
+            Log.t("SKIPPING EXTENDED TESTS");
+            this.skip();
+        }
     });
 
-    for (const testType of TestConfig.projectTypesToTest) {
+    for (const testType of TestConfig.getProjectTypesToTest()) {
         let project: Project;
 
         it(`${testType.projectType} - should be able to acquire the test project we created, and wait for it to be Started`, async function() {

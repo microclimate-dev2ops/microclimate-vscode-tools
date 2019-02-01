@@ -34,9 +34,16 @@ describe(`Restart tests`, async function() {
     before("Check initialization", function() {
         expect(Base.initializeSucceeded, "Initialize failed in base test").to.be.true;
         expect(Base.testConnection, "Test Connection is null").to.exist;
+
+        if (!TestConfig.isScopeEnabled("restart")) {
+            Log.t("SKIPPING RESTART TESTS");
+            this.skip();
+        }
     });
 
-    for (const testType of TestConfig.projectTypesToTest) {
+
+
+    for (const testType of TestConfig.getProjectTypesToTest()) {
         // These can't be set here because the base test has to execute first
         let project: Project;
         const canRestart: boolean = testType.canRestart;

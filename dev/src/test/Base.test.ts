@@ -47,7 +47,13 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         expect(extension!.isActive, `Extension ${extensionID} wasn't activated!`).to.be.true;
 
         Log.t("Workspace is good and extension is loaded.");
-        // Log.silenceLevels(Log.Levels.DEBUG);
+
+        Log.t(`${"=".repeat(10)} TEST CONFIGURATION: ${"=".repeat(10)}`);
+        const projectTypesToTest = TestConfig.getProjectTypesToTest();
+        Log.t("Testing project types:", projectTypesToTest);
+        Log.t("Extended tests enabled: " + TestConfig.isScopeEnabled("extended"));
+        Log.t("Restart tests enabled: " + TestConfig.isScopeEnabled("restart"));
+        Log.t(`${"=".repeat(10)} END TEST CONFIGURATION ${"=".repeat(10)}`);
     });
 
     it("should have a log file file that is readable and non-empty", async function() {
@@ -113,9 +119,12 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         testConnection = ConnectionManager.instance.connections[0];
         expect(testConnection, "No Microclimate connection").to.exist;
 
+        const projectTypesToTest = TestConfig.getProjectTypesToTest();
+        Log.t("Testing project types:", projectTypesToTest);
+
         const createPromises: Array<Promise<Project | undefined>> = [];
-        TestConfig.projectTypesToTest.forEach( (_, i) => {
-            const testType = TestConfig.projectTypesToTest[i];
+        projectTypesToTest.forEach( (_, i) => {
+            const testType = projectTypesToTest[i];
             Log.t(`Create ${testType.projectType.type} project`);
 
             const createPromise = TestUtil.createProject(testConnection, testType.projectType);
@@ -138,7 +147,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         Log.t("Awaiting test project creation");
         await Promise.all(createPromises);
 
-        Log.t("Done creating test projects", TestConfig.projectTypesToTest);
+        Log.t("Done creating test projects", projectTypesToTest);
         // If we made it this far, we can run the rest of the tests
         initializeSucceeded = true;
     });

@@ -140,7 +140,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         Log.d(`Updating projects list from ${this}`);
 
         const result = await request.get(this.projectsApiUri, { json : true });
-        Log.d("Get project list result:", result);
 
         const oldProjects = this.projects;
         this.projects = [];
