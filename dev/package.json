@@ -23,6 +23,7 @@
         "cloud"
     ],
     "activationEvents": [
+        "*",
         "onView:ext.mc.mcProjectExplorer",
         "workspaceContains:**/.idc",
         "workspaceContains:**/.cfignore",
@@ -316,14 +317,15 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "npm ci && npm run compile && npm run copy-strings",
+        "vscode:prepublish": "npm ci && npm run compile && npm run copy-strings && npm run copy-license",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test",
+        "test": "node ./node_modules/vscode/bin/test",
         "lint": "tslint -p ./tsconfig.json -t verbose",
         "lint-f": "tslint -p ./tsconfig.json -t verbose --force",
-        "copy-strings": "mkdir -p ./out/constants/strings/; cp -v ./src/constants/strings/strings-*.json ./out/constants/strings/"
+        "copy-strings": "mkdir -p ./out/constants/strings/; cp -v ./src/constants/strings/strings-*.json ./out/constants/strings/",
+        "copy-license": "cp -v ../LICENSE ."
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",

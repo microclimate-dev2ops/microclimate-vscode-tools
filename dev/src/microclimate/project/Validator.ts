@@ -40,7 +40,7 @@ namespace Validator {
         // For each validation problem, see if we already have an error for it. If so, do nothing.
         // If we don't, create an error and display a pop-up notifying the user of the new error.
         for (const validationProblem of validationResult) {
-            Log.i("ValidationProblem:", validationProblem);
+            // Log.i("ValidationProblem:", validationProblem);
             const diagnosticMsg: string = validationProblem.details;
 
             const existingDiagnostic: vscode.Diagnostic | undefined = oldDiagnostics.find( (d) => d.message === diagnosticMsg);

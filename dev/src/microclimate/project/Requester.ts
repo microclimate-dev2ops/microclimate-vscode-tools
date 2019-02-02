@@ -156,7 +156,8 @@ namespace Requester {
 
         return requestFunc(url, options)
             .then( (result: any) => {
-                Log.i(`Response code ${result.statusCode} from ${userOperationName} request for ${project.name}:`, result);
+                Log.d(`Response code ${result.statusCode} from ${userOperationName} ${requestFunc.name.toUpperCase()} request for ${project.name}`);
+
                 if (userOperationName != null) {
                     vscode.window.showInformationMessage(
                         Translator.t(STRING_NS, "requestSuccess",

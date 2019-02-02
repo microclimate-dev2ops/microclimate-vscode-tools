@@ -33,8 +33,8 @@
                 "${workspaceFolder}/dev/out/test/**/*.js"
             ],
             "env": {
-                "projectTypes": "node.js",
-                "testScope": "extended, restart"
+                // "project_types": "node.js",
+                // "test_scope": "extended, restart"
             },
             "preLaunchTask": "build"
         }
