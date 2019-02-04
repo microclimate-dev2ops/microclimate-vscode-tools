@@ -1,6 +1,6 @@
 env:
   # Uncomment when in release shutdown and building release candidates
-  - rc=true
+  # - rc=true
 
 notifications:
   email:
