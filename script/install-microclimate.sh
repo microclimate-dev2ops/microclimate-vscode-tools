@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #*******************************************************************************
-# Copyright (c) 2018, 2019 IBM Corporation and others.
+# Copyright (c) 2019 IBM Corporation and others.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v2.0
 # which accompanies this distribution, and is available at
@@ -11,18 +11,18 @@
 #     IBM Corporation - initial API and implementation
 #*******************************************************************************
 
-# WD should be dev/
+if [[ -z "$microclimate_version" ]]; then
+    echo "\$microclimate_version must be set in the environment, eg \"1901\""
+    exit 1
+fi
 
 set -ex
 
-#  Copy the LICENSE into the extension directory, so it is included in the build
-cp -v ../LICENSE .
+curl -sS https://microclimate-dev2ops.github.io/download/microclimate-${microclimate_version}.zip -o microclimate.zip
+unzip -q microclimate.zip
 
-npm i -g vsce
-npm ci
+cd microclimate-*/cli
+sudo ./install.sh
+cd -
 
-# Make sure compilation will succeed (vsce package won't show the compilation failures)
-# Fail the build if compile fails
-npm run compile
-# Run the linter, could switch to lint-f to not fail the build
-npm run lint
+mcdev start

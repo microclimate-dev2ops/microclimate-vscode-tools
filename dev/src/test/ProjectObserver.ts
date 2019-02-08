@@ -43,6 +43,7 @@ export default class ProjectObserver {
     constructor(
         public readonly connection: Connection
     ) {
+        Log.t("Initializing ProjectObserver");
         ProjectObserver._instance = this;
         ConnectionManager.instance.addOnChangeListener(this.onChange);
 

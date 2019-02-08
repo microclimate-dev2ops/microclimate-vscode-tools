@@ -50,16 +50,16 @@ namespace TestConfig {
         }
     ];
 
-    const TYPES_ENV_VAR = "projectTypes";
-    const SCOPE_ENV_VAR = "testScope";
+    const TYPES_ENV_VAR = "project_types";
+    const SCOPE_ENV_VAR = "test_scope";
+    const DEFAULT_TYPES = "node.js, spring, microprofile, go";
 
     export function getProjectTypesToTest(): ITestableProjectType[] {
-        const envProjectTypes = process.env[TYPES_ENV_VAR];
+        let envProjectTypes = process.env[TYPES_ENV_VAR];
 
         if (!envProjectTypes) {
-            Log.e(`No project types set! You have to set the environment variable "${TYPES_ENV_VAR}". `
-                + `See ProjectType.Types for supported types.`);
-            return [];
+            Log.w(`No project types set! Using default`);
+            envProjectTypes = DEFAULT_TYPES;
         }
 
         const rawTypes = splitByComma(envProjectTypes);
@@ -71,13 +71,12 @@ namespace TestConfig {
     export function isScopeEnabled(scope: string): boolean {
         const envScope = process.env[SCOPE_ENV_VAR];
         if (!envScope) {
-            Log.t(`${SCOPE_ENV_VAR} environment variable is not set`);
+            // Log.w(`${SCOPE_ENV_VAR} environment variable is not set`);
             // if nothing is set, run all scopes
             return true;
         }
-        else {
-            return splitByComma(envScope).includes(scope);
-        }
+
+        return splitByComma(envScope).includes(scope);
     }
 
     function splitByComma(s: string): string[] {

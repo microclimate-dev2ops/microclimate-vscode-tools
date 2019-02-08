@@ -48,9 +48,11 @@ describe("Microclimate Tools for VSCode basic test", async function() {
 
         Log.t("Workspace is good and extension is loaded.");
 
+        // Log.t("Environment:", process.env);
+
         Log.t(`${"=".repeat(10)} TEST CONFIGURATION: ${"=".repeat(10)}`);
         const projectTypesToTest = TestConfig.getProjectTypesToTest();
-        Log.t("Testing project types:", projectTypesToTest);
+        Log.t("Testing project types:", projectTypesToTest.map((t) => t.projectType.type));
         Log.t("Extended tests enabled: " + TestConfig.isScopeEnabled("extended"));
         Log.t("Restart tests enabled: " + TestConfig.isScopeEnabled("restart"));
         Log.t(`${"=".repeat(10)} END TEST CONFIGURATION ${"=".repeat(10)}`);
