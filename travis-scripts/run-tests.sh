@@ -13,7 +13,9 @@ if [[ "$skip_tests" != "true" ]]; then
         sudo -E ../travis-scripts/install-microclimate.sh
     fi
 
-    export CODE_TESTS_WORKSPACE="${HOME}/microclimate-workspace/"
+    if [[ -z "$CODE_TESTS_WORKSPACE" ]]; then
+        export CODE_TESTS_WORKSPACE="${HOME}/microclimate-workspace/"
+    fi
 
     # Move node to somewhere that can be found on root user's PATH
     # https://stackoverflow.com/a/29903645/
