@@ -35,8 +35,8 @@ script:
 after_success:
 # copy the vsix to the script dir and cd into it
 - export artifact_name="$(basename *.vsix)"
-- mv -v $artifact_name ../script/
-- cd ../script/
+- mv -v $artifact_name ../travis-scripts/
+- cd ../travis-scripts/
 # will exit immediately if not a deploy build
 - ./deploy.sh || >&2 echo "Deploy failed!"
 
