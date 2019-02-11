@@ -1,9 +1,9 @@
 # Microclimate Developer Tools for VS Code
 
-[![Build Status](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools.svg?token=wpsJvyUkyhtfRa9prmMq&branch=master)](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools)
-[![License](https://img.shields.io/badge/License-EPL%202.0-red.svg?label=license)](https://www.eclipse.org/legal/epl-2.0/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
-[![Marketplace](https://img.shields.io/vscode-marketplace/v/IBM.microclimate-tools.svg?label=vscode%20marketplace)](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)
+[![Marketplace](https://img.shields.io/vscode-marketplace/v/IBM.microclimate-tools.svg?label=marketplace)](https://marketplace.visualstudio.com/items?itemName=IBM.microclimate-tools)
+[![Build Status](https://img.shields.io/travis/com/microclimate-dev2ops/microclimate-vscode-tools/master.svg?logo=travis&label=build)](https://travis-ci.com/microclimate-dev2ops/microclimate-vscode-tools)
+[![License](https://img.shields.io/badge/License-EPL%202.0-red.svg?label=license&logo=eclipse)](https://www.eclipse.org/legal/epl-2.0/)
+[![Slack](https://img.shields.io/badge/ibm--cloud--tech-blue.svg?logo=slack&label=slack)](https://slack-invite-ibm-cloud-tech.mybluemix.net/)
 
 You can use [Microclimate Developer Tools for Visual Studio Code](https://github.com/microclimate-dev2ops/microclimate-vscode-tools) to develop your [Microclimate](https://microclimate-dev2ops.github.io) projects from within VS Code. Use the tools to access Microclimate features in the comfort of your IDE.
 

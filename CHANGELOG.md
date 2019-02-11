@@ -1,4 +1,8 @@
-### 19.1.1 (latest)
+### 19.2 (latest)
+- Minor bug fix: [#17](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues/17)
+- Debug port is now only exposed to localhost
+
+### 19.1.1
 - Fix Windows-only bugs: [#24](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues/24), [#25](https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues/25)
 
 ### 19.1
