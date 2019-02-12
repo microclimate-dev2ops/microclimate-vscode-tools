@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 IBM Corporation and others.
+ * Copyright (c) 2018, 2019 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,11 @@ export default async function openAppMonitorCmd(project: Project): Promise<void>
             return;
         }
         project = selected;
+    }
+
+    if (project.connection.isICP) {
+        vscode.window.showErrorMessage("App monitor not supported on ICP at this time");
+        return;
     }
 
     const monitorPageUrl: vscode.Uri = Endpoints.getAppMonitorUrl(project.connection, project.id);

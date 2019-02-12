@@ -19,10 +19,50 @@ import Log from "../../Logger";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Translator from "../../constants/strings/translator";
 import * as MCUtil from "../../MCUtil";
+import Authenticator from "../connection/Authenticator";
 
 const STRING_NS = StringNamespaces.REQUESTS;
 
 namespace Requester {
+
+    export function shouldRejectUnauthed(_url: vscode.Uri | string): boolean {
+        // this should be user-configurable
+        return false;
+    }
+
+    /**
+     * Do a GET request to the given URI with the given options. ICP cookie will be used if it exists.
+     * Can throw errors. Caller must have a catch block.
+     */
+    export async function get(url: vscode.Uri, options?: request.RequestPromiseOptions): Promise<request.FullResponse> {
+        if (options == null) {
+            options = {};
+        }
+        if (options.auth) {
+            Log.e("Don't provide auth, it is overwritten");
+        }
+        if (options.rejectUnauthorized != null) {
+            Log.e("Don't provide rejectUnauthorized, it is overwritten");
+        }
+        if (options.resolveWithFullResponse != null) {
+            Log.e("Don't provide resolveWithFullResponse, it is overwritten");
+        }
+        options.rejectUnauthorized = shouldRejectUnauthed(url);
+        options.resolveWithFullResponse = true;
+
+        if (!MCUtil.isLocalhost(url.toString())) {
+            const token = Authenticator.getAccessTokenForUrl(url);
+            if (token) {
+                options.auth = {};
+                options.auth.bearer = token;
+            }
+            else {
+                options.auth = undefined;
+            }
+        }
+
+        return request.get(url.toString(), options);
+    }
 
     export async function requestProjectRestart(project: Project, startMode: StartModes.Modes): Promise<request.RequestPromise<any>> {
         const body = {
@@ -83,14 +123,14 @@ namespace Requester {
     }
 
     export async function requestValidate(project: Project, silent: boolean): Promise<void> {
-        const [url, body]: [string, IValidateRequestBody] = assembleValidateRequest(project, false);
+        const [url, body]: [vscode.Uri, IValidateRequestBody] = assembleValidateRequest(project, false);
 
         const userOperation = silent ? undefined : Translator.t(StringNamespaces.CMD_MISC, "validate");
         return doProjectRequest(project, url, body, request.post, userOperation);
     }
 
     export async function requestGenerate(project: Project): Promise<void> {
-        const [url, body]: [string, IValidateRequestBody] = assembleValidateRequest(project, true);
+        const [url, body]: [vscode.Uri, IValidateRequestBody] = assembleValidateRequest(project, true);
 
         const generateMsg = Translator.t(STRING_NS, "generateMissingFiles");
 
@@ -110,8 +150,8 @@ namespace Requester {
     /**
      * Get the URL and request body for either a Validate or Generate request, they are very similar.
      */
-    function assembleValidateRequest(project: Project, generate: boolean): [string, IValidateRequestBody] {
-        let url: string;
+    function assembleValidateRequest(project: Project, generate: boolean): [vscode.Uri, IValidateRequestBody] {
+        let url: vscode.Uri;
         const body: IValidateRequestBody = {
             projectType: project.type.internalType,
         };
@@ -142,43 +182,53 @@ namespace Requester {
      * Always displays a message to the user in the case of an error.
      */
     async function doProjectRequest(
-            project: Project, url: string, body: {},
-            requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
+            project: Project, url: vscode.Uri, body: {},
+            requestFunc: (url: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
             userOperationName?: string): Promise<any> {
 
         Log.i(`Doing ${userOperationName != null ? userOperationName + " " : ""}request to ${url}`);
 
-        const options = {
+        const options: request.RequestPromiseOptions = {
             json: true,
             body: body,
-            resolveWithFullResponse: true
+            resolveWithFullResponse: true,
+            rejectUnauthorized: shouldRejectUnauthed(url),
         };
 
-        return requestFunc(url, options)
-            .then( (result: any) => {
-                Log.d(`Response code ${result.statusCode} from ${userOperationName} ${requestFunc.name.toUpperCase()} request for ${project.name}`);
+        if (project.connection.isICP) {
+            const token = Authenticator.getAccessTokenForUrl(url);
+            if (token != null) {
+                Log.d("Sending auth token with request");
+                options.auth = {
+                    bearer: token
+                };
+            }
+        }
 
-                if (userOperationName != null) {
-                    vscode.window.showInformationMessage(
-                        Translator.t(STRING_NS, "requestSuccess",
-                        { operationName: userOperationName, projectName: project.name })
-                    );
-                }
-                return result;
-            })
-            .catch( (err: any) => {
-                Log.w(`Error doing ${userOperationName} project request for ${project.name}:`, err);
-
-                // If the server provided a specific message, present the user with that,
-                // otherwise show them the whole error (but it will be ugly)
-                // err.error.msg, then err.error, then the whole err
-                const errMsg: string = err.error ? (err.error.msg ? err.error.msg : err.error) : JSON.stringify(err);
-                vscode.window.showErrorMessage(
-                    Translator.t(STRING_NS, "requestFail",
-                    { operationName: userOperationName, projectName: project.name, err: errMsg })
+        return requestFunc(url.toString(), options)
+        .then( (result: any) => {
+            Log.d(`Response code ${result.statusCode} from ${userOperationName} ${requestFunc.name.toUpperCase()} request for ${project.name}`);
+            if (userOperationName != null) {
+                vscode.window.showInformationMessage(
+                    Translator.t(STRING_NS, "requestSuccess",
+                    { operationName: userOperationName, projectName: project.name })
                 );
-                return err;
-            });
+            }
+            return result;
+        })
+        .catch( (err: any) => {
+            Log.w(`Error doing ${userOperationName} project request for ${project.name}:`, err);
+
+            // If the server provided a specific message, present the user with that,
+            // otherwise show them the whole error (but it will be ugly)
+            // err.error.msg, then err.error, then the whole err
+            const errMsg: string = err.error ? (err.error.msg ? err.error.msg : err.error) : JSON.stringify(err);
+            vscode.window.showErrorMessage(
+                Translator.t(STRING_NS, "requestFail",
+                { operationName: userOperationName, projectName: project.name, err: errMsg })
+            );
+            return err;
+        });
     }
 }
 

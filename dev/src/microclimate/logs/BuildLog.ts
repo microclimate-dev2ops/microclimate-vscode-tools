@@ -10,13 +10,13 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
-import * as request from "request-promise-native";
 
 import Log from "../../Logger";
 import Endpoints from "../../constants/Endpoints";
 import Connection from "../connection/Connection";
 import MCLog from "./MCLog";
 import Translator from "../../constants/strings/translator";
+import Requester from "../project/Requester";
 
 export default class BuildLog extends MCLog {
 
@@ -47,11 +47,23 @@ export default class BuildLog extends MCLog {
             Log.e("Update was invoked on an buildLog with doUpdate=false, this should never happen!");
         }
 
-        const buildLogUrl: string = Endpoints.getProjectEndpoint(this.connection, this.projectID, Endpoints.BUILD_LOG);
+        const buildLogUrl: vscode.Uri = Endpoints.getProjectEndpoint(this.connection, this.projectID, Endpoints.BUILD_LOG);
 
         try {
-            const getResult = await request.get(buildLogUrl, { resolveWithFullResponse: true });
-            const lastModifiedStr: string = getResult.headers[BuildLog.LAST_UPDATED_HEADER];
+            const getResult = await Requester.get(buildLogUrl);
+            let lastModifiedStr: string;
+            const lastUpdatedHeader = getResult.headers[BuildLog.LAST_UPDATED_HEADER];
+            if (lastUpdatedHeader == null) {
+                lastModifiedStr = Date.now().toString();
+            }
+            else if (Array.isArray(lastUpdatedHeader)) {
+                lastModifiedStr = lastUpdatedHeader[0];
+            }
+            else {
+                // lastupdatedheader is a string
+                lastModifiedStr = lastUpdatedHeader;
+            }
+
             const lastModified: Date = new Date(Number(lastModifiedStr));
             // Logger.log("buildlog-lastModified", lastModifiedStr, lastModified);
 

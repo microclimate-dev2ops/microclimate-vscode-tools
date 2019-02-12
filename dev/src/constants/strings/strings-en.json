@@ -1,7 +1,6 @@
 {
     "microclimateName": "Microclimate",
     "activeMsg": "Microclimate Tools for VSCode are active!",
-    "connectionAlreadyExists": "Connection already exists at {{- uri }}.",
     "failedToReconnect": "Couldn't reconnect to Microclimate at {{- uri }}. Try re-creating the connection.",
     "versionChanged": "Microclimate at {{- uri }} was previously version {{ oldVersion }}, but is now {{ newVersion }}.",
     "errorSavingConnections": "Error saving connections: {{- err }}.",
@@ -15,7 +14,8 @@
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
         "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Microclimate, and from your filesystem?",
         "confirmDeleteBtn": "Delete project",
-        "refreshingConnection": "Refreshed Microclimate at {{- uri }}.",
+        "refreshedConnection": "Refreshed Microclimate at {{- uri }}.",
+        "refreshingConnection": "Refreshing Microclimate at {{- uri }}.",
         "projectAlreadyBuilding": "{{ projectName }} is already building. Build request cancelled.",
         "explicitBuildNotNecessary": "{{ projectName }} has auto-build enabled. There is no need to request a build.",
         "seeProblemsView": "See the Problems view for details.",
@@ -63,19 +63,20 @@
     },
 
     "newConnectionCmd": {
-        "enterMicroclimateHost": "Enter the hostname or IP for the Microclimate instance you want to connect to.",
+        "enterMicroclimateHost": "Enter the Ingress URL for the Microclimate instance you wish to connect to, eg: \"https://microclimate.1.2.3.4.nip.io\"",
         "enterMicroclimatePort": "Enter the Port for the local Microclimate instance you want to connect to.",
         "enterDifferentPortBtn": "Enter a different port",
-        "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be an integer between 1024 and 65536.",
+        "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be a positive integer less than 65536.",
         "connectionSucceeded": "New connection to {{- connectionUri }} succeeded. Workspace path is: {{- workspacePath }}.",
         "openWorkspaceBtn": "Open workspace",
         "editConnectionBtn": "Edit",
         "retryConnectionBtn": "Retry",
         "connectFailed": "Connecting to Microclimate at {{- uri }} failed.",
+        "connectionAlreadyExists": "Connection already exists at {{- uri }}.",
 
         "versionNotProvided": "Your version of Microclimate is not supported. At least {{ requiredVersion }} is required.",
-        "versionNotRecognized": "Could not determine your Microclimate version. The server is running version \"{{ rawVersion }}\". At least {{ requiredVersion }} is required.",
-        "versionTooOld": "You are running Microclimate version {{ rawVersion }}, but at least {{ requiredVersion }} is required."
+        "versionNotRecognized": "Could not determine the Microclimate version at {{- connectionUri }}. The server provided version \"{{ rawVersion }}\". At least {{ requiredVersion }} is required.",
+        "versionTooOld": "{{- connectionUri }} is running Microclimate version {{ rawVersion }}, but at least {{ requiredVersion }} is required."
     },
 
     "project": {
@@ -124,7 +125,7 @@
     "treeView": {
         "noConnectionsLabel": "No Microclimate connections",
         "noConnectionsTooltip": "Click to create a new Microclimate connection",
-        "connectionLabel": "Microclimate @ {{- uri }}",
+        "connectionLabel_unused": "Microclimate @ {{- uri }}",
         "disconnectedConnectionLabel": "Disconnected",
         "noProjectsLabel": "No projects",
         "projectLabel": "{{ projectName }} {{- state }}"

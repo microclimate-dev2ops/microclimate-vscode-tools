@@ -9,10 +9,8 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import { Uri } from "vscode";
+import * as vscode from "vscode";
 import * as path from "path";
-import Log from "./Logger";
-// import { Log } from "./Logger";
 
 /**
  * Append toAppend to start, removing the last segment of start if the first segment of toAppend matches it.
@@ -78,45 +76,34 @@ export function isGoodStatusCode(statusCode: number | undefined): boolean {
     return statusCode != null && !isNaN(statusCode) && statusCode >= 200 && statusCode < 400;
 }
 
-//// Connection helpers
-
-export interface IConnectionInfo {
-    readonly host: string;
-    readonly port: number;
-    // If we start supporting HTTPS, could add a 'protocol' field,
-    // but at that point it might be cleaner to just save the URI.
-}
-
 export function isGoodPort(port: number | undefined): boolean {
-    return port != null && !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
+    return port != null && !isNaN(port) && Number.isInteger(port) && port > 0 && port < 65536;
 }
 
-/**
- * Convert a ConnectionInfo to an HTTP URI.
- */
-export function buildMCUrl(connInfo: IConnectionInfo): Uri {
-    return Uri.parse(`http://${connInfo.host}:${connInfo.port}`);       // non-nls
+export function isLocalhost(authority: string): boolean {
+    authority = getHostnameFromAuthority(authority);
+    return authority === "localhost" || authority === "127.0.0.1";
 }
 
-/**
- * Convert a URI to a ConnectionInfo (for saving to Settings).
- * A URI type with a 'port' field would be preferable, but vscode does not have this.
- */
-export function getConnInfoFrom(url: Uri): IConnectionInfo {
-    const colonIndex: number = url.authority.indexOf(":");      // non-nls
-
-    const host = url.authority.substring(0, colonIndex);
-    const portStr = url.authority.substring(colonIndex + 1, url.authority.length);
-
-    const port: number = Number(portStr);
-    if (!isGoodPort(port)) {
-        Log.e(`Bad port ${portStr} passed to getConnInfoFrom`);
+export function assembleUrl(protocol: string, authority: string, port?: number, path_?: string): vscode.Uri {
+    let rawUri = `${protocol}://${authority}`;
+    if (port != null) {
+        rawUri += ":" + port;
     }
-    // Log.i(`Loaded connection info host ${host} port ${port}`);
+    if (path_) {
+        rawUri += path_;
+    }
+    return vscode.Uri.parse(rawUri);
+}
 
-    const result: IConnectionInfo = {
-        host: host,
-        port: port
-    };
-    return result;
+/**
+ * @returns the uri's "authority" without the port if there is one, or the whole authority if there is no port
+ */
+export function getHostnameFromAuthority(authority: string): string {
+    const colonIndex: number = authority.indexOf(":");      // non-nls
+    if (colonIndex === -1) {
+        // no port
+        return authority;
+    }
+    return authority.substring(0, colonIndex);
 }

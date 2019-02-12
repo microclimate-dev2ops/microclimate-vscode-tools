@@ -18,6 +18,8 @@ import Log from "./Logger";
 
 import Translator from "./constants/strings/translator";
 import StringNamespaces from "./constants/strings/StringNamespaces";
+import ConnectionManager from "./microclimate/connection/ConnectionManager";
+import Authenticator from "./microclimate/connection/Authenticator";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -47,12 +49,26 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     Log.i("activeMsg:", msg);
     // vscode.window.showInformationMessage(msg);
 
+    await ConnectionManager.init();
+
     ignoreMCFiles();
 
     const subscriptions: vscode.Disposable[] = [
         ...createViews(),
         ...createCommands(),
-        // ...createDebug()
+        // ...createDebug(),
+
+        vscode.window.registerUriHandler({
+            handleUri: (uri_: any) => {
+                const uri = vscode.Uri.parse(uri_);
+                if (uri.toString().startsWith(Authenticator.AUTH_REDIRECT_CB.toLowerCase())) {
+                    Authenticator.handleAuthCallback(uri);
+                }
+                else {
+                    Log.e("Unrecognized URI: " + uri);
+                }
+            }
+        })
     ];
 
     subscriptions.forEach((e) => {
@@ -66,20 +82,24 @@ export function deactivate(): void {
     // nothing here
 }
 
-const excludeSection = "exclude";       // non-nls
-const prePattern = "**/";               // non-nls
+// non-nls-section-start
+
+const excludeSection = "exclude";
+const prePattern = "**/";
 
 // files or directories, doesn't matter, trailing / not required.
 const filesToIgnore: string[] = [
-    ".Trash-0",                         // non-nls
-    ".config",                          // non-nls
-    ".extensions",                      // non-nls
-    ".idc",                             // non-nls
-    ".license-accept",                  // non-nls
-    ".logs",                            // non-nls
-    ".nyc_output",                      // non-nls
-    ".projects"                         // non-nls
+    ".Trash-0",
+    ".config",
+    ".extensions",
+    ".idc",
+    ".license-accept",
+    ".logs",
+    ".nyc_output",
+    ".projects"
 ];
+
+// non-nls-section-end
 
 /**
  * Add to the user's `files.exclude` setting to exclude a bunch of files
@@ -91,7 +111,7 @@ async function ignoreMCFiles(): Promise<void> {
         return;
     }
 
-    Log.d("Ignoring Microclimate files");
+    Log.i("Ignoring Microclimate files");
     const filesConfig = vscode.workspace.getConfiguration("files", null);       // non-nls
     const existing: any = filesConfig.get<{}>(excludeSection) || {};
 
@@ -115,3 +135,4 @@ function inMCWorkspace(): boolean {
         return false;
     }
 }
+

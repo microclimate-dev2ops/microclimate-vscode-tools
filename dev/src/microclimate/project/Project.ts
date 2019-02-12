@@ -80,7 +80,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, vscode.Uri.file(projectInfo.locOnDisk).fsPath)
         );
 
-        this.contextRoot = projectInfo.contextroot || "";       // non-nls
+        this.contextRoot = projectInfo.contextroot || "";
 
         // These will be overridden by the call to update(), but we set them here too so the compiler can see they're always set.
         this._autoBuildEnabled = projectInfo.autoBuild;
@@ -343,7 +343,9 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             return undefined;
         }
 
+        // TODO Microclimate on ICP will use HTTPS but the apps will (probably, or always?) use http
         return this.connection.mcUri.with({
+            scheme: "http",
             authority: `${this.connection.host}:${this._appPort}`,      // non-nls
             path: this.contextRoot
         });

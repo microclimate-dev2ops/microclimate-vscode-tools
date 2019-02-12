@@ -14,6 +14,7 @@ import * as vscode from "vscode";
 import Project from "./Project";
 import Resources from "../../constants/Resources";
 import * as MCUtil from "../../MCUtil";
+import Log from "../../Logger";
 
 // This file does have a bunch of strings that should be translated,
 // but the stringfinder is not smart enough to pick them out from the regular html strings. So, do this file by hand.
@@ -74,8 +75,10 @@ export function generateHtml(project: Project): string {
 
             <table id="project-info-table">
                 <!--${buildRow("Name", project.name)}-->
+                ${buildRow("Microclimate URL", project.connection.mcUri.toString(), Openable.WEB)}
+                ${buildRow("Microclimate Version", project.connection.versionStr)}
+                ${emptyRow}
                 ${buildRow("Type", project.type.toString())}
-                <!--${buildRow("Microclimate URL", project.connection.toString())}-->
                 ${buildRow("Project ID", project.id)}
                 ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
                 ${buildRow("Location on Disk", project.localPath.fsPath, Openable.FOLDER)}
@@ -128,7 +131,9 @@ export function generateHtml(project: Project): string {
 }
 
 function getStylesheetPath(): string {
-    return resourceScheme + Resources.getCss("project-overview.css");
+    const cssPath = resourceScheme + Resources.getCss("project-overview.css");
+    Log.d("stylesheet path is", cssPath);
+    return cssPath;
 }
 
 function getMCIconPath(): string {

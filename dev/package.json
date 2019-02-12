@@ -23,7 +23,7 @@
         "cloud"
     ],
     "activationEvents": [
-        "*",
+        "onUri",
         "onView:ext.mc.mcProjectExplorer",
         "workspaceContains:**/.idc",
         "workspaceContains:**/.cfignore",
@@ -50,6 +50,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "%settingDesc_showLogOnChange_build%"
+                },
+                "microclimate.showConfirmOpenLoginMsg": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "%settingDesc_showConfirmOpenLoginMsg%"
                 }
             }
         },
@@ -94,6 +99,11 @@
             {
                 "command": "%cmdID_importMCProject%",
                 "title": "%cmdTitle_importMCProject%",
+                "category": "%commandCategory%"
+            },
+            {
+                "command": "%cmdID_logoutConnection%",
+                "title": "%cmdTitle_logoutConnection%",
                 "category": "%commandCategory%"
             },
             {
@@ -229,14 +239,19 @@
                     "group": "ext.mc.conn.b"
                 },
                 {
-                    "command": "%cmdID_removeConn%",
+                    "command": "%cmdID_refreshConnection%",
                     "when": "%isConnection%",
                     "group": "ext.mc.conn.c@0"
                 },
                 {
-                    "command": "%cmdID_refreshConnection%",
-                    "when": "%isActiveConnection%",
+                    "command": "%cmdID_logoutConnection%",
+                    "when": "%isActiveICPConnection%",
                     "group": "ext.mc.conn.c@1"
+                },
+                {
+                    "command": "%cmdID_removeConn%",
+                    "when": "%isConnection%",
+                    "group": "ext.mc.conn.c@2"
                 },
                 {
                     "command": "%cmdID_openInBrowser%",

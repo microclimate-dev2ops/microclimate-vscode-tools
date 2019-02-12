@@ -37,6 +37,7 @@
 		"no-var-keyword": true,
 		"prefer-const": true,
 		"prefer-readonly": true,
+		"return-undefined": true,
 		"switch-default": true,
 		"typedef": [
 			true,

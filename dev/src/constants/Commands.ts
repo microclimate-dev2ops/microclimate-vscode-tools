@@ -19,6 +19,7 @@ enum Commands {
     REFRESH_CONNECTION = "ext.mc.refreshConnection",
     CREATE_MC_PROJECT = "ext.mc.createMCProject",
     IMPORT_MC_PROJECT = "ext.mc.importMCProject",
+    LOGOUT_CONNECTION = "ext.mc.logoutConnection",
 
     OPEN_WS_FOLDER = "ext.mc.openWorkspaceFolder",
     ATTACH_DEBUGGER = "ext.mc.attachDebugger",

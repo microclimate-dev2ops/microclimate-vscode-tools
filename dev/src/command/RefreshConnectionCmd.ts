@@ -16,11 +16,13 @@ import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
+import ConnectionManager from "../microclimate/connection/ConnectionManager";
+import ConnectionFactory from "../microclimate/connection/ConnectionFactory";
 
 export default async function refreshConnectionCmd(connection: Connection): Promise<void> {
     Log.d("refreshConnectionCmd");
     if (connection == null) {
-        const selected = await promptForConnection(true);
+        const selected = await promptForConnection(false);
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
@@ -30,5 +32,11 @@ export default async function refreshConnectionCmd(connection: Connection): Prom
     }
 
     vscode.window.showInformationMessage(Translator.t(StringNamespaces.CMD_MISC, "refreshingConnection", { uri: connection.mcUri }));
-    return connection.forceUpdateProjectList(true);
+    if (! await ConnectionManager.instance.removeConnection(connection)) {
+        Log.e("Error removing connection", connection);
+        return;
+    }
+    await ConnectionFactory.tryAddConnection(connection.mcUri);
+
+    Log.d("Done refreshing " + connection);
 }

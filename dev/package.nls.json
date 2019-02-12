@@ -31,6 +31,9 @@
     "cmdID_importMCProject": "ext.mc.importMCProject",
     "cmdTitle_importMCProject": "Open Import Project Page",
 
+    "cmdID_logoutConnection": "ext.mc.logoutConnection",
+    "cmdTitle_logoutConnection": "Log Out",
+
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open Folder as Workspace",
     "cmdDescr_openFolder": "Open a folder as your VSCode workspace",
@@ -100,6 +103,7 @@
 
     "settingDesc_showLogOnChange_app": "When a Microclimate project's open application logs change, bring that log to the front",
     "settingDesc_showLogOnChange_build": "When a Microclimate project's open build logs change, bring that log to the front",
+    "settingDesc_showConfirmOpenLoginMsg": "Show confirmation message before opening the brower to log in to Microclimate",
 
     "// None of items below are exposed to user": [
         "These regexes match Context IDs for Projects and Connections to determine command enablement",
@@ -109,10 +113,11 @@
     "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
     "isConnectionOrProject": "viewItem =~ /ext\\.mc\\.*/",
     "isConnection": "viewItem =~ /ext\\.mc\\.connectionItem*/",
-    "isActiveConnection": "viewItem == ext.mc.connectionItem.active",
+    "isActiveConnection": "viewItem =~ /ext\\.mc\\.connectionItem\\.active*/",
+    "isActiveICPConnection": "viewItem == ext.mc.connectionItem.active.icp",
 
     "notused-isActiveConnectionOrEnabledProject":
-        "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem.active)/",
+        "viewItem =~ /ext\\.mc\\.(projectItem\\.enabled\\.*|connectionItem\\.active)/",
 
     "isProject":                "viewItem =~ /ext\\.mc\\.projectItem*/",
     "isEnabledProject":         "viewItem =~ /ext\\.mc\\.projectItem\\.enabled*/",

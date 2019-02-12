@@ -18,7 +18,8 @@ enum Settings {
     CONNECTIONS_KEY = "connections",
 
     OPEN_ON_CHANGE_APP = "openLogsOnChange.app",
-    OPEN_ON_CHANGE_BUILD = "openLogsOnChange.build"
+    OPEN_ON_CHANGE_BUILD = "openLogsOnChange.build",
+    SHOW_OPEN_LOGIN_MSG = "showConfirmOpenLoginMsg",
 }
 
 export default Settings;

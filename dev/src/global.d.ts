@@ -17,14 +17,18 @@
 // and then never modify it again (only read).
 declare namespace NodeJS {
     export interface Global {
-        // Hold the path to the plugin's root folder,
-        // so files don't each have to write their own logic to locate it using relative paths.
-        // This is the folder which contains /src and /res, for example.
+        // Hold plugin root path so files don't each have to write their own logic to locate it using relative paths.
+        /**
+         * Path to the plugin's root folder.
+         * This is the folder which contains /src and /res, for example.
+         */
         __extRoot: string,
 
         // For some reason, importing anything at the top of this file causes all the properties declared here to not work anymore.
         // So, we use 'any' for extGlobalState - but it's a vscode.Memento.
-        // extGlobalState: vscode.Memento
+        /**
+         * A `vscode.Memento` storing extension state data we want to persist, but not let the user edit.
+         */
         extGlobalState: any
     }
 }

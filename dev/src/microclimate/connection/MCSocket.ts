@@ -16,6 +16,7 @@ import Project from "../project/Project";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
 import SocketEvents from "./SocketEvents";
+import Requester from "../project/Requester";
 
 /**
  * Receives and reacts to socket events from Portal
@@ -24,34 +25,56 @@ import SocketEvents from "./SocketEvents";
  */
 export default class MCSocket {
 
+    private readonly uri: string;
     private readonly socket: SocketIOClient.Socket;
 
+    /**
+     * Create a SocketIO connection to the server at the given URI.
+     * Can throw an error!
+     */
     constructor(
-        public readonly uri: string,
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        user?: string,
     ) {
-        Log.i("Creating MCSocket for URI", uri);
-        this.socket = io(uri);
+        this.uri = connection.mcUri.toString();
+        if (user) {
+            if (!this.uri.endsWith("/")) {
+                this.uri += "/";
+            }
+            this.uri += user;
+        }
+        Log.i("Creating MCSocket for URI", this.uri);
 
-        this.socket.connect();
+        const options: SocketIOClient.ConnectOpts = {
+            rejectUnauthorized: Requester.shouldRejectUnauthed(this.uri),
+        };
 
-        this.socket
-            .on("connect",      this.connection.onConnect)      // non-nls
-            .on("disconnect",   this.connection.onDisconnect)   // non-nls
+        try {
+            this.socket = io(this.uri, options);
+            this.socket.connect();
 
-            .on(SocketEvents.Types.PROJECT_CHANGED,         this.onProjectChanged)
-            .on(SocketEvents.Types.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
-            .on(SocketEvents.Types.PROJECT_CLOSED,          this.onProjectClosed)
+            this.socket
+                .on("connect",      this.connection.onConnect)      // non-nls
+                .on("disconnect",   this.connection.onDisconnect)   // non-nls
 
-            .on(SocketEvents.Types.PROJECT_DELETION,        this.onProjectDeleted)
-            .on(SocketEvents.Types.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
+                .on(SocketEvents.Types.PROJECT_CHANGED,         this.onProjectChanged)
+                .on(SocketEvents.Types.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
+                .on(SocketEvents.Types.PROJECT_CLOSED,          this.onProjectClosed)
 
-            .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
-            .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated);
+                .on(SocketEvents.Types.PROJECT_DELETION,        this.onProjectDeleted)
+                .on(SocketEvents.Types.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
 
-            // We don't actually need the creation event -
-            // we can create the project as needed if we get a 'changed' event for a project we don't recognize
-            // .on("projectCreation",       this.onProjectCreatedOrDeleted);
+                .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
+                .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated);
+
+                // We don't actually need the creation event -
+                // we can create the project as needed if we get a 'changed' event for a project we don't recognize
+                // .on("projectCreation",       this.onProjectCreatedOrDeleted);
+        }
+        catch (err) {
+            Log.e(`Error initializing socket at ${this.uri}`, err);
+            throw err;
+        }
     }
 
     public toString(): string {
