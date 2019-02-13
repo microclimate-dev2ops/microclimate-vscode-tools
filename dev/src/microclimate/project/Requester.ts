@@ -19,7 +19,7 @@ import Log from "../../Logger";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Translator from "../../constants/strings/translator";
 import * as MCUtil from "../../MCUtil";
-import Authenticator from "../connection/Authenticator";
+import Authenticator from "../connection/auth/Authenticator";
 
 const STRING_NS = StringNamespaces.REQUESTS;
 

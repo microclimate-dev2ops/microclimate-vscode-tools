@@ -14,7 +14,7 @@ import * as vscode from "vscode";
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
-import Authenticator from "../microclimate/connection/Authenticator";
+import Authenticator from "../microclimate/connection/auth/Authenticator";
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
 

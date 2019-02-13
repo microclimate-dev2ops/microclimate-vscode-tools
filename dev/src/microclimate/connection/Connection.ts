@@ -25,7 +25,8 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Requester from "../project/Requester";
 import MCEnvironment from "./MCEnvironment";
-import Authenticator from "./Authenticator";
+import Authenticator from "./auth/Authenticator";
+import Commands from "../../constants/Commands";
 
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
@@ -78,13 +79,22 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         DebugUtils.cleanDebugLaunchConfigsFor(this);
     }
 
-    public async destroy(): Promise<void> {
+    public async destroy(skipLogout: boolean = false): Promise<void> {
         Log.d("Destroy connection " + this);
+
+        // logout only necessary (and posssible) for icp connections
+        const logoutPromise = this.isICP && !skipLogout ?
+            vscode.commands.executeCommand(Commands.LOGOUT_CONNECTION).then(() => Promise.resolve()) :
+            Promise.resolve();
+
         return Promise.all([
             this.logManager.onConnectionDisconnect(),
-            this.socket.destroy()
+            this.socket.destroy(),
+            logoutPromise,
         ])
-        .then(() => Promise.resolve());
+        .then( () => {
+            Log.d("Destroyed " + this);
+        });
     }
 
     public toString(): string {

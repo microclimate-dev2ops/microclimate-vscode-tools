@@ -9,13 +9,13 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import * as vscode from "vscode";
+// import * as vscode from "vscode";
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
-import Translator from "../constants/strings/translator";
-import StringNamespaces from "../constants/strings/StringNamespaces";
+// import Translator from "../constants/strings/translator";
+// import StringNamespaces from "../constants/strings/StringNamespaces";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import ConnectionFactory from "../microclimate/connection/ConnectionFactory";
 
@@ -31,8 +31,8 @@ export default async function refreshConnectionCmd(connection: Connection): Prom
         connection = selected;
     }
 
-    vscode.window.showInformationMessage(Translator.t(StringNamespaces.CMD_MISC, "refreshingConnection", { uri: connection.mcUri }));
-    if (! await ConnectionManager.instance.removeConnection(connection)) {
+    // vscode.window.showInformationMessage(Translator.t(StringNamespaces.CMD_MISC, "refreshingConnection", { uri: connection.mcUri }));
+    if (! await ConnectionManager.instance.removeConnection(connection, true)) {
         Log.e("Error removing connection", connection);
         return;
     }

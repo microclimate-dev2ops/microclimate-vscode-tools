@@ -69,7 +69,7 @@ namespace MCEnvironment {
         try {
             const response = await Requester.get(envUri, { json: true, timeout: connectTimeout });
             Log.d("Status from ENV endpoint is", response.statusCode);
-            if (response.body.toString().includes("CWOAU0062E")) {
+            if (response.body.toString().includes("CWOAU0062E") || response.request.path.toLowerCase().includes("oidc")) {
                 // auth failed at an earlier step
                 throw new Error("Not authorized to access Microclimate. Please log out and log in again or something.");
             }

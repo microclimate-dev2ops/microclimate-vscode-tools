@@ -26,7 +26,7 @@ import StringNamespaces from "../../constants/strings/StringNamespaces";
 import * as MCUtil from "../../MCUtil";
 import Requester from "../project/Requester";
 import MCEnvironment from "./MCEnvironment";
-import Authenticator from "./Authenticator";
+import Authenticator from "./auth/Authenticator";
 
 const STRING_NS = StringNamespaces.CMD_NEW_CONNECTION;
 
@@ -58,6 +58,7 @@ namespace ConnectionFactory {
             if (!MCUtil.isLocalhost(uri.authority)) {
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
+                    // TODO needs to be cancellable
                     // cancellable: true,
                     title: connectingMsg
                 }, (_progress, _token): Promise<Connection> => {

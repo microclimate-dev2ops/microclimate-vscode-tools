@@ -72,13 +72,13 @@ export default class ConnectionManager {
         return newConnection;
     }
 
-    public async removeConnection(connection: Connection): Promise<boolean> {
+    public async removeConnection(connection: Connection, isRefresh: boolean = false): Promise<boolean> {
         const indexToRemove = this.connections.indexOf(connection);
         if (indexToRemove === -1) {
             Log.e(`Request to remove connection ${connection} but it doesn't exist!`);
             return false;
         }
-        connection.destroy();
+        connection.destroy(isRefresh);
         this.connections.splice(indexToRemove, 1);
         Log.i("Removed connection", connection);
         ConnectionManager.saveConnections();

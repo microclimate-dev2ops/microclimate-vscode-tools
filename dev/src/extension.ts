@@ -19,7 +19,7 @@ import Log from "./Logger";
 import Translator from "./constants/strings/translator";
 import StringNamespaces from "./constants/strings/StringNamespaces";
 import ConnectionManager from "./microclimate/connection/ConnectionManager";
-import Authenticator from "./microclimate/connection/Authenticator";
+import Authenticator from "./microclimate/connection/auth/Authenticator";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -59,16 +59,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         // ...createDebug(),
 
         vscode.window.registerUriHandler({
-            handleUri: (uri_: any) => {
-                const uri = vscode.Uri.parse(uri_);
-                if (uri.toString().startsWith(Authenticator.AUTH_REDIRECT_CB.toLowerCase())) {
-                    Authenticator.handleAuthCallback(uri);
-                }
-                else {
-                    Log.e("Unrecognized URI: " + uri);
-                }
-            }
-        })
+            handleUri
+        }),
     ];
 
     subscriptions.forEach((e) => {
@@ -80,6 +72,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 // this method is called when your extension is deactivated
 export function deactivate(): void {
     // nothing here
+}
+
+function handleUri(uri_: any): void {
+    try {
+        const uri = vscode.Uri.parse(uri_);
+        if (uri.toString().startsWith(Authenticator.AUTH_REDIRECT_CB.toLowerCase())) {
+            Authenticator.handleAuthCallback(uri);
+        }
+        else {
+            Log.e("Unrecognized URI: " + uri);
+        }
+    }
+    catch (err) {
+        // Any functions called above should do their own error handling, but here's a fallback just in case.
+        Log.e(`Unhandled error when processing URI "${uri_}"`, err);
+    }
 }
 
 // non-nls-section-start
