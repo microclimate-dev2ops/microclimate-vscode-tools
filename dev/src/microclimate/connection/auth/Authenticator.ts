@@ -21,7 +21,7 @@ import Requester from "../../project/Requester";
 import Connection from "../Connection";
 import Commands from "../../../constants/Commands";
 import PendingAuthentication from "./PendingAuthentication";
-import AuthUtils, { IOpenIDConfig } from "./AuthUtils";
+import AuthUtils, { IOpenIDConfig, ITokenSet } from "./AuthUtils";
 
 namespace Authenticator {
     // microclimate-specific OIDC constants
@@ -33,7 +33,7 @@ namespace Authenticator {
     /******
      * Buckle in - the authentication flow works as follows:
      * authenticate() is the entry point. Assembles the auth code request, and launches the browser to the auth code page.
-     * authenticate() suspends by awaiting the pendingAuth promise.
+     * authenticate() suspends by awaiting the pendingAuth promise, which will resolve after the user logs in.
      * The user logs in in the browser.
      * The auth code page calls back to the plugin. the vscode plugin URI handler calls handleAuthCallback,
      * which verifies the state parameter and fulfills the pendingAuth promise with the "code" query parameter from the server.
@@ -73,7 +73,8 @@ namespace Authenticator {
         // https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks
         // Use hex because none of those characters have to be urlencoded
         const stateParam = crypto.randomBytes(16).toString("hex");
-        // const nonceParam = crypto.randomBytes(16).toString("ascii");
+        // not used because we don't use the id_token
+        // const nonceParam = crypto.randomBytes(16).toString("hex");
         const config: IOpenIDConfig = await AuthUtils.getOpenIDConfig(icpHostname);
 
         const authEndpoint: string = config.authorization_endpoint;
@@ -197,7 +198,7 @@ namespace Authenticator {
             // Log.i("form", form);
 
             Log.d("Trading code for tokenset, host is " + hostname);
-            const tokenEndpointResponse: any = await request.post(tokenEndpoint, {
+            const tokenEndpointResponse: ITokenSet = await request.post(tokenEndpoint, {
                 json: true,
                 rejectUnauthorized: Requester.shouldRejectUnauthed(tokenEndpoint),
                 form,
@@ -257,7 +258,7 @@ namespace Authenticator {
         };
 
         Log.d("Requesting token refresh now");
-        const tokenEndpointResponse: any = await request.post(tokenEndpoint, {
+        const tokenEndpointResponse: ITokenSet = await request.post(tokenEndpoint, {
             json: true,
             rejectUnauthorized: Requester.shouldRejectUnauthed(tokenEndpoint),
             form,

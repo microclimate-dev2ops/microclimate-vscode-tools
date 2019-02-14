@@ -17,7 +17,7 @@ import Settings from "../../../constants/Settings";
 import Requester from "../../project/Requester";
 
 /**
- * Pure functions used by Authenticator.ts.
+ * Helper functions, interfaces and constants used by Authenticator.ts.
  *
  * **No other file should use any of these functions or constants**.
  */
@@ -59,12 +59,11 @@ namespace AuthUtils {
         }
     }
 
-    export async function onNewTokenSet(hostname: string, tokenEndpointResponse: any): Promise<void> {
-        if (tokenEndpointResponse.id_token) {
-            delete tokenEndpointResponse.id_token;
+    export async function onNewTokenSet(hostname: string, newTokenSet: ITokenSet): Promise<void> {
+        if ((newTokenSet as any).id_token) {
+            // We don't use the id_token, but I can't get the server to not give me one
+            delete (newTokenSet as any).id_token;
         }
-
-        const newTokenSet = tokenEndpointResponse as ITokenSet;
 
         if (!validateTokenSet(newTokenSet)) {
             Log.e("New TokenSet was not as expected!");
