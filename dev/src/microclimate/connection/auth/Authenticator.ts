@@ -21,7 +21,8 @@ import Requester from "../../project/Requester";
 import Connection from "../Connection";
 import Commands from "../../../constants/Commands";
 import PendingAuthentication from "./PendingAuthentication";
-import AuthUtils, { IOpenIDConfig, ITokenSet } from "./AuthUtils";
+import AuthUtils, { IOpenIDConfig } from "./AuthUtils";
+import TokenSetManager, { ITokenSet } from "./TokenSetManager";
 
 namespace Authenticator {
     // microclimate-specific OIDC constants
@@ -71,7 +72,7 @@ namespace Authenticator {
         }
 
         // https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks
-        // Use hex because none of those characters have to be urlencoded
+        // Use hex because these characters have to be urlencoded
         const stateParam = crypto.randomBytes(16).toString("hex");
         // not used because we don't use the id_token
         // const nonceParam = crypto.randomBytes(16).toString("hex");
@@ -205,7 +206,7 @@ namespace Authenticator {
                 timeout: AuthUtils.TIMEOUT,
             });
 
-            await AuthUtils.onNewTokenSet(hostname, tokenEndpointResponse);
+            await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse);
             Log.i(`Successfully got new tokenset from code`);
         }
         catch (err) {
@@ -244,7 +245,7 @@ namespace Authenticator {
         const hostname = connection.host;
         Log.i("Refreshing token of " + hostname);
         const tokenEndpoint = (await AuthUtils.getOpenIDConfig(hostname)).token_endpoint;
-        const tokenSet = AuthUtils.getTokenSetFor(hostname);
+        const tokenSet = TokenSetManager.getTokenSetFor(hostname);
         if (tokenSet == null || tokenSet.refresh_token == null) {
             Log.e("Can't refresh - no refresh token available to connection " + connection);
             throw new Error("Refresh failed - Not logged in");
@@ -265,7 +266,7 @@ namespace Authenticator {
             timeout: AuthUtils.TIMEOUT,
         });
 
-        await AuthUtils.onNewTokenSet(hostname, tokenEndpointResponse);
+        await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse);
         Log.i("Successfully refreshed tokenset");
     }
 
@@ -279,7 +280,7 @@ namespace Authenticator {
         const revokeEndpoint = AuthUtils.getRevokeEndpoint(hostname);
         Log.d("Log out endpoint is", revokeEndpoint);
 
-        const existingTokenSet = AuthUtils.getTokenSetFor(hostname);
+        const existingTokenSet = TokenSetManager.getTokenSetFor(hostname);
         if (existingTokenSet != null) {
             // These tokens need to be revoked separately.
             const success = await Promise.all([
@@ -295,7 +296,7 @@ namespace Authenticator {
 
             Log.i("Logged out successfully");
 
-            await AuthUtils.setTokensFor(hostname, undefined);
+            await TokenSetManager.setTokensFor(hostname, undefined);
         }
         else {
             // is this an error? any way to handle?
@@ -335,7 +336,7 @@ namespace Authenticator {
 
     export function getAccessTokenForUrl(uri: vscode.Uri): string | undefined {
         const hostname = MCUtil.getHostnameFromAuthority(uri.authority);
-        const tokenSet = AuthUtils.getTokenSetFor(hostname);
+        const tokenSet = TokenSetManager.getTokenSetFor(hostname);
         if (tokenSet == null) {
             return undefined;
         }
