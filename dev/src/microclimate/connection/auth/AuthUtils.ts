@@ -11,13 +11,14 @@
 
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
+import * as crypto from "crypto";
 
 import Log from "../../../Logger";
 import Settings from "../../../constants/Settings";
 import Requester from "../../project/Requester";
 
 /**
- * Helper functions, interfaces and constants used by Authenticator.ts.
+ * Helper functions, interfaces and constants used by Authenticator and TokenSetManager.
  *
  * **No other file should use any of these functions or constants**.
  */
@@ -90,6 +91,38 @@ namespace AuthUtils {
         }
     }
 
+    const VERIFIER_STRING_LEN = 128;
+
+    /**
+     * Generate verifier and challenge for PKCE.
+     * https://tools.ietf.org/html/rfc7636#section-4.1
+     * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+     */
+    export function generateCodeVerifierAndChallenge(): { verifier: string, challenge: string, challengeMethod: string } {
+        // the encoded verifier should have a length 43-128. base64 has 3 bytes per 4 digits.
+        // so for a string of length 43, bytesRequired = (43 * 3/4) = 32
+        const bytesRequired = Math.floor(3 / 4 * VERIFIER_STRING_LEN);
+
+        const verifier = base64URLEncode(crypto.randomBytes(bytesRequired));
+
+        // Log.d(`The verifier is ${bytesRequired} bytes. base64 encoded length is ${verifier.length} and is ${verifier}`);
+
+        const challenge = base64URLEncode(crypto.createHash("sha256").update(verifier).digest());
+        Log.d(`Generated verifier of length ${verifier.length} and challenge of length ${challenge.length}`);
+        // Log.d(`The challenge is ${challenge.length} long and is ${challenge}`);
+
+        return { verifier, challenge, challengeMethod: "S256" };
+    }
+
+    function base64URLEncode(bytes: Buffer): string {
+        // legal url characters are alphanumeric plus -._~, so replace each of the base64 illegal characters with one of these
+        // https://en.wikipedia.org/wiki/Base64#Base64_table
+        return bytes.toString("base64")
+            .replace(/\+/g, "-")
+            .replace(/\//g, "~")
+            .replace(/=/g, "_");
+            // . is not used
+    }
 }
 
 /**

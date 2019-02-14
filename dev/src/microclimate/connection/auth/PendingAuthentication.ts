@@ -12,6 +12,11 @@
 // import * as vscode from "vscode";
 import Log from "../../../Logger";
 
+/**
+ * Wrapper for a Promise that represents an in-progress authentication flow.
+ * Resolves to the authentication code which can then be exchanged for a token, or rejects with an error message.
+ * Stores the in-progress flow's redirectUri and state parameters.
+ */
 export default class PendingAuthentication {
 
     public readonly promise: Promise<string>;
@@ -21,7 +26,6 @@ export default class PendingAuthentication {
     constructor(
         public readonly redirectUri: string,
         public readonly state: string,
-        // public readonly nonce: string,
     ) {
 
         this.promise = new Promise<string>( (resolve_, reject_) => {

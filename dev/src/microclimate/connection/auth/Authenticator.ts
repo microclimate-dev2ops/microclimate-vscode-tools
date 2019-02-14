@@ -78,6 +78,10 @@ namespace Authenticator {
         // const nonceParam = crypto.randomBytes(16).toString("hex");
         const config: IOpenIDConfig = await AuthUtils.getOpenIDConfig(icpHostname);
 
+        // PKCE
+        // https://www.ibm.com/support/knowledgecenter/en/SSPREK_9.0.6/com.ibm.isam.doc/config/concept/oauth_pkce.html
+        const pkceData = AuthUtils.generateCodeVerifierAndChallenge();
+
         const authEndpoint: string = config.authorization_endpoint;
         const queryObj = {
             client_id: OIDC_CLIENT_ID,
@@ -87,6 +91,8 @@ namespace Authenticator {
             redirect_uri: AUTH_REDIRECT_CB,
             // nonce: nonceParam,
             state: stateParam,
+            code_challenge: pkceData.challenge,
+            code_challenge_method: pkceData.challengeMethod,
         };
         Log.d("QUERYOBJ", queryObj);
 
@@ -107,7 +113,7 @@ namespace Authenticator {
         Log.d("Awaiting pending auth callback");
 
         const code: string = await pendingAuth.promise;
-        await onAuthCallback(AUTH_REDIRECT_CB, tokenEndpoint, code);
+        await onAuthCallback(AUTH_REDIRECT_CB, tokenEndpoint, code, pkceData.verifier);
     }
 
     /**
@@ -185,7 +191,7 @@ namespace Authenticator {
      * After receiving the auth code callback, send the code to the tokenEndpoint to receive an auth token in return.
      * https://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
      */
-    async function onAuthCallback(redirectUri: string, tokenEndpoint: string, code: string): Promise<void> {
+    async function onAuthCallback(redirectUri: string, tokenEndpoint: string, code: string, codeVerifier: string): Promise<void> {
         Log.d("onAuthCallback");
         const hostname = MCUtil.getHostnameFromAuthority(vscode.Uri.parse(tokenEndpoint).authority);
 
@@ -195,6 +201,7 @@ namespace Authenticator {
                 grant_type: OIDC_GRANT_TYPE,
                 redirect_uri: redirectUri,
                 code: code,
+                code_verifier: codeVerifier, // + "test",
             };
             // Log.i("form", form);
 
