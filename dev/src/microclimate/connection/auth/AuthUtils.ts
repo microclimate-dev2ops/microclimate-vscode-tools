@@ -22,9 +22,6 @@ import Requester from "../../project/Requester";
  * **No other file should use any of these functions or constants**.
  */
 namespace AuthUtils {
-    // for storing tokens in the ExtensionContext
-    const TOKEN_PREFIX = "token-";
-
     export const OIDC_SCOPE = "openid";
 
     // ICP OIDC server info
@@ -34,54 +31,26 @@ namespace AuthUtils {
 
     export const TIMEOUT: number = 10000;
 
-    export function getTokenSetFor(hostname: string): ITokenSet | undefined {
-        const key = TOKEN_PREFIX + hostname;
-        const memento = global.extGlobalState as vscode.Memento;
-        const tokenSet = memento.get<ITokenSet>(key);
-        if (!tokenSet) {
-            Log.i("no token for hostname:", hostname);
-            return undefined;
+    export async function getOpenIDConfig(icpHostname: string): Promise<IOpenIDConfig> {
+        const openIDConfigUrl: string = `${getOIDCServerURL(icpHostname)}/.well-known/openid-configuration`;
+        const oidcConfig: IOpenIDConfig = await request.get(openIDConfigUrl, {
+            json: true,
+            rejectUnauthorized: Requester.shouldRejectUnauthed(openIDConfigUrl),
+            timeout: TIMEOUT,
+        });
+        // sanity check
+        if (!oidcConfig.authorization_endpoint || !oidcConfig.token_endpoint) {
+            Log.e(`Receieved bad OpenID config from ${openIDConfigUrl}`, oidcConfig);
         }
-        return tokenSet;
+        return oidcConfig;
     }
 
-    export async function setTokensFor(hostname: string, newTokens: ITokenSet | undefined): Promise<void> {
-        const key = TOKEN_PREFIX + hostname;
-        const memento = global.extGlobalState as vscode.Memento;
-        await memento.update(key, newTokens);
-        if (newTokens != null) {
-            // at the time of writing, expires_in is 12 hours in seconds
-            const expiry = new Date(Date.now() + (newTokens.expires_in * 1000));
-            Log.d(`Updated token for ${hostname}, new token expires at ${expiry}`);
-        }
-        else {
-            Log.d(`Cleared token for ${hostname}`);
-        }
+    export function getRevokeEndpoint(icpHostname: string): string {
+        return getOIDCServerURL(icpHostname) + OIDC_REVOKE_ENDPOINT;
     }
 
-    export async function onNewTokenSet(hostname: string, newTokenSet: ITokenSet): Promise<void> {
-        if ((newTokenSet as any).id_token) {
-            // We don't use the id_token, but I can't get the server to not give me one
-            delete (newTokenSet as any).id_token;
-        }
-
-        if (!validateTokenSet(newTokenSet)) {
-            Log.e("New TokenSet was not as expected!");
-            // Log.e(newTokenSet);
-            throw new Error("Received unexpected response from refresh request.");
-        }
-
-        // REMOVE
-        Log.d("TOKENSET!", newTokenSet);
-        await AuthUtils.setTokensFor(hostname, newTokenSet);
-    }
-
-    function validateTokenSet(tokenSet: ITokenSet): boolean {
-        return tokenSet.access_token != null &&
-            tokenSet.token_type != null &&
-            tokenSet.refresh_token != null &&
-            tokenSet.token_type.toLowerCase() === "bearer" &&
-            tokenSet.scope.includes(OIDC_SCOPE);
+    function getOIDCServerURL(icpHostname: string): string {
+        return `https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`;
     }
 
     /**
@@ -121,27 +90,6 @@ namespace AuthUtils {
         }
     }
 
-    export async function getOpenIDConfig(icpHostname: string): Promise<IOpenIDConfig> {
-        const openIDConfigUrl: string = `${getOIDCServerURL(icpHostname)}/.well-known/openid-configuration`;
-        const oidcConfig: IOpenIDConfig = await request.get(openIDConfigUrl, {
-            json: true,
-            rejectUnauthorized: Requester.shouldRejectUnauthed(openIDConfigUrl),
-            timeout: TIMEOUT,
-        });
-        // sanity check
-        if (!oidcConfig.authorization_endpoint || !oidcConfig.token_endpoint) {
-            Log.e(`Receieved bad OpenID config from ${openIDConfigUrl}`, oidcConfig);
-        }
-        return oidcConfig;
-    }
-
-    export function getRevokeEndpoint(icpHostname: string): string {
-        return getOIDCServerURL(icpHostname) + OIDC_REVOKE_ENDPOINT;
-    }
-
-    function getOIDCServerURL(icpHostname: string): string {
-        return `https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`;
-    }
 }
 
 /**
@@ -154,20 +102,6 @@ export interface IOpenIDConfig {
 
     grant_types_supported: string[];
     response_types_supported: string[];
-}
-
-/**
- * Tokenset received from OIDC token_endpoint
- * https://openid.net/specs/openid-connect-core-1_0.html#TokenResponse
- */
-export interface ITokenSet {
-    access_token: string;
-    refresh_token: string;      // in milliseconds - 42000ms = 12 hours`
-    // We have no interest in any of the user data, so we don't use the id_token
-    // id_token: string;
-    token_type: string;         // eg "Bearer"
-    expires_in: number;
-    scope: string;
 }
 
 export default AuthUtils;
