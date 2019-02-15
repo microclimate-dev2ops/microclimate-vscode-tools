@@ -38,11 +38,11 @@ namespace ConnectionFactory {
      *
      * Should handle and display errors, and never throw an error.
      */
-    export async function tryAddConnection(url: vscode.Uri, skipExistsCheck: boolean = false): Promise<Connection | undefined> {
+    export async function tryAddConnection(url: vscode.Uri): Promise<Connection | undefined> {
 
         Log.i("TryAddConnection to: " + url.toString());
 
-        if (!skipExistsCheck && ConnectionManager.instance.connectionExists(url)) {
+        if (ConnectionManager.instance.connectionExists(url)) {
             vscode.window.showWarningMessage(Translator.t(STRING_NS, "connectionAlreadyExists", { uri: url }));
             return undefined;
         }

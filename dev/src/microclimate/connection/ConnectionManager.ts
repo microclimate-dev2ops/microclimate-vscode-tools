@@ -28,23 +28,21 @@ export default class ConnectionManager {
     private readonly listeners: Array<( () => void )> = [];
 
     public static async init(): Promise<ConnectionManager> {
-        const connectionManager = new ConnectionManager();
-
         if (ConnectionManager._instance != null) {
             Log.e("Multiple ConnectionManager initializations!");
             return ConnectionManager._instance;
         }
+        ConnectionManager._instance = new ConnectionManager();
 
         const connectionInfos: vscode.Uri[] = ConnectionManager.loadConnections();
         Log.i(`Loaded ${connectionInfos.length} connection(s)`, connectionInfos);
 
         connectionInfos.forEach((uri) =>
-            ConnectionFactory.tryAddConnection(uri, true)
+            ConnectionFactory.tryAddConnection(uri)
         );
-        ConnectionManager._instance = connectionManager;
 
         Log.i("ConnectionManager initialized");
-        return connectionManager;
+        return ConnectionManager._instance;
     }
 
     public static get instance(): ConnectionManager {
