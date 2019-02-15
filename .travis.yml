@@ -6,9 +6,9 @@ os:
 - linux
 # osx would be great, but travis only supports docker for linux
 
-env:
+#env:
   # Will override the Travis web UI settings.
-  - rc="false" skip_tests="false" project_types="node.js" microclimate_version="1901"
+  #- rc="false" skip_tests="false" project_types="node.js" microclimate_version="1901"
 
 sudo: true
 cache: npm
