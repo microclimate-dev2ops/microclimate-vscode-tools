@@ -68,7 +68,7 @@ namespace Authenticator {
             throw new Error(`Cancelled logging in to ${icpHostname}`);
         }
         if (pendingAuth != null) {
-            fulfillPendingAuth(false, "Authentication cancelled - Multiple concurrent logins.");
+            fulfillPendingAuth(false, "Previous login cancelled - Multiple concurrent logins.");
         }
 
         // https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks
@@ -104,6 +104,21 @@ namespace Authenticator {
         vscode.commands.executeCommand(Commands.VSC_OPEN, authUri);
 
         pendingAuth = new PendingAuthentication(AUTH_REDIRECT_CB, stateParam);
+
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            cancellable: true,
+            title: "Waiting for browser login"
+        }, (_progress, token): Promise<string> => {
+            if (pendingAuth == null) {
+                // never
+                return Promise.reject();
+            }
+            token.onCancellationRequested((_e) => {
+                fulfillPendingAuth(false, "Cancelled browser login");
+            });
+            return pendingAuth.promise;
+        });
         Log.d("Awaiting pending auth callback");
 
         const code: string = await pendingAuth.promise;

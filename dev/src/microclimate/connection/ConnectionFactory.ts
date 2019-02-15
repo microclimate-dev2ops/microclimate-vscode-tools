@@ -38,35 +38,19 @@ namespace ConnectionFactory {
      *
      * Should handle and display errors, and never throw an error.
      */
-    export async function tryAddConnection(uri: vscode.Uri, skipExistsCheck: boolean = false): Promise<Connection | undefined> {
+    export async function tryAddConnection(url: vscode.Uri, skipExistsCheck: boolean = false): Promise<Connection | undefined> {
 
-        Log.i("TryAddConnection to: " + uri.toString());
+        Log.i("TryAddConnection to: " + url.toString());
 
-        if (!skipExistsCheck && ConnectionManager.instance.connectionExists(uri)) {
-            vscode.window.showWarningMessage(Translator.t(STRING_NS, "connectionAlreadyExists", { uri }));
+        if (!skipExistsCheck && ConnectionManager.instance.connectionExists(url)) {
+            vscode.window.showWarningMessage(Translator.t(STRING_NS, "connectionAlreadyExists", { uri: url }));
             return undefined;
         }
         Log.d("Connection does not already exist");
 
         let newConnection: Connection;
         try {
-            const connectingMsg = `Connecting to ${uri.toString()}`;
-
-            const testConnPromise = testConnection(uri);
-
-            // For remote, show a connecting-in-progress message. Localhost is too fast for this to be useful.
-            if (!MCUtil.isLocalhost(uri.authority)) {
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    // TODO needs to be cancellable
-                    // cancellable: true,
-                    title: connectingMsg
-                }, (_progress, _token): Promise<Connection> => {
-                    return testConnPromise;
-                });
-            }
-
-            newConnection = await testConnPromise;
+            newConnection = await testConnection(url);
             Log.d("TestConnection success to " + newConnection.mcUri);
         }
         catch (err) {
@@ -79,15 +63,15 @@ namespace ConnectionFactory {
             const response = await vscode.window.showErrorMessage(errMsg, editBtn, retryBtn, openUrlBtn);
             if (response === editBtn) {
                 // start again from the beginning, with the same uri prefilled
-                return newConnectionCmd(uri);
+                return newConnectionCmd(url);
             }
             else if (response === retryBtn) {
                 // try to connect with the same uri
-                return tryAddConnection(uri);
+                return tryAddConnection(url);
             }
             else if (response === openUrlBtn) {
-                Log.d(`Opening URL "${uri}"`);
-                vscode.commands.executeCommand(Commands.VSC_OPEN, uri);
+                Log.d(`Opening URL "${url}"`);
+                vscode.commands.executeCommand(Commands.VSC_OPEN, url);
                 return undefined;
             }
             else {
@@ -127,17 +111,33 @@ async function testConnection(url: vscode.Uri): Promise<Connection> {
         };
     }
 
+    Log.d("Testing connection now");
+
     let testResponse: request.FullResponse | undefined;
     try {
-        Log.d("Testing connection now");
-        // Don't use Requester here! We want different behaviour. Eg it will try to get a token, it might not have one.
-        testResponse = await request.get(url.toString(), rqOptions);
+        const connectRequestPromise: request.RequestPromise = request.get(url.toString(), rqOptions);
+
+        // For remote, show a connecting-in-progress message. Localhost is too fast for this to be useful.
+        if (!MCUtil.isLocalhost(url.authority)) {
+            testResponse = await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: `Connecting to ${url.toString()}`
+            }, async (_progress, _token): Promise<request.FullResponse> => {
+                return await connectRequestPromise;
+            });
+        }
+        else {
+            testResponse = await connectRequestPromise;
+        }
     }
     catch (err) {
         Log.i(`New connection request fail`, err);
         if (err instanceof reqErrors.StatusCodeError) {
-            // err.message will often be an entire html page so let's not show that.
-            throw new Error(`Connecting to ${url} failed: ${err.statusCode}${err.error ? err.error : ""}`);            // nls
+            if (err.statusCode !== 401) {
+                // 401 is handled below
+                // err.message will often be an entire html page so let's not show that.
+                throw new Error(`Connecting to ${url} failed: ${err.statusCode}${err.error ? err.error : ""}`);            // nls
+            }
         }
         else if (err instanceof reqErrors.RequestError) {
             // eg "connection refused", "getaddrinfo failed"
@@ -149,6 +149,7 @@ async function testConnection(url: vscode.Uri): Promise<Connection> {
 
     if (testResponse == null) {
         // should never happen
+        Log.d("testResponse is null!");
         throw new Error(`Connecting to ${url} failed: Unknown error`);
     }
     Log.d(`Initial response from ${url} status=${testResponse.statusCode} requestPath=${testResponse.request.path}`);
