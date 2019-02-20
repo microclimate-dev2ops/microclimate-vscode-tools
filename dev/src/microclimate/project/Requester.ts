@@ -61,7 +61,12 @@ namespace Requester {
             }
         }
 
-        return request.get(url.toString(), options);
+        const response: request.FullResponse = await request.get(url.toString(), options);
+        if (response.body.toString().includes("CWOAU0062E") || response.request.path.toLowerCase().includes("oidc")) {
+            // auth failed at an earlier step, or expired
+            throw new Error("Not authorized to access Microclimate. Please log out and log in again or something.");
+        }
+        return response;
     }
 
     export async function requestProjectRestart(project: Project, startMode: StartModes.Modes): Promise<request.RequestPromise<any>> {

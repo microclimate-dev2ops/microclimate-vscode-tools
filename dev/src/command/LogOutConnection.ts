@@ -46,5 +46,6 @@ export default async function logOutConnection(connection: Connection): Promise<
         const errMsg = err.error_description || err.error || err.message || err.toString();
         vscode.window.showErrorMessage("Error logging out: " + errMsg);
     }
+    connection.onDisconnect();
     Log.d("Done logging out");
 }
