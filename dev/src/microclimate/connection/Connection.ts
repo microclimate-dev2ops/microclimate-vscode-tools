@@ -10,6 +10,7 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
+import * as request from "request-promise-native";
 
 import * as MCUtil from "../../MCUtil";
 import ITreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
@@ -173,22 +174,29 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
         Log.d(`Updating projects list from ${this}`);
 
-        let projectsRequestResult;
+        let projectsResponse: request.FullResponse;
         try {
-            projectsRequestResult = (await Requester.get(this.projectsApiUrl, { json: true })).body;
+            projectsResponse = await Requester.get(this.projectsApiUrl, { json: true });
+
+            if (!Array.isArray(projectsResponse.body)) {
+                const errMsg = `Unexpected response from ${projectsResponse.request.uri}`;
+                Log.e(errMsg, projectsResponse.body);
+                throw new Error(errMsg);
+            }
         }
         catch (err) {
             Log.e(`Error updating projects list from ${this.projectsApiUrl}:`, err);
-            vscode.window.showErrorMessage(`Error updating projects list from ${this.mcUrl}: ${err.mesage || err}`);
+            vscode.window.showErrorMessage(`Error updating projects list from ${this.mcUrl}: ${err.message || err}`);
             return this.projects;
         }
 
-        Log.d("Get project list result:", projectsRequestResult);
+        // by now we know that we got a JSON array response from the server, so we can proceed to treat it as projects.
+        Log.d("Get project list result:", projectsResponse.body);
 
         const oldProjects = this.projects;
         this.projects = [];
 
-        for (const projectInfo of projectsRequestResult) {
+        for (const projectInfo of projectsResponse.body) {
             // This is a hard-coded exception for a Microclimate bug, where projects get stuck in the Deleting or Validating state
             // and don't go away until they're deleted from the workspace and MC is restarted.
             if (projectInfo.action === "deleting" || projectInfo.action === "validating") {     // non-nls

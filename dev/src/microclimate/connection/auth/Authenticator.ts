@@ -13,7 +13,6 @@ import * as vscode from "vscode";
 import * as request from "request-promise-native";
 import * as requestErrors from "request-promise-native/errors";
 import * as qs from "querystring";
-import * as crypto from "crypto";
 
 import Log from "../../../Logger";
 import * as MCUtil from "../../../MCUtil";
@@ -29,7 +28,7 @@ namespace Authenticator {
     // See AuthUtils for more
     // These must match the values registered with the OIDC server by Portal
     export const AUTH_REDIRECT_CB = "vscode://IBM.microclimate-tools/authcb";
-    const OIDC_CLIENT_ID = "microclimate-tools";
+    export const OIDC_CLIENT_ID = "microclimate-tools";
     const OIDC_GRANT_TYPE = "authorization_code";
 
     /******
@@ -42,7 +41,7 @@ namespace Authenticator {
      * The callback uri, auth code, and state parameter are then passed to getToken, which validates the state parameter
      * and exchanges the code for a tokenset at the token endpoint.
      * We save the access token and refresh token and include the access token in our requests to this ICP host.
-     * We do NOT save, decrypt, or validate the id_token. We have no interest in the user data. For this reason, we don't use the `nonce` parameter.
+     * At this time the id_token is validated by the tools, but not stored.
      * logout() asks the server to revoke the current tokens, and deletes them from the extension's memory.
      *
      * The OIDC Liberty server must be configured to allow public clients (ie, ones that do not use a secret).
@@ -73,20 +72,19 @@ namespace Authenticator {
         }
 
         // https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks
-        // Use hex because these characters have to be urlencoded
-        const stateParam = crypto.randomBytes(16).toString("hex");
-        // not used because we don't use the id_token
-        // const nonceParam = crypto.randomBytes(16).toString("hex");
-        const config: IOpenIDConfig = await AuthUtils.getOpenIDConfig(icpHostname);
+        const stateParam = AuthUtils.getCryptoRandomHex();
+        // https://auth0.com/docs/api-auth/tutorials/nonce
+        const nonceParam = AuthUtils.getCryptoRandomHex();
+        const oidcConfig: IOpenIDConfig = await AuthUtils.getOpenIDConfig(icpHostname);
 
-        const authEndpoint: string = config.authorization_endpoint;
+        const authEndpoint: string = oidcConfig.authorization_endpoint;
         const queryObj = {
             client_id: OIDC_CLIENT_ID,
             grant_type: OIDC_GRANT_TYPE,
             scope: AuthUtils.OIDC_SCOPE,
             response_type: "code",
             redirect_uri: AUTH_REDIRECT_CB,
-            // nonce: nonceParam,
+            nonce: nonceParam,
             state: stateParam,
         };
         Log.d("QUERYOBJ", queryObj);
@@ -98,7 +96,7 @@ namespace Authenticator {
         // URI will escape it
         const authUri = vscode.Uri.parse(authEndpoint).with({ query });
 
-        const tokenEndpoint = config.token_endpoint;
+        const tokenEndpoint = oidcConfig.token_endpoint;
         Log.d(`auth endpoint is: ${authUri}`);
         Log.d(`token endpoint is ${tokenEndpoint}`);
 
@@ -123,7 +121,7 @@ namespace Authenticator {
         Log.d("Awaiting pending auth callback");
 
         const code: string = await pendingAuth.promise;
-        await getToken(AUTH_REDIRECT_CB, tokenEndpoint, code);
+        await getToken(AUTH_REDIRECT_CB, tokenEndpoint, code, nonceParam, oidcConfig.issuer);
     }
 
     /**
@@ -201,7 +199,7 @@ namespace Authenticator {
      * After receiving the auth code callback, send the code to the tokenEndpoint to receive an auth token in return.
      * https://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
      */
-    async function getToken(redirectUri: string, tokenEndpoint: string, authCode: string): Promise<void> {
+    async function getToken(redirectUri: string, tokenEndpoint: string, authCode: string, nonce: string, issuer: string): Promise<void> {
         Log.d("onAuthCallback");
         const hostname = MCUtil.getHostnameFromAuthority(vscode.Uri.parse(tokenEndpoint).authority);
 
@@ -222,7 +220,7 @@ namespace Authenticator {
                 timeout: AuthUtils.TIMEOUT,
             });
 
-            await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse);
+            await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse, nonce, issuer);
             Log.i(`Successfully got new tokenset from code`);
         }
         catch (err) {
@@ -260,18 +258,22 @@ namespace Authenticator {
     export async function refreshToken(connection: Connection): Promise<void> {
         const hostname = connection.host;
         Log.i("Refreshing token of " + hostname);
-        const tokenEndpoint = (await AuthUtils.getOpenIDConfig(hostname)).token_endpoint;
+        const oidcConfig = await AuthUtils.getOpenIDConfig(hostname);
+        const tokenEndpoint = oidcConfig.token_endpoint;
         const tokenSet = TokenSetManager.getTokenSetFor(hostname);
         if (tokenSet == null || tokenSet.refresh_token == null) {
             Log.e("Can't refresh - no refresh token available to connection " + connection);
             throw new Error("Refresh failed - Not logged in");
         }
 
+        const nonceParam = AuthUtils.getCryptoRandomHex();
+
         const form = {
             client_id: OIDC_CLIENT_ID,
             grant_type: "refresh_token",
             refresh_token: tokenSet.refresh_token,
             scope: AuthUtils.OIDC_SCOPE,
+            nonce: nonceParam,
         };
 
         Log.d("Requesting token refresh now");
@@ -282,7 +284,7 @@ namespace Authenticator {
             timeout: AuthUtils.TIMEOUT,
         });
 
-        await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse);
+        await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse, nonceParam, oidcConfig.issuer);
         Log.i("Successfully refreshed tokenset");
     }
 
@@ -318,8 +320,6 @@ namespace Authenticator {
             // is this an error? any way to handle?
             Log.w("Logged out of a connection that had no tokens");
         }
-
-        // await connection.onDisconnect();
     }
 
     async function requestRevoke(revokeEndpoint: string, token: string): Promise<boolean> {

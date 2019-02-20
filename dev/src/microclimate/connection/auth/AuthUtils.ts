@@ -10,6 +10,7 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
+import * as crypto from "crypto";
 import * as request from "request-promise-native";
 
 import Log from "../../../Logger";
@@ -51,6 +52,14 @@ namespace AuthUtils {
 
     function getOIDCServerURL(icpHostname: string): string {
         return `https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`;
+    }
+
+    /**
+     * Returns a 16-byte hex string, suitable for use as a `nonce` or `state`.
+     * Use hex because these characters have to be urlencoded.
+     */
+    export function getCryptoRandomHex(): string {
+        return crypto.randomBytes(16).toString("hex");
     }
 
     /**
@@ -97,6 +106,7 @@ namespace AuthUtils {
  */
 export interface IOpenIDConfig {
     // There are a lot more fields than this in the config object, but these are the ones we're interested in at this time
+    issuer: string;
     token_endpoint: string;
     authorization_endpoint: string;
 

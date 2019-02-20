@@ -359,7 +359,7 @@
         "ts-node": "^7.0.1",
         "tslint": "^5.11.0",
         "typescript": "^3.1.5",
-        "vscode": "^1.1.22"
+        "vscode": "^1.1.29"
     },
     "dependencies": {
         "circular-json": "^0.5.9",
