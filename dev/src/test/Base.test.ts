@@ -99,11 +99,11 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         const connection = connMan.connections[0];
         // expect(connection.isConnected).to.be.true;
         expect(connection.host).to.equal("localhost");
-        expect(connection.mcUri.authority).to.contain("localhost:9090");
+        expect(connection.mcUrl.authority).to.contain("localhost:9090");
     });
 
     it("should have a test socket connection", async function() {
-        const uri = ConnectionManager.instance.connections[0].mcUri.toString();
+        const uri = ConnectionManager.instance.connections[0].mcUrl.toString();
         const testSocket = await SocketTestUtil.createTestSocket(uri);
         expect(testSocket.connected, "Socket did not connect").to.be.true;
     });

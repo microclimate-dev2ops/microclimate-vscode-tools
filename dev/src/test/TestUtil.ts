@@ -32,9 +32,9 @@ namespace TestUtil {
     export async function createProject(connection: Connection, type: ProjectType): Promise<Project> {
         // acquireProject below will only look for projects starting with the project prefix
         const projectName: string = PROJECT_PREFIX + type.type.toLowerCase().replace(".", "") + Date.now().toString().slice(-8);
-        Log.t(`Create project of type ${type} at ${connection.mcUri} named ${projectName}`);
+        Log.t(`Create project of type ${type} at ${connection.mcUrl} named ${projectName}`);
 
-        const uri: string = connection.mcUri.with({ path: Endpoints.PROJECTS }).toString();
+        const uri: string = connection.mcUrl.with({ path: Endpoints.PROJECTS }).toString();
 
         const payload: any = {
             name: projectName,

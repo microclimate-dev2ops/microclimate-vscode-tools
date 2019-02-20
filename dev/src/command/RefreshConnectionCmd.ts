@@ -18,6 +18,7 @@ import Connection from "../microclimate/connection/Connection";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import ConnectionFactory from "../microclimate/connection/ConnectionFactory";
+import { ConnectionData } from "../microclimate/connection/ConnectionData";
 
 export default async function refreshConnectionCmd(connection: Connection): Promise<void> {
     Log.d("refreshConnectionCmd");
@@ -36,7 +37,7 @@ export default async function refreshConnectionCmd(connection: Connection): Prom
         Log.e("Error removing connection", connection);
         return;
     }
-    await ConnectionFactory.tryAddConnection(connection.mcUri);
+    await ConnectionFactory.reAddConnection(ConnectionData.getConnectionData(connection));
 
     Log.d("Done refreshing " + connection);
 }

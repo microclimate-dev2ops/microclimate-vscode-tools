@@ -55,7 +55,7 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
             vscode.window.showErrorMessage(Translator.t(STRING_NS, "cantOpenDisconnected"));
             return;
         }
-        uriToOpen = conn.mcUri;
+        uriToOpen = conn.mcUrl;
     }
     else {
         // should never happen

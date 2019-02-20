@@ -344,7 +344,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
 
         // TODO Microclimate on ICP will use HTTPS but the apps will (probably, or always?) use http
-        return this.connection.mcUri.with({
+        return this.connection.mcUrl.with({
             scheme: "http",
             authority: `${this.connection.host}:${this._appPort}`,      // non-nls
             path: this.contextRoot

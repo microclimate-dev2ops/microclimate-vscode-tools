@@ -36,7 +36,7 @@ export default class MCSocket {
         private readonly connection: Connection,
         user?: string,
     ) {
-        this.uri = connection.mcUri.toString();
+        this.uri = connection.mcUrl.toString();
         if (user) {
             if (!this.uri.endsWith("/")) {
                 this.uri += "/";
@@ -133,7 +133,7 @@ export default class MCSocket {
     }
 
     private readonly onProjectDeleted = async (payload: { projectID: string }): Promise<void> => {
-        Log.d("PROJECT DELETED", payload.projectID);
+        Log.d("Project deleted", payload.projectID);
 
         const project = await this.getProject(payload);
         if (project == null) {

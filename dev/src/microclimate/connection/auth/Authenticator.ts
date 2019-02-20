@@ -27,6 +27,7 @@ import TokenSetManager, { ITokenSet } from "./TokenSetManager";
 namespace Authenticator {
     // microclimate-specific OIDC constants
     // See AuthUtils for more
+    // These must match the values registered with the OIDC server by Portal
     export const AUTH_REDIRECT_CB = "vscode://IBM.microclimate-tools/authcb";
     const OIDC_CLIENT_ID = "microclimate-tools";
     const OIDC_GRANT_TYPE = "authorization_code";
@@ -37,8 +38,8 @@ namespace Authenticator {
      * authenticate() suspends by awaiting the pendingAuth promise, which will resolve after the user logs in.
      * The user logs in in the browser.
      * The auth code page calls back to the plugin. the vscode plugin URI handler calls handleAuthCallback,
-     * which verifies the state parameter and fulfills the pendingAuth promise with the "code" query parameter from the server.
-     * The callback uri with the auth code is then passed to onAuthCallback, which validates the state parameter
+     * which verifies the state parameter and fulfills the pendingAuth promise with the "code" (aka auth code) query parameter from the server.
+     * The callback uri, auth code, and state parameter are then passed to getToken, which validates the state parameter
      * and exchanges the code for a tokenset at the token endpoint.
      * We save the access token and refresh token and include the access token in our requests to this ICP host.
      * We do NOT save, decrypt, or validate the id_token. We have no interest in the user data. For this reason, we don't use the `nonce` parameter.
@@ -122,7 +123,7 @@ namespace Authenticator {
         Log.d("Awaiting pending auth callback");
 
         const code: string = await pendingAuth.promise;
-        await onAuthCallback(AUTH_REDIRECT_CB, tokenEndpoint, code);
+        await getToken(AUTH_REDIRECT_CB, tokenEndpoint, code);
     }
 
     /**
@@ -200,7 +201,7 @@ namespace Authenticator {
      * After receiving the auth code callback, send the code to the tokenEndpoint to receive an auth token in return.
      * https://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
      */
-    async function onAuthCallback(redirectUri: string, tokenEndpoint: string, code: string): Promise<void> {
+    async function getToken(redirectUri: string, tokenEndpoint: string, authCode: string): Promise<void> {
         Log.d("onAuthCallback");
         const hostname = MCUtil.getHostnameFromAuthority(vscode.Uri.parse(tokenEndpoint).authority);
 
@@ -209,7 +210,7 @@ namespace Authenticator {
                 client_id: OIDC_CLIENT_ID,
                 grant_type: OIDC_GRANT_TYPE,
                 redirect_uri: redirectUri,
-                code: code,
+                code: authCode,
             };
             // Log.i("form", form);
 
@@ -318,7 +319,7 @@ namespace Authenticator {
             Log.w("Logged out of a connection that had no tokens");
         }
 
-        await connection.onDisconnect();
+        // await connection.onDisconnect();
     }
 
     async function requestRevoke(revokeEndpoint: string, token: string): Promise<boolean> {

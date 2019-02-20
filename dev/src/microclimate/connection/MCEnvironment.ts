@@ -48,12 +48,8 @@ namespace MCEnvironment {
         // always false
         // running_on_icp: boolean;
 
-        // always false (boolean, not string)
-        // socket_namespace?: string;
-
-        // always null
-        // user_string?: string;
-
+        // socket_namespace: string;
+        user_string: string;
         workspace_location: string;
     }
 
@@ -181,7 +177,7 @@ namespace MCEnvironment {
         let newVersionNumber;
         try {
             // the user will see the "version bad/too old" message after the ConnectionManager tries to reconnect to this instance.
-            newVersionNumber = getVersionNumber(connection.mcUri.toString(), envData);
+            newVersionNumber = getVersionNumber(connection.mcUrl.toString(), envData);
         }
         catch (err) {
             Log.w(err);

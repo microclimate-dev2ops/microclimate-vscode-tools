@@ -27,6 +27,7 @@ import Requester from "../project/Requester";
 import MCEnvironment from "./MCEnvironment";
 import Authenticator from "./auth/Authenticator";
 import Commands from "../../constants/Commands";
+import { IConnectionData } from "./ConnectionData";
 
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
 
@@ -34,16 +35,19 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     private static readonly CONTEXT_SUFFIX_ACTIVE:  string = "active";     // non-nls
     private static readonly CONTEXT_SUFFIX_ICP:     string = "icp";        // non-nls
 
+    public readonly mcUrl: vscode.Uri;
+    private readonly projectsApiUrl: vscode.Uri;
+    public readonly host: string;
+    public readonly isICP: boolean;
+
     public readonly workspacePath: vscode.Uri;
+    public readonly version: number;
     public readonly versionStr: string;
 
-    public readonly socket: MCSocket;
+    public readonly user: string;
+    private readonly socket: MCSocket;
 
     public readonly logManager: MCLogManager;
-
-    public readonly host: string;
-
-    private readonly projectsApiUri: vscode.Uri;
 
     // Has this connection EVER connected to its Microclimate instance
     private hasConnected: boolean = false;
@@ -59,18 +63,22 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     // public readonly detail?: string;
 
     constructor(
-        public readonly mcUri: vscode.Uri,
-        public readonly isICP: boolean,
-        public readonly version: number,
-        workspacePath_: string,
-        public readonly user?: string,
+        connectionData: IConnectionData
     ) {
-        this.projectsApiUri = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
-        this.socket = new MCSocket(this, user);
+        this.mcUrl = connectionData.url;
+        this.projectsApiUrl = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
+        this.user = connectionData.user;
+        this.version = connectionData.version;
+        this.socket = new MCSocket(this, this.user);
         this.logManager = new MCLogManager(this);
-        this.host = MCUtil.getHostnameFromAuthority(mcUri.authority);
-        this.workspacePath = vscode.Uri.file(workspacePath_);
-        this.versionStr = MCEnvironment.getVersionAsString(version);
+        this.host = MCUtil.getHostnameFromAuthority(this.mcUrl.authority);
+        this.isICP = !MCUtil.isLocalhost(this.host);
+        this.workspacePath = vscode.Uri.file(connectionData.workspacePath);
+        this.versionStr = MCEnvironment.getVersionAsString(connectionData.version);
+
+        if (this.isICP && this.user == null) {
+            Log.e("ICP connection without a user");
+        }
 
         // QuickPickItem
         this.label = this.getTreeItemLabel();
@@ -98,7 +106,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     }
 
     public toString(): string {
-        return `${this.mcUri}`;
+        return `${this.mcUrl}`;
     }
 
     /**
@@ -158,15 +166,20 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         if (!this.needProjectUpdate) {
             return this.projects;
         }
+
+        if (!this.isConnected) {
+            return [];
+        }
+
         Log.d(`Updating projects list from ${this}`);
 
         let projectsRequestResult;
         try {
-            projectsRequestResult = (await Requester.get(this.projectsApiUri, { json: true })).body;
+            projectsRequestResult = (await Requester.get(this.projectsApiUrl, { json: true })).body;
         }
         catch (err) {
-            Log.e(`Error updating projects list from ${this.projectsApiUri}:`, err);
-            vscode.window.showErrorMessage(`Error updating projects list from ${this.mcUri}: ${err.mesage || err}`);
+            Log.e(`Error updating projects list from ${this.projectsApiUrl}:`, err);
+            vscode.window.showErrorMessage(`Error updating projects list from ${this.mcUrl}: ${err.mesage || err}`);
             return this.projects;
         }
 
@@ -237,12 +250,19 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         ti.contextValue = this.getContextID();
         ti.iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
         // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
+        // ti.command = {
+        //     command: Commands.REFRESH_CONNECTION,
+        //     arguments: [ this ],
+        //     title: "Refresh",
+        // };
+
         return ti;
     }
 
     private getTreeItemLabel(): string {
         // return Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
-        return `${this.mcUri.authority} • ${this.versionStr}`;
+        const userStr = this.user ? `${this.user}@` : "";
+        return `${userStr}${this.mcUrl.authority} • ${this.versionStr}`;
     }
 
     private getContextID(): string {
@@ -268,6 +288,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     }
 
     public get isLoggedIn(): boolean {
-        return Authenticator.getAccessTokenForUrl(this.mcUri) != null;
+        return Authenticator.getAccessTokenForUrl(this.mcUrl) != null;
     }
 }

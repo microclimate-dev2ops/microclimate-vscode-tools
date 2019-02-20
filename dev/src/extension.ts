@@ -49,7 +49,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     Log.i("activeMsg:", msg);
     // vscode.window.showInformationMessage(msg);
 
-    await ConnectionManager.init();
+    try {
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Window,
+            title: `Loading Microclimate connections...`,
+        }, async (): Promise<void> => {
+            await ConnectionManager.init();
+        });
+    }
+    catch (err) {
+        // hard failure - can't do anything is the ConnectionManger is broken
+        Log.e("Error initializing ConnectionManager!", err);
+        vscode.window.showErrorMessage("Error initializing Microclimate Tools!");
+    }
 
     ignoreMCFiles();
 

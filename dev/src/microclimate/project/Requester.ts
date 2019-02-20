@@ -50,7 +50,7 @@ namespace Requester {
         options.rejectUnauthorized = shouldRejectUnauthed(url);
         options.resolveWithFullResponse = true;
 
-        if (!MCUtil.isLocalhost(url.toString())) {
+        if (!MCUtil.isLocalhost(url.authority)) {
             const token = Authenticator.getAccessTokenForUrl(url);
             if (token) {
                 options.auth = {};

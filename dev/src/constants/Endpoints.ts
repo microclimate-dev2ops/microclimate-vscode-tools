@@ -28,7 +28,7 @@ export default class Endpoints {
     public static readonly GENERATE_OLD: string = "api/v1/validate/generate";
 
     public static getEndpoint(connection: Connection, endpoint: string): Uri {
-        return connection.mcUri.with({ path: endpoint });
+        return connection.mcUrl.with({ path: endpoint });
     }
 
     // Project endpoints, eg "localhost:9090/api/v1/project/81eba580-0aea-11e9-b530-67b2995d0cd9/restart"
@@ -39,11 +39,11 @@ export default class Endpoints {
     public static readonly GENERATE:        string = "validate/generate";
 
     public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string): Uri {
-        return connection.mcUri.with({ path: `${Endpoints.PROJECTS}/${projectID}/${endpoint}` });
+        return connection.mcUrl.with({ path: `${Endpoints.PROJECTS}/${projectID}/${endpoint}` });
     }
 
     public static getAppMonitorUrl(connection: Connection, projectID: string): Uri {
-        return connection.mcUri.with({ query: `project=${projectID}&view=monitor` });
+        return connection.mcUrl.with({ query: `project=${projectID}&view=monitor` });
     }
 
     private static readonly QUERY_NEW_PROJECT:      string = "new-project=true";
@@ -51,7 +51,7 @@ export default class Endpoints {
 
     public static getCreateOrImportUrl(connection: Connection, create: boolean): Uri {
         const query = create ? this.QUERY_NEW_PROJECT : this.QUERY_IMPORT_PROJECT;
-        return connection.mcUri.with({ query });
+        return connection.mcUrl.with({ query });
     }
 
     public static getEnablementAction(enable: boolean): string {

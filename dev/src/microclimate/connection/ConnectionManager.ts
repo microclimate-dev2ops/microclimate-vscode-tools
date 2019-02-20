@@ -19,6 +19,7 @@ import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ConnectionFactory from "./ConnectionFactory";
 import MCEnvironment from "./MCEnvironment";
 import { newConnectionCmd } from "../../command/NewConnectionCmd";
+import { IConnectionData, ISaveableConnectionData, ConnectionData } from "./ConnectionData";
 
 export default class ConnectionManager {
 
@@ -34,12 +35,15 @@ export default class ConnectionManager {
         }
         ConnectionManager._instance = new ConnectionManager();
 
-        const connectionInfos: vscode.Uri[] = ConnectionManager.loadConnections();
-        Log.i(`Loaded ${connectionInfos.length} connection(s)`, connectionInfos);
+        const connectionDatas: IConnectionData[] = ConnectionManager.loadConnections();
+        Log.i(`Loaded ${connectionDatas.length} connection(s)`, connectionDatas);
 
-        connectionInfos.forEach((uri) =>
-            ConnectionFactory.tryAddConnection(uri)
-        );
+        const reAddConnectionPromises = Array<Promise<Connection>>();
+        connectionDatas.forEach( (connectionData) => {
+            reAddConnectionPromises.push(ConnectionFactory.reAddConnection(connectionData));
+        });
+
+        await Promise.all(reAddConnectionPromises);
 
         Log.i("ConnectionManager initialized");
         return ConnectionManager._instance;
@@ -56,13 +60,12 @@ export default class ConnectionManager {
         return this._connections;
     }
 
-    public async addConnection(uri: vscode.Uri, isICP: boolean, mcVersion: number, workspace: string, user?: string):
+    public async addConnection(connectionData: IConnectionData):
         Promise<Connection> {
 
         // all validation that this connection is good must be done by this point
 
-        const newConnection: Connection = new Connection(uri, isICP, mcVersion, workspace, user);
-        Log.i("New Connection @ " + uri);
+        const newConnection: Connection = new Connection(connectionData);
         this._connections.push(newConnection);
         ConnectionManager.saveConnections();
 
@@ -92,7 +95,7 @@ export default class ConnectionManager {
      * and thus must not do anything further.
      */
     public async verifyReconnect(connection: Connection): Promise<boolean> {
-        Log.d("Verifying reconnect at " + connection.mcUri);
+        Log.d("Verifying reconnect at " + connection.mcUrl);
 
         let tries = 0;
         let newEnvData: MCEnvironment.IMCEnvData | undefined;
@@ -100,7 +103,7 @@ export default class ConnectionManager {
         while (newEnvData == null && tries < 10) {
             tries++;
             try {
-                newEnvData = await MCEnvironment.getEnvData(connection.mcUri);
+                newEnvData = await MCEnvironment.getEnvData(connection.mcUrl);
             }
             catch (err) {
                 // wait briefly before trying again
@@ -110,8 +113,8 @@ export default class ConnectionManager {
 
         if (newEnvData == null) {
             // I don't think this will ever happen
-            Log.e("Couldn't get a good response from environment endpoint " + connection.mcUri);
-            vscode.window.showErrorMessage(Translator.t(StringNamespaces.DEFAULT, "failedToReconnect", { uri: connection.mcUri }));
+            Log.e("Couldn't get a good response from environment endpoint " + connection.mcUrl);
+            vscode.window.showErrorMessage(Translator.t(StringNamespaces.DEFAULT, "failedToReconnect", { uri: connection.mcUrl }));
 
             await this.removeConnection(connection);
             return false;
@@ -134,7 +137,7 @@ export default class ConnectionManager {
             await this.removeConnection(connection);
 
             // will also add the new Connection to this ConnectionManager
-            const newConnection = await newConnectionCmd(connection.mcUri);
+            const newConnection = await newConnectionCmd(connection.mcUrl);
             if (newConnection == null) {
                 // should never happen
                 Log.e("Failed to create new connection after verifyReconnect failure");
@@ -142,7 +145,7 @@ export default class ConnectionManager {
             }
 
             const msg = Translator.t(StringNamespaces.DEFAULT, "versionChanged",
-                { uri: connection.mcUri, oldVersion: connection.versionStr, newVersion: newConnection.versionStr }
+                { uri: connection.mcUrl, oldVersion: connection.versionStr, newVersion: newConnection.versionStr }
             );
             vscode.window.showInformationMessage(msg);
             return false;
@@ -151,27 +154,37 @@ export default class ConnectionManager {
 
     public connectionExists(uri: vscode.Uri): boolean {
         return this._connections.some( (conn) => {
-            return conn.mcUri.toString() === uri.toString();
+            return conn.mcUrl.toString() === uri.toString();
         });
     }
 
-    private static loadConnections(): vscode.Uri[] {
+    private static loadConnections(): IConnectionData[] {
         const globalState = global.extGlobalState as vscode.Memento;
-        const loaded = globalState.get<string[]>(Settings.CONNECTIONS_KEY) || [];
-        return loaded.map( (uri) => vscode.Uri.parse(uri));
+        const saveableDatas = globalState.get<ISaveableConnectionData[]>(Settings.CONNECTIONS_KEY) || [];
+        return saveableDatas.map( (data: ISaveableConnectionData): IConnectionData => {
+            return {
+                url: vscode.Uri.parse(data.urlString),
+                version: data.version,
+                user: data.user,
+                workspacePath: data.workspacePath,
+            };
+        });
     }
 
     /**
      * Save the list of connections as an array of URI strings.
      */
     private static async saveConnections(): Promise<void> {
-        const connectionUris: string[] = ConnectionManager.instance.connections.map( (conn) => conn.mcUri.toString() );
+        const saveableConnectionDatas: ISaveableConnectionData[] = ConnectionManager.instance.connections.map( (conn) => {
+            const data = ConnectionData.getConnectionData(conn);
+            return ConnectionData.convertToSaveable(data);
+        });
 
-        Log.d("Saving connections", connectionUris);
+        Log.d("Saving connections", saveableConnectionDatas);
         try {
             const globalState = global.extGlobalState as vscode.Memento;
             // connectionInfos must not contain cyclic references (ie, JSON.stringify succeeds)
-            await globalState.update(Settings.CONNECTIONS_KEY, connectionUris);
+            await globalState.update(Settings.CONNECTIONS_KEY, saveableConnectionDatas);
         }
         catch (err) {
             const msg = Translator.t(StringNamespaces.DEFAULT, "errorSavingConnections", { err: err.toString() });

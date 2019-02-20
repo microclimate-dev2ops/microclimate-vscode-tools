@@ -34,11 +34,11 @@ export default async function logOutConnection(connection: Connection): Promise<
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             cancellable: false,
-            title: `Logging out of ${connection.mcUri}...`
+            title: `Logging out of ${connection.mcUrl}...`
         }, (_progress, _token) => {
             return Authenticator.logout(connection);
         });
-        const logoutMsg = `Logged out of ${connection.mcUri}\nUse "Refresh Connection" to log back in.`;
+        const logoutMsg = `Logged out of ${connection.mcUrl}\nUse "Refresh Connection" to log back in.`;
         vscode.window.showInformationMessage(logoutMsg);
     }
     catch (err) {

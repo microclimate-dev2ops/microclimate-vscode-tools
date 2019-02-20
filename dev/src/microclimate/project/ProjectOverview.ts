@@ -75,7 +75,7 @@ export function generateHtml(project: Project): string {
 
             <table id="project-info-table">
                 <!--${buildRow("Name", project.name)}-->
-                ${buildRow("Microclimate URL", project.connection.mcUri.toString(), Openable.WEB)}
+                ${buildRow("Microclimate URL", project.connection.mcUrl.toString(), Openable.WEB)}
                 ${buildRow("Microclimate Version", project.connection.versionStr)}
                 ${emptyRow}
                 ${buildRow("Type", project.type.toString())}

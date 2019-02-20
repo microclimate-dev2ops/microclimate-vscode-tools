@@ -61,12 +61,11 @@ async function promptForConnectInfo(prefillUri?: vscode.Uri): Promise<vscode.Uri
         ignoreFocusOut: true
     };
 
-    const hostInputRaw = await vscode.window.showInputBox(inputOpts);
-    if (hostInputRaw == null) {
+    const hostInput = await vscode.window.showInputBox(inputOpts);
+    if (hostInput == null) {
         // user cancelled / didn't input anything valid
         return undefined;
     }
-    const hostInput = hostInputRaw.trim();
 
     // Uri.parse will return an empty URI if parsing fails
     const hostInputUri = vscode.Uri.parse(hostInput.trim());
