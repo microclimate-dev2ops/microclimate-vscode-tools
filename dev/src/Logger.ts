@@ -98,14 +98,14 @@ export class Log {
         }
 
         const argsStr: string = args.reduce( (result: string, arg: any): string => {
-            if (arg instanceof Object) {
+            if (arg != null && typeof arg === "object") {
                 try {
                     // Can fail eg on objects with circular references
                     // arg = JSON.stringify(arg, undefined, 2);
                     arg = CircularJson.stringify(arg, replacer, 2);
                 }
                 catch (err) {
-                    if (err.message && err.message.includes("circular")) {
+                    if (err.message && err.message.toString().toLowerCase().includes("circular")) {
                         arg = "*** Couldn't stringify circular object";
                     }
                     else {

@@ -18,6 +18,21 @@ import Settings from "../../../constants/Settings";
 import Requester from "../../project/Requester";
 
 /**
+ * See getOpenIDConfig(hostname)
+ */
+export interface IOpenIDConfig {
+    // There are a lot more fields than this in the config object, but these are the ones we're interested in at this time
+    issuer: string;
+    token_endpoint: string;
+    authorization_endpoint: string;
+    // This one's not actually returned by the config endpoint - I insert it myself
+    revoke_endpoint: string;
+
+    grant_types_supported: string[];
+    response_types_supported: string[];
+}
+
+/**
  * Helper functions, interfaces and constants used by Authenticator.ts and TokenSetManager
  *
  * **No other file should use any of these functions or constants**.
@@ -28,12 +43,13 @@ namespace AuthUtils {
     // ICP OIDC server info
     const OIDC_SERVER_PORT = 8443;
     const OIDC_SERVER_PATH = "/oidc/endpoint/OP";
-    const OIDC_REVOKE_ENDPOINT = "/revoke";
 
     export const TIMEOUT: number = 10000;
 
     export async function getOpenIDConfig(icpHostname: string): Promise<IOpenIDConfig> {
-        const openIDConfigUrl: string = `${getOIDCServerURL(icpHostname)}/.well-known/openid-configuration`;
+        const oidcServerUrl = getOIDCServerURL(icpHostname);
+        const openIDConfigUrl: string = `${oidcServerUrl}/.well-known/openid-configuration`;
+
         const oidcConfig: IOpenIDConfig = await request.get(openIDConfigUrl, {
             json: true,
             rejectUnauthorized: Requester.shouldRejectUnauthed(openIDConfigUrl),
@@ -43,15 +59,14 @@ namespace AuthUtils {
         if (!oidcConfig.authorization_endpoint || !oidcConfig.token_endpoint) {
             Log.e(`Receieved bad OpenID config from ${openIDConfigUrl}`, oidcConfig);
         }
+        // not provided by the config, but this is where the revoke endpoint is
+        // https://www.ibm.com/support/knowledgecenter/en/SSEQTP_liberty/com.ibm.websphere.wlp.doc/ae/twlp_oidc_revoke.html
+        oidcConfig.revoke_endpoint = oidcServerUrl + "/revoke";
         return oidcConfig;
     }
 
-    export function getRevokeEndpoint(icpHostname: string): string {
-        return getOIDCServerURL(icpHostname) + OIDC_REVOKE_ENDPOINT;
-    }
-
-    function getOIDCServerURL(icpHostname: string): string {
-        return `https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`;
+    export function getOIDCServerURL(icpHostname: string): vscode.Uri {
+        return vscode.Uri.parse(`https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`);
     }
 
     /**
@@ -98,20 +113,6 @@ namespace AuthUtils {
             return false;
         }
     }
-
-}
-
-/**
- * See getOpenIDConfig(hostname)
- */
-export interface IOpenIDConfig {
-    // There are a lot more fields than this in the config object, but these are the ones we're interested in at this time
-    issuer: string;
-    token_endpoint: string;
-    authorization_endpoint: string;
-
-    grant_types_supported: string[];
-    response_types_supported: string[];
 }
 
 export default AuthUtils;

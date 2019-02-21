@@ -11,38 +11,40 @@
 
 // import * as vscode from "vscode";
 import Log from "../../../Logger";
+import { ITokenSet } from "./TokenSetManager";
 
 /**
- * Wrapper for a Promise that represents an in-progress authentication flow.
- * Resolves to the authentication code which can then be exchanged for a token, or rejects with an error message.
- * Stores the in-progress flow's redirectUri and state parameters.
+ * Wraps a promise which is created when the user's browser is launched to log in.
+ * Resolves to a tokenset when the OAuth server calls-back with a success status,
+ * or rejects with an error when the authentication fails or is cancelled.
+ * Also stores the `state` parameter so we can verify the state given to the authorize endpoint matches the state in the callback.
  */
 export default class PendingAuthentication {
 
-    public readonly promise: Promise<string>;
-    private resolveFunc: ( (code: string) => void ) | undefined;
+    public readonly promise: Promise<ITokenSet>;
+    private resolveFunc: ( (tokenSet: ITokenSet) => void ) | undefined;
     private rejectFunc : ( (err : string) => void ) | undefined;
 
     constructor(
-        public readonly redirectUri: string,
+        // public readonly redirectUri: string,
         public readonly state: string,
         // public readonly nonce: string,
     ) {
 
-        this.promise = new Promise<string>( (resolve_, reject_) => {
+        this.promise = new Promise<ITokenSet>( (resolve_, reject_) => {
             this.resolveFunc = resolve_;
             this.rejectFunc = reject_;
         });
     }
 
-    public resolve(code: string): void {
+    public resolve(tokenSet: ITokenSet): void {
         if (this.resolveFunc != null) {
-            this.resolveFunc(code);
+            this.resolveFunc(tokenSet);
         }
         else {
             Log.e("Null resolvePendingAuth");
         }
-        Log.i(`Resolved pending auth`);
+        Log.d(`Resolved pending auth`);
     }
 
     public reject(err: string): void {
@@ -52,6 +54,6 @@ export default class PendingAuthentication {
         else {
             Log.e("Null rejectPendingAuth");
         }
-        Log.i(`Rejected pending auth`);
+        Log.d(`Rejected pending auth`);
     }
 }

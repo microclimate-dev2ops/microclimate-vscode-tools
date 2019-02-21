@@ -10,6 +10,7 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
+import * as requestErrors from "request-promise-native/errors";
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
@@ -40,12 +41,16 @@ export default async function logOutConnection(connection: Connection): Promise<
         });
         const logoutMsg = `Logged out of ${connection.mcUrl}\nUse "Refresh Connection" to log back in.`;
         vscode.window.showInformationMessage(logoutMsg);
+        connection.onDisconnect();
     }
     catch (err) {
+        if (err instanceof requestErrors.StatusCodeError) {
+            // make err point to the JSON error response instead of the overall Error object
+            err = err.error;
+        }
         Log.e("Error logging out", err);
         const errMsg = err.error_description || err.error || err.message || err.toString();
         vscode.window.showErrorMessage("Error logging out: " + errMsg);
     }
-    connection.onDisconnect();
     Log.d("Done logging out");
 }

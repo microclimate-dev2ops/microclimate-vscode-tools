@@ -11,7 +11,7 @@
 
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
-import * as requestErrors from "request-promise-native/errors";
+// import * as requestErrors from "request-promise-native/errors";
 import * as qs from "querystring";
 
 import Log from "../../../Logger";
@@ -28,31 +28,28 @@ namespace Authenticator {
     // See AuthUtils for more
     // These must match the values registered with the OIDC server by Portal
     export const AUTH_REDIRECT_CB = "vscode://IBM.microclimate-tools/authcb";
-    export const OIDC_CLIENT_ID = "microclimate-tools";
-    const OIDC_GRANT_TYPE = "authorization_code";
+    export const CLIENT_ID = "microclimate-tools";
+    const OAUTH_SCOPE = "openid";
+    const OAUTH_GRANT_TYPE = "implicit";
+    const OAUTH_RESPONSE_TYPE = "token";
 
     /******
-     * Buckle in - the authentication flow works as follows:
+     * We use the OAuth 2.0 implicit authentication flow. We do not use OIDC because we don't need an id_token.
+     * This has the advantage of not requiring a client_secret,
+     * and also not requiring a reconfiguration of the Liberty OIDC provider to allow public clients.
+     * The drawback is that the implicit flow does not provide a refresh_token.
+     * Refer to:
+     * - https://tools.ietf.org/html/rfc6749 - In particular, section 4.2.
+     * - https://auth0.com/docs/api-auth/tutorials/implicit-grant provides friendlier examples, but with some details that are not relevant here.
+     * - Portal code which registers the ide plugins as an OIDC client in `authentication/oidc_register_plugins.js`.
+     *
      * authenticate() is the entry point. Assembles the auth code request, and launches the browser to the auth code page.
      * authenticate() suspends by awaiting the pendingAuth promise, which will resolve after the user logs in.
      * The user logs in in the browser.
      * The auth code page calls back to the plugin. the vscode plugin URI handler calls handleAuthCallback,
-     * which verifies the state parameter and fulfills the pendingAuth promise with the "code" (aka auth code) query parameter from the server.
-     * The callback uri, auth code, and state parameter are then passed to getToken, which validates the state parameter
-     * and exchanges the code for a tokenset at the token endpoint.
-     * The id_token is used to validate the tokenset, but is then discarded (not stored in extension memory).
-     * We save the access token and refresh token and include the access token in our requests to this ICP host.
-     * logout() asks the server to revoke the current tokens, and deletes them from the extension's memory.
-     *
-     * The OIDC Liberty server must be configured to allow public clients (ie, ones that do not use a secret).
-     * <oauthProvider> tag must have the attribute allowPublicClients=true.
-     * This server is in the platform-auth-service container which runs in the `auth-idp-xxxx` pod in the `kube-system`.
-     * Edit /opt/ibm/wlp/usr/servers/defaultServer/server.xml and the server will restart, then this flow will work.
-     *
-     * Refer to:
-     * - OIDC spec: https://openid.net/specs/openid-connect-core-1_0.html
-     * - OAuth RFC: https://tools.ietf.org/html/rfc6749
-     * - Portal code which registers the ide plugins as an OIDC client in authentication/oidc.js
+     * which verifies the state parameter and fulfills the pendingAuth promise with the tokenset received.
+     * We save the access token and include it in our requests to this ICP host.
+     * logout() asks the server to revoke the current access token, and deletes it from the extension's memory.
     *******/
     let pendingAuth: PendingAuthentication | undefined;
 
@@ -68,26 +65,23 @@ namespace Authenticator {
             throw new Error(`Cancelled logging in to ${icpHostname}`);
         }
         if (pendingAuth != null) {
-            fulfillPendingAuth(false, "Previous login cancelled - Multiple concurrent logins.");
+            rejectPendingAuth("Previous login cancelled - Multiple concurrent logins.");
         }
 
         // https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks
         const stateParam = AuthUtils.getCryptoRandomHex();
-        // https://auth0.com/docs/api-auth/tutorials/nonce
-        const nonceParam = AuthUtils.getCryptoRandomHex();
         const oidcConfig: IOpenIDConfig = await AuthUtils.getOpenIDConfig(icpHostname);
 
         const authEndpoint: string = oidcConfig.authorization_endpoint;
         const queryObj = {
-            client_id: OIDC_CLIENT_ID,
-            grant_type: OIDC_GRANT_TYPE,
-            scope: AuthUtils.OIDC_SCOPE,
-            response_type: "code",
+            client_id: CLIENT_ID,
+            grant_type: OAUTH_GRANT_TYPE,
+            scope: OAUTH_SCOPE,
+            response_type: OAUTH_RESPONSE_TYPE,
             redirect_uri: AUTH_REDIRECT_CB,
-            nonce: nonceParam,
             state: stateParam,
         };
-        Log.d("QUERYOBJ", queryObj);
+        // Log.d("QUERYOBJ", queryObj);
 
         // convert the object to a querystring - but this will also urlencode it
         // unescape here and let URI encode below, to prevent double-encoding % signs.
@@ -95,39 +89,37 @@ namespace Authenticator {
         // at this point, query should NOT be escaped
         // URI will escape it
         const authUri = vscode.Uri.parse(authEndpoint).with({ query });
-
-        const tokenEndpoint = oidcConfig.token_endpoint;
         Log.d(`auth endpoint is: ${authUri}`);
-        Log.d(`token endpoint is ${tokenEndpoint}`);
 
         vscode.commands.executeCommand(Commands.VSC_OPEN, authUri);
 
-        pendingAuth = new PendingAuthentication(AUTH_REDIRECT_CB, stateParam);
+        pendingAuth = new PendingAuthentication(stateParam);
 
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             cancellable: true,
-            title: "Waiting for browser login"
-        }, (_progress, token): Promise<string> => {
+            title: "Waiting for browser login..."
+        }, (_progress, token): Promise<ITokenSet> => {
+            token.onCancellationRequested((_e) => {
+                rejectPendingAuth("Cancelled browser login");
+            });
+
             if (pendingAuth == null) {
                 // never
                 return Promise.reject();
             }
-            token.onCancellationRequested((_e) => {
-                fulfillPendingAuth(false, "Cancelled browser login");
-            });
             return pendingAuth.promise;
         });
         Log.d("Awaiting pending auth callback");
 
-        const code: string = await pendingAuth.promise;
-        await getToken(AUTH_REDIRECT_CB, tokenEndpoint, code, nonceParam, oidcConfig.issuer);
+        const tokenSet: ITokenSet = await pendingAuth.promise;
+        await TokenSetManager.setTokensFor(icpHostname, tokenSet);
     }
 
     /**
      * Called by the extension URI handler when the AUTH_CALLBACK_URI is requested.
      * Validates the callback parameters, then resolves the pendingAuth promise with the received code.
-     * https://openid.net/specs/openid-connect-core-1_0.html#AuthResponse
+     * https://tools.ietf.org/html/rfc6749#section-4.2.2
      *
      * @param uri The full callback uri, which must match the redirect_uri given to the authorization endpoint above.
      *
@@ -140,152 +132,56 @@ namespace Authenticator {
             return;
         }
 
-        Log.i("Received auth callback, uri is: " + uri);
-        const query = qs.parse(uri.query);
+        Log.i("Received auth callback");
+        const fragment = uri.fragment;
+        const responseObj = qs.parse(fragment);
 
-        if (query.state == null) {
-            return onCallbackError("No state parameter was provided by the authentication server");
-        }
-        else if (pendingAuth.state !== query.state) {
-            return onCallbackError("State mismatch - Try restarting the authentication process.");
-        }
-        Log.d("State matches expected");
-
-        if (query.code == null) {
-            // don't print the code in any case
+        const error = responseObj.error_description || responseObj.error;
+        if (error) {
             // failure - only seen this with a misregistered client
             Log.e("No code parameter was provided by the authentication server");
 
-            let errMsg = "Authentication failed";
-            if (query.error || query.error_description) {
-                errMsg += ": " + query.error_description || query.error_message;
-            }
+            const errMsg = "Authentication failed: " + error;
             return onCallbackError(errMsg);
         }
 
-        fulfillPendingAuth(true, query.code.toString());
+        if (responseObj.state == null) {
+            return onCallbackError("No state parameter was provided by the authentication server");
+        }
+        else if (pendingAuth.state !== responseObj.state) {
+            return onCallbackError("State mismatch - Try restarting the authentication process.");
+        }
+        Log.d("State matches expected");
+        // don't need this anymore
+        delete responseObj.state;
+
+        // since there were no errors above, we can treat the response as a tokenset now
+        const tokenSet = responseObj as unknown as ITokenSet;
+        if (tokenSet.token_type.toLowerCase() !== "bearer") {
+            return onCallbackError("Received unexpected token from authentication server");
+        }
+        // success!
+        pendingAuth.resolve(tokenSet);
+        pendingAuth = undefined;
         // this resolves pendingAuth.promise in authenticate() above, so the auth process continues from there
     }
 
     function onCallbackError(errMsg: string): void {
         Log.e(errMsg);
         // vscode.window.showErrorMessage(errMsg);
-        fulfillPendingAuth(false, errMsg);
+        rejectPendingAuth(errMsg);
     }
 
     /**
-     * Resolve or reject the `pendingAuth` promise based on `success` and set `pendingAuth` to `undefined`.
-     *
-     * @param codeOrError - Auth code if `success=true`, error message if `success=false`.
+     * Helper function to call if a pending auth fails (or is cancelled) for any reason.
      */
-    function fulfillPendingAuth(success: boolean, codeOrError: string): void {
+    function rejectPendingAuth(err: string): void {
         if (pendingAuth == null) {
             Log.e("Can't fulfill pendingAuth because it is null");
             return;
         }
-
-        if (success) {
-            // code
-            pendingAuth.resolve(codeOrError);
-        }
-        else {
-            // error
-            pendingAuth.reject(codeOrError);
-        }
+        pendingAuth.reject(err);
         pendingAuth = undefined;
-    }
-
-    /**
-     * After receiving the auth code callback, send the code to the tokenEndpoint to receive an auth token in return.
-     * https://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
-     */
-    async function getToken(redirectUri: string, tokenEndpoint: string, authCode: string, nonce: string, issuer: string): Promise<void> {
-        Log.d("onAuthCallback");
-        const hostname = MCUtil.getHostnameFromAuthority(vscode.Uri.parse(tokenEndpoint).authority);
-
-        try {
-            const form = {
-                client_id: OIDC_CLIENT_ID,
-                grant_type: OIDC_GRANT_TYPE,
-                redirect_uri: redirectUri,
-                code: authCode,
-            };
-            // Log.i("form", form);
-
-            Log.d("Trading code for tokenset, host is " + hostname);
-            const tokenEndpointResponse: ITokenSet = await request.post(tokenEndpoint, {
-                json: true,
-                rejectUnauthorized: Requester.shouldRejectUnauthed(tokenEndpoint),
-                form,
-                timeout: AuthUtils.TIMEOUT,
-            });
-
-            await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse, nonce, issuer);
-            Log.i(`Successfully got new tokenset from code`);
-        }
-        catch (err) {
-            let authFailedDetail: string | undefined;
-
-            if (err instanceof requestErrors.StatusCodeError) {
-                // Try to handle all the "normal" errors here, so we can provide better messages
-                if (err.error && err.error.error_description) {
-                    const desc: string = err.error.error_description.toString();
-                    if (desc.includes("CWOAU0025E")) {
-                        authFailedDetail = `The authentication server does not support the required grant type. ` +
-                            `Make sure that your version of Microclimate is at least 19.3 probably.`;
-                    }
-                }
-            }
-
-            if (!authFailedDetail) {
-                Log.w("Unexpected authentication error", err);
-                authFailedDetail = err.error_description || err.error || err.message || err.toString();
-            }
-            else {
-                Log.i("Handled authentication error", err);
-            }
-
-            const authFailedMsg: string = `Failed to authenticate against ${hostname}.\n${authFailedDetail}`;
-            // Log.d("Reporting auth failure with message:", authFailedMsg);
-            throw new Error(authFailedMsg);
-        }
-    }
-
-    /**
-     * Exchange the refresh_token for a new tokenset to prevent expiry.
-     * https://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
-     */
-    export async function refreshToken(connection: Connection): Promise<void> {
-        const hostname = connection.host;
-        Log.i("Refreshing token of " + hostname);
-        const oidcConfig = await AuthUtils.getOpenIDConfig(hostname);
-        const tokenEndpoint = oidcConfig.token_endpoint;
-        const tokenSet = TokenSetManager.getTokenSetFor(hostname);
-        if (tokenSet == null || tokenSet.refresh_token == null) {
-            Log.e("Can't refresh - no refresh token available to connection " + connection);
-            throw new Error("Refresh failed - Not logged in");
-        }
-
-        const nonceParam = AuthUtils.getCryptoRandomHex();
-
-        const form = {
-            client_id: OIDC_CLIENT_ID,
-            grant_type: "refresh_token",
-            refresh_token: tokenSet.refresh_token,
-            scope: AuthUtils.OIDC_SCOPE,
-            nonce: nonceParam,
-        };
-
-        Log.d("Requesting token refresh now");
-        const tokenEndpointResponse: ITokenSet = await request.post(tokenEndpoint, {
-            json: true,
-            rejectUnauthorized: Requester.shouldRejectUnauthed(tokenEndpoint),
-            form,
-            timeout: AuthUtils.TIMEOUT,
-        });
-
-        await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse, nonceParam, oidcConfig.issuer);
-        Log.i("Successfully refreshed tokenset");
     }
 
     /**
@@ -295,15 +191,15 @@ namespace Authenticator {
     export async function logout(connection: Connection): Promise<void> {
         const hostname = connection.host;
         Log.d("Log out of", hostname);
-        const revokeEndpoint = AuthUtils.getRevokeEndpoint(hostname);
+        const revokeEndpoint = (await AuthUtils.getOpenIDConfig(hostname)).revoke_endpoint;
         Log.d("Log out endpoint is", revokeEndpoint);
 
         const existingTokenSet = TokenSetManager.getTokenSetFor(hostname);
         if (existingTokenSet != null) {
             // These tokens need to be revoked separately.
             const success = await Promise.all([
-                requestRevoke(revokeEndpoint, existingTokenSet.access_token),
-                requestRevoke(revokeEndpoint, existingTokenSet.refresh_token),
+                requestRevoke(revokeEndpoint, existingTokenSet.access_token)
+                // add refresh_token here, if/when we start using that again
             ]);
 
             if (!success.every( (revokeResult) => revokeResult)) {
@@ -324,13 +220,15 @@ namespace Authenticator {
 
     async function requestRevoke(revokeEndpoint: string, token: string): Promise<boolean> {
         const form = {
-            client_id: OIDC_CLIENT_ID,
+            client_id: CLIENT_ID,
+            client_secret: "",
             token,
             // token_type_hint: tokenType,
         };
 
         const logoutResult: request.FullResponse = await request.post(revokeEndpoint, {
             form,
+            json: true,
             followAllRedirects: true,
             resolveWithFullResponse: true,
             rejectUnauthorized: Requester.shouldRejectUnauthed(revokeEndpoint),
