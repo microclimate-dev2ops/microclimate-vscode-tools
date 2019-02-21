@@ -12,6 +12,11 @@
 // import * as vscode from "vscode";
 import Log from "../../../Logger";
 
+export interface IAuthCallbackParams {
+    code: string;
+    state: string;
+}
+
 /**
  * Wrapper for a Promise that represents an in-progress authentication flow.
  * Resolves to the authentication code which can then be exchanged for a token, or rejects with an error message.
@@ -19,25 +24,25 @@ import Log from "../../../Logger";
  */
 export default class PendingAuthentication {
 
-    public readonly promise: Promise<string>;
-    private resolveFunc: ( (code: string) => void ) | undefined;
+    public readonly promise: Promise<IAuthCallbackParams>;
+    private resolveFunc: ( (cbParams: IAuthCallbackParams) => void ) | undefined;
     private rejectFunc : ( (err : string) => void ) | undefined;
 
     constructor(
         public readonly redirectUri: string,
-        public readonly state: string,
+        // public readonly state: string,
         // public readonly nonce: string,
     ) {
 
-        this.promise = new Promise<string>( (resolve_, reject_) => {
+        this.promise = new Promise<IAuthCallbackParams>( (resolve_, reject_) => {
             this.resolveFunc = resolve_;
             this.rejectFunc = reject_;
         });
     }
 
-    public resolve(code: string): void {
+    public resolve(cbParams: IAuthCallbackParams): void {
         if (this.resolveFunc != null) {
-            this.resolveFunc(code);
+            this.resolveFunc(cbParams);
         }
         else {
             Log.e("Null resolvePendingAuth");

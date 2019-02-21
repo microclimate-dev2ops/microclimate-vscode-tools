@@ -10,20 +10,25 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
-import * as request from "request-promise-native";
+// import * as request from "request-promise-native";
 import * as requestErrors from "request-promise-native/errors";
 import * as qs from "querystring";
+import * as crypto from "crypto";
+import { Issuer } from "openid-client";
 
 import Log from "../../../Logger";
 import * as MCUtil from "../../../MCUtil";
 import Requester from "../../project/Requester";
 import Connection from "../Connection";
 import Commands from "../../../constants/Commands";
-import PendingAuthentication from "./PendingAuthentication";
-import AuthUtils, { IOpenIDConfig } from "./AuthUtils";
+import PendingAuthentication, { IAuthCallbackParams } from "./PendingAuthentication";
 import TokenSetManager, { ITokenSet } from "./TokenSetManager";
+import Settings from "../../../constants/Settings";
 
 namespace Authenticator {
+    const OIDC_SERVER_PORT = 8443;
+    const OIDC_SERVER_PATH = "/oidc/endpoint/OP";
+
     // microclimate-specific OIDC constants
     // See AuthUtils for more
     // These must match the values registered with the OIDC server by Portal
@@ -56,6 +61,17 @@ namespace Authenticator {
     *******/
     let pendingAuth: PendingAuthentication | undefined;
 
+    async function getOpenIDClient(icpHostname: string): Promise<any> {
+        const icpIssuer = await Issuer.discover( `https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`, {
+            rejectUnauthorized: Requester.shouldRejectUnauthed(icpHostname)
+        });
+
+        return new icpIssuer.Client({
+            client_id: OIDC_CLIENT_ID,
+            token_endpoint_auth_method: "none",
+        });
+    }
+
     /**
      * Tries to get an OAuth access_token for the given ICP instance with the given credentials.
      * Throws an error if auth fails for any reason, or if the token response is not as excepted.
@@ -63,65 +79,62 @@ namespace Authenticator {
      */
     export async function authenticate(icpHostname: string): Promise<void> {
         Log.i("Authenticating against:", icpHostname);
-        const openLoginResponse = await AuthUtils.shouldOpenBrowser();
+        const openLoginResponse = await shouldOpenBrowser();
         if (!openLoginResponse) {
             throw new Error(`Cancelled logging in to ${icpHostname}`);
         }
         if (pendingAuth != null) {
-            fulfillPendingAuth(false, "Previous login cancelled - Multiple concurrent logins.");
+            rejectPendingAuth("Previous login cancelled - Multiple concurrent logins.");
         }
 
-        // https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks
-        const stateParam = AuthUtils.getCryptoRandomHex();
-        // https://auth0.com/docs/api-auth/tutorials/nonce
-        const nonceParam = AuthUtils.getCryptoRandomHex();
-        const oidcConfig: IOpenIDConfig = await AuthUtils.getOpenIDConfig(icpHostname);
+        const openIDClient = await getOpenIDClient(icpHostname);
+        // custom field
+        openIDClient.hostname = icpHostname;
 
-        const authEndpoint: string = oidcConfig.authorization_endpoint;
-        const queryObj = {
-            client_id: OIDC_CLIENT_ID,
-            grant_type: OIDC_GRANT_TYPE,
-            scope: AuthUtils.OIDC_SCOPE,
-            response_type: "code",
+        const responseType = "code";
+        // https://auth0.com/docs/protocols/oauth2/mitigate-csrf-attacks
+        const stateParam = getCryptoRandomHex();
+        // https://auth0.com/docs/api-auth/tutorials/nonce
+        const nonceParam = getCryptoRandomHex();
+
+        const authUrl = openIDClient.authorizationUrl({
             redirect_uri: AUTH_REDIRECT_CB,
+            scope: "openid",
+            grant_type: OIDC_GRANT_TYPE,
+            response_type: responseType,
             nonce: nonceParam,
             state: stateParam,
-        };
-        Log.d("QUERYOBJ", queryObj);
+        });
+        Log.d(`auth endpoint is: ${authUrl}`);
 
-        // convert the object to a querystring - but this will also urlencode it
-        // unescape here and let URI encode below, to prevent double-encoding % signs.
-        const query = qs.unescape(qs.stringify(queryObj));
-        // at this point, query should NOT be escaped
-        // URI will escape it
-        const authUri = vscode.Uri.parse(authEndpoint).with({ query });
+        vscode.commands.executeCommand(Commands.VSC_OPEN, authUrl);
 
-        const tokenEndpoint = oidcConfig.token_endpoint;
-        Log.d(`auth endpoint is: ${authUri}`);
-        Log.d(`token endpoint is ${tokenEndpoint}`);
-
-        vscode.commands.executeCommand(Commands.VSC_OPEN, authUri);
-
-        pendingAuth = new PendingAuthentication(AUTH_REDIRECT_CB, stateParam);
+        pendingAuth = new PendingAuthentication(AUTH_REDIRECT_CB);
 
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             cancellable: true,
             title: "Waiting for browser login"
-        }, (_progress, token): Promise<string> => {
+        }, (_progress, token): Promise<IAuthCallbackParams> => {
             if (pendingAuth == null) {
                 // never
                 return Promise.reject();
             }
             token.onCancellationRequested((_e) => {
-                fulfillPendingAuth(false, "Cancelled browser login");
+                rejectPendingAuth("Cancelled browser login");
             });
             return pendingAuth.promise;
         });
         Log.d("Awaiting pending auth callback");
 
-        const code: string = await pendingAuth.promise;
-        await getToken(AUTH_REDIRECT_CB, tokenEndpoint, code, nonceParam, oidcConfig.issuer);
+        const checks = {
+            state: stateParam,
+            nonce: nonceParam,
+            response_type: responseType
+        };
+
+        const cbParams: IAuthCallbackParams = await pendingAuth.promise;
+        await getTokens(AUTH_REDIRECT_CB, checks, cbParams, openIDClient);
     }
 
     /**
@@ -142,56 +155,22 @@ namespace Authenticator {
 
         Log.i("Received auth callback, uri is: " + uri);
         const query = qs.parse(uri.query);
-
-        if (query.state == null) {
-            return onCallbackError("No state parameter was provided by the authentication server");
-        }
-        else if (pendingAuth.state !== query.state) {
-            return onCallbackError("State mismatch - Try restarting the authentication process.");
-        }
-        Log.d("State matches expected");
-
-        if (query.code == null) {
-            // don't print the code in any case
-            // failure - only seen this with a misregistered client
-            Log.e("No code parameter was provided by the authentication server");
-
-            let errMsg = "Authentication failed";
-            if (query.error || query.error_description) {
-                errMsg += ": " + query.error_description || query.error_message;
-            }
-            return onCallbackError(errMsg);
+        if (query.code == null || Array.isArray(query.code) || query.state == null || Array.isArray(query.state)) {
+            return rejectPendingAuth(`OIDC server provided an invalid query in the callback URI ${uri}`);
         }
 
-        fulfillPendingAuth(true, query.code.toString());
+        pendingAuth.resolve({ code: query.code, state: query.state });
+        pendingAuth = undefined;
         // this resolves pendingAuth.promise in authenticate() above, so the auth process continues from there
     }
 
-    function onCallbackError(errMsg: string): void {
-        Log.e(errMsg);
-        // vscode.window.showErrorMessage(errMsg);
-        fulfillPendingAuth(false, errMsg);
-    }
-
-    /**
-     * Resolve or reject the `pendingAuth` promise based on `success` and set `pendingAuth` to `undefined`.
-     *
-     * @param codeOrError - Auth code if `success=true`, error message if `success=false`.
-     */
-    function fulfillPendingAuth(success: boolean, codeOrError: string): void {
+    function rejectPendingAuth(err: string): void {
         if (pendingAuth == null) {
             Log.e("Can't fulfill pendingAuth because it is null");
             return;
         }
 
-        if (success) {
-            // code
-            pendingAuth.resolve(codeOrError);
-        }
-        else {
-            // error
-            pendingAuth.reject(codeOrError);
-        }
+        pendingAuth.reject(err);
         pendingAuth = undefined;
     }
 
@@ -199,28 +178,21 @@ namespace Authenticator {
      * After receiving the auth code callback, send the code to the tokenEndpoint to receive an auth token in return.
      * https://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
      */
-    async function getToken(redirectUri: string, tokenEndpoint: string, authCode: string, nonce: string, issuer: string): Promise<void> {
+    async function getTokens(
+        redirectUri: string,
+        checks: { state: string, nonce: string, response_type: string},
+        cbParams: IAuthCallbackParams,
+        openIDClient: any): Promise<void> {
+
         Log.d("onAuthCallback");
-        const hostname = MCUtil.getHostnameFromAuthority(vscode.Uri.parse(tokenEndpoint).authority);
+        const hostname = openIDClient.hostname;
+        Log.d(`hostname=${hostname}`);
 
         try {
-            const form = {
-                client_id: OIDC_CLIENT_ID,
-                grant_type: OIDC_GRANT_TYPE,
-                redirect_uri: redirectUri,
-                code: authCode,
-            };
-            // Log.i("form", form);
+            const tokenSet: ITokenSet = await openIDClient.authorizationCallback(redirectUri, cbParams, checks);
+            // tokenset is validated by the openid-client library
 
-            Log.d("Trading code for tokenset, host is " + hostname);
-            const tokenEndpointResponse: ITokenSet = await request.post(tokenEndpoint, {
-                json: true,
-                rejectUnauthorized: Requester.shouldRejectUnauthed(tokenEndpoint),
-                form,
-                timeout: AuthUtils.TIMEOUT,
-            });
-
-            await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse, nonce, issuer);
+            await TokenSetManager.onNewTokenSet(hostname, tokenSet);
             Log.i(`Successfully got new tokenset from code`);
         }
         catch (err) {
@@ -258,33 +230,17 @@ namespace Authenticator {
     export async function refreshToken(connection: Connection): Promise<void> {
         const hostname = connection.host;
         Log.i("Refreshing token of " + hostname);
-        const oidcConfig = await AuthUtils.getOpenIDConfig(hostname);
-        const tokenEndpoint = oidcConfig.token_endpoint;
         const tokenSet = TokenSetManager.getTokenSetFor(hostname);
         if (tokenSet == null || tokenSet.refresh_token == null) {
             Log.e("Can't refresh - no refresh token available to connection " + connection);
             throw new Error("Refresh failed - Not logged in");
         }
 
-        const nonceParam = AuthUtils.getCryptoRandomHex();
+        const openIDClient = await getOpenIDClient(hostname);
+        const newTokenSet = await openIDClient.refresh(tokenSet);
 
-        const form = {
-            client_id: OIDC_CLIENT_ID,
-            grant_type: "refresh_token",
-            refresh_token: tokenSet.refresh_token,
-            scope: AuthUtils.OIDC_SCOPE,
-            nonce: nonceParam,
-        };
+        await TokenSetManager.onNewTokenSet(hostname, newTokenSet);
 
-        Log.d("Requesting token refresh now");
-        const tokenEndpointResponse: ITokenSet = await request.post(tokenEndpoint, {
-            json: true,
-            rejectUnauthorized: Requester.shouldRejectUnauthed(tokenEndpoint),
-            form,
-            timeout: AuthUtils.TIMEOUT,
-        });
-
-        await TokenSetManager.onNewTokenSet(hostname, tokenEndpointResponse, nonceParam, oidcConfig.issuer);
         Log.i("Successfully refreshed tokenset");
     }
 
@@ -295,22 +251,15 @@ namespace Authenticator {
     export async function logout(connection: Connection): Promise<void> {
         const hostname = connection.host;
         Log.d("Log out of", hostname);
-        const revokeEndpoint = AuthUtils.getRevokeEndpoint(hostname);
-        Log.d("Log out endpoint is", revokeEndpoint);
+        const openIDClient = await getOpenIDClient(hostname);
 
         const existingTokenSet = TokenSetManager.getTokenSetFor(hostname);
         if (existingTokenSet != null) {
             // These tokens need to be revoked separately.
-            const success = await Promise.all([
-                requestRevoke(revokeEndpoint, existingTokenSet.access_token),
-                requestRevoke(revokeEndpoint, existingTokenSet.refresh_token),
+            await Promise.all([
+                openIDClient.revoke(existingTokenSet.access_token),
+                openIDClient.revoke(existingTokenSet.refresh_token),
             ]);
-
-            if (!success.every( (revokeResult) => revokeResult)) {
-                // what could cause this?
-                // should still delete tokens?
-                throw new Error("Unknown error logging out");
-            }
 
             Log.i("Logged out successfully");
 
@@ -322,34 +271,6 @@ namespace Authenticator {
         }
     }
 
-    async function requestRevoke(revokeEndpoint: string, token: string): Promise<boolean> {
-        const form = {
-            client_id: OIDC_CLIENT_ID,
-            token,
-            // token_type_hint: tokenType,
-        };
-
-        const logoutResult: request.FullResponse = await request.post(revokeEndpoint, {
-            form,
-            followAllRedirects: true,
-            resolveWithFullResponse: true,
-            rejectUnauthorized: Requester.shouldRejectUnauthed(revokeEndpoint),
-            timeout: AuthUtils.TIMEOUT,
-        });
-
-        const success = MCUtil.isGoodStatusCode(logoutResult.statusCode);
-        if (!success) {
-            // shouldn't happen
-            Log.e("Error revoking token, revokeEndpoint is", revokeEndpoint);
-        }
-        else {
-            // Log.d(`Revoked token`, token);
-            Log.d(`Successfully revoked token`);
-        }
-
-        return success;
-    }
-
     export function getAccessTokenForUrl(uri: vscode.Uri): string | undefined {
         const hostname = MCUtil.getHostnameFromAuthority(uri.authority);
         const tokenSet = TokenSetManager.getTokenSetFor(hostname);
@@ -357,6 +278,51 @@ namespace Authenticator {
             return undefined;
         }
         return tokenSet.access_token;
+    }
+
+    /**
+     * Show a message warning the user the browser will open and then call-back to VS Code.
+     * If the user has already seen and hidden the message, don't show it.
+     * @returns true, unless the user pressed "Cancel" to cancel opening the browser.
+     */
+    export async function shouldOpenBrowser(): Promise<boolean> {
+        const config = vscode.workspace.getConfiguration(Settings.CONFIG_SECTION);
+        if (!config.get<boolean>(Settings.SHOW_OPEN_LOGIN_MSG)) {
+            // No need to show the login prompt, just open browser
+            return true;
+        }
+
+        Log.d("Showing shouldOpenBrowser message");
+
+        const BTN_OK = "OK";
+        const BTN_DONT_SHOW = "OK, and hide this message";
+        const openResponse = await vscode.window.showInformationMessage(
+            "The browser will open to the ICP login page. Log in and open the URI when VS Code prompts you.",
+            { modal: true },
+            BTN_OK, BTN_DONT_SHOW
+        );
+        // Log.i("open is", openResponse);
+
+        if (openResponse === BTN_OK) {
+            return true;
+        }
+        else if (openResponse === BTN_DONT_SHOW) {
+            Log.d("Not showing shouldOpenBrowser message any more");
+            config.update(Settings.SHOW_OPEN_LOGIN_MSG, false);
+            return true;
+        }
+        else {
+            // they picked "cancel"
+            return false;
+        }
+    }
+
+    /**
+     * Returns a 16-byte hex string, suitable for use as a `nonce` or `state`.
+     * Use hex because these characters have to be urlencoded.
+     */
+    export function getCryptoRandomHex(): string {
+        return crypto.randomBytes(16).toString("hex");
     }
 }
 
