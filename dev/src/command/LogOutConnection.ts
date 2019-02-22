@@ -9,13 +9,14 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+/*
 import * as vscode from "vscode";
-import * as requestErrors from "request-promise-native/errors";
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
 import Authenticator from "../microclimate/connection/auth/Authenticator";
+import AuthUtils from "../microclimate/connection/auth/AuthUtils";
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
 
@@ -44,13 +45,10 @@ export default async function logOutConnection(connection: Connection): Promise<
         connection.onDisconnect();
     }
     catch (err) {
-        if (err instanceof requestErrors.StatusCodeError) {
-            // make err point to the JSON error response instead of the overall Error object
-            err = err.error;
-        }
         Log.e("Error logging out", err);
-        const errMsg = err.error_description || err.error || err.message || err.toString();
+        const errMsg = AuthUtils.getOIDCErrMsg(err);
         vscode.window.showErrorMessage("Error logging out: " + errMsg);
     }
     Log.d("Done logging out");
 }
+*/

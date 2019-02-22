@@ -24,14 +24,15 @@ import AuthUtils, { IOpenIDConfig } from "./AuthUtils";
 import TokenSetManager, { ITokenSet } from "./TokenSetManager";
 
 namespace Authenticator {
+    // OAuth config
+    const OAUTH_SCOPE = "openid";
+    const OAUTH_GRANT_TYPE = "implicit";
+    const OAUTH_RESPONSE_TYPE = "token";
     // microclimate-specific OIDC constants
     // See AuthUtils for more
     // These must match the values registered with the OIDC server by Portal
     export const AUTH_REDIRECT_CB = "vscode://IBM.microclimate-tools/authcb";
     export const CLIENT_ID = "microclimate-tools";
-    const OAUTH_SCOPE = "openid";
-    const OAUTH_GRANT_TYPE = "implicit";
-    const OAUTH_RESPONSE_TYPE = "token";
 
     /******
      * We use the OAuth 2.0 implicit authentication flow. We do not use OIDC because we don't need an id_token.
@@ -136,12 +137,18 @@ namespace Authenticator {
         const fragment = uri.fragment;
         const responseObj = qs.parse(fragment);
 
-        const error = responseObj.error_description || responseObj.error;
+        const onCallbackError = (errMsg: string): void => {
+            Log.e(errMsg);
+            // vscode.window.showErrorMessage(errMsg);
+            rejectPendingAuth(errMsg);
+        };
+
+        const error: any = responseObj.error_description || responseObj.error;
         if (error) {
             // failure - only seen this with a misregistered client
             Log.e("No code parameter was provided by the authentication server");
 
-            const errMsg = "Authentication failed: " + error;
+            const errMsg = "Authentication failed: " + AuthUtils.getOIDCErrMsg(error);
             return onCallbackError(errMsg);
         }
 
@@ -149,7 +156,7 @@ namespace Authenticator {
             return onCallbackError("No state parameter was provided by the authentication server");
         }
         else if (pendingAuth.state !== responseObj.state) {
-            return onCallbackError("State mismatch - Try restarting the authentication process.");
+            return onCallbackError("State mismatch - Try restarting the authentication process");
         }
         Log.d("State matches expected");
         // don't need this anymore
@@ -164,12 +171,6 @@ namespace Authenticator {
         pendingAuth.resolve(tokenSet);
         pendingAuth = undefined;
         // this resolves pendingAuth.promise in authenticate() above, so the auth process continues from there
-    }
-
-    function onCallbackError(errMsg: string): void {
-        Log.e(errMsg);
-        // vscode.window.showErrorMessage(errMsg);
-        rejectPendingAuth(errMsg);
     }
 
     /**
