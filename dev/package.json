@@ -102,6 +102,11 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_logoutConnection%",
+                "title": "%cmdTitle_logoutConnection%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_openFolder%",
                 "title": "%cmdTitle_openFolder%",
                 "category": "%commandCategory%"
@@ -237,6 +242,11 @@
                     "command": "%cmdID_refreshConnection%",
                     "when": "%isConnection%",
                     "group": "ext.mc.conn.c@0"
+                },
+                {
+                    "command": "%cmdID_logoutConnection%",
+                    "when": "%isActiveICPConnection%",
+                    "group": "ext.mc.conn.c@1"
                 },
                 {
                     "command": "%cmdID_removeConn%",

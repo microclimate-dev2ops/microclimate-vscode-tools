@@ -12,7 +12,6 @@
 import * as vscode from "vscode";
 import * as crypto from "crypto";
 import * as request from "request-promise-native";
-import * as requestErrors from "request-promise-native/errors";
 
 import Log from "../../../Logger";
 import Settings from "../../../constants/Settings";
@@ -34,9 +33,13 @@ export interface IOpenIDConfig {
 }
 
 /**
- * Helper functions used by Authenticator.ts and TokenSetManager
+ * Helper functions, interfaces and constants used by Authenticator.ts and TokenSetManager
+ *
+ * **No other file should use any of these functions or constants**.
  */
 namespace AuthUtils {
+    export const OIDC_SCOPE = "openid";
+
     // ICP OIDC server info
     const OIDC_SERVER_PORT = 8443;
     const OIDC_SERVER_PATH = "/oidc/endpoint/OP";
@@ -109,23 +112,6 @@ namespace AuthUtils {
             // they picked "cancel"
             return false;
         }
-    }
-
-    export function getOIDCErrMsg(err: any): string {
-        if (err instanceof requestErrors.StatusCodeError && err.error) {
-            // make err point to the JSON error response instead of the overall Error object
-            err = err.error;
-        }
-        // If it's an OIDC error, it will have an error, and an optional error_description
-        let errMsg;
-        if (err.error) {
-            errMsg = err.error.toString();
-        }
-        if (err.error_description) {
-            errMsg += " " + err.error_description.toString();
-        }
-        // fall back to err.toString if it didn't match expected
-        return errMsg || err.toString();
     }
 }
 

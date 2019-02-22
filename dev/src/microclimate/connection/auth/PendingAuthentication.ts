@@ -23,13 +23,14 @@ export default class PendingAuthentication {
 
     public readonly promise: Promise<ITokenSet>;
     private resolveFunc: ( (tokenSet: ITokenSet) => void ) | undefined;
-    private rejectFunc : ( (err: string) => void ) | undefined;
+    private rejectFunc : ( (err : string) => void ) | undefined;
 
     constructor(
         // public readonly redirectUri: string,
         public readonly state: string,
         // public readonly nonce: string,
     ) {
+
         this.promise = new Promise<ITokenSet>( (resolve_, reject_) => {
             this.resolveFunc = resolve_;
             this.rejectFunc = reject_;
