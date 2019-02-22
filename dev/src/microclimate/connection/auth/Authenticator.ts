@@ -10,14 +10,14 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
-import * as request from "request-promise-native";
+// import * as request from "request-promise-native";
 // import * as requestErrors from "request-promise-native/errors";
 import * as qs from "querystring";
 
 import Log from "../../../Logger";
 import * as MCUtil from "../../../MCUtil";
-import Requester from "../../project/Requester";
-import Connection from "../Connection";
+// import Requester from "../../project/Requester";
+// import Connection from "../Connection";
 import Commands from "../../../constants/Commands";
 import PendingAuthentication from "./PendingAuthentication";
 import AuthUtils, { IOpenIDConfig } from "./AuthUtils";
@@ -187,8 +187,11 @@ namespace Authenticator {
 
     /**
      * Ask the cluster to revoke the tokens associated with this connection, then delete the tokens from the extension memory.
+     * https://tools.ietf.org/html/rfc7009#section-2.1
      * https://www.ibm.com/support/knowledgecenter/en/SSEQTP_liberty/com.ibm.websphere.wlp.doc/ae/twlp_oidc_revoke.html
      */
+    // Commented out because the Liberty implementation does not allow this with the implicit flow - might just be a bug
+    /*
     export async function logout(connection: Connection): Promise<void> {
         const hostname = connection.host;
         Log.d("Log out of", hostname);
@@ -247,7 +250,7 @@ namespace Authenticator {
         }
 
         return success;
-    }
+    }*/
 
     export function getAccessTokenForUrl(uri: vscode.Uri): string | undefined {
         const hostname = MCUtil.getHostnameFromAuthority(uri.authority);

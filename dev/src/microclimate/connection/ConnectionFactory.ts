@@ -194,9 +194,6 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
     if (testResponse.body.toString().length < 512) {
         Log.d("Initial response body", testResponse.body);
     }
-    else {
-        Log.d("Initial response body is too long to log!");
-    }
 
     // Connection succeeded, which means status code is success - but the response could be anything,
     // like a 404 or a login page, or something totally unrelated to Microclimate

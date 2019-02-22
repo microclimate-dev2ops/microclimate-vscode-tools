@@ -62,8 +62,8 @@ namespace Requester {
         }
 
         const response: request.FullResponse = await request.get(url.toString(), options);
+        // If we get redirected to OIDC authorize endpoint /oidc/endpoint/OP/ it means the auth failed or token expired
         if (response.body.toString().includes("CWOAU0062E") || response.request.path.toLowerCase().includes("oidc")) {
-            // auth failed at an earlier step, or expired
             throw new Error("Not authorized to access Microclimate. Please log out and log in again or something.");
         }
         return response;

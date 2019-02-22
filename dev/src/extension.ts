@@ -49,22 +49,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     Log.i("activeMsg:", msg);
     // vscode.window.showInformationMessage(msg);
 
-    try {
-        await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Window,
-            title: `Loading Microclimate connections...`,
-        }, async (): Promise<void> => {
-            await ConnectionManager.init();
-        });
-    }
-    catch (err) {
-        // hard failure - can't do anything is the ConnectionManger is broken
-        Log.e("Error initializing ConnectionManager!", err);
-        vscode.window.showErrorMessage("Error initializing Microclimate Tools!");
-    }
+    // this has to be done before creating the treeview
+    await ConnectionManager.init();
 
-    ignoreMCFiles();
-
+    // Create our subscriptions which are disposed when the extension deactivates
     const subscriptions: vscode.Disposable[] = [
         ...createViews(),
         ...createCommands(),
@@ -79,6 +67,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         // Logger.log("Adding subscription " + util.inspect(e));
         context.subscriptions.push(e);
     });
+
+    // Initialize the connectionmanager - try to re-connect to each previous connection
+    try {
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Window,
+            title: `Loading Microclimate connections...`,
+        }, async (): Promise<void> => {
+            await ConnectionManager.instance.onPostActivation();
+        });
+    }
+    catch (err) {
+        // hard failure - can't do anything is the ConnectionManger is broken
+        Log.e("Error initializing ConnectionManager!", err);
+        vscode.window.showErrorMessage("Error initializing Microclimate Tools!");
+    }
+
+    ignoreMCFiles();
 }
 
 // this method is called when your extension is deactivated

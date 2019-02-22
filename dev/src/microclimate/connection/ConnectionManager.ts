@@ -35,16 +35,6 @@ export default class ConnectionManager {
         }
         ConnectionManager._instance = new ConnectionManager();
 
-        const connectionDatas: IConnectionData[] = ConnectionManager.loadConnections();
-        Log.i(`Loaded ${connectionDatas.length} connection(s)`, connectionDatas);
-
-        const reAddConnectionPromises = Array<Promise<Connection>>();
-        connectionDatas.forEach( (connectionData) => {
-            reAddConnectionPromises.push(ConnectionFactory.reAddConnection(connectionData));
-        });
-
-        await Promise.all(reAddConnectionPromises);
-
         Log.i("ConnectionManager initialized");
         return ConnectionManager._instance;
     }
@@ -54,6 +44,23 @@ export default class ConnectionManager {
             Log.e("ConnectionManager was not initialized");
         }
         return ConnectionManager._instance;
+    }
+
+    /**
+     * Load connections and try to re-establish an initial connection.
+     * Should be called after the TreeView is initialized.
+     */
+    public async onPostActivation(): Promise<void> {
+        Log.d("Doing initial connection load");
+        const connectionDatas: IConnectionData[] = ConnectionManager.loadConnections();
+        Log.i(`Loaded ${connectionDatas.length} connection(s)`, connectionDatas);
+
+        const reAddConnectionPromises = Array<Promise<Connection>>();
+        connectionDatas.forEach( (connectionData) => {
+            reAddConnectionPromises.push(ConnectionFactory.reAddConnection(connectionData));
+        });
+
+        await Promise.all(reAddConnectionPromises);
     }
 
     public get connections(): Connection[] {
