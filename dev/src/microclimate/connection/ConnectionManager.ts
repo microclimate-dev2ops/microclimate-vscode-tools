@@ -18,7 +18,7 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ConnectionFactory from "./ConnectionFactory";
 import MCEnvironment from "./MCEnvironment";
-import { newConnectionCmd } from "../../command/NewConnectionCmd";
+import { newConnectionCmd, newDefaultLocalConnectionCmd } from "../../command/NewConnectionCmd";
 import { IConnectionData, ISaveableConnectionData, ConnectionData } from "./ConnectionData";
 
 export default class ConnectionManager {
@@ -57,6 +57,13 @@ export default class ConnectionManager {
 
         const reAddConnectionPromises = Array<Promise<Connection>>();
         connectionDatas.forEach( (connectionData) => {
+            const urlAsString = connectionData.url.toString();
+            if (!urlAsString || urlAsString === "undefined") {
+                // This happens if the connection was saved by an older version of the tools, before ConnectionData was introduced.
+                // That version would have only supported localhost, so we can assume this is a local connection.
+                newDefaultLocalConnectionCmd();
+                return;
+            }
             reAddConnectionPromises.push(ConnectionFactory.reAddConnection(connectionData));
         });
 
