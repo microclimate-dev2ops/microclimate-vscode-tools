@@ -11,7 +11,6 @@
 
 // import * as vscode from "vscode";
 import Log from "../../../Logger";
-import { ITokenSet } from "./TokenSetManager";
 
 /**
  * Wraps a promise which is created when the user's browser is launched to log in.
@@ -21,25 +20,27 @@ import { ITokenSet } from "./TokenSetManager";
  */
 export default class PendingAuthentication {
 
-    public readonly promise: Promise<ITokenSet>;
-    private resolveFunc: ( (tokenSet: ITokenSet) => void ) | undefined;
+    public readonly promise: Promise<void>;
+    private resolveFunc: ( () => void ) | undefined;
     private rejectFunc : ( (err : string) => void ) | undefined;
 
     constructor(
         // public readonly redirectUri: string,
+        public readonly hostname: string,
         public readonly state: string,
-        // public readonly nonce: string,
+        public readonly nonce: string,
+        public readonly openIDClient: any,
     ) {
 
-        this.promise = new Promise<ITokenSet>( (resolve_, reject_) => {
+        this.promise = new Promise<void>( (resolve_, reject_) => {
             this.resolveFunc = resolve_;
             this.rejectFunc = reject_;
         });
     }
 
-    public resolve(tokenSet: ITokenSet): void {
+    public resolve(): void {
         if (this.resolveFunc != null) {
-            this.resolveFunc(tokenSet);
+            this.resolveFunc();
         }
         else {
             Log.e("Null resolvePendingAuth");

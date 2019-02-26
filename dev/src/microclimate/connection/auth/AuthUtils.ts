@@ -11,11 +11,9 @@
 
 import * as vscode from "vscode";
 import * as crypto from "crypto";
-import * as request from "request-promise-native";
 
 import Log from "../../../Logger";
 import Settings from "../../../constants/Settings";
-import Requester from "../../project/Requester";
 
 /**
  * See getOpenIDConfig(hostname)
@@ -33,19 +31,16 @@ export interface IOpenIDConfig {
 }
 
 /**
- * Helper functions, interfaces and constants used by Authenticator.ts and TokenSetManager
- *
- * **No other file should use any of these functions or constants**.
+ * Helper functions used by Authenticator.ts and TokenSetManager
  */
 namespace AuthUtils {
-    export const OIDC_SCOPE = "openid";
-
     // ICP OIDC server info
     const OIDC_SERVER_PORT = 8443;
     const OIDC_SERVER_PATH = "/oidc/endpoint/OP";
 
     export const TIMEOUT: number = 10000;
 
+    /*
     export async function getOpenIDConfig(icpHostname: string): Promise<IOpenIDConfig> {
         const oidcServerUrl = getOIDCServerURL(icpHostname);
         const openIDConfigUrl: string = `${oidcServerUrl}/.well-known/openid-configuration`;
@@ -55,16 +50,15 @@ namespace AuthUtils {
             rejectUnauthorized: Requester.shouldRejectUnauthed(openIDConfigUrl),
             timeout: TIMEOUT,
         });
-        // sanity check
-        if (!oidcConfig.authorization_endpoint || !oidcConfig.token_endpoint) {
-            Log.e(`Receieved bad OpenID config from ${openIDConfigUrl}`, oidcConfig);
-        }
         // not provided by the config, but this is where the revoke endpoint is
         // https://www.ibm.com/support/knowledgecenter/en/SSEQTP_liberty/com.ibm.websphere.wlp.doc/ae/twlp_oidc_revoke.html
         oidcConfig.revoke_endpoint = oidcServerUrl + "/revoke";
         return oidcConfig;
-    }
+    }*/
 
+    /**
+     * @returns A URL to the Liberty OP server for the given cluster hostname.
+     */
     export function getOIDCServerURL(icpHostname: string): vscode.Uri {
         return vscode.Uri.parse(`https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`);
     }

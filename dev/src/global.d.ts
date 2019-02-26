@@ -33,3 +33,9 @@ declare namespace NodeJS {
     }
 }
 
+/**
+ * Sadly, this very good library does not have types available.
+ */
+declare module "openid-client" {
+    export const Issuer: any;
+}

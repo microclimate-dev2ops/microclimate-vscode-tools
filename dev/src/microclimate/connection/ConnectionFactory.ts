@@ -106,9 +106,9 @@ namespace ConnectionFactory {
             connection = await testConnection(connectionData.url);
         }
         catch (err) {
-            // This is fine - the Microclimate instance became unreachable while VS Code was closed
+            // This is fine - the Microclimate instance became unreachable while VS Code was closed, or we have to re-authenticate
             // Still show it in the tree, but as Disconnected
-            Log.d("Failed to re-add connection the normal way, adding as disconnected");
+            Log.i("Failed to re-add connection the normal way, adding as disconnected. err:", err);
 
             connection = await ConnectionManager.instance.addConnection(connectionData);
             connection.onDisconnect();
@@ -136,7 +136,7 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
 
     const rqOptions: request.RequestPromiseOptions = {
         json: true,
-        timeout: 5000,
+        timeout: 10000,
         resolveWithFullResponse: true,
         rejectUnauthorized: Requester.shouldRejectUnauthed(mcUrl.toString()),
     };
@@ -147,6 +147,9 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
         rqOptions.auth = {
             bearer: token
         };
+    }
+    else if (!MCUtil.isLocalhost(mcUrl.authority)) {
+        Log.d("No auth token available for remote host, auth will be required");
     }
 
     Log.d("Testing connection now");
@@ -201,8 +204,10 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
     if (testResponse.statusCode === 401 ||
         testResponse.request.path.toLowerCase().includes("oidc")) {
 
+        Log.d("Authentication is required");
         // will throw if auth fails
         await Authenticator.authenticate(mcUrl.authority);
+        Log.d("Authentication completed");
     }
 
     // Auth either was not necessary, or suceeded above - then there will be a token that this request can use
@@ -223,6 +228,7 @@ async function onSuccessfulConnection(mcUrl: vscode.Uri, mcEnvData: MCEnvironmen
         throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
     }
 
+    // check if version is good
     const versionNum = MCEnvironment.getVersionNumber(mcUrl.toString(), mcEnvData);
 
     // At this point, we know the Microclimate we're trying to connect to is a supported version.
@@ -248,6 +254,7 @@ async function onLocalConnection(mcUrl: vscode.Uri, versionNum: number, mcEnvDat
     if (!user) {
         user = "";
     }
+
     return ConnectionManager.instance.addConnection({
         url: mcUrl,
         version: versionNum,
@@ -271,6 +278,10 @@ async function onICPConnection(mcUrl: vscode.Uri, versionNum: number, mcEnvData:
     });
 }
 
+/**
+ * Display a message to the user that the connection succeeded.
+ * Then, if that connection's workspace is NOT open, display a popup with a button to open that folder.
+ */
 async function offerToOpenWorkspace(connection: Connection): Promise<void> {
     let inMcWorkspace = false;
     // See if the user has this connection's workspace open

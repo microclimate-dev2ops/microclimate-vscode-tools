@@ -187,6 +187,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         catch (err) {
             Log.e(`Error updating projects list from ${this.projectsApiUrl}:`, err);
             vscode.window.showErrorMessage(`Error updating projects list from ${this.mcUrl}: ${err.message || err}`);
+            this.onDisconnect();
             return this.projects;
         }
 

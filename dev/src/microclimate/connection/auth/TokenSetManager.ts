@@ -18,13 +18,12 @@ const TOKEN_PREFIX = "token-";
 
 /**
  * Tokenset received from token endpoint when using the implicit flow.
- * Other flows may also feature refresh_token and id_token.
+ * Other flows may also feature refresh_token, id_token, and scope.
  */
 export interface ITokenSet {
-    access_token: string;
-    token_type: string;         // expected to be "Bearer"
-    expires_in: number;         // in seconds - seems to always be 43200 (12hrs)
-    scope: string;              // should be "openid"
+    readonly access_token: string;
+    readonly token_type: string;        // expected to be "Bearer"
+    readonly expires_at: Date;
 }
 
 namespace TokenSetManager {
@@ -45,8 +44,7 @@ namespace TokenSetManager {
         await memento.update(key, newTokens);
         if (newTokens != null) {
             // at the time of writing, expires_in is 12 hours in seconds
-            const expiry = new Date(Date.now() + (newTokens.expires_in * 1000));
-            Log.i(`Updated token for ${hostname}, new token expires at ${expiry}`);
+            Log.i(`Updated token for ${hostname}, new token expires at ${newTokens.expires_at}`);
         }
         else {
             Log.d(`Cleared token for ${hostname}`);

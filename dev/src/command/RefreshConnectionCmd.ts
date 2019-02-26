@@ -21,7 +21,7 @@ import ConnectionFactory from "../microclimate/connection/ConnectionFactory";
 import { ConnectionData } from "../microclimate/connection/ConnectionData";
 
 export default async function refreshConnectionCmd(connection: Connection): Promise<void> {
-    Log.d("refreshConnectionCmd");
+    Log.d("refreshConnectionCmd " + connection.mcUrl);
     if (connection == null) {
         const selected = await promptForConnection(false);
         if (selected == null) {

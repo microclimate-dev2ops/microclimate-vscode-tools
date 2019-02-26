@@ -10,12 +10,11 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
-import * as requestErrors from "request-promise-native/errors";
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
-import Authenticator from "../microclimate/connection/auth/Authenticator";
+import TokenSetManager from "../microclimate/connection/auth/TokenSetManager";
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
 
@@ -31,6 +30,14 @@ export default async function logOutConnection(connection: Connection): Promise<
         connection = selected;
     }
 
+    // Revoke is not implemented for the implicit flow. Until we switch back to auth_code flow, no revocation can be done.
+    // For now, just delete the tokens from the extension's memory
+    await TokenSetManager.setTokensFor(connection.host, undefined);
+    const logoutMsg = `Logged out of ${connection.mcUrl}\nUse "Refresh Connection" to log back in.`;
+    vscode.window.showInformationMessage(logoutMsg);
+    connection.onDisconnect();
+
+    /*
     try {
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -51,6 +58,6 @@ export default async function logOutConnection(connection: Connection): Promise<
         Log.e("Error logging out", err);
         const errMsg = err.error_description || err.error || err.message || err.toString();
         vscode.window.showErrorMessage("Error logging out: " + errMsg);
-    }
+    }*/
     Log.d("Done logging out");
 }

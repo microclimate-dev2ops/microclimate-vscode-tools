@@ -50,21 +50,20 @@ namespace Requester {
         options.rejectUnauthorized = shouldRejectUnauthed(url);
         options.resolveWithFullResponse = true;
 
-        if (!MCUtil.isLocalhost(url.authority)) {
-            const token = Authenticator.getAccessTokenForUrl(url);
-            if (token) {
-                options.auth = {};
-                options.auth.bearer = token;
-            }
-            else {
-                options.auth = undefined;
-            }
+        const token = Authenticator.getAccessTokenForUrl(url);
+        if (token) {
+            // overwrite anything caller might have erroneously provided
+            options.auth = {};
+            options.auth.bearer = token;
+        }
+        else {
+            options.auth = undefined;
         }
 
         const response: request.FullResponse = await request.get(url.toString(), options);
         // If we get redirected to OIDC authorize endpoint /oidc/endpoint/OP/ it means the auth failed or token expired
         if (response.body.toString().includes("CWOAU0062E") || response.request.path.toLowerCase().includes("oidc")) {
-            throw new Error("Not authorized to access Microclimate. Please log out and log in again or something.");
+            throw new Error(`Not authenticated, or authentication has expired. Please refresh the connection.`);
         }
         return response;
     }

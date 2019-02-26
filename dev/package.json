@@ -365,6 +365,7 @@
         "circular-json": "^0.5.9",
         "i18next": "^8.3.0",
         "i18next-node-fs-backend": "^2.1.0",
+        "openid-client": "^2.4.5",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",
         "socket.io-client": "^2.1.1",
