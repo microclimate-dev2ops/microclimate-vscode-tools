@@ -24,14 +24,33 @@ import SocketEvents from "./SocketEvents";
  */
 export default class MCSocket {
 
+    private readonly uri: string;
     private readonly socket: SocketIOClient.Socket;
 
+    /**
+     * Create a SocketIO connection to the server at the given URI.
+     * Can throw an error.
+     *
+     * @param namespace - Socket namespace. Must not start with a slash. Can be the empty string.
+     */
     constructor(
-        public readonly uri: string,
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        namespace: string,
     ) {
-        Log.i("Creating MCSocket for URI", uri);
-        this.socket = io(uri);
+        this.uri = connection.mcUri.toString();
+        if (namespace) {
+            if (!this.uri.endsWith("/")) {
+                this.uri += "/";
+            }
+            this.uri += namespace;
+        }
+        Log.i("Creating MCSocket for URI", this.uri);
+
+        const options: SocketIOClient.ConnectOpts = {
+            // rejectUnauthorized:
+        };
+
+        this.socket = io(this.uri, options);
 
         this.socket.connect();
 

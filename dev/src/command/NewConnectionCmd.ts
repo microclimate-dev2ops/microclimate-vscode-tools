@@ -183,9 +183,15 @@ export async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mc
     const rawWorkspace: string = mcEnvData.workspace_location;
     const rawPlatform: string = mcEnvData.os_platform;
 
+    // user_string and socket_namespace are the same on ICP, except latter starts with /
+    // on local, user_string is null, and socket_namespace is "/default".
+    // const rawUser: string = mcEnvData.user_string || "";
+    const rawSocketNS: string = mcEnvData.socket_namespace || "";
+
     Log.d("rawVersion from Microclimate is", rawVersion);
     Log.d("rawWorkspace from Microclimate is", rawWorkspace);
     Log.d("rawPlatform from Microclimate is", rawPlatform);
+    Log.d("rawSocketNS from Microclimate is", rawSocketNS);
     if (rawVersion == null || rawWorkspace == null) {
         Log.e("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
         throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
@@ -202,8 +208,11 @@ export async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mc
 
     const versionNum = MCEnvironment.getVersionNumber(mcEnvData);
 
+    // normalize namespace so it doesn't start with '/'
+    const socketNS = rawSocketNS.startsWith("/") ? rawSocketNS.substring(1, rawSocketNS.length) : rawSocketNS;
+
     try {
-        return await ConnectionManager.instance.addConnection(mcUri, host, versionNum, workspace);
+        return await ConnectionManager.instance.addConnection(mcUri, host, versionNum, socketNS, workspace);
     }
     catch (err) {
         Log.i("New connection rejected by ConnectionManager ", err.message || err);

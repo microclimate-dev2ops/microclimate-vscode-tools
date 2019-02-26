@@ -54,10 +54,11 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         public readonly mcUri: vscode.Uri,
         public readonly host: string,
         public readonly version: number,
+        public readonly socketNS: string,
         workspacePath_: string
     ) {
         this.projectsApiUri = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
-        this.socket = new MCSocket(mcUri.toString(), this);
+        this.socket = new MCSocket(this, socketNS);
         this.logManager = new MCLogManager(this);
         this.workspacePath = vscode.Uri.file(workspacePath_);
         this.versionStr = MCEnvironment.getVersionAsString(version);

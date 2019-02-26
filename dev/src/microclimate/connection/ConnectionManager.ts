@@ -47,7 +47,7 @@ export default class ConnectionManager {
         return this._connections;
     }
 
-    public async addConnection(uri: vscode.Uri, host: string, mcVersion: number, workspace: string): Promise<Connection> {
+    public async addConnection(uri: vscode.Uri, host: string, mcVersion: number, socketNS: string, workspace: string): Promise<Connection> {
         if (this.connectionExists(uri)) {
             const alreadyExists = Translator.t(StringNamespaces.DEFAULT, "connectionAlreadyExists", { uri });
             // Log.i(alreadyExists);
@@ -56,7 +56,7 @@ export default class ConnectionManager {
 
         // all validation that this connection is good must be done by this point
 
-        const newConnection: Connection = new Connection(uri, host, mcVersion, workspace);
+        const newConnection: Connection = new Connection(uri, host, mcVersion, socketNS, workspace);
         Log.i("New Connection @ " + uri);
         this._connections.push(newConnection);
         ConnectionManager.saveConnections();
