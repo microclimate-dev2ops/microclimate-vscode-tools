@@ -98,10 +98,12 @@ export class Log {
         }
 
         const argsStr: string = args.reduce( (result: string, arg: any): string => {
-            if (arg != null && typeof arg === "object") {
+            if (arg instanceof Error) {
+                // For some reason JSON.stringify outputs "{}" on an Error.
+                arg = util.inspect(arg);
+            }
+            else if (arg != null && typeof arg === "object") {
                 try {
-                    // Can fail eg on objects with circular references
-                    // arg = JSON.stringify(arg, undefined, 2);
                     arg = CircularJson.stringify(arg, replacer, 2);
                 }
                 catch (err) {
