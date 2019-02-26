@@ -50,11 +50,11 @@ namespace Requester {
         options.rejectUnauthorized = shouldRejectUnauthed(url);
         options.resolveWithFullResponse = true;
 
-        const token = Authenticator.getAccessTokenForUrl(url);
-        if (token) {
+        const tokenset = Authenticator.getTokensetForUrl(url);
+        if (tokenset) {
             // overwrite anything caller might have erroneously provided
             options.auth = {};
-            options.auth.bearer = token;
+            options.auth.bearer = tokenset.access_token;
         }
         else {
             options.auth = undefined;
@@ -200,11 +200,11 @@ namespace Requester {
         };
 
         if (project.connection.isICP) {
-            const token = Authenticator.getAccessTokenForUrl(url);
-            if (token != null) {
+            const tokenset = Authenticator.getTokensetForUrl(url);
+            if (tokenset != null) {
                 Log.d("Sending auth token with request");
                 options.auth = {
-                    bearer: token
+                    bearer: tokenset.access_token
                 };
             }
         }

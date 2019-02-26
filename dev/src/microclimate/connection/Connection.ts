@@ -26,7 +26,6 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Requester from "../project/Requester";
 import MCEnvironment from "./MCEnvironment";
-import Authenticator from "./auth/Authenticator";
 import Commands from "../../constants/Commands";
 import { IConnectionData } from "./ConnectionData";
 
@@ -293,9 +292,5 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         // }
         this.needProjectUpdate = true;
         this.getProjects();
-    }
-
-    public get isLoggedIn(): boolean {
-        return Authenticator.getAccessTokenForUrl(this.mcUrl) != null;
     }
 }

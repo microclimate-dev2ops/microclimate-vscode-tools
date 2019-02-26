@@ -39,6 +39,7 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 import validateCmd from "./ValidateCmd";
 import hideLogsCmd from "./HideLogsCmd";
 import logOutConnection from "./LogOutConnection";
+import viewConnectionInfo from "./ViewConnectionInfo";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -57,6 +58,7 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand(Commands.CREATE_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection, true)),
         vscode.commands.registerCommand(Commands.IMPORT_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection, false)),
         vscode.commands.registerCommand(Commands.LOGOUT_CONNECTION, (selection) => logOutConnection(selection)),
+        vscode.commands.registerCommand(Commands.VIEW_CONN_INFO,    (selection) => viewConnectionInfo(selection)),
 
         vscode.commands.registerCommand(Commands.OPEN_WS_FOLDER,    (selection) => openWorkspaceFolderCmd(selection)),
 

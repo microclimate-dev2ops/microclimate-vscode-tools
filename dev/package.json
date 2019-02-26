@@ -107,6 +107,11 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_viewConnectionInfo%",
+                "title": "%cmdTitle_viewConnectionInfo%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_openFolder%",
                 "title": "%cmdTitle_openFolder%",
                 "category": "%commandCategory%"
@@ -244,14 +249,19 @@
                     "group": "ext.mc.conn.c@0"
                 },
                 {
+                    "command": "%cmdID_viewConnectionInfo%",
+                    "when": "%isConnection%",
+                    "group": "ext.mc.conn.c@1"
+                },
+                {
                     "command": "%cmdID_logoutConnection%",
                     "when": "%isActiveICPConnection%",
-                    "group": "ext.mc.conn.c@1"
+                    "group": "ext.mc.conn.c@2"
                 },
                 {
                     "command": "%cmdID_removeConn%",
                     "when": "%isConnection%",
-                    "group": "ext.mc.conn.c@2"
+                    "group": "ext.mc.conn.c@3"
                 },
                 {
                     "command": "%cmdID_openInBrowser%",

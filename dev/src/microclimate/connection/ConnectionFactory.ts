@@ -141,11 +141,11 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
         rejectUnauthorized: Requester.shouldRejectUnauthed(mcUrl.toString()),
     };
 
-    const token = Authenticator.getAccessTokenForUrl(mcUrl);
-    if (token != null) {
+    const tokenset = Authenticator.getTokensetForUrl(mcUrl);
+    if (tokenset != null) {
         Log.d("Sending auth token with connect request");
         rqOptions.auth = {
-            bearer: token
+            bearer: tokenset.access_token
         };
     }
     else if (!MCUtil.isLocalhost(mcUrl.authority)) {

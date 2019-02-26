@@ -23,7 +23,7 @@ const TOKEN_PREFIX = "token-";
 export interface ITokenSet {
     readonly access_token: string;
     readonly token_type: string;        // expected to be "Bearer"
-    readonly expires_at: Date;
+    readonly expires_at: number;        // in millis - need to use simple type here so Context can save it - Date doesn't work.
 }
 
 namespace TokenSetManager {

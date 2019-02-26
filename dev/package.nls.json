@@ -34,6 +34,9 @@
     "cmdID_logoutConnection": "ext.mc.logoutConnection",
     "cmdTitle_logoutConnection": "Log Out",
 
+    "cmdID_viewConnectionInfo": "ext.mc.viewConnectionInfo",
+    "cmdTitle_viewConnectionInfo": "View Connection Info",
+
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open Folder as Workspace",
     "cmdDescr_openFolder": "Open a folder as your VSCode workspace",

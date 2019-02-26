@@ -162,7 +162,7 @@ namespace Authenticator {
             const tokenSet: ITokenSet = {
                 access_token: authCallbackResult.access_token,
                 token_type: authCallbackResult.token_type,
-                expires_at: new Date(authCallbackResult.expires_at * 1000),
+                expires_at: authCallbackResult.expires_at * 1000,       // s -> ms
             };
 
             await TokenSetManager.setTokensFor(pendingAuth.hostname, tokenSet);
@@ -192,17 +192,12 @@ namespace Authenticator {
         pendingAuth = undefined;
     }
 
-    export function getAccessTokenForUrl(uri: vscode.Uri): string | undefined {
-        if (MCUtil.isLocalhost(uri.authority)) {
+    export function getTokensetForUrl(url: vscode.Uri): ITokenSet | undefined {
+        if (MCUtil.isLocalhost(url.authority)) {
             return undefined;
         }
-
-        const hostname = MCUtil.getHostnameFromAuthority(uri.authority);
-        const tokenSet = TokenSetManager.getTokenSetFor(hostname);
-        if (tokenSet == null) {
-            return undefined;
-        }
-        return tokenSet.access_token;
+        const hostname = MCUtil.getHostnameFromAuthority(url.authority);
+        return TokenSetManager.getTokenSetFor(hostname);
     }
 }
 
