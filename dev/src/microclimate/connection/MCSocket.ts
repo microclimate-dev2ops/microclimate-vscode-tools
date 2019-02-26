@@ -34,14 +34,17 @@ export default class MCSocket {
      */
     constructor(
         private readonly connection: Connection,
-        user?: string,
+        namespace: string,
     ) {
         this.uri = connection.mcUrl.toString();
-        if (user) {
+        if (namespace) {
             if (!this.uri.endsWith("/")) {
                 this.uri += "/";
             }
-            this.uri += user;
+            if (namespace.startsWith("/")) {
+                namespace = namespace.substring(1, namespace.length);
+            }
+            this.uri += namespace;
         }
         Log.i("Creating MCSocket for URI", this.uri);
 

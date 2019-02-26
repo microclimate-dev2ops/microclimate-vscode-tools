@@ -26,31 +26,18 @@ namespace MCEnvironment {
     // ENV types are inferred from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/portal/server.js
 
     export interface IMCEnvData {
+        devops_available: boolean;
         editor_url: string;
         microclimate_version: string;
         os_platform: string;
         running_on_icp: boolean;
-    }
-
-    export interface IMCEnvDataICP extends IMCEnvData {
-        devops_available: boolean;
-
-        // always true
-        // running_on_icp: boolean;
         socket_namespace: string;
+
+        // null on local
         user_string: string;
-    }
 
-    export interface IMCEnvDataLocal extends IMCEnvData {
-        // always false on local
-        // devops_available: boolean;
-
-        // always false
-        // running_on_icp: boolean;
-
-        // socket_namespace: string;
-        user_string: string;
-        workspace_location: string;
+        // Not set on ICP
+        workspace_location?: string;
     }
 
     /**
@@ -170,7 +157,7 @@ namespace MCEnvironment {
     /**
      * @returns If the given Connection matches the given environment data for fields the tools are interested in.
      */
-    export function envMatchesLocal(connection: Connection, envData: IMCEnvDataLocal): boolean {
+    export function envMatches(connection: Connection, envData: IMCEnvData): boolean {
         let newVersionNumber;
         try {
             // the user will see the "version bad/too old" message after the ConnectionManager tries to reconnect to this instance.
@@ -182,34 +169,7 @@ namespace MCEnvironment {
         }
 
         return connection.version === newVersionNumber;
-            // should check workspace too, but need to consider platform when comparing paths
-            // more to check once we support ICP
-            // envData.user_string
-    }
-
-    /**
-     * @returns If the given Connection matches the given environment data for fields the tools are interested in.
-     */
-    export function envMatchesICP(_connection: Connection, _envData: IMCEnvDataICP): boolean {
-        // TODO
-        return true;
-
-        /*
-        let newVersionNumber;
-        try {
-            // the user will see the "version bad/too old" message after the ConnectionManager tries to reconnect to this instance.
-            newVersionNumber = getVersionNumber(connection.mcUri.toString(), envData);
-        }
-        catch (err) {
-            Log.w(err);
-            return false;
-        }
-
-        // return connection.version === newVersionNumber &&
-            // connection.user === envData.socket_namespace;
-
-            // connection.workspacePath.fsPath === envData.workspace_location;
-            */
+        // TODO check workspace, user_string, socket_namespace
     }
 }
 

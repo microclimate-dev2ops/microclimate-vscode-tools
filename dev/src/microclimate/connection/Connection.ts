@@ -41,11 +41,12 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public readonly host: string;
     public readonly isICP: boolean;
 
+    public readonly user: string;
     public readonly workspacePath: vscode.Uri;
     public readonly version: number;
     public readonly versionStr: string;
 
-    public readonly user: string;
+    public readonly socketNamespace: string;
     private readonly socket: MCSocket;
 
     public readonly logManager: MCLogManager;
@@ -68,18 +69,15 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     ) {
         this.mcUrl = connectionData.url;
         this.projectsApiUrl = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
+        this.socketNamespace = connectionData.socketNamespace;
         this.user = connectionData.user;
         this.version = connectionData.version;
-        this.socket = new MCSocket(this, this.user);
+        this.socket = new MCSocket(this, connectionData.socketNamespace);
         this.logManager = new MCLogManager(this);
         this.host = MCUtil.getHostnameFromAuthority(this.mcUrl.authority);
         this.isICP = !MCUtil.isLocalhost(this.host);
         this.workspacePath = vscode.Uri.file(connectionData.workspacePath);
         this.versionStr = MCEnvironment.getVersionAsString(connectionData.version);
-
-        if (this.isICP && this.user == null) {
-            Log.e("ICP connection without a user");
-        }
 
         // QuickPickItem
         this.label = this.getTreeItemLabel();
@@ -270,8 +268,9 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
     private getTreeItemLabel(): string {
         // return Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
-        const userStr = this.user ? `${this.user}@` : "";
-        return `${userStr}${this.mcUrl.authority} • ${this.versionStr}`;
+        // const userStr = this.user ? `${this.user}@` : "";
+        // return `${userStr}${this.mcUrl.authority} • ${this.versionStr}`;
+        return `${this.mcUrl.authority} • ${this.versionStr}`;
     }
 
     private getContextID(): string {

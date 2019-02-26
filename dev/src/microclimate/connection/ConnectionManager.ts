@@ -134,15 +134,7 @@ export default class ConnectionManager {
             return false;
         }
 
-        let success = false;
-        if (connection.isICP) {
-            success = MCEnvironment.envMatchesICP(connection, newEnvData as MCEnvironment.IMCEnvDataICP);
-        }
-        else {
-            success = MCEnvironment.envMatchesLocal(connection, newEnvData as MCEnvironment.IMCEnvDataLocal);
-        }
-
-        if (success) {
+        if (MCEnvironment.envMatches(connection, newEnvData)) {
             // it's the same instance, so we don't have to do anything
             return true;
         }
@@ -177,9 +169,10 @@ export default class ConnectionManager {
         const saveableDatas = globalState.get<ISaveableConnectionData[]>(Settings.CONNECTIONS_KEY) || [];
         return saveableDatas.map( (data: ISaveableConnectionData): IConnectionData => {
             return {
+                socketNamespace: data.socketNamespace,
+                user: data.user,
                 url: vscode.Uri.parse(data.urlString),
                 version: data.version,
-                user: data.user,
                 workspacePath: data.workspacePath,
             };
         });

@@ -231,50 +231,39 @@ async function onSuccessfulConnection(mcUrl: vscode.Uri, mcEnvData: MCEnvironmen
     // check if version is good
     const versionNum = MCEnvironment.getVersionNumber(mcUrl.toString(), mcEnvData);
 
-    // At this point, we know the Microclimate we're trying to connect to is a supported version.
+    let workspacePath: string;
     if (mcEnvData.running_on_icp) {
-        return onICPConnection(mcUrl, versionNum, mcEnvData as MCEnvironment.IMCEnvDataICP);
+        const dummyWorkspace = path.join(os.homedir(), "microclimate-dummy-workspace");
+        if (!fs.existsSync(dummyWorkspace)) {
+            Log.i("Creating workspace: " + dummyWorkspace);
+            fs.mkdirSync(dummyWorkspace, { recursive: true });
+        }
+        workspacePath = dummyWorkspace;
     }
     else {
-        return onLocalConnection(mcUrl, versionNum, mcEnvData as MCEnvironment.IMCEnvDataLocal);
+        const rawWorkspace: string | undefined = mcEnvData.workspace_location;
+
+        Log.d("rawWorkspace from Microclimate is", rawWorkspace);
+        if (rawWorkspace == null) {
+            Log.e("Local Microclimate did not provide workspace. Data provided is:", mcEnvData);
+            throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
+        }
+        else if (!fs.existsSync(rawWorkspace)) {
+            throw new Error(`Workspace directory does not exist. Path is "${rawWorkspace}"`);
+        }
+        workspacePath = rawWorkspace;
     }
-}
 
-async function onLocalConnection(mcUrl: vscode.Uri, versionNum: number, mcEnvData: MCEnvironment.IMCEnvDataLocal): Promise<Connection> {
-    const rawWorkspace: string = mcEnvData.workspace_location;
-
-    Log.d("rawWorkspace from Microclimate is", rawWorkspace);
-    if (rawWorkspace == null) {
-        Log.e("Local Microclimate did not provide workspace. Data provided is:", mcEnvData);
-        throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
-    }
-
-    let user = mcEnvData.user_string;
     // might be something like null or false
-    if (!user) {
-        user = "";
-    }
+    const user = mcEnvData.user_string || "";
+    const socketNamespace = mcEnvData.socket_namespace || "";
 
     return ConnectionManager.instance.addConnection({
+        socketNamespace,
+        user,
         url: mcUrl,
         version: versionNum,
-        workspacePath: rawWorkspace,
-        user
-    });
-}
-
-async function onICPConnection(mcUrl: vscode.Uri, versionNum: number, mcEnvData: MCEnvironment.IMCEnvDataICP): Promise<Connection> {
-    const dummyWorkspace = path.join(os.homedir(), "microclimate-dummy-workspace");
-    if (!fs.existsSync(dummyWorkspace)) {
-        fs.mkdirSync(dummyWorkspace, { recursive: true });
-    }
-
-    // right now socket_namespace is just `/${user_string}`. There should always be a user_string on ICP.
-    return ConnectionManager.instance.addConnection({
-        url: mcUrl,
-        version: versionNum,
-        workspacePath: dummyWorkspace,
-        user: mcEnvData.user_string
+        workspacePath,
     });
 }
 
