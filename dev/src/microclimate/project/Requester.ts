@@ -50,7 +50,7 @@ namespace Requester {
         options.rejectUnauthorized = shouldRejectUnauthed(url);
         options.resolveWithFullResponse = true;
 
-        const tokenset = Authenticator.getTokensetForUrl(url);
+        const tokenset = Authenticator.getTokensetFor(url);
         if (tokenset) {
             // overwrite anything caller might have erroneously provided
             options.auth = {};
@@ -200,7 +200,7 @@ namespace Requester {
         };
 
         if (project.connection.isICP) {
-            const tokenset = Authenticator.getTokensetForUrl(url);
+            const tokenset = Authenticator.getTokensetFor(url);
             if (tokenset != null) {
                 Log.d("Sending auth token with request");
                 options.auth = {

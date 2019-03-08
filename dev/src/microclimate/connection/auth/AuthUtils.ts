@@ -14,6 +14,7 @@ import * as crypto from "crypto";
 
 import Log from "../../../Logger";
 import Settings from "../../../constants/Settings";
+import Endpoints from "../../../constants/Endpoints";
 
 /**
  * See getOpenIDConfig(hostname)
@@ -34,11 +35,7 @@ export interface IOpenIDConfig {
  * Helper functions used by Authenticator.ts and TokenSetManager
  */
 namespace AuthUtils {
-    // ICP OIDC server info
-    const OIDC_SERVER_PORT = 8443;
-    const OIDC_SERVER_PATH = "/oidc/endpoint/OP";
-
-    export const TIMEOUT: number = 10000;
+    export const TIMEOUT: number = 15000;
 
     /*
     export async function getOpenIDConfig(icpHostname: string): Promise<IOpenIDConfig> {
@@ -59,8 +56,8 @@ namespace AuthUtils {
     /**
      * @returns A URL to the Liberty OP server for the given cluster hostname.
      */
-    export function getOIDCServerURL(icpHostname: string): vscode.Uri {
-        return vscode.Uri.parse(`https://${icpHostname}:${OIDC_SERVER_PORT}${OIDC_SERVER_PATH}`);
+    export function getOIDCServerURL(masterIP: string): vscode.Uri {
+        return vscode.Uri.parse(`https://${masterIP}:${Endpoints.ICP_MASTER_SERVER_PORT}${Endpoints.ICP_OIDC_SERVER_PATH}`);
     }
 
     /**

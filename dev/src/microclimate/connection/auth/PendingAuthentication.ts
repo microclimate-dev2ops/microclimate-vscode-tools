@@ -26,7 +26,7 @@ export default class PendingAuthentication {
 
     constructor(
         // public readonly redirectUri: string,
-        public readonly hostname: string,
+        public readonly masterIP: string,
         public readonly state: string,
         public readonly nonce: string,
         public readonly openIDClient: any,

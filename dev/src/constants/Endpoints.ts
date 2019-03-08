@@ -15,7 +15,8 @@ import Connection from "../microclimate/connection/Connection";
 // non-nls-file
 
 /**
- * Class to hold constants that are Portal API endpoint paths
+ * Class to hold URL-related constants like endpoint paths, querystrings, ports,
+ * and generate URLs from them.
  */
 export default class Endpoints {
 
@@ -57,4 +58,7 @@ export default class Endpoints {
     public static getEnablementAction(enable: boolean): string {
         return `${enable ? "open" : "close"}`;
     }
+
+    public static readonly ICP_MASTER_SERVER_PORT: number = 8443;
+    public static readonly ICP_OIDC_SERVER_PATH: string = "/oidc/endpoint/OP";
 }

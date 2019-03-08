@@ -40,9 +40,6 @@ namespace MCEnvironment {
         workspace_location?: string;
     }
 
-    /**
-     *
-     */
     export async function getEnvData(mcUri: Uri): Promise<IMCEnvData> {
         const envUri: Uri = mcUri.with({ path: Endpoints.ENVIRONMENT });
         const connectTimeout = 5000;

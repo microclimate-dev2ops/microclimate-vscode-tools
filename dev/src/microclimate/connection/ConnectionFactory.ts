@@ -29,30 +29,32 @@ import MCEnvironment from "./MCEnvironment";
 import Authenticator from "./auth/Authenticator";
 import { IConnectionData } from "./ConnectionData";
 import refreshConnectionCmd from "../../command/RefreshConnectionCmd";
+import ICPInfoMap from "./ICPInfoMap";
 
 const STRING_NS = StringNamespaces.CMD_NEW_CONNECTION;
 
 namespace ConnectionFactory {
+
     /**
-     * Test connecting to the given host:port.
+     * Test connecting to Microclimate at the given URL.
      * If it fails, display a message to the user and allow them to either try to connect again with the same info,
-     * or start the 'wizard' from the beginning to enter a new host/port.
+     * or start the 'wizard' from the beginning to enter a new url.
      *
      * Should handle and display errors, and never throw an error.
      */
-    export async function tryAddConnection(mcUrl: vscode.Uri): Promise<Connection | undefined> {
+    export async function tryAddConnection(ingressUrl: vscode.Uri): Promise<Connection | undefined> {
 
-        Log.i("TryAddConnection to: " + mcUrl.toString());
+        Log.i("TryAddConnection to:", ingressUrl);
 
-        if (ConnectionManager.instance.connectionExists(mcUrl)) {
-            vscode.window.showWarningMessage(Translator.t(STRING_NS, "connectionAlreadyExists", { uri: mcUrl }));
+        if (ConnectionManager.instance.connectionExists(ingressUrl)) {
+            vscode.window.showWarningMessage(Translator.t(STRING_NS, "connectionAlreadyExists", { uri: ingressUrl }));
             return undefined;
         }
         Log.d("Connection does not already exist");
 
         let newConnection: Connection;
         try {
-            newConnection = await testConnection(mcUrl);
+            newConnection = await testConnection(ingressUrl);
             Log.d("TestConnection success to " + newConnection.mcUrl);
         }
         catch (err) {
@@ -61,19 +63,19 @@ namespace ConnectionFactory {
             const errMsg = err.message || err.toString();
             const editBtn = Translator.t(STRING_NS, "editConnectionBtn");
             const retryBtn = Translator.t(STRING_NS, "retryConnectionBtn");
-            const openUrlBtn = "Open URL";
+            const openUrlBtn = Translator.t(STRING_NS, "openUrlBtn");
             vscode.window.showErrorMessage(errMsg, editBtn, retryBtn, openUrlBtn)
             .then( (response) => {
                 if (response === editBtn) {
                     // start again from the beginning, with the same uri prefilled
-                    return newConnectionCmd(mcUrl);
+                    return newConnectionCmd(ingressUrl);
                 }
                 else if (response === retryBtn) {
                     // try to connect with the same uri
-                    return tryAddConnection(mcUrl);
+                    return tryAddConnection(ingressUrl);
                 }
                 else if (response === openUrlBtn) {
-                    vscode.commands.executeCommand(Commands.VSC_OPEN, mcUrl);
+                    vscode.commands.executeCommand(Commands.VSC_OPEN, ingressUrl);
                 }
                 return undefined;
             });
@@ -115,7 +117,7 @@ namespace ConnectionFactory {
 
             const errMsg = err.message || err.toString();
             const retryBtn = Translator.t(STRING_NS, "retryConnectionBtn");
-            const openUrlBtn = "Open URL";
+            const openUrlBtn = Translator.t(STRING_NS, "openUrlBtn");
 
             vscode.window.showWarningMessage(errMsg, retryBtn, openUrlBtn)
             .then( (response) => {
@@ -132,23 +134,23 @@ namespace ConnectionFactory {
 }
 
 // Return value resolves to a user-friendly message or error, ie "connection to $url succeeded"
-async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
+async function testConnection(ingressUrl: vscode.Uri): Promise<Connection> {
 
     const rqOptions: request.RequestPromiseOptions = {
         json: true,
         timeout: 10000,
         resolveWithFullResponse: true,
-        rejectUnauthorized: Requester.shouldRejectUnauthed(mcUrl.toString()),
+        rejectUnauthorized: Requester.shouldRejectUnauthed(ingressUrl.toString()),
     };
 
-    const tokenset = Authenticator.getTokensetForUrl(mcUrl);
+    const tokenset = Authenticator.getTokensetFor(ingressUrl);
     if (tokenset != null) {
         Log.d("Sending auth token with connect request");
         rqOptions.auth = {
             bearer: tokenset.access_token
         };
     }
-    else if (!MCUtil.isLocalhost(mcUrl.authority)) {
+    else if (!MCUtil.isLocalhost(ingressUrl.authority)) {
         Log.d("No auth token available for remote host, auth will be required");
     }
 
@@ -156,13 +158,13 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
 
     let testResponse: request.FullResponse | undefined;
     try {
-        const connectRequestPromise: request.RequestPromise = request.get(mcUrl.toString(), rqOptions);
+        const connectRequestPromise: request.RequestPromise = request.get(ingressUrl.toString(), rqOptions);
 
         // For remote, show a connecting-in-progress message. Localhost is too fast for this to be useful.
-        if (!MCUtil.isLocalhost(mcUrl.authority)) {
+        if (!MCUtil.isLocalhost(ingressUrl.authority)) {
             testResponse = await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: `Connecting to ${mcUrl.toString()}`
+                title: `Connecting to ${ingressUrl.toString()}`
             }, async (_progress, _token): Promise<request.FullResponse> => {
                 return await connectRequestPromise;
             });
@@ -177,13 +179,13 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
             if (err.statusCode !== 401) {
                 // 401 is handled below
                 // err.message will often be an entire html page so let's not show that.
-                throw new Error(`Connecting to ${mcUrl} failed: ${err.statusCode}${err.error ? err.error : ""}`);            // nls
+                throw new Error(`Connecting to ${ingressUrl} failed: ${err.statusCode}${err.error ? err.error : ""}`);            // nls
             }
         }
         else if (err instanceof reqErrors.RequestError) {
             // eg "connection refused", "getaddrinfo failed"
             // throw new Error(Translator.t(STRING_NS, "connectFailed", { uri: uri }));
-            throw new Error(`Connecting to ${mcUrl} failed: ${err.message}`);                    // nls
+            throw new Error(`Connecting to ${ingressUrl} failed: ${err.message}`);                    // nls
         }
         throw err;
     }
@@ -191,9 +193,9 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
     if (testResponse == null) {
         // should never happen
         Log.d("testResponse is null!");
-        throw new Error(`Connecting to ${mcUrl} failed: Unknown error`);
+        throw new Error(`Connecting to ${ingressUrl} failed: Unknown error`);
     }
-    Log.d(`Initial response from ${mcUrl} status=${testResponse.statusCode} requestPath=${testResponse.request.path}`);
+    Log.d(`Initial response from ${ingressUrl} status=${testResponse.statusCode} requestPath=${testResponse.request.path}`);
     if (testResponse.body.toString().length < 512) {
         Log.d("Initial response body", testResponse.body);
     }
@@ -204,15 +206,20 @@ async function testConnection(mcUrl: vscode.Uri): Promise<Connection> {
     if (testResponse.statusCode === 401 ||
         testResponse.request.path.toLowerCase().includes("oidc")) {
 
+        const masterNodeIP = ICPInfoMap.getMasterIP(ingressUrl);
+        if (masterNodeIP == null) {
+            // This should never happen
+            throw new Error(`No corresponding master node IP was stored for ${ingressUrl}. Please try re-creating the connection.`);
+        }
         Log.d("Authentication is required");
         // will throw if auth fails
-        await Authenticator.authenticate(mcUrl.authority);
+        await Authenticator.authenticate(masterNodeIP);
         Log.d("Authentication completed");
     }
 
     // Auth either was not necessary, or suceeded above - then there will be a token that this request can use
-    const envData = await MCEnvironment.getEnvData(mcUrl);
-    return onSuccessfulConnection(mcUrl, envData);
+    const envData = await MCEnvironment.getEnvData(ingressUrl);
+    return onSuccessfulConnection(ingressUrl, envData);
 }
 
 /**
@@ -289,11 +296,11 @@ async function offerToOpenWorkspace(connection: Connection): Promise<void> {
 
         // Provide a button to change their workspace to the microclimate-workspace if they wish
         vscode.window.showInformationMessage(successMsg, openWsBtn)
-            .then ( (response) => {
-                if (response === openWsBtn) {
-                    vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, connection.workspacePath);
-                }
-            });
+        .then ( (response) => {
+            if (response === openWsBtn) {
+                vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, connection.workspacePath);
+            }
+        });
     }
     else {
         // The user already has the workspace open, we don't have to do it for them.

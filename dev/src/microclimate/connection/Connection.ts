@@ -35,7 +35,11 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     private static readonly CONTEXT_SUFFIX_ACTIVE:  string = "active";     // non-nls
     private static readonly CONTEXT_SUFFIX_ICP:     string = "icp";        // non-nls
 
+    /**
+     *  For ICP connections, this is the INGRESS url.
+     */
     public readonly mcUrl: vscode.Uri;
+    // public readonly masterIP: string;
     private readonly projectsApiUrl: vscode.Uri;
     public readonly host: string;
     public readonly isICP: boolean;

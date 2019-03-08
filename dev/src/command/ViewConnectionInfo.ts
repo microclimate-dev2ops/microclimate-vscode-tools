@@ -15,6 +15,7 @@ import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
 import Authenticator from "../microclimate/connection/auth/Authenticator";
+import ICPInfoMap from "../microclimate/connection/ICPInfoMap";
 
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
@@ -34,9 +35,16 @@ export default async function viewConnectionInfo(connection: Connection): Promis
     const username = connection.user || "N/A";
     const authStatus = getAuthStatus(connection);
 
-    const msg = `Connection ${connection.mcUrl}\n` +
-        `Username: ${username}\n` +
-        `Authentication: ${authStatus}\n%n` +
+    let masterIP = ICPInfoMap.getMasterIP(connection.mcUrl);
+    if (masterIP == null) {
+        Log.e("No master IP for " + connection.mcUrl);
+        masterIP = "Unknown";
+    }
+
+    const msg = `Connection ${connection.mcUrl} ` +
+        `Master Node: ${masterIP} ` +
+        `Username: ${username} ` +
+        `Authentication: ${authStatus} ` +
         `Workspace: ${connection.workspacePath.fsPath}`;
 
     return vscode.window.showInformationMessage(msg).then(() => Promise.resolve());
@@ -47,7 +55,7 @@ function getAuthStatus(connection: Connection): string {
         return "N/A";
     }
 
-    const tokenset = Authenticator.getTokensetForUrl(connection.mcUrl);
+    const tokenset = Authenticator.getTokensetFor(connection.mcUrl);
     if (tokenset == null) {
         return "Not authenticated";
     }

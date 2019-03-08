@@ -90,12 +90,13 @@ export default class BuildLog extends MCLog {
 
             // Allow the user to kill this log so it doesn't spam them with error messages if there's a network problem or something.
             const stopUpdatingBtn: string = Translator.t(MCLog.STRING_NS, "stopUpdatingBtn");
+
             vscode.window.showErrorMessage(Translator.t(MCLog.STRING_NS, "errUpdatingBuildLog", { err: err.toString() }), stopUpdatingBtn)
-                .then( (btn) => {
-                    if (btn === stopUpdatingBtn) {
-                        this.stopUpdating(false);
-                    }
-                });
+            .then( (btn) => {
+                if (btn === stopUpdatingBtn) {
+                    this.stopUpdating(false);
+                }
+            });
         }
     }
 

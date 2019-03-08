@@ -14,7 +14,7 @@ import * as vscode from "vscode";
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
-import TokenSetManager from "../microclimate/connection/auth/TokenSetManager";
+import Authenticator from "../microclimate/connection/auth/Authenticator";
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
 
@@ -32,7 +32,7 @@ export default async function logOutConnection(connection: Connection): Promise<
 
     // Revoke is not implemented for the implicit flow. Until we switch back to auth_code flow, no revocation can be done.
     // For now, just delete the tokens from the extension's memory
-    await TokenSetManager.setTokensFor(connection.host, undefined);
+    await Authenticator.clearTokensFor(connection.mcUrl);
     const logoutMsg = `Logged out of ${connection.mcUrl}\nUse "Refresh Connection" to log back in.`;
     vscode.window.showInformationMessage(logoutMsg);
     connection.onDisconnect();

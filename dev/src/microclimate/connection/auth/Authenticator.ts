@@ -22,8 +22,8 @@ import * as MCUtil from "../../../MCUtil";
 import Commands from "../../../constants/Commands";
 import PendingAuthentication from "./PendingAuthentication";
 import AuthUtils from "./AuthUtils";
-import TokenSetManager, { ITokenSet } from "./TokenSetManager";
 import Requester from "../../project/Requester";
+import ICPInfoMap from "../ICPInfoMap";
 
 namespace Authenticator {
     // OAuth config
@@ -63,17 +63,17 @@ namespace Authenticator {
      * Throws an error if auth fails for any reason, or if the token response is not as excepted.
      * See references above.
      */
-    export async function authenticate(icpHostname: string): Promise<void> {
-        Log.i("Authenticating against:", icpHostname);
+    export async function authenticate(icpMasterIP: string): Promise<void> {
+        Log.i("Authenticating against:", icpMasterIP);
         const openLoginResponse = await AuthUtils.shouldOpenBrowser();
         if (!openLoginResponse) {
-            throw new Error(`Cancelled logging in to ${icpHostname}`);
+            throw new Error(`Cancelled logging in to ${icpMasterIP}`);
         }
         if (pendingAuth != null) {
             rejectPendingAuth("Previous login cancelled - Multiple concurrent logins.");
         }
 
-        const oidcServerUrl: string = AuthUtils.getOIDCServerURL(icpHostname).toString();
+        const oidcServerUrl: string = AuthUtils.getOIDCServerURL(icpMasterIP).toString();
         Log.d("OIDC server is at " + oidcServerUrl);
 
         Issuer.defaultHttpOptions = {
@@ -104,7 +104,7 @@ namespace Authenticator {
         const authUrl: vscode.Uri = vscode.Uri.parse(authUrlStr);
         vscode.commands.executeCommand(Commands.VSC_OPEN, authUrl);
 
-        pendingAuth = new PendingAuthentication(icpHostname, stateParam, nonceParam, openIDClient);
+        pendingAuth = new PendingAuthentication(icpMasterIP, stateParam, nonceParam, openIDClient);
 
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -165,11 +165,11 @@ namespace Authenticator {
                 expires_at: authCallbackResult.expires_at * 1000,       // s -> ms
             };
 
-            await TokenSetManager.setTokensFor(pendingAuth.hostname, tokenSet);
+            await setTokensFor(pendingAuth.masterIP, tokenSet);
 
             const expiryDate = (new Date(tokenSet.expires_at)).toLocaleString();
             // success!
-            vscode.window.showInformationMessage(`Successfully authenticated against ${pendingAuth.hostname}.` +
+            vscode.window.showInformationMessage(`Successfully authenticated against ${pendingAuth.masterIP}.` +
                 `\nExpires at ${expiryDate}.`);
 
             pendingAuth.resolve();
@@ -192,13 +192,63 @@ namespace Authenticator {
         pendingAuth = undefined;
     }
 
-    export function getTokensetForUrl(url: vscode.Uri): ITokenSet | undefined {
+    ///// TokenSet funcs
+
+    const TOKEN_PREFIX = "token-";
+
+    export function getTokensetFor(url: vscode.Uri): ITokenSet | undefined {
         if (MCUtil.isLocalhost(url.authority)) {
             return undefined;
         }
-        const hostname = MCUtil.getHostnameFromAuthority(url.authority);
-        return TokenSetManager.getTokenSetFor(hostname);
+        const masterIP = ICPInfoMap.getMasterIP(url);
+        if (masterIP == null) {
+            Log.e("No master IP for " + url);
+            return undefined;
+        }
+
+        const key = TOKEN_PREFIX + masterIP;
+        const memento = global.extGlobalState as vscode.Memento;
+        const tokenSet = memento.get<ITokenSet>(key);
+        if (!tokenSet) {
+            Log.i("no token for master:", masterIP);
+            return undefined;
+        }
+        return tokenSet;
     }
+
+    export async function clearTokensFor(ingressUrl: vscode.Uri): Promise<void> {
+        Log.d("clearTokensFor " + ingressUrl);
+        const masterIP = ICPInfoMap.getMasterIP(ingressUrl);
+        if (masterIP == null) {
+            Log.e("No master IP for ingress " + ingressUrl);
+            return;
+        }
+
+        return setTokensFor(masterIP, undefined);
+    }
+
+    async function setTokensFor(masterIP: string, newTokens: ITokenSet | undefined): Promise<void> {
+        const key = TOKEN_PREFIX + masterIP;
+        const memento = global.extGlobalState as vscode.Memento;
+        await memento.update(key, newTokens);
+        if (newTokens != null) {
+            // at the time of writing, expires_in is 12 hours in seconds
+            Log.i(`Updated token for ${masterIP}, new token expires at ${newTokens.expires_at}`);
+        }
+        else {
+            Log.d(`Cleared token for ${masterIP}`);
+        }
+    }
+}
+
+/**
+ * Tokenset received from token endpoint when using the implicit flow.
+ * Other flows may also feature refresh_token, id_token, and scope.
+ */
+export interface ITokenSet {
+    readonly access_token: string;
+    readonly token_type: string;        // expected to be "Bearer"
+    readonly expires_at: number;        // in millis - need to use simple type here so Context can save it - Date doesn't work.
 }
 
 export default Authenticator;

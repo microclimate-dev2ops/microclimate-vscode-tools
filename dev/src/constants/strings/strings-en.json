@@ -58,19 +58,19 @@
         "errUpdatingBuildLog": "Error updating build log: {{- err }}.",
         "logName": "{{ projectName }} - {{ logType }} Log",
         "logNotUpdatingNoConnection": "******** The connection to Microclimate was lost, so this {{ logType }} log is no longer updating.",
-        "logNotUpdatingOther": "******** This {{ logType }} log is no longer updating.",
+        "logNotUpdatingOther": "******** This {{ logType }} log is no longer updating. If you believe this is an error, try opening this build log again.",
         "noLogsToHide": "There are no Microclimate logs open."
     },
 
     "newConnectionCmd": {
-        "enterMicroclimateHost": "Enter the Ingress URL for the Microclimate instance you wish to connect to, eg: \"https://microclimate.1.2.3.4.nip.io\"",
-        "enterMicroclimatePort": "Enter the Port for the local Microclimate instance you want to connect to.",
-        "enterDifferentPortBtn": "Enter a different port",
+        "enterMicroclimateIngress": "Enter the Ingress URL for the Microclimate instance you wish to connect to, eg: \"https://microclimate.1.2.3.4.nip.io\"",
+        "enterMasterIP": "Enter the ICP Master Node IP address for the same ICP instance. See the documentation for more details, or ask your cluster administrator.",
         "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be a positive integer less than 65536.",
         "connectionSucceeded": "New connection to {{- connectionUri }} succeeded. Workspace path is: {{- workspacePath }}.",
         "openWorkspaceBtn": "Open workspace",
         "editConnectionBtn": "Edit",
         "retryConnectionBtn": "Retry",
+        "openUrlBtn": "Open URL",
         "connectFailed": "Connecting to Microclimate at {{- uri }} failed.",
         "connectionAlreadyExists": "Connection already exists at {{- uri }}.",
 
