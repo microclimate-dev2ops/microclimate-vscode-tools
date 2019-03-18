@@ -103,8 +103,8 @@ describe("Microclimate Tools for VSCode basic test", async function() {
     });
 
     it("should have a test socket connection", async function() {
-        const uri = ConnectionManager.instance.connections[0].mcUri.toString();
-        const testSocket = await SocketTestUtil.createTestSocket(uri);
+        const socketUri = ConnectionManager.instance.connections[0].socket.uri;
+        const testSocket = await SocketTestUtil.createTestSocket(socketUri);
         expect(testSocket.connected, "Socket did not connect").to.be.true;
     });
 

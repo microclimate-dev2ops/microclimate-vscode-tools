@@ -24,7 +24,7 @@ import SocketEvents from "./SocketEvents";
  */
 export default class MCSocket {
 
-    private readonly uri: string;
+    public readonly uri: string;
     private readonly socket: SocketIOClient.Socket;
 
     /**
@@ -71,14 +71,6 @@ export default class MCSocket {
             // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
             // .on("projectCreation",       this.onProjectCreatedOrDeleted);
-    }
-
-    public toString(): string {
-        return "MCSocket @ " + this.uri;        // not displayed to user        // non-nls
-    }
-
-    public toJSON(): string {
-        return this.toString();
     }
 
     /**
@@ -188,5 +180,13 @@ export default class MCSocket {
         }
 
         return this.connection.getProjectByID(projectID);
+    }
+
+    public toString(): string {
+        return "MCSocket @ " + this.uri;        // not displayed to user        // non-nls
+    }
+
+    public toJSON(): string {
+        return this.toString();
     }
 }
