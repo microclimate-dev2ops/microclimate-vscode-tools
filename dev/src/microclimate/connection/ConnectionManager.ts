@@ -74,8 +74,7 @@ export default class ConnectionManager {
         return this._connections;
     }
 
-    public async addConnection(connectionData: IConnectionData):
-        Promise<Connection> {
+    public async addConnection(connectionData: IConnectionData): Promise<Connection> {
 
         // all validation that this connection is good must be done by this point
 

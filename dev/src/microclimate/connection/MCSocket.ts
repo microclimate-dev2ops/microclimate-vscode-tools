@@ -25,35 +25,37 @@ import Requester from "../project/Requester";
  */
 export default class MCSocket {
 
-    private readonly uri: string;
+    public readonly url: string;
     private readonly socket: SocketIOClient.Socket;
 
     /**
      * Create a SocketIO connection to the server at the given URI.
-     * Can throw an error!
+     * Can throw an error.
+     *
+     * @param namespace - Socket namespace. Must not start with a slash. Can be the empty string.
      */
     constructor(
         private readonly connection: Connection,
         namespace: string,
     ) {
-        this.uri = connection.mcUrl.toString();
+        this.url = connection.mcUrl.toString();
         if (namespace) {
-            if (!this.uri.endsWith("/")) {
-                this.uri += "/";
+            if (!this.url.endsWith("/")) {
+                this.url += "/";
             }
             if (namespace.startsWith("/")) {
                 namespace = namespace.substring(1, namespace.length);
             }
-            this.uri += namespace;
+            this.url += namespace;
         }
-        Log.i("Creating MCSocket for URI", this.uri);
+        Log.i("Creating MCSocket for URI", this.url);
 
         const options: SocketIOClient.ConnectOpts = {
-            rejectUnauthorized: Requester.shouldRejectUnauthed(this.uri),
+            rejectUnauthorized: Requester.shouldRejectUnauthed(this.url),
         };
 
         try {
-            this.socket = io(this.uri, options);
+            this.socket = io(this.url, options);
             this.socket.connect();
 
             this.socket
@@ -75,17 +77,9 @@ export default class MCSocket {
                 // .on("projectCreation",       this.onProjectCreatedOrDeleted);
         }
         catch (err) {
-            Log.e(`Error initializing socket at ${this.uri}`, err);
+            Log.e(`Error initializing socket at ${this.url}`, err);
             throw err;
         }
-    }
-
-    public toString(): string {
-        return "MCSocket @ " + this.uri;        // not displayed to user        // non-nls
-    }
-
-    public toJSON(): string {
-        return this.toString();
     }
 
     /**
@@ -195,5 +189,13 @@ export default class MCSocket {
         }
 
         return this.connection.getProjectByID(projectID);
+    }
+
+    public toString(): string {
+        return "MCSocket @ " + this.url;        // not displayed to user        // non-nls
+    }
+
+    public toJSON(): string {
+        return this.toString();
     }
 }

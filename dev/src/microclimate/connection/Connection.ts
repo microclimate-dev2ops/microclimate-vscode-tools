@@ -50,7 +50,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public readonly versionStr: string;
 
     public readonly socketNamespace: string;
-    private readonly socket: MCSocket;
+    public readonly socket: MCSocket;
 
     public readonly logManager: MCLogManager;
 

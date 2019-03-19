@@ -26,10 +26,11 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test",
+
                 // Replace below with your local microclimate-workspace
 
                 // workspace when microclimate is built with --dev
-                // "/Users/tim/programs/microclimate/microclimate-workspace/",
+                // "/Users/tim/programs/microclimate/microclimate-workspace/"
 
                 // workspace when using production images
                 "/Users/tim/microclimate-workspace/"
@@ -38,8 +39,8 @@
                 "${workspaceFolder}/dev/out/test/**/*.js"
             ],
             "env": {
-                // "project_types": "node.js",
-                // "test_scope": "extended, restart"
+                "project_types": "node.js",
+                "test_scope": "extended, restart"
             },
             "preLaunchTask": "build"
         }

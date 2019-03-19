@@ -63,7 +63,7 @@ namespace SocketTestUtil {
             type: rawEvent.data[0],
             data: rawEvent.data[1]
         };
-        // Logger.test("onSocketEvent ", event);
+        // Log.t("onSocketEvent", event);
 
         if (expectedSocketEvents.length === 0) {
             return;
@@ -96,6 +96,7 @@ namespace SocketTestUtil {
         if (expectedEvent.eventType === event.type) {
             // check that the event is for the correct project
             if (expectedEvent.projectID != null && expectedEvent.projectID !== event.data.projectID) {
+                // Log.t(`Event does not have correct project ID, expected ${expectedEvent.projectID}, actual ${event.data.projectID}`)
                 return false;
             }
 
@@ -103,7 +104,7 @@ namespace SocketTestUtil {
             if (expectedEvent.expectedData == null) {
                 return true;
             }
-            // Logger.test("Event type matches expected event:", expectedEvent, "actual event:", event);
+            // Log.t("Event type matches expected event:", expectedEvent, "actual event:", event);
 
             for (const key of Object.keys(event.data)) {
                 // Check that the event contains the expected key that it maps to the expected value

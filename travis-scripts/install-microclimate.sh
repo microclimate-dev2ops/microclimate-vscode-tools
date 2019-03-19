@@ -12,13 +12,13 @@
 #*******************************************************************************
 
 if [[ -z "$microclimate_version" ]]; then
-    echo "\$microclimate_version must be set in the environment, eg \"1901\""
+    echo "\$microclimate_version must be set in the environment, eg \"19.01\""
     exit 1
 fi
 
 set -ex
 
-curl -sS https://microclimate-dev2ops.github.io/download/microclimate-${microclimate_version}.zip -o microclimate.zip
+curl -f -sS https://microclimate-dev2ops.github.io/download/microclimate-${microclimate_version}.zip -o microclimate.zip
 unzip -q microclimate.zip
 
 cd microclimate-*/cli
