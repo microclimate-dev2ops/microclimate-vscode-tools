@@ -225,7 +225,7 @@
                 },
                 {
                     "command": "%cmdID_openInBrowser%",
-                    "when": "%isActiveConnection%",
+                    "when": "%isConnection%",
                     "group": "ext.mc.conn.a@0"
                 },
                 {
@@ -372,9 +372,11 @@
         "vscode": "^1.1.29"
     },
     "dependencies": {
+        "@kubernetes/client-node": "^0.8.2",
         "circular-json": "^0.5.9",
         "i18next": "^8.3.0",
         "i18next-node-fs-backend": "^2.1.0",
+        "kubernetes-client": "^6.11.0",
         "openid-client": "^2.4.5",
         "request": "^2.88.0",
         "request-promise-native": "^1.0.5",

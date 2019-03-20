@@ -18,7 +18,7 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ConnectionFactory from "./ConnectionFactory";
 import MCEnvironment from "./MCEnvironment";
-import { newConnectionCmd, newDefaultLocalConnectionCmd } from "../../command/NewConnectionCmd";
+import { newDefaultLocalConnectionCmd, newConnectionCmdNoPrompt } from "../../command/NewConnectionCmd";
 import { IConnectionData, ISaveableConnectionData, ConnectionData } from "./ConnectionData";
 
 export default class ConnectionManager {
@@ -28,7 +28,7 @@ export default class ConnectionManager {
     private readonly _connections: Connection[] = [];
     private readonly listeners: Array<( () => void )> = [];
 
-    public static async init(): Promise<ConnectionManager> {
+public static async init(): Promise<ConnectionManager> {
         if (ConnectionManager._instance != null) {
             Log.e("Multiple ConnectionManager initializations!");
             return ConnectionManager._instance;
@@ -142,7 +142,7 @@ export default class ConnectionManager {
             await this.removeConnection(connection);
 
             // will also add the new Connection to this ConnectionManager
-            const newConnection = await newConnectionCmd(connection.mcUrl);
+            const newConnection = await newConnectionCmdNoPrompt(connection.mcUrl);
             if (newConnection == null) {
                 // should never happen
                 Log.e("Failed to create new connection after verifyReconnect failure");

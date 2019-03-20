@@ -17,7 +17,7 @@ import ProjectState from "../microclimate/project/ProjectState";
 import Log from "../Logger";
 import StartModes from "../constants/StartModes";
 import Requester from "../microclimate/project/Requester";
-import * as MCUtil from "../MCUtil";
+import MCUtil from "../MCUtil";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 

@@ -7,6 +7,7 @@ import Connection from "./Connection";
  * Storing all this data allows us to keep connections and show them in the tree even if we can't contact them - though they won't function.
  */
 export interface IConnectionData {
+    readonly kubeNamespace?: string;
     readonly socketNamespace: string;
     readonly user: string;
     readonly url: vscode.Uri;
@@ -18,6 +19,7 @@ export interface IConnectionData {
  * Same as IConnectionData but the URL is a string. See explanation above.
  */
 export interface ISaveableConnectionData {
+    readonly kubeNamespace?: string;
     readonly socketNamespace: string;
     readonly user: string;
     // has to be a string - not a URI - because otherwise uri.toString() will return [object Object] after loading
@@ -29,17 +31,15 @@ export interface ISaveableConnectionData {
 
 namespace ConnectionData {
     export function convertToSaveable(data: IConnectionData): ISaveableConnectionData {
-        return {
-            socketNamespace: data.socketNamespace,
-            urlString: data.url.toString(),
-            user: data.user,
-            version: data.version,
-            workspacePath: data.workspacePath,
-        };
+        const url = data.url;
+        const result = data;
+        delete (result as any).url;
+        return Object.assign(result, { urlString: url.toString() });
     }
 
     export function getConnectionData(connection: Connection): IConnectionData {
         return {
+            kubeNamespace: connection.kubeNamespace,
             socketNamespace: connection.socketNamespace,
             url: connection.mcUrl,
             version: connection.version,

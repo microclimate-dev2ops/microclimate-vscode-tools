@@ -16,7 +16,7 @@ import * as qs from "querystring";
 import { Issuer } from "openid-client";
 
 import Log from "../../../Logger";
-import * as MCUtil from "../../../MCUtil";
+import MCUtil from "../../../MCUtil";
 // import Requester from "../../project/Requester";
 // import Connection from "../Connection";
 import Commands from "../../../constants/Commands";
@@ -200,7 +200,7 @@ namespace Authenticator {
         if (MCUtil.isLocalhost(url.authority)) {
             return undefined;
         }
-        const masterIP = ICPInfoMap.getMasterIP(url);
+        const masterIP = ICPInfoMap.getMasterHost(url);
         if (masterIP == null) {
             Log.e("No master IP for " + url);
             return undefined;
@@ -218,7 +218,7 @@ namespace Authenticator {
 
     export async function clearTokensFor(ingressUrl: vscode.Uri): Promise<void> {
         Log.d("clearTokensFor " + ingressUrl);
-        const masterIP = ICPInfoMap.getMasterIP(ingressUrl);
+        const masterIP = ICPInfoMap.getMasterHost(ingressUrl);
         if (masterIP == null) {
             Log.e("No master IP for ingress " + ingressUrl);
             return;

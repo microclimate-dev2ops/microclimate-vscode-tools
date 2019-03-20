@@ -52,8 +52,12 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
     else if (resource instanceof Connection) {
         const conn: Connection = resource as Connection;
         if (!conn.isConnected) {
-            vscode.window.showErrorMessage(Translator.t(STRING_NS, "cantOpenDisconnected"));
-            return;
+            const openAnywayBtn = "Open anyway";
+            const response = await vscode.window.showWarningMessage(Translator.t(STRING_NS, "cantOpenDisconnected"), openAnywayBtn);
+
+            if (response !== openAnywayBtn) {
+                return;
+            }
         }
         uriToOpen = conn.mcUrl;
     }

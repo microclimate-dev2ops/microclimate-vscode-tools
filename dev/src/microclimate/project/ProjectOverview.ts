@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import Project from "./Project";
 import Resources from "../../constants/Resources";
-import * as MCUtil from "../../MCUtil";
+import MCUtil from "../../MCUtil";
 import Log from "../../Logger";
 
 // This file does have a bunch of strings that should be translated,

@@ -11,7 +11,7 @@
 
 import * as vscode from "vscode";
 
-import * as MCUtil from "../../MCUtil";
+import MCUtil from "../../MCUtil";
 import ITreeItemAdaptable from "../../view/TreeItemAdaptable";
 import ProjectState from "./ProjectState";
 import ProjectType from "./ProjectType";

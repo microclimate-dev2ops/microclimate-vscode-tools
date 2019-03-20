@@ -12,6 +12,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
+namespace MCUtil {
+
 /**
  * Append toAppend to start, removing the last segment of start if the first segment of toAppend matches it.
  *
@@ -107,3 +109,7 @@ export function getHostnameFromAuthority(authority: string): string {
     }
     return authority.substring(0, colonIndex);
 }
+
+}
+
+export default MCUtil;

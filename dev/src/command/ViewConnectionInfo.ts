@@ -32,20 +32,23 @@ export default async function viewConnectionInfo(connection: Connection): Promis
         connection = selected;
     }
 
-    const username = connection.user || "N/A";
-    const authStatus = getAuthStatus(connection);
+    let msg;
+    if (connection.isICP) {
+        let masterIP = ICPInfoMap.getMasterHost(connection.mcUrl);
+        if (masterIP == null) {
+            Log.e("No master IP for " + connection.mcUrl);
+            masterIP = "Unknown";
+        }
 
-    let masterIP = ICPInfoMap.getMasterIP(connection.mcUrl);
-    if (masterIP == null) {
-        Log.e("No master IP for " + connection.mcUrl);
-        masterIP = "Unknown";
+        msg = `ICP connection ${connection.mcUrl} ` +
+            `Master Node: ${masterIP} ` +
+            `Username: ${connection.user} ` +
+            `Authentication: ${getAuthStatus(connection)} ` +
+            `Workspace: ${connection.workspacePath.fsPath}`;
     }
-
-    const msg = `Connection ${connection.mcUrl} ` +
-        `Master Node: ${masterIP} ` +
-        `Username: ${username} ` +
-        `Authentication: ${authStatus} ` +
-        `Workspace: ${connection.workspacePath.fsPath}`;
+    else {
+        msg = `Local connection ${connection.mcUrl} Workspace: ${connection.workspacePath.fsPath}`;
+    }
 
     return vscode.window.showInformationMessage(msg).then(() => Promise.resolve());
 }

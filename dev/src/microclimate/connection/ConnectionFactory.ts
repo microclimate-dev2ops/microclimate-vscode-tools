@@ -20,10 +20,9 @@ import Log from "../../Logger";
 import Connection from "./Connection";
 import Translator from "../../constants/strings/translator";
 import Commands from "../../constants/Commands";
-import { newConnectionCmd } from "../../command/NewConnectionCmd";
 import ConnectionManager from "./ConnectionManager";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
-import * as MCUtil from "../../MCUtil";
+import MCUtil from "../../MCUtil";
 import Requester from "../project/Requester";
 import MCEnvironment from "./MCEnvironment";
 import Authenticator from "./auth/Authenticator";
@@ -61,16 +60,11 @@ namespace ConnectionFactory {
             Log.w("Connection test failed:", err);
 
             const errMsg = err.message || err.toString();
-            const editBtn = Translator.t(STRING_NS, "editConnectionBtn");
             const retryBtn = Translator.t(STRING_NS, "retryConnectionBtn");
             const openUrlBtn = Translator.t(STRING_NS, "openUrlBtn");
-            vscode.window.showErrorMessage(errMsg, editBtn, retryBtn, openUrlBtn)
+            vscode.window.showErrorMessage(errMsg, retryBtn, openUrlBtn)
             .then( (response) => {
-                if (response === editBtn) {
-                    // start again from the beginning, with the same uri prefilled
-                    return newConnectionCmd(ingressUrl);
-                }
-                else if (response === retryBtn) {
+                if (response === retryBtn) {
                     // try to connect with the same uri
                     return tryAddConnection(ingressUrl);
                 }
@@ -201,12 +195,12 @@ async function testConnection(ingressUrl: vscode.Uri): Promise<Connection> {
     }
 
     // Connection succeeded, which means status code is success - but the response could be anything,
-    // like a 404 or a login page, or something totally unrelated to Microclimate
+    // like a login page, or something totally unrelated to Microclimate
     // If we have to log into ICP, we'll get redirected to OIDC authorize endpoint /oidc/endpoint/OP/authorize
     if (testResponse.statusCode === 401 ||
         testResponse.request.path.toLowerCase().includes("oidc")) {
 
-        const masterNodeIP = ICPInfoMap.getMasterIP(ingressUrl);
+        const masterNodeIP = ICPInfoMap.getMasterHost(ingressUrl);
         if (masterNodeIP == null) {
             // This should never happen
             throw new Error(`No corresponding master node IP was stored for ${ingressUrl}. Please try re-creating the connection.`);

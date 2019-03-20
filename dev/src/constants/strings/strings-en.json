@@ -99,7 +99,7 @@
     "openInBrowserCmd": {
         "canOnlyOpenStartedProjects": "You can only open projects that are Started in the browser.",
         "failedDetermineAppUrl": "Could not determine application URL for {{ projectName }}.",
-        "cantOpenDisconnected": "This connection is Disconnected. You cannot open Microclimate if it is not running."
+        "cantOpenDisconnected": "This connection is Disconnected."
     },
 
     "openLogCmd": {

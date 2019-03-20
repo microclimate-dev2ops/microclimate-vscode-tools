@@ -12,7 +12,7 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import * as MCUtil from "../../MCUtil";
+import MCUtil from "../../MCUtil";
 import ITreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
 import Project from "../project/Project";
 import Endpoints from "../../constants/Endpoints";
@@ -45,6 +45,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public readonly isICP: boolean;
 
     public readonly user: string;
+    public readonly kubeNamespace?: string;
     public readonly workspacePath: vscode.Uri;
     public readonly version: number;
     public readonly versionStr: string;

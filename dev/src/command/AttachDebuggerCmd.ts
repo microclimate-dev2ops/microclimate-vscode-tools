@@ -11,7 +11,7 @@
 
 import * as vscode from "vscode";
 
-import * as MCUtil from "../MCUtil";
+import MCUtil from "../MCUtil";
 import { promptForProject } from "../command/CommandUtil";
 import Resources from "../constants/Resources";
 import Project from "../microclimate/project/Project";

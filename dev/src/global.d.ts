@@ -39,3 +39,35 @@ declare namespace NodeJS {
 declare module "openid-client" {
     export const Issuer: any;
 }
+
+/**
+ * Represents a response from a KubernetesClient.get call
+ */
+declare interface KubeResponse {
+    readonly statusCode: number;
+    readonly body: {
+        readonly kind: string;
+        readonly apiVersion: string;
+        readonly metadata: KubeMetadata;
+        readonly items: KubeItem[];
+    };
+}
+
+declare interface KubeMetadata {
+    readonly name: string;
+    readonly namespace: string;
+    readonly selfLink: string;
+    readonly resourceVersion: string;
+
+    readonly labels: any;
+    readonly annotations: any;
+}
+
+declare interface KubeItem {
+    readonly metadata: KubeMetadata;
+    readonly spec: {
+        rules: any[];
+        tls: any[];
+    },
+    readonly status: any;
+}
