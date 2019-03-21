@@ -20,6 +20,8 @@ import Translator from "./constants/strings/translator";
 import StringNamespaces from "./constants/strings/StringNamespaces";
 import ConnectionManager from "./microclimate/connection/ConnectionManager";
 import Authenticator from "./microclimate/connection/auth/Authenticator";
+import MCUtil from "./MCUtil";
+import { REMOTE_WORKSPACE_DIRNAME, REMOTE_WORKSPACE_URLFILE } from "./microclimate/connection/ConnectionFactory";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -40,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
     catch (err) {
         // This string can't be translated for obvious reasons :)
-        const errmsg = "Error initializing i18next - placeholder strings will be used! " + (err.message || err);        // non-nls
+        const errmsg = "Error initializing i18next - placeholder strings will be used! " + (MCUtil.errToString(err));        // non-nls
         Log.e(errmsg, err);
         vscode.window.showErrorMessage(errmsg);
     }
@@ -121,7 +123,8 @@ const filesToIgnore: string[] = [
     ".license-accept",
     ".logs",
     ".nyc_output",
-    ".projects"
+    ".projects",
+    REMOTE_WORKSPACE_URLFILE,
 ];
 
 // non-nls-section-end
@@ -154,10 +157,12 @@ async function ignoreMCFiles(): Promise<void> {
 function inMCWorkspace(): boolean {
     const wsFolders = vscode.workspace.workspaceFolders;
     if (wsFolders != null) {
-        return wsFolders.some( (folder) => folder.uri.fsPath.endsWith("microclimate-workspace"));       // non-nls
+        return wsFolders.some( (folder) => {
+            const path = folder.uri.fsPath;
+            return path.endsWith("microclimate-workspace") || path.endsWith(REMOTE_WORKSPACE_DIRNAME);
+        });
     }
     else {
         return false;
     }
 }
-

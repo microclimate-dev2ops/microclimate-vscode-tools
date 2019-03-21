@@ -17,7 +17,7 @@ import Log from "../../Logger";
 import Endpoints from "../../constants/Endpoints";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
-import Connection from "./Connection";
+import { Connection } from "./ConnectionExporter";
 import Requester from "../project/Requester";
 
 const STRING_NS = StringNamespaces.CMD_NEW_CONNECTION;
@@ -26,18 +26,18 @@ namespace MCEnvironment {
     // ENV types are inferred from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/portal/server.js
 
     export interface IMCEnvData {
-        devops_available: boolean;
-        editor_url: string;
-        microclimate_version: string;
-        os_platform: string;
-        running_on_icp: boolean;
-        socket_namespace: string;
+        readonly devops_available: boolean;
+        readonly editor_url: string;
+        readonly microclimate_version: string;
+        readonly os_platform: string;
+        readonly running_on_icp: boolean;
+        readonly socket_namespace: string;
 
         // null on local
-        user_string: string;
+        readonly user_string: string;
 
         // Not set on ICP
-        workspace_location?: string;
+        readonly workspace_location?: string;
     }
 
     export async function getEnvData(mcUri: Uri): Promise<IMCEnvData> {
@@ -51,11 +51,16 @@ namespace MCEnvironment {
             Log.d("Status from ENV endpoint is", response.statusCode);
 
             Log.d("ENV body is", response.body);
-            const asMCData = response.body as MCEnvironment.IMCEnvData;
-            if (asMCData == null || asMCData.microclimate_version == null) {
+            const mcEnvData = response.body;
+            if (mcEnvData == null || mcEnvData.microclimate_version == null) {
                 throw new Error(notMicroclimateMsg);
             }
-            return asMCData;
+
+            // Normalize these to "" if they are null or false, so we know they are always strings.
+            mcEnvData.socket_namespace = mcEnvData.socket_namespace || "";
+            mcEnvData.user_string = mcEnvData.user_string || "";
+
+            return mcEnvData as IMCEnvData;
         }
         catch (err) {
             Log.i(`Connection ENV Request fail - ${err}`);

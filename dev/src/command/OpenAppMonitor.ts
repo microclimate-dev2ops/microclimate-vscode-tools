@@ -29,7 +29,7 @@ export default async function openAppMonitorCmd(project: Project): Promise<void>
         project = selected;
     }
 
-    if (project.connection.isICP) {
+    if (project.connection.isICP()) {
         vscode.window.showErrorMessage("App monitor not supported on ICP at this time");
         return;
     }

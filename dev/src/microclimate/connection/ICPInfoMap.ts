@@ -4,6 +4,8 @@ import Log from "../../Logger";
 
 /**
  * Store & load the mappings of ingress URLs to master node IPs.
+ * This is done separately from the Connections because we want it to persist until overwritten with new data,
+ * and there isn't really any reason this info would change, even if microclimate is reinstalled.
  */
 namespace ICPInfoMap {
     export async function updateICPInfoMap(ingressUrl_: vscode.Uri, masterHost: string): Promise<void> {

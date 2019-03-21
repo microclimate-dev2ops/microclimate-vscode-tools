@@ -12,7 +12,7 @@
 import * as vscode from "vscode";
 
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Translator from "../constants/strings/translator";

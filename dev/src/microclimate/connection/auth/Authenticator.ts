@@ -18,7 +18,7 @@ import { Issuer } from "openid-client";
 import Log from "../../../Logger";
 import MCUtil from "../../../MCUtil";
 // import Requester from "../../project/Requester";
-// import Connection from "../Connection";
+// import { Connection } from "../ConnectionExporter";
 import Commands from "../../../constants/Commands";
 import PendingAuthentication from "./PendingAuthentication";
 import AuthUtils from "./AuthUtils";

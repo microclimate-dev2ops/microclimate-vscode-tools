@@ -14,7 +14,6 @@ import * as vscode from "vscode";
 import Project from "./Project";
 import Resources from "../../constants/Resources";
 import MCUtil from "../../MCUtil";
-import Log from "../../Logger";
 
 // This file does have a bunch of strings that should be translated,
 // but the stringfinder is not smart enough to pick them out from the regular html strings. So, do this file by hand.
@@ -132,7 +131,7 @@ export function generateHtml(project: Project): string {
 
 function getStylesheetPath(): string {
     const cssPath = resourceScheme + Resources.getCss("project-overview.css");
-    Log.d("stylesheet path is", cssPath);
+    // Log.d("stylesheet path is", cssPath);
     return cssPath;
 }
 

@@ -14,7 +14,7 @@ import * as vscode from "vscode";
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 import Endpoints from "../constants/Endpoints";
 
 /**

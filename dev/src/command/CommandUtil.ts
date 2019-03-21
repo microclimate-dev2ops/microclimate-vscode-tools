@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import Log from "../Logger";
 import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import ProjectState from "../microclimate/project/ProjectState";
 
@@ -100,7 +100,7 @@ export function createCommands(): vscode.Disposable[] {
  * @param acceptableStates - If at least one state is passed, only projects in one of these states will be presented to the user.
  */
 export async function promptForProject(...acceptableStates: ProjectState.AppStates[]): Promise<Project | undefined> {
-    const project = await promptForResourceInner(false, true, false, ...acceptableStates);
+    const project = await promptForResourceInner(false, true, false, false, ...acceptableStates);
     if (project instanceof Project) {
         return project as Project;
     }
@@ -113,16 +113,8 @@ export async function promptForProject(...acceptableStates: ProjectState.AppStat
     return undefined;
 }
 
-export async function promptForConnection(activeOnly: boolean): Promise<Connection | undefined> {
-    if (ConnectionManager.instance.connections.length === 1) {
-        const onlyConnection = ConnectionManager.instance.connections[0];
-        if (onlyConnection.isConnected || !activeOnly) {
-            return onlyConnection;
-        }
-        // else continue to promptForResource, which will report if there are no suitable connections.
-    }
-
-    const connection = await promptForResourceInner(true, false, activeOnly);
+export async function promptForConnection(activeOnly: boolean, icpOnly: boolean = false): Promise<Connection | undefined> {
+    const connection = await promptForResourceInner(true, false, activeOnly, icpOnly);
     if (connection instanceof Connection) {
         return connection as Connection;
     }
@@ -135,19 +127,21 @@ export async function promptForConnection(activeOnly: boolean): Promise<Connecti
     return undefined;
 }
 
-export async function promptForResource(activeConnectionsOnly: boolean, ...acceptableStates: ProjectState.AppStates[]):
+export async function promptForResource(activeConnectionsOnly: boolean, icpConnectionsOnly: boolean, ...acceptableStates: ProjectState.AppStates[]):
                                         Promise<Project | Connection | undefined> {
 
-    return promptForResourceInner(true, true, activeConnectionsOnly, ...acceptableStates);
+    return promptForResourceInner(true, true, activeConnectionsOnly, icpConnectionsOnly, ...acceptableStates);
 }
 
 /**
  * If !includeConnections, activeConnectionsOnly is ignored.
  * If !includeProjects, acceptableStates is ignored.
  */
-async function promptForResourceInner(includeConnections: boolean, includeProjects: boolean, activeConnectionsOnly: boolean,
-                                      ...acceptableStates: ProjectState.AppStates[]):
-                                      Promise<Project | Connection | undefined> {
+async function promptForResourceInner(
+    includeConnections: boolean, includeProjects: boolean,
+    activeConnectionsOnly: boolean, icpConnectionsOnly: boolean,
+    ...acceptableStates: ProjectState.AppStates[]):
+    Promise<Project | Connection | undefined> {
 
     if (!includeConnections && !includeProjects) {
         // One of these must always be set
@@ -167,14 +161,18 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
     const choices: vscode.QuickPickItem[] = [];
 
     const connections = ConnectionManager.instance.connections;
-    if (includeConnections) {
-        if (activeConnectionsOnly) {
-            choices.push(...(connections.filter( (conn) => conn.isConnected)));
+    choices.push(...(connections.filter((connection) => {
+        if (includeConnections) {
+            if (activeConnectionsOnly && !connection.isConnected) {
+                return false;
+            }
+            if (icpConnectionsOnly) {
+                return connection.isICP();
+            }
+            return true;
         }
-        else {
-            choices.push(...connections);
-        }
-    }
+        return false;
+    })));
 
     if (includeProjects) {
         // for now, assume if they want Started, they also accept Debugging. This may change.
@@ -207,7 +205,14 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
         return undefined;
     }
 
-    const selection = await vscode.window.showQuickPick(choices, { canPickMany: false, /*ignoreFocusOut: choices.length !== 0*/ });
+    let selection;
+    if (choices.length === 1) {
+        selection = choices[0];
+    }
+    else {
+        selection = await vscode.window.showQuickPick(choices, { canPickMany: false, /*ignoreFocusOut: choices.length !== 0*/ });
+    }
+
     if (selection == null) {
         // user cancelled
         return undefined;

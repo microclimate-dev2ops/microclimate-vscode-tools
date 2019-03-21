@@ -14,7 +14,7 @@ import * as vscode from "vscode";
 import Project from "./Project";
 import Log from "../../Logger";
 import ProjectType from "./ProjectType";
-import Connection from "../connection/Connection";
+import { Connection } from "../connection/ConnectionExporter";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Translator from "../../constants/strings/translator";
 

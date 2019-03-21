@@ -10,7 +10,7 @@
  *******************************************************************************/
 
 import { Uri } from "vscode";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 
 // non-nls-file
 

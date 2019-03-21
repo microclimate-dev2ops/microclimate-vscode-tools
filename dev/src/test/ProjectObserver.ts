@@ -12,7 +12,7 @@
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Log from "../Logger";
 import ProjectState from "../microclimate/project/ProjectState";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 
 interface IProjectCreationAwaiting {
     projectName: string;
@@ -29,7 +29,7 @@ interface IProjectStateAwaiting {
 export default class ProjectObserver {
 
     private projectPendingState: IProjectStateAwaiting | undefined;
-    private projectsPendingCreation: IProjectCreationAwaiting[] = [];
+    private readonly projectsPendingCreation: IProjectCreationAwaiting[] = [];
 
     private static _instance: ProjectObserver;
 
@@ -57,7 +57,7 @@ export default class ProjectObserver {
         }, 30000);
     }
 
-    private onChange = async () => {
+    private readonly onChange = async () => {
 
         const projects = await this.connection.getProjects();
         // Check if any of the projects pending creation have been created.

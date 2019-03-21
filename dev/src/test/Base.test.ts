@@ -21,7 +21,7 @@ import SocketTestUtil from "./SocketTestUtil";
 import ProjectObserver from "./ProjectObserver";
 import TestConfig from "./TestConfig";
 import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 import TestUtil from "./TestUtil";
 
 const extensionID = "IBM.microclimate-tools";

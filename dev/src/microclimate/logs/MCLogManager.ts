@@ -11,7 +11,7 @@
 
 import AppLog from "./AppLog";
 import BuildLog from "./BuildLog";
-import Connection from "../connection/Connection";
+import { Connection } from "../connection/ConnectionExporter";
 // Not to be confused with the other log classes :)
 import Log from "../../Logger";
 import MCLog from "./MCLog";

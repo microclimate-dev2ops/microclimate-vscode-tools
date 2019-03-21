@@ -12,7 +12,7 @@
 import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 import { promptForResource } from "./CommandUtil";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import { Log } from "../Logger";
@@ -25,7 +25,7 @@ const STRING_NS = StringNamespaces.CMD_OPEN_IN_BROWSER;
 export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
     Log.d("OpenInBrowserCmd invoked");
     if (resource == null) {
-        const selected = await promptForResource(true, ProjectState.AppStates.STARTED);
+        const selected = await promptForResource(false, false, ProjectState.AppStates.STARTED);
         if (selected == null) {
             Log.d("User cancelled prompt for resource");
             // user cancelled

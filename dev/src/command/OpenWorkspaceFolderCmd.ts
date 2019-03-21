@@ -12,7 +12,7 @@
 import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 import { promptForResource } from "./CommandUtil";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
@@ -22,7 +22,7 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 export default async function openWorkspaceFolderCmd(resource: Project | Connection): Promise<void> {
     Log.d(`Go to folder command invoked on ${resource}`);
     if (resource == null) {
-        const selected = await promptForResource(false);
+        const selected = await promptForResource(false, false);
         if (selected == null) {
             Log.d("User cancelled prompt for resource");
             // user cancelled

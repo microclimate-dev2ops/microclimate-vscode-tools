@@ -26,26 +26,21 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Requester from "../project/Requester";
 import MCEnvironment from "./MCEnvironment";
-import Commands from "../../constants/Commands";
 import { IConnectionData } from "./ConnectionData";
+import { ICPConnection } from "./ConnectionExporter";
 
+// Do not import this directly! Use the ConnectionExporter
 export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
-
-    private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";       // must match package.nls.json    // non-nls
-    private static readonly CONTEXT_SUFFIX_ACTIVE:  string = "active";     // non-nls
-    private static readonly CONTEXT_SUFFIX_ICP:     string = "icp";        // non-nls
 
     /**
      *  For ICP connections, this is the INGRESS url.
      */
     public readonly mcUrl: vscode.Uri;
-    // public readonly masterIP: string;
+
     private readonly projectsApiUrl: vscode.Uri;
     public readonly host: string;
-    public readonly isICP: boolean;
 
     public readonly user: string;
-    public readonly kubeNamespace?: string;
     public readonly workspacePath: vscode.Uri;
     public readonly version: number;
     public readonly versionStr: string;
@@ -54,7 +49,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public readonly socket: MCSocket;
 
     public readonly logManager: MCLogManager;
-
     // Has this connection EVER connected to its Microclimate instance
     private hasConnected: boolean = false;
     // Is this connection CURRENTLY connected to its Microclimate instance
@@ -79,33 +73,23 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.socket = new MCSocket(this, connectionData.socketNamespace);
         this.logManager = new MCLogManager(this);
         this.host = MCUtil.getHostnameFromAuthority(this.mcUrl.authority);
-        this.isICP = !MCUtil.isLocalhost(this.host);
+
         this.workspacePath = vscode.Uri.file(connectionData.workspacePath);
         this.versionStr = MCEnvironment.getVersionAsString(connectionData.version);
-
-        // QuickPickItem
         this.label = this.getTreeItemLabel();
+
         // this.description = this.workspacePath.fsPath.toString();
         Log.i(`Created new Connection @ ${this}, workspace ${this.workspacePath}`);
         DebugUtils.cleanDebugLaunchConfigsFor(this);
     }
 
-    public async destroy(skipLogout: boolean = false): Promise<void> {
+    public async destroy(_isRefresh: boolean = false): Promise<void> {
         Log.d("Destroy connection " + this);
-
-        // logout only necessary (and posssible) for icp connections
-        const logoutPromise = this.isICP && !skipLogout ?
-            vscode.commands.executeCommand(Commands.LOGOUT_CONNECTION).then(() => Promise.resolve()) :
-            Promise.resolve();
 
         return Promise.all([
             this.logManager.onConnectionDisconnect(),
             this.socket.destroy(),
-            logoutPromise,
-        ])
-        .then( () => {
-            Log.d("Destroyed " + this);
-        });
+        ]).then(() => Log.d("Destroyed " + this));
     }
 
     public toString(): string {
@@ -188,7 +172,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         }
         catch (err) {
             Log.e(`Error updating projects list from ${this.projectsApiUrl}:`, err);
-            vscode.window.showErrorMessage(`Error updating projects list from ${this.mcUrl}: ${err.message || err}`);
+            vscode.window.showErrorMessage(`Error updating projects list from ${this.mcUrl}: ${MCUtil.errToString(err)}`);
             this.onDisconnect();
             return this.projects;
         }
@@ -277,14 +261,11 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         return `${this.mcUrl.authority} • ${this.versionStr}`;
     }
 
-    private getContextID(): string {
-        const SEP = ".";
-        let contextID = Connection.CONTEXT_ID;
+    protected getContextID(): string {
+        // These strings much match the regex in package.nls.json
+        let contextID = "ext.mc.connectionItem";
         if (this.connected) {
-            contextID += SEP + Connection.CONTEXT_SUFFIX_ACTIVE;
-        }
-        if (this.isICP) {
-            contextID += SEP + Connection.CONTEXT_SUFFIX_ICP;
+            contextID += ".active";
         }
         return contextID;
     }
@@ -297,5 +278,9 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         // }
         this.needProjectUpdate = true;
         this.getProjects();
+    }
+
+    public isICP(): this is ICPConnection {
+        return (this as unknown as ICPConnection).kubeNamespace != null;
     }
 }

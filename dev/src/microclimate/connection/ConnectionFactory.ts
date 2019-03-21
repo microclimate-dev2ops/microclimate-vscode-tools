@@ -17,7 +17,7 @@ import * as request from "request-promise-native";
 import * as reqErrors from "request-promise-native/errors";
 
 import Log from "../../Logger";
-import Connection from "./Connection";
+import { Connection } from "./ConnectionExporter";
 import Translator from "../../constants/strings/translator";
 import Commands from "../../constants/Commands";
 import ConnectionManager from "./ConnectionManager";
@@ -39,9 +39,11 @@ namespace ConnectionFactory {
      * If it fails, display a message to the user and allow them to either try to connect again with the same info,
      * or start the 'wizard' from the beginning to enter a new url.
      *
+     * @param kubeNamespace - Set iff this is an ICP connection
+     *
      * Should handle and display errors, and never throw an error.
      */
-    export async function tryAddConnection(ingressUrl: vscode.Uri): Promise<Connection | undefined> {
+    export async function tryAddConnection(ingressUrl: vscode.Uri, kubeNamespace?: string): Promise<Connection | undefined> {
 
         Log.i("TryAddConnection to:", ingressUrl);
 
@@ -53,13 +55,13 @@ namespace ConnectionFactory {
 
         let newConnection: Connection;
         try {
-            newConnection = await testConnection(ingressUrl);
+            newConnection = await testConnection(ingressUrl, kubeNamespace);
             Log.d("TestConnection success to " + newConnection.mcUrl);
         }
         catch (err) {
             Log.w("Connection test failed:", err);
 
-            const errMsg = err.message || err.toString();
+            const errMsg = MCUtil.errToString(err);
             const retryBtn = Translator.t(STRING_NS, "retryConnectionBtn");
             const openUrlBtn = Translator.t(STRING_NS, "openUrlBtn");
             vscode.window.showErrorMessage(errMsg, retryBtn, openUrlBtn)
@@ -99,17 +101,18 @@ namespace ConnectionFactory {
         Log.i("Re-add connection", connectionData);
         let connection: Connection;
         try {
-            connection = await testConnection(connectionData.url);
+            connection = await testConnection(connectionData.url, connectionData.kubeNamespace);
         }
         catch (err) {
             // This is fine - the Microclimate instance became unreachable while VS Code was closed, or we have to re-authenticate
             // Still show it in the tree, but as Disconnected
             Log.i("Failed to re-add connection the normal way, adding as disconnected. err:", err);
 
-            connection = await ConnectionManager.instance.addConnection(connectionData);
+            const isICP = connectionData.kubeNamespace != null;
+            connection = await ConnectionManager.instance.addConnection(isICP, connectionData);
             connection.onDisconnect();
 
-            const errMsg = err.message || err.toString();
+            const errMsg = MCUtil.errToString(err);
             const retryBtn = Translator.t(STRING_NS, "retryConnectionBtn");
             const openUrlBtn = Translator.t(STRING_NS, "openUrlBtn");
 
@@ -128,7 +131,7 @@ namespace ConnectionFactory {
 }
 
 // Return value resolves to a user-friendly message or error, ie "connection to $url succeeded"
-async function testConnection(ingressUrl: vscode.Uri): Promise<Connection> {
+async function testConnection(ingressUrl: vscode.Uri, kubeNamespace?: string): Promise<Connection> {
 
     const rqOptions: request.RequestPromiseOptions = {
         json: true,
@@ -137,6 +140,8 @@ async function testConnection(ingressUrl: vscode.Uri): Promise<Connection> {
         rejectUnauthorized: Requester.shouldRejectUnauthed(ingressUrl.toString()),
     };
 
+    const isICP: boolean = kubeNamespace != null;
+
     const tokenset = Authenticator.getTokensetFor(ingressUrl);
     if (tokenset != null) {
         Log.d("Sending auth token with connect request");
@@ -144,7 +149,7 @@ async function testConnection(ingressUrl: vscode.Uri): Promise<Connection> {
             bearer: tokenset.access_token
         };
     }
-    else if (!MCUtil.isLocalhost(ingressUrl.authority)) {
+    else if (!isICP) {
         Log.d("No auth token available for remote host, auth will be required");
     }
 
@@ -155,7 +160,7 @@ async function testConnection(ingressUrl: vscode.Uri): Promise<Connection> {
         const connectRequestPromise: request.RequestPromise = request.get(ingressUrl.toString(), rqOptions);
 
         // For remote, show a connecting-in-progress message. Localhost is too fast for this to be useful.
-        if (!MCUtil.isLocalhost(ingressUrl.authority)) {
+        if (isICP) {
             testResponse = await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: `Connecting to ${ingressUrl.toString()}`
@@ -200,27 +205,19 @@ async function testConnection(ingressUrl: vscode.Uri): Promise<Connection> {
     if (testResponse.statusCode === 401 ||
         testResponse.request.path.toLowerCase().includes("oidc")) {
 
-        const masterNodeIP = ICPInfoMap.getMasterHost(ingressUrl);
-        if (masterNodeIP == null) {
+        const masterHost = ICPInfoMap.getMasterHost(ingressUrl);
+        if (masterHost == null) {
             // This should never happen
             throw new Error(`No corresponding master node IP was stored for ${ingressUrl}. Please try re-creating the connection.`);
         }
         Log.d("Authentication is required");
         // will throw if auth fails
-        await Authenticator.authenticate(masterNodeIP);
+        await Authenticator.authenticate(masterHost);
         Log.d("Authentication completed");
     }
 
     // Auth either was not necessary, or suceeded above - then there will be a token that this request can use
-    const envData = await MCEnvironment.getEnvData(ingressUrl);
-    return onSuccessfulConnection(ingressUrl, envData);
-}
-
-/**
- * Validate that the MC version connected to is new enough,
- * then pass the MC info to one of either the new Local or ICP connection handlers.
- */
-async function onSuccessfulConnection(mcUrl: vscode.Uri, mcEnvData: MCEnvironment.IMCEnvData): Promise<Connection> {
+    const mcEnvData = await MCEnvironment.getEnvData(ingressUrl);
     Log.i("Microclimate ENV data:", mcEnvData);
 
     const rawVersion: string = mcEnvData.microclimate_version;
@@ -230,42 +227,80 @@ async function onSuccessfulConnection(mcUrl: vscode.Uri, mcEnvData: MCEnvironmen
     }
 
     // check if version is good
-    const versionNum = MCEnvironment.getVersionNumber(mcUrl.toString(), mcEnvData);
+    const versionNum = MCEnvironment.getVersionNumber(ingressUrl.toString(), mcEnvData);
+    const workspacePath = await getWorkspacePath(ingressUrl, mcEnvData);
 
-    let workspacePath: string;
-    if (mcEnvData.running_on_icp) {
-        const dummyWorkspace = path.join(os.homedir(), "microclimate-dummy-workspace");
-        if (!fs.existsSync(dummyWorkspace)) {
-            Log.i("Creating workspace: " + dummyWorkspace);
-            fs.mkdirSync(dummyWorkspace, { recursive: true });
-        }
-        workspacePath = dummyWorkspace;
-    }
-    else {
-        const rawWorkspace: string | undefined = mcEnvData.workspace_location;
-
-        Log.d("rawWorkspace from Microclimate is", rawWorkspace);
-        if (rawWorkspace == null) {
-            Log.e("Local Microclimate did not provide workspace. Data provided is:", mcEnvData);
-            throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
-        }
-        else if (!fs.existsSync(rawWorkspace)) {
-            throw new Error(`Workspace directory does not exist. Path is "${rawWorkspace}"`);
-        }
-        workspacePath = rawWorkspace;
-    }
-
-    // might be something like null or false
-    const user = mcEnvData.user_string || "";
-    const socketNamespace = mcEnvData.socket_namespace || "";
-
-    return ConnectionManager.instance.addConnection({
-        socketNamespace,
-        user,
-        url: mcUrl,
+    return ConnectionManager.instance.addConnection(isICP, {
+        kubeNamespace,
+        socketNamespace: mcEnvData.socket_namespace,
+        user: mcEnvData.user_string,
+        url: ingressUrl,
         version: versionNum,
         workspacePath,
     });
+}
+
+export const REMOTE_WORKSPACE_DIRNAME = `microclimate-remote-workspace`;
+export const REMOTE_WORKSPACE_URLFILE = `.microclimate-url`;
+const URLFILE_ENCODING = "utf8";
+
+async function getWorkspacePath(mcUrl: vscode.Uri, mcEnvData: MCEnvironment.IMCEnvData): Promise<string> {
+    if (!mcEnvData.running_on_icp) {
+        const workspace: string | undefined = mcEnvData.workspace_location;
+
+        Log.d("workspace from Microclimate is", workspace);
+        if (workspace == null) {
+            Log.e("Local Microclimate did not provide workspace. Data provided is:", mcEnvData);
+            throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
+        }
+        else if (!fs.existsSync(workspace)) {
+            throw new Error(`Workspace directory does not exist. Path is "${workspace}"`);
+        }
+        return workspace;
+    }
+
+    // remote ws location could be a user setting
+    const remoteWorkspace = path.join(os.homedir(), REMOTE_WORKSPACE_DIRNAME);
+    // we write the ingressUrl to this file to track the Microclimate instance that the workspace maps to
+    const mcUrlFile = path.join(remoteWorkspace, REMOTE_WORKSPACE_URLFILE);
+    let createWorkspace = true;
+    if (fs.existsSync(remoteWorkspace)) {
+        Log.d(`Remote workspace ${remoteWorkspace} already exists`);
+
+        let wipeWorkspace = true;
+        if (fs.existsSync(mcUrlFile)) {
+            const workspaceMcUrl = fs.readFileSync(mcUrlFile).toString(URLFILE_ENCODING);
+            if (workspaceMcUrl !== mcUrl.toString()) {
+                const positiveResponse = "Yes";
+                const res = await vscode.window.showInformationMessage(
+                    `${remoteWorkspace} already exists, but was used with a different Microclimate instance, ${workspaceMcUrl}. ` +
+                    `The contents of this directory will be deleted. Are you sure you want to proceed?`,
+                    { modal: true }, positiveResponse
+                );
+
+                if (res !== positiveResponse) {
+                    throw new Error("Cancelled");
+                }
+            }
+            else {
+                Log.d("Workspace's mcUrl matches previous, leaving contents intact");
+                createWorkspace = false;
+                wipeWorkspace = false;
+            }
+        }
+
+        if (wipeWorkspace) {
+            Log.i("Deleting contents of remote workspace");
+            fs.unlinkSync(remoteWorkspace);
+        }
+    }
+    if (createWorkspace) {
+        Log.i("Creating remote workspace");
+        fs.mkdirSync(remoteWorkspace);
+        fs.writeFileSync(mcUrlFile, mcUrl.toString(), { encoding: URLFILE_ENCODING });
+    }
+
+    return remoteWorkspace;
 }
 
 /**

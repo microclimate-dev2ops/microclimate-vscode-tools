@@ -15,7 +15,7 @@ import MCUtil from "../../MCUtil";
 import ITreeItemAdaptable from "../../view/TreeItemAdaptable";
 import ProjectState from "./ProjectState";
 import ProjectType from "./ProjectType";
-import Connection from "../connection/Connection";
+import { Connection } from "../connection/ConnectionExporter";
 import Log from "../../Logger";
 import Commands from "../../constants/Commands";
 import DebugUtils from "./DebugUtils";
@@ -312,7 +312,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
     private tryRefreshProjectInfoPage(): void {
         if (this.activeProjectInfo != null) {
-            Log.d("Refreshing projectinfo");
+            // Log.d("Refreshing projectinfo");
             refreshProjectOverview(this.activeProjectInfo, this);
         }
     }

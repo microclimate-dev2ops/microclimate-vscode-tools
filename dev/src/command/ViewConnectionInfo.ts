@@ -13,9 +13,8 @@ import * as vscode from "vscode";
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
-import Connection from "../microclimate/connection/Connection";
+import { ICPConnection, Connection } from "../microclimate/connection/ConnectionExporter";
 import Authenticator from "../microclimate/connection/auth/Authenticator";
-import ICPInfoMap from "../microclimate/connection/ICPInfoMap";
 
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
@@ -23,7 +22,7 @@ import ICPInfoMap from "../microclimate/connection/ICPInfoMap";
 export default async function viewConnectionInfo(connection: Connection): Promise<void> {
     Log.d("viewConnectionInfo");
     if (connection == null) {
-        const selected = await promptForConnection(true);
+        const selected = await promptForConnection(false);
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
@@ -33,18 +32,15 @@ export default async function viewConnectionInfo(connection: Connection): Promis
     }
 
     let msg;
-    if (connection.isICP) {
-        let masterIP = ICPInfoMap.getMasterHost(connection.mcUrl);
-        if (masterIP == null) {
-            Log.e("No master IP for " + connection.mcUrl);
-            masterIP = "Unknown";
-        }
+    if (connection.isICP()) {
+        const icpConnection = connection as ICPConnection;
 
-        msg = `ICP connection ${connection.mcUrl} ` +
-            `Master Node: ${masterIP} ` +
-            `Username: ${connection.user} ` +
-            `Authentication: ${getAuthStatus(connection)} ` +
-            `Workspace: ${connection.workspacePath.fsPath}`;
+        msg = `ICP Connection ${icpConnection.mcUrl} ` +
+            `Master Node: ${icpConnection.masterHost} ` +
+            `Kube Namespace: ${icpConnection.kubeNamespace} ` +
+            `Username: ${icpConnection.user} ` +
+            `Authentication: ${getAuthStatus(icpConnection)} ` +
+            `Workspace: ${icpConnection.workspacePath.fsPath}`;
     }
     else {
         msg = `Local connection ${connection.mcUrl} Workspace: ${connection.workspacePath.fsPath}`;
@@ -53,11 +49,7 @@ export default async function viewConnectionInfo(connection: Connection): Promis
     return vscode.window.showInformationMessage(msg).then(() => Promise.resolve());
 }
 
-function getAuthStatus(connection: Connection): string {
-    if (!connection.isICP) {
-        return "N/A";
-    }
-
+function getAuthStatus(connection: ICPConnection): string {
     const tokenset = Authenticator.getTokensetFor(connection.mcUrl);
     if (tokenset == null) {
         return "Not authenticated";

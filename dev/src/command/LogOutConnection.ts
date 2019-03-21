@@ -9,33 +9,27 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import * as vscode from "vscode";
+// import * as vscode from "vscode";
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
-import Connection from "../microclimate/connection/Connection";
-import Authenticator from "../microclimate/connection/auth/Authenticator";
+import { ICPConnection } from "../microclimate/connection/ConnectionExporter";
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
 
-export default async function logOutConnection(connection: Connection): Promise<void> {
+export default async function logOutConnection(connection: ICPConnection): Promise<void> {
     Log.d("logOutConnection");
     if (connection == null) {
-        const selected = await promptForConnection(true);
+        const selected = await promptForConnection(true, true);
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
             return;
         }
-        connection = selected;
+        connection = selected as ICPConnection;
     }
 
-    // Revoke is not implemented for the implicit flow. Until we switch back to auth_code flow, no revocation can be done.
-    // For now, just delete the tokens from the extension's memory
-    await Authenticator.clearTokensFor(connection.mcUrl);
-    const logoutMsg = `Logged out of ${connection.mcUrl}\nUse "Refresh Connection" to log back in.`;
-    vscode.window.showInformationMessage(logoutMsg);
-    connection.onDisconnect();
+    return connection.logout();
 
     /*
     try {
@@ -56,8 +50,7 @@ export default async function logOutConnection(connection: Connection): Promise<
             err = err.error;
         }
         Log.e("Error logging out", err);
-        const errMsg = err.error_description || err.error || err.message || err.toString();
+        const errMsg = MCUtil.errToString(err, true);
         vscode.window.showErrorMessage("Error logging out: " + errMsg);
     }*/
-    Log.d("Done logging out");
 }

@@ -11,7 +11,7 @@
 
 import * as io from "socket.io-client";
 
-import Connection from "./Connection";
+import { Connection } from "./ConnectionExporter";
 import Project from "../project/Project";
 import Log from "../../Logger";
 import Validator from "../project/Validator";

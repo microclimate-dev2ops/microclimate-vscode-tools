@@ -19,6 +19,7 @@ import Translator from "../../constants/strings/translator";
 import StartModes from "../../constants/StartModes";
 import attachDebuggerCmd from "../../command/AttachDebuggerCmd";
 import Resources from "../../constants/Resources";
+import MCUtil from "../../MCUtil";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -56,7 +57,7 @@ export default class ProjectPendingRestart {
 
     // This promise is resolved by calling resolveRestartEvent when this project receives the projectRestartResult event
     // The restart cannot complete until this promise resolves.
-    private restartEventPromise: Promise<void>;
+    private readonly restartEventPromise: Promise<void>;
     // Like resolve above, also set in the constructor. Will never be undefined.
     private resolveRestartEvent: (() => void) | undefined;
 
@@ -158,7 +159,7 @@ export default class ProjectPendingRestart {
         catch (err) {
             // attachDebuggerCmd shouldn't throw/reject, but just in case:
             Log.w("Debugger attach failed or was cancelled by user", err);
-            const errMsg = err.message || err;
+            const errMsg = MCUtil.errToString(err);
             vscode.window.showErrorMessage(errMsg);
         }
     }

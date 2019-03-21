@@ -110,6 +110,14 @@ export function getHostnameFromAuthority(authority: string): string {
     return authority.substring(0, colonIndex);
 }
 
+export function errToString(err: any, isOidc: boolean = false): string {
+    if (isOidc) {
+        return err.error_description || err.error || err.message || err.toString();
+    }
+
+    return err.message || err.error || err.toString();
+}
+
 }
 
 export default MCUtil;

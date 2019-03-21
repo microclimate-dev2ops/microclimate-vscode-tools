@@ -199,7 +199,7 @@ namespace Requester {
             rejectUnauthorized: shouldRejectUnauthed(url),
         };
 
-        if (project.connection.isICP) {
+        if (project.connection.isICP()) {
             const tokenset = Authenticator.getTokensetFor(url);
             if (tokenset != null) {
                 Log.d("Sending auth token with request");

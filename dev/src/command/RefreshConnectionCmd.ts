@@ -13,7 +13,7 @@
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 // import Translator from "../constants/strings/translator";
 // import StringNamespaces from "../constants/strings/StringNamespaces";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";

@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import Log from "../../Logger";
 import Endpoints from "../../constants/Endpoints";
-import Connection from "../connection/Connection";
+import { Connection } from "../connection/ConnectionExporter";
 import MCLog from "./MCLog";
 import Translator from "../../constants/strings/translator";
 import Requester from "../project/Requester";

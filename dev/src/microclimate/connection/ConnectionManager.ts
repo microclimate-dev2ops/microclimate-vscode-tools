@@ -11,15 +11,15 @@
 
 import * as vscode from "vscode";
 
-import Connection from "./Connection";
 import Log from "../../Logger";
 import Settings from "../../constants/Settings";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ConnectionFactory from "./ConnectionFactory";
 import MCEnvironment from "./MCEnvironment";
-import { newDefaultLocalConnectionCmd, newConnectionCmdNoPrompt } from "../../command/NewConnectionCmd";
+import { newDefaultLocalConnectionCmd, newConnectionCmd } from "../../command/NewConnectionCmd";
 import { IConnectionData, ISaveableConnectionData, ConnectionData } from "./ConnectionData";
+import { Connection, ICPConnection } from "./ConnectionExporter";
 
 export default class ConnectionManager {
 
@@ -28,7 +28,7 @@ export default class ConnectionManager {
     private readonly _connections: Connection[] = [];
     private readonly listeners: Array<( () => void )> = [];
 
-public static async init(): Promise<ConnectionManager> {
+    public static async init(): Promise<ConnectionManager> {
         if (ConnectionManager._instance != null) {
             Log.e("Multiple ConnectionManager initializations!");
             return ConnectionManager._instance;
@@ -74,11 +74,22 @@ public static async init(): Promise<ConnectionManager> {
         return this._connections;
     }
 
-    public async addConnection(connectionData: IConnectionData): Promise<Connection> {
+    /**
+     * Create a connection from the given data, wait for it to be ready, and save it.
+     * This is the only place from which we should be calling `new Connection`.
+     */
+    public async addConnection(isICP: boolean, connectionData: IConnectionData): Promise<Connection> {
 
         // all validation that this connection is good must be done by this point
 
-        const newConnection: Connection = new Connection(connectionData);
+        let newConnection: Connection;
+        if (isICP) {
+            newConnection = new ICPConnection(connectionData);
+            await (newConnection as ICPConnection).initialize();
+        }
+        else {
+            newConnection = new Connection(connectionData);
+        }
         this._connections.push(newConnection);
         ConnectionManager.saveConnections();
 
@@ -142,7 +153,14 @@ public static async init(): Promise<ConnectionManager> {
             await this.removeConnection(connection);
 
             // will also add the new Connection to this ConnectionManager
-            const newConnection = await newConnectionCmdNoPrompt(connection.mcUrl);
+            let newConnection;
+            if (connection.isICP()) {
+                newConnection = await newConnectionCmd();
+            }
+            else {
+                newConnection = await newDefaultLocalConnectionCmd();
+            }
+
             if (newConnection == null) {
                 // should never happen
                 Log.e("Failed to create new connection after verifyReconnect failure");
@@ -166,15 +184,7 @@ public static async init(): Promise<ConnectionManager> {
     private static loadConnections(): IConnectionData[] {
         const globalState = global.extGlobalState as vscode.Memento;
         const saveableDatas = globalState.get<ISaveableConnectionData[]>(Settings.CONNECTIONS_KEY) || [];
-        return saveableDatas.map( (data: ISaveableConnectionData): IConnectionData => {
-            return {
-                socketNamespace: data.socketNamespace,
-                user: data.user,
-                url: vscode.Uri.parse(data.urlString),
-                version: data.version,
-                workspacePath: data.workspacePath,
-            };
-        });
+        return saveableDatas.map(ConnectionData.convertFromSaveable);
     }
 
     /**

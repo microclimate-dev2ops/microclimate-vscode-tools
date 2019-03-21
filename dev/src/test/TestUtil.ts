@@ -16,7 +16,7 @@ import * as request from "request-promise-native";
 import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
+import { Connection } from "../microclimate/connection/ConnectionExporter";
 import Endpoints from "../constants/Endpoints";
 import ProjectObserver from "./ProjectObserver";
 import ProjectState from "../microclimate/project/ProjectState";

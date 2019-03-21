@@ -39,6 +39,7 @@
 		"prefer-const": true,
 		"prefer-readonly": true,
 		"return-undefined": true,
+		"strict-boolean-expressions": [ true, "allow-string", "allow-undefined-union", "allow-null-union", "allow-mix", "ignore-rhs" ],
 		"switch-default": true,
 		"typedef": [
 			true,
