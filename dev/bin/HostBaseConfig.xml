@@ -1,0 +1,44 @@
+<configuration version="28">
+    <device id="MC_REPLACE_DEVICE_ID" name="MC_REPLACE_DEVICE_NAME" compression="metadata" introducer="false" skipIntroductionRemovals="false" introducedBy="">
+    	<!-- tcp://(host name or IP):(port - 22000) -->
+        <address>MC_REPLACE_DEVICE_ADDRESS</address>
+        <paused>false</paused>
+        <autoAcceptFolders>false</autoAcceptFolders>
+        <maxSendKbps>0</maxSendKbps>
+        <maxRecvKbps>0</maxRecvKbps>
+        <maxRequestKiB>0</maxRequestKiB>
+    </device>
+    <gui enabled="true" tls="false" debugging="false">
+        <address>127.0.0.1:8384</address>
+        <apikey>MC_REPLACE_API_KEY</apikey>
+        <theme>default</theme>
+    </gui>
+    <ldap></ldap>
+    <options>
+        <globalAnnounceEnabled>false</globalAnnounceEnabled>
+        <localAnnounceEnabled>false</localAnnounceEnabled>
+        <maxSendKbps>0</maxSendKbps>
+        <maxRecvKbps>0</maxRecvKbps>
+        <reconnectionIntervalS>5</reconnectionIntervalS>
+        <relaysEnabled>false</relaysEnabled>
+        <startBrowser>false</startBrowser>
+        <natEnabled>false</natEnabled>
+        <urAccepted>-1</urAccepted>
+        <restartOnWakeup>true</restartOnWakeup>
+        <autoUpgradeIntervalH>0</autoUpgradeIntervalH>
+        <keepTemporariesH>24</keepTemporariesH>
+        <cacheIgnoredFiles>false</cacheIgnoredFiles>
+        <progressUpdateIntervalS>5</progressUpdateIntervalS>
+        <limitBandwidthInLan>false</limitBandwidthInLan>
+        <minHomeDiskFree unit="%">1</minHomeDiskFree>
+        <releasesURL>https://upgrades.syncthing.net/meta.json</releasesURL>
+        <overwriteRemoteDeviceNamesOnConnect>false</overwriteRemoteDeviceNamesOnConnect>
+        <tempIndexMinBlocks>10</tempIndexMinBlocks>
+        <trafficClass>0</trafficClass>
+        <defaultFolderPath>MC_REPLACE_DEFAULT_FOLDER_PATH</defaultFolderPath>
+        <setLowPriority>true</setLowPriority>
+        <maxConcurrentScans>0</maxConcurrentScans>
+        <minHomeDiskFreePct>0</minHomeDiskFreePct>
+    </options>
+</configuration>
+
