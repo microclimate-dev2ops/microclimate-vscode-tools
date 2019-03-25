@@ -18,10 +18,10 @@ Please be sure your extension and Microclimate versions are up-to-date, and you 
  - OS:
 
 **Describe the bug:**
-Screenshots are recommended if applicable.
+<!-- Screenshots are recommended if applicable. -->
 
 **To Reproduce:**
-Please provide detailed steps.
+<!-- Please provide detailed steps. -->
 
 <!---
 Please also [upload the extension logs](https://microclimate-dev2ops.github.io/mdt-vsc-troubleshooting#finding-the-extension-logs) - this will help me resolve your issue much faster!
