@@ -17,8 +17,12 @@
     margin-right: 10px;
 }
 
+.fixed-table {
+    table-layout: fixed;
+}
+
 tr {
-    padding-bottom: 0.25em;
+    padding-bottom: 0.5em;
 }
 
 .info-label {
@@ -47,7 +51,7 @@ input[type="checkbox"]:disabled {
     border-radius: 5px;
 }
 
-.btn:hover, a:hover, .btn:focus, a:focus{
+.btn:hover, a:hover, .btn:focus, a:focus, .edit-btn, .edit-btn:focus {
     text-decoration: underline;
     cursor: pointer;
     outline: var(--vcode-button-background);
@@ -64,6 +68,11 @@ input[type="checkbox"]:disabled {
     outline: var(--disabled-btn-color);
     text-decoration: none;
     cursor: not-allowed;
+}
+
+.edit-btn {
+    height: 1.25em;
+    margin-left: 1em;
 }
 
 #build-btn {

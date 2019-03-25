@@ -120,3 +120,23 @@ export function getConnInfoFrom(url: Uri): IConnectionInfo {
     };
     return result;
 }
+
+const charsToRemove = "·/_,:;";
+const toRemoveRx = new RegExp(charsToRemove.split("").join("|"), "g");
+
+/**
+ * Not a 'normal' slug function, but makes strings look nice and normal and kebab-cased.
+ * Replace url-unfriendly characters, spaces and '.'s with '-'.
+ *
+ * Inspired by https://medium.com/@mhagemann/the-ultimate-way-to-slugify-a-url-string-in-javascript-b8e4a0d849e1
+ */
+export function slug(s: string): string {
+    return s.toLowerCase()
+        .replace(/\s+/g, "-")           // spaces to -
+        .replace(/\./g, "-")            // literal . to -
+        .replace(toRemoveRx, "-")       // other special chars to -
+        // .replace(/[^\w\-]+/g, "")    // remove all non-words
+        .replace(/\-\-+/g, "-")         // replace multiple - with single
+        .replace(/^-+/, "")             // trim - from start
+        .replace(/-+$/, "");            // trim - from end
+}

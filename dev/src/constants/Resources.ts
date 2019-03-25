@@ -76,6 +76,7 @@ namespace Resources {
     export enum Icons {
         Microclimate = "microclimate.svg",
         Disconnected = "disconnected.svg",
+        Edit = "edit.svg",
         // project types
         Microprofile = "lang_java.svg",
         Spring       = "lang_java.svg",

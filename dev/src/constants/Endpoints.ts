@@ -37,6 +37,7 @@ export default class Endpoints {
     public static readonly BUILD_LOG:       string = "build-log";
     public static readonly VALIDATE:        string = "validate";
     public static readonly GENERATE:        string = "validate/generate";
+    public static readonly PROPERTES:       string = "properties";
 
     public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string): string {
         return connection.mcUri.toString().concat(`${Endpoints.PROJECTS}/${projectID}/${endpoint}`);

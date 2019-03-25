@@ -14,6 +14,7 @@ import * as vscode from "vscode";
 import Project from "./Project";
 import Resources from "../../constants/Resources";
 import * as MCUtil from "../../MCUtil";
+import Log from "../../Logger";
 
 // This file does have a bunch of strings that should be translated,
 // but the stringfinder is not smart enough to pick them out from the regular html strings. So, do this file by hand.
@@ -27,13 +28,20 @@ export enum Messages {
     TOGGLE_AUTOBUILD = "toggleAutoBuild",
     OPEN = "open",
     DELETE = "delete",
-    TOGGLE_ENABLEMENT = "toggleEnablement"
+    TOGGLE_ENABLEMENT = "toggleEnablement",
+    EDIT = "edit",
 }
 
-const resourceScheme = "vscode-resource:";
-
 export enum Openable {
-    WEB = "web", FILE = "file", FOLDER = "folder"
+    WEB = "web",
+    FILE = "file",
+    FOLDER = "folder",
+}
+
+export enum Editable {
+    CONTEXT_ROOT = "context-root",
+    APP_PORT = "app-port",
+    DEBUG_PORT = "debug-port",
 }
 
 export function refreshProjectOverview(webviewPanel: vscode.WebviewPanel, project: Project): void {
@@ -50,6 +58,10 @@ export function generateHtml(project: Project): string {
     </tr>
     `;
 
+    const notAvailable = "Not available";
+    const notRunning = "Not running";
+    const notDebugging = "Not debugging";
+
     return `
         <!DOCTYPE html>
 
@@ -65,19 +77,19 @@ export function generateHtml(project: Project): string {
 
         <div id="main">
             <div id="top-section">
-                <img id="mc-icon" width="30px" src="${getMCIconPath()}"/>
+                <img id="mc-icon" width="30px" src="${getIcon(Resources.Icons.Microclimate)}"/>
                 <h2>Project ${project.name}</h2>
                 <input id="build-btn" type="button" value="Build"
                     onclick="${project.state.isEnabled ? `sendMsg('${Messages.BUILD}')` : ""}"
                     class="btn ${project.state.isEnabled ? "" : "btn-disabled"}"/>
             </div>
 
-            <table id="project-info-table">
+            <table>
                 <!--${buildRow("Name", project.name)}-->
                 ${buildRow("Type", project.type.toString())}
                 <!--${buildRow("Microclimate URL", project.connection.toString())}-->
                 ${buildRow("Project ID", project.id)}
-                ${buildRow("Container ID", getNonNull(project.containerID, "Not available", 32))}
+                ${buildRow("Container ID", getNonNull(project.containerID, notAvailable, 32))}
                 ${buildRow("Location on Disk", project.localPath.fsPath, Openable.FOLDER)}
                 <tr>
                     <td class="info-label">Auto build:</td>
@@ -91,20 +103,25 @@ export function generateHtml(project: Project): string {
                 </tr>
                 ${emptyRow}
                 ${buildRow("Application Status", project.state.appState)}
-                ${buildRow("Build Status", getNonNull(project.state.getBuildString(), "Not available"))}
+                ${buildRow("Build Status", getNonNull(project.state.getBuildString(), notAvailable))}
                 ${emptyRow}
-                ${buildRow("Last Image Build", formatDate(project.lastImgBuild, "Not available"))}
-                ${buildRow("Last Build", formatDate(project.lastBuild, "Not available"))}
+                ${buildRow("Last Image Build", formatDate(project.lastImgBuild, notAvailable))}
+                ${buildRow("Last Build", formatDate(project.lastBuild, notAvailable))}
+            </table>
+
+            <!-- Separate fixed table for the lower part so that the Edit buttons line up in their own column,
+                but also don't appear too far to the right -->
+            <table class="fixed-table">
                 ${emptyRow}
-                ${project.hasContextRoot ? buildRow("Context Root", "/" + project.contextRoot) : ""}
-                ${buildRow("Application URL", getNonNull(project.appBaseUrl, "Not running"), (project.appBaseUrl != null ? Openable.WEB : undefined))}
-                ${buildRow("Application Port", getNonNull(project.appPort, "Not running"))}
-                ${buildRow("Debug Port", getNonNull(project.debugPort, "Not debugging"))}
-                ${buildRow("Debug URL", getNonNull(project.debugUrl, "Not debugging"))}
+                ${buildRow("Application Port", getNonNull(project.appPort, notRunning), undefined, Editable.APP_PORT)}
+                ${buildRow("Application Root", "/" + project.contextRoot, undefined, Editable.CONTEXT_ROOT)}
+                ${buildRow("Application URL", getNonNull(project.appBaseUrl, notRunning), (project.appBaseUrl != null ? Openable.WEB : undefined))}
+                ${buildRow("Debug Port", getNonNull(project.debugPort, notDebugging), undefined, Editable.DEBUG_PORT)}
+                ${buildRow("Debug URL", getNonNull(project.debugUrl, notDebugging))}
             </table>
 
             <div id="bottom-section">
-                <input id="delete-btn"  type="button" onclick="sendMsg('${Messages.DELETE}')" class="btn" value="Delete project"/>
+                <input id="delete-btn" type="button" onclick="sendMsg('${Messages.DELETE}')" class="btn" value="Delete project"/>
                 <input id="enablement-btn" type="button" onclick="sendMsg('${Messages.TOGGLE_ENABLEMENT}')" class="btn"
                     value="${(project.state.isEnabled ? "Disable" : "Enable") + " project"}"/>
             </div>
@@ -127,19 +144,23 @@ export function generateHtml(project: Project): string {
     `;
 }
 
+const RESOURCE_SCHEME = "vscode-resource:";
+
 function getStylesheetPath(): string {
-    return resourceScheme + Resources.getCss("project-overview.css");
+    return RESOURCE_SCHEME + Resources.getCss("project-overview.css");
 }
 
-function getMCIconPath(): string {
-    const mcIconPath: string =  resourceScheme + Resources.getIconPaths(Resources.Icons.Microclimate).dark;
-    // Logger.log("MCIP", mcIconPath);
-    return mcIconPath;
+function getIcon(icon: Resources.Icons): string {
+    // TODO detect dark/light theme and adjust
+    return RESOURCE_SCHEME + Resources.getIconPaths(icon).dark;
 }
 
-function buildRow(label: string, data: string, openable?: Openable): string {
+function buildRow(label: string, data: string, openable?: Openable, editable?: Editable): string {
+    if (openable && editable) {
+        Log.e(label + " can't be openable and editable");
+    }
     let td: string;
-    if (openable != null) {
+    if (openable) {
         td = `
             <td>
                 <a onclick="vscOpen(this, '${openable}')">${data}</a>
@@ -147,8 +168,17 @@ function buildRow(label: string, data: string, openable?: Openable): string {
             `;
     }
     else {
-        td = `<td>${data}</td>`;
+        let editBtn = "";
+        if (editable) {
+            editBtn = `
+            <td>
+                <img id="edit-${MCUtil.slug(label)}" class="edit-btn" onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"` +
+                    `src="${getIcon(Resources.Icons.Edit)}"/>
+            </td>`;
+        }
+        td = `<td>${data}${editBtn}</td>`;
     }
+
     // console.log("The td is ", td);
 
     return `

@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import * as ProjectInfo from "../microclimate/project/ProjectOverview";
+import * as ProjectOverview from "../microclimate/project/ProjectOverview";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
@@ -53,7 +53,7 @@ export default async function projectOverviewCmd(project: Project): Promise<void
     }
 
     webPanel.reveal();
-    webPanel.onDidDispose( () => {
+    webPanel.onDidDispose(() => {
         project.onCloseProjectInfo();
     });
 
@@ -64,53 +64,111 @@ export default async function projectOverviewCmd(project: Project): Promise<void
     };
 
     // const ed = vscode.window.activeTextEditor;
-    webPanel.webview.html = ProjectInfo.generateHtml(project);
-    webPanel.webview.onDidReceiveMessage( (msg: { type: string, data: { type: string, value: string } }) => {
-        Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type}`);
+    webPanel.webview.html = ProjectOverview.generateHtml(project);
+    webPanel.webview.onDidReceiveMessage((msg: { type: string, data: { type: string, value: string } }) => {
+        Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type} data ${JSON.stringify(msg.data)}`);
         try {
-            if (msg.type === ProjectInfo.Messages.TOGGLE_AUTOBUILD) {
-                toggleAutoBuildCmd(project);
-            }
-            else if (msg.type === ProjectInfo.Messages.TOGGLE_ENABLEMENT) {
-                toggleEnablementCmd(project, !project.state.isEnabled);
-            }
-            else if (msg.type === ProjectInfo.Messages.BUILD) {
-                requestBuildCmd(project);
-            }
-            else if (msg.type === ProjectInfo.Messages.DELETE) {
+            switch (msg.type) {
+                case ProjectOverview.Messages.OPEN: {
+                    Log.d("Got msg to open, data is ", msg.data);
+                    let uri: vscode.Uri;
+                    if (msg.data.type === ProjectOverview.Openable.FILE || msg.data.type === ProjectOverview.Openable.FOLDER) {
+                        uri = vscode.Uri.file(msg.data.value);
+                    }
+                    else {
+                        // default to web
+                        uri = vscode.Uri.parse(msg.data.value);
+                    }
 
-                const deleteMsg = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteProjectMsg", { projectName: project.name });
-                const deleteBtn = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteBtn", { projectName: project.name });
-
-                vscode.window.showWarningMessage(deleteMsg, { modal: true }, deleteBtn)
-                    .then( (response) => {
-                        if (response === deleteBtn) {
-                            // Delete the project, then close the webview since the project is gone.
-                            Requester.requestDelete(project);
-                        }
-                    });
-            }
-            else if (msg.type === ProjectInfo.Messages.OPEN) {
-                Log.d("Got msg to open, data is ", msg.data);
-                let uri: vscode.Uri;
-                if (msg.data.type === ProjectInfo.Openable.FILE || msg.data.type === ProjectInfo.Openable.FOLDER) {
-                    uri = vscode.Uri.file(msg.data.value);
+                    Log.i("The uri is:", uri);
+                    const cmd: string = msg.data.type === ProjectOverview.Openable.FOLDER ? Commands.VSC_REVEAL_IN_OS : Commands.VSC_OPEN;
+                    vscode.commands.executeCommand(cmd, uri);
+                    break;
                 }
-                else {
-                    // default to web
-                    uri = vscode.Uri.parse(msg.data.value);
+                case ProjectOverview.Messages.TOGGLE_AUTOBUILD: {
+                    toggleAutoBuildCmd(project);
+                    break;
                 }
-
-                Log.i("The uri is:", uri);
-                const cmd: string = msg.data.type === ProjectInfo.Openable.FOLDER ? Commands.VSC_REVEAL_IN_OS : Commands.VSC_OPEN;
-                vscode.commands.executeCommand(cmd, uri);
-            }
-            else {
-                Log.e("Received unknown event from project info webview:", msg);
+                case ProjectOverview.Messages.TOGGLE_ENABLEMENT: {
+                    toggleEnablementCmd(project, !project.state.isEnabled);
+                    break;
+                }
+                case ProjectOverview.Messages.BUILD: {
+                    requestBuildCmd(project);
+                    break;
+                }
+                case ProjectOverview.Messages.DELETE: {
+                    onRequestDelete(project);
+                    break;
+                }
+                case ProjectOverview.Messages.EDIT: {
+                    onRequestEdit(msg.data.type as ProjectOverview.Editable, project);
+                    break;
+                }
+                default: {
+                    Log.e("Received unknown event from project info webview:", msg);
+                }
             }
         }
         catch (err) {
             Log.e("Error processing msg from WebView", err);
         }
     });
+}
+
+async function onRequestDelete(project: Project): Promise<void> {
+    const deleteMsg = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteProjectMsg", { projectName: project.name });
+    const deleteBtn = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteBtn", { projectName: project.name });
+
+    const response = await vscode.window.showWarningMessage(deleteMsg, { modal: true }, deleteBtn);
+    if (response === deleteBtn) {
+        // Delete the project, then close the webview since the project is gone.
+        Requester.requestDelete(project);
+    }
+}
+
+async function onRequestEdit(type: ProjectOverview.Editable, project: Project): Promise<void> {
+    let userFriendlyType: string;
+    let propertyToEditKey: string;
+    let currentValue: string | undefined;
+    switch (type) {
+        case ProjectOverview.Editable.CONTEXT_ROOT: {
+            userFriendlyType = "application root";
+            propertyToEditKey = "contextroot";
+            currentValue = project.contextRoot;
+            break;
+        }
+        case ProjectOverview.Editable.APP_PORT: {
+            userFriendlyType = "application port";
+            propertyToEditKey = "appport??";
+            currentValue = project.appPort ? project.appPort.toString() : undefined;
+            break;
+        }
+        case ProjectOverview.Editable.DEBUG_PORT: {
+            userFriendlyType = "debug port";
+            propertyToEditKey = "debugport??";
+            currentValue = project.debugPort ? project.debugPort.toString() : undefined;
+            break;
+        }
+        default: {
+            Log.e("Unrecognized editable type: ", type);
+            return;
+        }
+    }
+
+    Log.d("propertyToEditKey", propertyToEditKey);
+    const response = await vscode.window.showInputBox({
+        prompt: `Enter a new ${userFriendlyType} for ${project.name}`,
+        value: currentValue,
+        valueSelection: undefined,
+    });
+
+    if (response != null) {
+        if (response === currentValue) {
+            vscode.window.showWarningMessage("That's the same as the old value, are you messing with me?");
+        }
+        else {
+            vscode.window.showInformationMessage(`OK, you want to change the ${userFriendlyType} to "${response}", that's neat`);
+        }
+    }
 }

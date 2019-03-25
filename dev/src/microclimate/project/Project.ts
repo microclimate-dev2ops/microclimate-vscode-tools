@@ -80,7 +80,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, vscode.Uri.file(projectInfo.locOnDisk).fsPath)
         );
 
-        this.contextRoot = projectInfo.contextroot || "";       // non-nls
+        // try .custom.contextRoot first (new way), then .contextRoot (old way, Liberty only), then just set it to ""
+        this.contextRoot = ((projectInfo.custom) != null ? projectInfo.custom.contextroot : projectInfo.contextroot) || "";       // non-nls
 
         // These will be overridden by the call to update(), but we set them here too so the compiler can see they're always set.
         this._autoBuildEnabled = projectInfo.autoBuild;
@@ -298,7 +299,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         if (this.activeProjectInfo != null) {
             return this.activeProjectInfo;
         }
-        Log.d(`Info opened for project ${this.name}`);
+        // Log.d(`Info opened for project ${this.name}`);
         this.activeProjectInfo = wvPanel;
         return undefined;
     }

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="27" viewBox="0 0 24 27">
+    <g class="toolbar-icon-svg" fill="#EEE" fill-rule="evenodd">
+        <polygon points="0 26.414 24 26.414 24 24.414 0 24.414"></polygon>
+        <path
+            d="M17.0001,0 L0.0001,17 L0.0001,22.414 L5.4141,22.414 L22.4141,5.414 L17.0001,0 Z M2.0001,17.828 L17.0001,2.828 L19.5861,5.414 L4.5851,20.414 L2.0001,20.414 L2.0001,17.828 Z">
+        </path>
+    </g>
+</svg>
