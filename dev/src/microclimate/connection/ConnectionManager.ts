@@ -85,7 +85,8 @@ export default class ConnectionManager {
         let newConnection: Connection;
         if (isICP) {
             newConnection = new ICPConnection(connectionData);
-            await (newConnection as ICPConnection).initialize();
+            Log.d("Awaiting ICP connection initialization");
+            await (newConnection as ICPConnection).initPromise;
         }
         else {
             newConnection = new Connection(connectionData);
@@ -183,6 +184,7 @@ export default class ConnectionManager {
 
     private static loadConnections(): IConnectionData[] {
         const globalState = global.extGlobalState as vscode.Memento;
+        // tslint:disable-next-line: strict-boolean-expressions
         const saveableDatas = globalState.get<ISaveableConnectionData[]>(Settings.CONNECTIONS_KEY) || [];
         return saveableDatas.map(ConnectionData.convertFromSaveable);
     }

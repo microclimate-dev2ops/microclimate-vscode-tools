@@ -4,7 +4,7 @@ import Log from "../../Logger";
 import { Connection } from "./ConnectionExporter";
 import { IConnectionData } from "./ConnectionData";
 import ICPInfoMap from "./ICPInfoMap";
-import Syncer from "./Syncer";
+import SyncthingWrapper from "./syncer/Syncthing";
 import Authenticator from "./auth/Authenticator";
 
 // Do not import this directly! Use the ConnectionExporter
@@ -13,7 +13,12 @@ export default class ICPConnection extends Connection {
     public readonly masterHost: string;
     public readonly kubeNamespace: string;
 
-    private readonly syncer: Syncer;
+    private readonly syncer: SyncthingWrapper;
+
+    /**
+     * Resolves when this Connection is initialized. Can reject.
+     */
+    public readonly initPromise: Promise<void>;
 
     constructor(
         connectionData: IConnectionData,
@@ -32,28 +37,30 @@ export default class ICPConnection extends Connection {
         }
         this.kubeNamespace = kubeNs;
 
-        this.syncer = new Syncer(this.workspacePath, this.masterHost);
-        this.initialize();
+        this.syncer = new SyncthingWrapper(this);
+        this.initPromise = this.initialize();
     }
 
-    /**
-     * Returns a promise that resolves when this connection is 'ready'.
-     * This is to be used by the ConnectionManager after construction.
-     */
-    public async initialize(): Promise<void> {
-        await this.syncer.start();
-        Log.d("ICP connection " + this + " has completed initialization");
+    private async initialize(): Promise<void> {
+        return vscode.window.withProgress({
+            title: `Initializing connection to ${this.mcUrl}...`,
+            location: vscode.ProgressLocation.Notification,
+            cancellable: false,
+        }, async (_progress, _token) => {
+            await this.syncer.start();
+            Log.i("ICP connection " + this + " has completed initialization");
+        });
     }
 
-    public async destroy(isRefresh: boolean = false): Promise<void> {
+    public async destroy(_isRefresh: boolean = false): Promise<void> {
         Log.d("Destroy ICP connection " + this);
 
         // Don't log out if it's a refresh
-        const logoutPromise = !isRefresh ? this.logout() : Promise.resolve();
+        // const logoutPromise = !isRefresh ? this.logout() : Promise.resolve();
 
         return Promise.all([
             super.destroy(),
-            logoutPromise,
+            // logoutPromise,
         ]).then(() => Promise.resolve());
     }
 

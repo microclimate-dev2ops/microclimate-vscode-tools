@@ -38,9 +38,10 @@ export async function newConnectionCmd(): Promise<Connection | undefined> {
     }
     catch (err) {
         Log.e("New connection error", err);
+        const errMsg = MCUtil.errToString(err);
         vscode.window.showErrorMessage(
-            `Error connecting to cluster: ${MCUtil.errToString(err)}.
-            Make sure you are currently logged in to this cluster, and check your cluster configuration.`
+            `Error connecting to cluster: ${errMsg}${errMsg.endsWith(".") ? "" : "."}
+            Make sure you are currently logged in to this cluster, and check your Kubernetes configuration.`
         );
         return undefined;
     }
@@ -89,8 +90,8 @@ async function getKubeData(): Promise<IKubeData | undefined> {
         // Kube doc:
         // https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
         const badConfigMsg = `You must log into your cluster using cloudctl or kubectl before you can access it. ` +
-        `The configuration used is determined by the KUBECONFIG environment variable, then the config file at $HOME/.kube/config. ` +
-        `See the Kubernetes documentation for more details.`;
+            `The configuration used is determined by the KUBECONFIG environment variable, then the config file at $HOME/.kube/config. ` +
+            `See the Kubernetes documentation for more details.`;
         vscode.window.showWarningMessage(badConfigMsg);
         return undefined;
     }
@@ -112,7 +113,7 @@ async function getKubeData(): Promise<IKubeData | undefined> {
     catch (err) {
         Log.w("Initial kube connection error", err);
         if (err.statusCode === 401 || err.response && err.response.statusCode === 401) {
-            throw new Error(`Received 401: You are not authorized to log into this cluster. Log in using cloudctl or kubectl and try again.`);
+            throw new Error(`Received 401: You are not authorized.`);
         }
         throw err;
     }

@@ -12,111 +12,157 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
+import Log from "./Logger";
+
 namespace MCUtil {
 
-/**
- * Append toAppend to start, removing the last segment of start if the first segment of toAppend matches it.
- *
- * appendPathWithoutDupe("/home/tim/microclimate-workspace/", "/microclimate-workspace/myproject")
- *      -> "/home/tim/microclimate-workspace/myproject"
- */
-export function appendPathWithoutDupe(start: string, toAppend: string): string {
-    // Remove end of start / if present
-    if (start.endsWith(path.sep)) {
-        start = start.substring(0, start.length);
+    /**
+     * Append toAppend to start, removing the last segment of start if the first segment of toAppend matches it.
+     *
+     * appendPathWithoutDupe("/home/tim/microclimate-workspace/", "/microclimate-workspace/myproject")
+     *      -> "/home/tim/microclimate-workspace/myproject"
+     */
+    export function appendPathWithoutDupe(start: string, toAppend: string): string {
+        // Remove end of start / if present
+        if (start.endsWith(path.sep)) {
+            start = start.substring(0, start.length);
+        }
+
+        // Remove start of toAppend / if present
+        if (toAppend.startsWith(path.sep)) {
+            toAppend = toAppend.substring(1, toAppend.length + 1);
+        }
+
+        const lastStartSegment = lastPathSegment(start);
+        if (toAppend.startsWith(lastStartSegment)) {
+            start = start.substring(0, start.length - lastStartSegment.length);
+        }
+
+        return path.join(start, toAppend);
     }
 
-    // Remove start of toAppend / if present
-    if (toAppend.startsWith(path.sep)) {
-        toAppend = toAppend.substring(1, toAppend.length + 1);
+    /**
+     * Returns the last segment of the given path, with no starting slash.
+     * Trailing slash is kept if present.
+     *
+     * lastPathSegment("/home/tim/test/dir/") -> "dir/"
+     */
+    export function lastPathSegment(p: string): string {
+        return p.substr(p.lastIndexOf(path.sep) + 1);
     }
 
-    const lastStartSegment = lastPathSegment(start);
-    if (toAppend.startsWith(lastStartSegment)) {
-        start = start.substring(0, start.length - lastStartSegment.length);
+    export function uppercaseFirstChar(input: string): string {
+        return input.charAt(0).toUpperCase() + input.slice(1);
     }
 
-    return path.join(start, toAppend);
-}
+    /**
+     * Returns a wrapper promise which runs the given promise with the given timeout.
+     * If the timeout expires before the given promise is fulfilled, the wrapper promise rejects with the given message.
+     *
+     * If the promise resolves or rejects before the timeout,
+     * the wrapper promise resolves or rejects with the same result as the inner promise.
+     */
+    export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMS: number, rejectMsg: string): Promise<T> {
+        return new Promise<T>( (resolve, reject) => {
+            setTimeout( () => reject(rejectMsg), timeoutMS);
 
-/**
- * Returns the last segment of the given path, with no starting slash.
- * Trailing slash is kept if present.
- *
- * lastPathSegment("/home/tim/test/dir/") -> "dir/"
- */
-export function lastPathSegment(p: string): string {
-    return p.substr(p.lastIndexOf(path.sep) + 1);
-}
-
-export function uppercaseFirstChar(input: string): string {
-    return input.charAt(0).toUpperCase() + input.slice(1);
-}
-
-/**
- * Returns a wrapper promise which runs the given promise with the given timeout.
- * If the timeout expires before the given promise is fulfilled, the wrapper promise rejects with the given message.
- *
- * If the promise resolves or rejects before the timeout,
- * the wrapper promise resolves or rejects with the same result as the inner promise.
- */
-export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMS: number, rejectMsg: string): Promise<T> {
-    return new Promise<T>( (resolve, reject) => {
-        setTimeout( () => reject(rejectMsg), timeoutMS);
-
-        promise
-            .then( (result: T) => resolve(result))
-            .catch( (err: any) => reject(err));
-    });
-}
-
-export function isGoodDate(date: Date): boolean {
-    return !isNaN(date.valueOf());
-}
-
-export function isGoodStatusCode(statusCode: number | undefined): boolean {
-    return statusCode != null && !isNaN(statusCode) && statusCode >= 200 && statusCode < 400;
-}
-
-export function isGoodPort(port: number | undefined): boolean {
-    return port != null && !isNaN(port) && Number.isInteger(port) && port > 0 && port < 65536;
-}
-
-export function isLocalhost(authority: string): boolean {
-    authority = getHostnameFromAuthority(authority);
-    return authority === "localhost" || authority === "127.0.0.1";
-}
-
-export function assembleUrl(protocol: string, authority: string, port?: number, path_?: string): vscode.Uri {
-    let rawUri = `${protocol}://${authority}`;
-    if (port != null) {
-        rawUri += ":" + port;
-    }
-    if (path_) {
-        rawUri += path_;
-    }
-    return vscode.Uri.parse(rawUri);
-}
-
-/**
- * @returns the uri's "authority" without the port if there is one, or the whole authority if there is no port
- */
-export function getHostnameFromAuthority(authority: string): string {
-    const colonIndex: number = authority.indexOf(":");      // non-nls
-    if (colonIndex === -1) {
-        // no port
-        return authority;
-    }
-    return authority.substring(0, colonIndex);
-}
-
-export function errToString(err: any, isOidc: boolean = false): string {
-    if (isOidc) {
-        return err.error_description || err.error || err.message || err.toString();
+            promise
+                .then( (result: T) => resolve(result))
+                .catch( (err: any) => reject(err));
+        });
     }
 
-    return err.message || err.error || err.toString();
-}
+    export function isGoodDate(date: Date): boolean {
+        return !isNaN(date.valueOf());
+    }
+
+    export function isGoodStatusCode(statusCode: number | undefined): boolean {
+        return statusCode != null && !isNaN(statusCode) && statusCode >= 200 && statusCode < 400;
+    }
+
+    export function isGoodPort(port: number | undefined): boolean {
+        return port != null && !isNaN(port) && Number.isInteger(port) && port > 0 && port < 65536;
+    }
+
+    export function isLocalhost(authority: string): boolean {
+        authority = getHostnameFromAuthority(authority);
+        return authority === "localhost" || authority === "127.0.0.1";
+    }
+
+    export function assembleUrl(protocol: string, authority: string, port?: number, path_?: string): vscode.Uri {
+        let rawUri = `${protocol}://${authority}`;
+        if (port != null) {
+            rawUri += ":" + port;
+        }
+        if (path_) {
+            rawUri += path_;
+        }
+        return vscode.Uri.parse(rawUri);
+    }
+
+    /**
+     * @returns the uri's "authority" without the port if there is one, or the whole authority if there is no port
+     */
+    export function getHostnameFromAuthority(authority: string): string {
+        const colonIndex: number = authority.indexOf(":");      // non-nls
+        if (colonIndex === -1) {
+            // no port
+            return authority;
+        }
+        return authority.substring(0, colonIndex);
+    }
+
+    export function errToString(err: any, isOidc: boolean = false): string {
+        if (isOidc) {
+            return err.error_description || err.error || err.message || err.toString();
+        }
+
+        return err.message || err.error || err.toString();
+    }
+
+    export function getOS(): "windows" | "macos" | "linux" {
+        const platf = process.platform;
+        // https://nodejs.org/api/process.html#process_process_platform
+        if (platf === "win32") {
+            return "windows";
+        }
+        else if (platf === "darwin") {
+            return "macos";
+        }
+        else if (platf !== "linux") {
+            Log.w("Potentially unsupported platform: " + platf);
+        }
+        // there are a few other possibilities, but let's just hope they're linux-like
+        return "linux";
+    }
+
+    const charsToRemove = "·/_,:;";
+    const toRemoveRx = new RegExp(charsToRemove.split("").join("|"));
+
+    /**
+     * Not a 'normal' slug function, but makes strings look nice and normal.
+     * Replace url-unfriendly characters, spaces and '.'s with '-'.
+     *
+     * Inspired by https://medium.com/@mhagemann/the-ultimate-way-to-slugify-a-url-string-in-javascript-b8e4a0d849e1
+     */
+    export function slug(s: string): string {
+        return s.toLowerCase()
+            .replace(/\s+/g, "-")           // spaces to -
+            .replace(/\.+/g, "-")           // periods to -
+            .replace(toRemoveRx, "-")        // other special chars to -
+            // .replace(/[^\w\-]+/g, "")    // remove all non-words
+            .replace(/\-\-+/g, "-")         // replace multiple - with single
+            .replace(/^-+/, "")             // trim - from start
+            .replace(/-+$/, "");            // trim - from end
+    }
+
+    /**
+     * @returns true if `str` includes any of the given substrings
+     */
+    export function includesMulti(str: string, substring: string, ...substrings: string[]): boolean {
+        substrings = substrings.concat(substring);
+        return substrings.find((s) => str.includes(s)) != null;
+    }
 
 }
 

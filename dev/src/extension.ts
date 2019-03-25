@@ -82,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     catch (err) {
         // hard failure - can't do anything is the ConnectionManger is broken
         Log.e("Error initializing ConnectionManager!", err);
-        vscode.window.showErrorMessage("Error initializing Microclimate Tools!");
+        vscode.window.showErrorMessage(`Error loading Microclimate connections! ${MCUtil.errToString(err)}`);
     }
 
     ignoreMCFiles();
@@ -141,6 +141,7 @@ async function ignoreMCFiles(): Promise<void> {
 
     Log.i("Ignoring Microclimate files");
     const filesConfig = vscode.workspace.getConfiguration("files", null);       // non-nls
+    // tslint:disable-next-line: strict-boolean-expressions
     const existing: any = filesConfig.get<{}>(excludeSection) || {};
 
     filesToIgnore.forEach( (toIgnore) => {
