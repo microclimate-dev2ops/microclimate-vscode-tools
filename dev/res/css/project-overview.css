@@ -72,7 +72,12 @@ input[type="checkbox"]:disabled {
 
 .edit-btn {
     height: 1.25em;
-    margin-left: 1em;
+    margin-left: 2em;
+}
+
+body.vscode-light > .edit-btn {
+    filter: invert(100%);
+    border: 10px solid red;
 }
 
 #build-btn {

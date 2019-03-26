@@ -22,6 +22,7 @@ export default class Endpoints {
     // "regular" endpoints, eg "localhost:9090/api/v1/environment"
     public static readonly ENVIRONMENT: string = "api/v1/environment";
     public static readonly PROJECTS: string = "api/v1/projects";
+    public static readonly PROJECTS_V2: string = "api/v2/projects";
     // Deprecated
     public static readonly VALIDATE_OLD: string = "api/v1/validate";
     // Deprecated
@@ -39,8 +40,8 @@ export default class Endpoints {
     public static readonly GENERATE:        string = "validate/generate";
     public static readonly PROPERTES:       string = "properties";
 
-    public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string): string {
-        return connection.mcUri.toString().concat(`${Endpoints.PROJECTS}/${projectID}/${endpoint}`);
+    public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string, useV2: boolean = false): string {
+        return connection.mcUri.toString().concat(`${useV2 ? Endpoints.PROJECTS_V2 : Endpoints.PROJECTS}/${projectID}/${endpoint}`);
     }
 
     public static getAppMonitorUrl(connection: Connection, projectID: string): Uri {

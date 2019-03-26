@@ -134,7 +134,7 @@ export function slug(s: string): string {
     return s.toLowerCase()
         .replace(/\s+/g, "-")           // spaces to -
         .replace(/\./g, "-")            // literal . to -
-        .replace(toRemoveRx, "-")       // other special chars to -
+        .replace(toRemoveRx, "")        // remove other special chars
         // .replace(/[^\w\-]+/g, "")    // remove all non-words
         .replace(/\-\-+/g, "-")         // replace multiple - with single
         .replace(/^-+/, "")             // trim - from start

@@ -36,7 +36,7 @@ export default class DebugUtils {
             // Just in case.
             throw new Error(Translator.t(STRING_NS, "noDebugTypeKnown", { type: project.type.type }));
         }
-        else if (project.debugPort == null) {
+        else if (project.ports.debugPort == null) {
             throw new Error(Translator.t(STRING_NS, "noDebugPort", { projectName: project.name }));
         }
 
@@ -189,14 +189,8 @@ export default class DebugUtils {
                 // updatedLaunch might be the same as existingLaunch.
                 const updatedLaunch: vscode.DebugConfiguration = DebugUtils.updateDebugLaunchConfig(project, existingLaunch);
 
-                const changed = updatedLaunch !== existingLaunch;
-                if (changed) {
-                    Log.d(`Replacing existing debug launch ${debugName}:`, updatedLaunch);
-                    launchConfigs[i] = updatedLaunch;
-                }
-                else {
-                    Log.d(`No change to debug launch ${debugName}`);
-                }
+                Log.d(`Replacing existing debug launch ${debugName}:`, updatedLaunch);
+                launchConfigs[i] = updatedLaunch;
                 launchToWrite = updatedLaunch;
                 break;
             }
@@ -234,7 +228,7 @@ export default class DebugUtils {
                     name: debugName,
                     request: DebugUtils.RQ_ATTACH,
                     hostName: project.connection.host,
-                    port: project.debugPort,
+                    port: project.ports.debugPort,
                     // sourcePaths: project.localPath + "/src/"
                     projectName: project.name,
                 };
@@ -245,7 +239,7 @@ export default class DebugUtils {
                     name: debugName,
                     request: DebugUtils.RQ_ATTACH,
                     address: project.connection.host,
-                    port: project.debugPort,
+                    port: project.ports.debugPort,
                     localRoot: project.localPath.fsPath,
                     // User could change this in their dockerfile - but that would not fit with our import instructions
                     // https://microclimate-dev2ops.github.io/importedprojects#nodejs-projects
@@ -261,22 +255,18 @@ export default class DebugUtils {
     /**
      * Update the existingLaunch with the new values of config fields that could have changed since the last launch, then return it.
      * As far as I can tell, only the port can change.
-     *
-     * @return Either the new, or existing, launch config depending on whether an update was necessary.
      */
     private static updateDebugLaunchConfig(project: Project, existingLaunch: vscode.DebugConfiguration): vscode.DebugConfiguration {
-        let changed = false;
         const newLaunch: vscode.DebugConfiguration = existingLaunch;
 
-        if (existingLaunch.port === newLaunch.port) {
+        if (existingLaunch.port === project.ports.debugPort) {
             Log.d(`Debug port for ${project.name} didn't change`);
         }
         else {
             Log.d(`Debug port for ${project.name} changed from ${existingLaunch.port} to ${newLaunch.port}`);
-            newLaunch.port = project.debugPort;
-            changed = true;
+            newLaunch.port = project.ports.debugPort;
         }
 
-        return changed ? newLaunch : existingLaunch;
+        return newLaunch;
     }
 }

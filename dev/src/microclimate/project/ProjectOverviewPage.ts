@@ -89,7 +89,7 @@ export function generateHtml(project: Project): string {
                 ${buildRow("Type", project.type.toString())}
                 <!--${buildRow("Microclimate URL", project.connection.toString())}-->
                 ${buildRow("Project ID", project.id)}
-                ${buildRow("Container ID", getNonNull(project.containerID, notAvailable, 32))}
+                ${buildRow("Container ID", normalize(project.containerID, notAvailable, 32))}
                 ${buildRow("Location on Disk", project.localPath.fsPath, Openable.FOLDER)}
                 <tr>
                     <td class="info-label">Auto build:</td>
@@ -103,21 +103,25 @@ export function generateHtml(project: Project): string {
                 </tr>
                 ${emptyRow}
                 ${buildRow("Application Status", project.state.appState)}
-                ${buildRow("Build Status", getNonNull(project.state.getBuildString(), notAvailable))}
+                ${buildRow("Build Status", normalize(project.state.getBuildString(), notAvailable))}
                 ${emptyRow}
-                ${buildRow("Last Image Build", formatDate(project.lastImgBuild, notAvailable))}
-                ${buildRow("Last Build", formatDate(project.lastBuild, notAvailable))}
+                ${buildRow("Last Image Build", normalizeDate(project.lastImgBuild, notAvailable))}
+                ${buildRow("Last Build", normalizeDate(project.lastBuild, notAvailable))}
             </table>
 
             <!-- Separate fixed table for the lower part so that the Edit buttons line up in their own column,
                 but also don't appear too far to the right -->
             <table class="fixed-table">
                 ${emptyRow}
-                ${buildRow("Application Port", getNonNull(project.appPort, notRunning), undefined, Editable.APP_PORT)}
+                ${buildRow("Exposed App Port", normalize(project.ports.appPort, notRunning))}
+                ${buildRow("Internal App Port",
+                    normalize(project.ports.internalAppPort, notAvailable), undefined, Editable.APP_PORT)}
                 ${buildRow("Application Root", "/" + project.contextRoot, undefined, Editable.CONTEXT_ROOT)}
-                ${buildRow("Application URL", getNonNull(project.appBaseUrl, notRunning), (project.appBaseUrl != null ? Openable.WEB : undefined))}
-                ${buildRow("Debug Port", getNonNull(project.debugPort, notDebugging), undefined, Editable.DEBUG_PORT)}
-                ${buildRow("Debug URL", getNonNull(project.debugUrl, notDebugging))}
+                ${buildRow("Application URL", normalize(project.appBaseUrl, notRunning), (project.appBaseUrl != null ? Openable.WEB : undefined))}
+                ${emptyRow}
+                ${buildRow("Exposed Debug Port", normalize(project.ports.debugPort, notDebugging))}
+                ${buildRow("Internal Debug Port", normalize(project.ports.internalDebugPort, notDebugging), undefined, Editable.DEBUG_PORT)}
+                ${buildRow("Debug URL", normalize(project.debugUrl, notDebugging))}
             </table>
 
             <div id="bottom-section">
@@ -135,6 +139,7 @@ export function generateHtml(project: Project): string {
             }
 
             function sendMsg(type, data = undefined) {
+                // See IWebViewMsg in ProjectOverviewCmd
                 vscode.postMessage({ type: type, data: data });
             }
         </script>
@@ -151,8 +156,9 @@ function getStylesheetPath(): string {
 }
 
 function getIcon(icon: Resources.Icons): string {
-    // TODO detect dark/light theme and adjust
-    return RESOURCE_SCHEME + Resources.getIconPaths(icon).dark;
+    const iconPaths = Resources.getIconPaths(icon);
+    // return RESOURCE_SCHEME + dark ? iconPaths.dark : iconPaths.light;
+    return RESOURCE_SCHEME + iconPaths.dark;
 }
 
 function buildRow(label: string, data: string, openable?: Openable, editable?: Editable): string {
@@ -172,7 +178,7 @@ function buildRow(label: string, data: string, openable?: Openable, editable?: E
         if (editable) {
             editBtn = `
             <td>
-                <img id="edit-${MCUtil.slug(label)}" class="edit-btn" onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"` +
+                <img id="edit-${MCUtil.slug(label)}" class="edit-btn" title="Edit" onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"` +
                     `src="${getIcon(Resources.Icons.Edit)}"/>
             </td>`;
         }
@@ -189,7 +195,10 @@ function buildRow(label: string, data: string, openable?: Openable, editable?: E
     `;
 }
 
-function getNonNull(item: vscode.Uri | number | string | undefined, fallback: string, maxLength?: number): string {
+/**
+ * Convert `item` to a user-friendly string, or the fallback if `item` is undefined.
+ */
+function normalize(item: vscode.Uri | number | string | undefined, fallback: string, maxLength?: number): string {
     let result: string;
     if (item == null || item === "") {
         result = fallback;
@@ -208,7 +217,7 @@ function getNonNull(item: vscode.Uri | number | string | undefined, fallback: st
     return result;
 }
 
-function formatDate(d: Date, fallback: string): string {
+function normalizeDate(d: Date, fallback: string): string {
     if (MCUtil.isGoodDate(d)) {
         let dateStr: string = d.toLocaleDateString();
         if (dateStr === (new Date()).toLocaleDateString()) {

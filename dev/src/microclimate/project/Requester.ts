@@ -136,6 +136,15 @@ namespace Requester {
         return doProjectRequest(project, url, {}, request.delete, deleteMsg);
     }
 
+    export async function requestSettingChange(project: Project, settingName: string, settingKey: string, newValue: string): Promise<void> {
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.PROPERTES, true);
+        const updateMsg = `Update ${settingName}`;
+        const body = {
+            [settingKey]: newValue,
+        };
+        return doProjectRequest(project, url, body, request.post, updateMsg);
+    }
+
     /**
      * Perform a REST request of the type specific by `requestFunc` to the project endpoint for the given project.
      * Displays a message to the user that the request succeeded if userOperationName is not null.
@@ -155,30 +164,31 @@ namespace Requester {
         };
 
         return requestFunc(url, options)
-            .then( (result: any) => {
-                Log.d(`Response code ${result.statusCode} from ${userOperationName} ${requestFunc.name.toUpperCase()} request for ${project.name}`);
+        .then( (result: any) => {
+            Log.d(`Response code ${result.statusCode} from ` +
+                `${userOperationName ? userOperationName.toLowerCase() + " " : ""}request for ${project.name}`);
 
-                if (userOperationName != null) {
-                    vscode.window.showInformationMessage(
-                        Translator.t(STRING_NS, "requestSuccess",
-                        { operationName: userOperationName, projectName: project.name })
-                    );
-                }
-                return result;
-            })
-            .catch( (err: any) => {
-                Log.w(`Error doing ${userOperationName} project request for ${project.name}:`, err);
-
-                // If the server provided a specific message, present the user with that,
-                // otherwise show them the whole error (but it will be ugly)
-                // err.error.msg, then err.error, then the whole err
-                const errMsg: string = err.error ? (err.error.msg ? err.error.msg : err.error) : JSON.stringify(err);
-                vscode.window.showErrorMessage(
-                    Translator.t(STRING_NS, "requestFail",
-                    { operationName: userOperationName, projectName: project.name, err: errMsg })
+            if (userOperationName != null) {
+                vscode.window.showInformationMessage(
+                    Translator.t(STRING_NS, "requestSuccess",
+                    { operationName: userOperationName, projectName: project.name })
                 );
-                return err;
-            });
+            }
+            return result;
+        })
+        .catch( (err: any) => {
+            Log.w(`Error doing ${userOperationName} project request for ${project.name}:`, err);
+
+            // If the server provided a specific message, present the user with that,
+            // otherwise show them the whole error (but it will be ugly)
+            // err.error.msg, then err.error, then the whole err
+            const errMsg: string = err.error ? (err.error.msg ? err.error.msg : err.error) : JSON.stringify(err);
+            vscode.window.showErrorMessage(
+                Translator.t(STRING_NS, "requestFail",
+                { operationName: userOperationName, projectName: project.name, err: errMsg })
+            );
+            return err;
+        });
     }
 }
 

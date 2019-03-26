@@ -29,3 +29,5 @@ declare namespace NodeJS {
     }
 }
 
+type OptionalNumber = number | undefined;
+type OptionalString = string | undefined;

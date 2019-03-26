@@ -21,7 +21,7 @@ import Commands from "../../constants/Commands";
 import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
-import { refreshProjectOverview } from "./ProjectOverview";
+import { refreshProjectOverview } from "./ProjectOverviewPage";
 import getContextID from "./ProjectContextID";
 import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
@@ -29,20 +29,26 @@ import SocketEvents from "../connection/SocketEvents";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
+interface IProjectPorts {
+    appPort: OptionalNumber;
+    debugPort: OptionalNumber;
+    internalAppPort: OptionalNumber;
+    internalDebugPort: OptionalNumber;
+}
+
 export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem {
 
     // Immutable project data
     public readonly name: string;
     public readonly id: string;
     public readonly type: ProjectType;
-    public readonly contextRoot: string;
     public readonly localPath: vscode.Uri;
 
-    // Mutable project data, will change with calls to update(). Prefixed with _ because these all have getters.
+    // Mutable project data, will change with calls to update() and similar functions. Prefixed with _ because these all have getters.
     private _state: ProjectState;
-    private _containerID: string | undefined;
-    private _appPort: number | undefined;
-    private _debugPort: number | undefined;
+    private _containerID: OptionalString;
+    private _contextRoot: string;
+    private readonly _ports: IProjectPorts;
     private _autoBuildEnabled: boolean;
     // Dates below will always be set, but might be "invalid date"s
     private _lastBuild: Date;
@@ -81,7 +87,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         );
 
         // try .custom.contextRoot first (new way), then .contextRoot (old way, Liberty only), then just set it to ""
-        this.contextRoot = ((projectInfo.custom) != null ? projectInfo.custom.contextroot : projectInfo.contextroot) || "";       // non-nls
+        this._contextRoot = ((projectInfo.custom) != null ? projectInfo.custom.contextroot : projectInfo.contextroot) || "";       // non-nls
 
         // These will be overridden by the call to update(), but we set them here too so the compiler can see they're always set.
         this._autoBuildEnabled = projectInfo.autoBuild;
@@ -89,6 +95,13 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this._lastBuild = new Date(projectInfo.lastbuild);
         // appImageLastBuild is a string
         this._lastImgBuild = new Date(Number(projectInfo.appImgLastBuild));
+
+        this._ports = {
+            appPort: undefined,
+            debugPort: undefined,
+            internalAppPort: undefined,
+            internalDebugPort: undefined,
+        };
 
         this._state = this.update(projectInfo);
 
@@ -136,18 +149,10 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
     }
 
-    public onConnectionDisconnect(): void {
-        if (this.pendingRestart != null) {
-            this.pendingRestart.onConnectionDisconnect();
-        }
-    }
-
     /**
      * Set this project's status based on the project info event payload passed.
      * This includes checking the appStatus, buildStatus, buildStatusDetail, and startMode.
      * Also updates the appPort and debugPort.
-     *
-     * Also signals the ConnectionManager change listener
      */
     public update = (projectInfo: any, isRestart: boolean = false): ProjectState => {
         if (projectInfo.projectID !== this.id) {
@@ -181,8 +186,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         const ports = projectInfo.ports;
         if (ports != null) {
-            changed = this.setAppPort(ports.exposedPort) || changed;
-            changed = this.setDebugPort(ports.exposedDebugPort) || changed;
+            this.updatePorts(ports);
         }
         else if (this._state.isStarted) {
             Log.e("No ports were provided for an app that is supposed to be started");
@@ -195,15 +199,63 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // Logger.log(`${this.name} has a new status:`, this._state);
         if (changed) {
             // Log.d(`${this.name} has changed`);
-            this.connection.onChange();
-            this.tryRefreshProjectInfoPage();
+            this.onChange();
         }
 
         return this._state;
     }
 
-    public get isRestarting(): boolean {
-        return this.pendingRestart != null;
+    /**
+     * Call when this project's mutable fields change
+     * to update the tree view and project info pages.
+     */
+    private onChange(): void {
+        this.connection.onChange();
+        this.tryRefreshProjectInfoPage();
+    }
+
+    /**
+     * Update this project's port fields. Does not call onChange().
+     * @param ports - Ports object from a Microclimate socket event or Project info
+     * @returns true if at least one port was changed
+     */
+    private updatePorts(ports: {
+        exposedPort?: OptionalString;
+        exposedDebugPort?: OptionalString;
+        internalPort?: OptionalString;
+        internalDebugPort?: OptionalString;
+    }): boolean {
+        let changed = false;
+        changed = this.setPort(ports.exposedPort, "appPort");
+        changed = this.setPort(ports.exposedDebugPort, "debugPort") || changed;
+        changed = this.setPort(ports.internalPort, "internalAppPort") || changed;
+        changed = this.setPort(ports.internalDebugPort, "internalDebugPort") || changed;
+
+        return changed;
+    }
+
+    public onSettingsChangedEvent(event: SocketEvents.IProjectSettingsEvent): void {
+        Log.d("project settings changed " + this.name, event);
+        // Only one of contextroot, app port, or debug port should be set
+        // but there's no reason to treat it differently if multiple are set
+        let changed = false;
+        if (event.contextRoot) {
+            let newContextRoot = event.contextRoot;
+            // Remove leading / if present
+            if (newContextRoot.startsWith("/")) {
+                newContextRoot = newContextRoot.substring(1, newContextRoot.length);
+            }
+            this._contextRoot = event.contextRoot;
+            Log.i("ContextRoot now " + this._contextRoot);
+            changed = true;
+        }
+        if (event.ports) {
+            changed = this.updatePorts(event.ports);
+        }
+
+        if (changed) {
+            this.onChange();
+        }
     }
 
     public doRestart(mode: StartModes.Modes): boolean {
@@ -254,22 +306,25 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
         else {
             Log.d("Restart event is valid");
-
-            this.setAppPort(event.ports.exposedPort);
-            this.setDebugPort(event.ports.exposedDebugPort);
-            this.tryRefreshProjectInfoPage();
-
+            this.updatePorts(event.ports);
+            this.onChange();
             success = true;
         }
 
         this.pendingRestart.onReceiveRestartEvent(success, errMsg);
     }
 
+    public onConnectionDisconnect(): void {
+        if (this.pendingRestart != null) {
+            this.pendingRestart.onConnectionDisconnect();
+        }
+    }
+
     /**
-     * Callback for when this project is deleted in Microclimate
+     * Call when this project is deleted in Microclimate
      */
     public async onDelete(): Promise<void> {
-        Log.d("Deleting project " + this.name);
+        Log.i("Deleting project " + this.name);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
         this.clearValidationErrors();
         this.connection.logManager.destroyLogsForProject(this.id);
@@ -318,16 +373,22 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         }
     }
 
-    public get containerID(): string | undefined {
+    ///// Getters
+
+    public get isRestarting(): boolean {
+        return this.pendingRestart != null;
+    }
+
+    public get containerID(): OptionalString {
         return this._containerID;
     }
 
-    public get appPort(): number | undefined {
-        return this._appPort;
+    public get contextRoot(): string {
+        return this._contextRoot;
     }
 
-    public get debugPort(): number | undefined {
-        return this._debugPort;
+    public get ports(): IProjectPorts {
+        return this._ports;
     }
 
     public get autoBuildEnabled(): boolean {
@@ -339,23 +400,23 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public get appBaseUrl(): vscode.Uri | undefined {
-        if (this._appPort == null) {
+        if (this.ports.appPort == null) {
             // app is stopped, disabled, etc.
             return undefined;
         }
 
         return this.connection.mcUri.with({
-            authority: `${this.connection.host}:${this._appPort}`,      // non-nls
-            path: this.contextRoot
+            authority: `${this.connection.host}:${this._ports.appPort}`,      // non-nls
+            path: this._contextRoot
         });
     }
 
-    public get debugUrl(): string | undefined {
-        if (this._debugPort == null) {
+    public get debugUrl(): OptionalString {
+        if (this._ports.debugPort == null) {
             return undefined;
         }
 
-        return this.connection.host + ":" + this._debugPort;            // non-nls
+        return this.connection.host + ":" + this._ports.debugPort;            // non-nls
     }
 
     public get lastBuild(): Date {
@@ -367,64 +428,40 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public get hasContextRoot(): boolean {
-        return this.contextRoot != null && this.contextRoot.length > 0 && this.contextRoot !== "/";
+        return this._contextRoot != null && this._contextRoot.length > 0 && this._contextRoot !== "/";
     }
 
-    /**
-     *
-     * @return If this project's app port was changed.
-     */
-    private setAppPort(newAppPort: number | undefined): boolean {
-        newAppPort = Number(newAppPort);
+    ///// Setters
 
-        if (isNaN(newAppPort)) {
-            // Should happen when the app stops.
-            if (this._appPort != null) {
-                Log.d("Unset app port for " + this.name);
-                this._appPort = undefined;
-                return true;
-            }
-        }
-        else if (!MCUtil.isGoodPort(newAppPort)) {
-            Log.w(`Invalid app port ${newAppPort} given to project ${this.name}, ignoring it`);
+    /**
+     * Set one of this project's Port fields.
+     * @param newPort Can be undefined if the caller wishes to "unset" the port (ie, because the app is stopping)
+     * @returns true if at least one port was changed.
+     */
+    private setPort(newPort: OptionalString, portType: keyof IProjectPorts): boolean {
+        const newPortNumber = Number(newPort);
+        const currentPort = this._ports[portType];
+
+        if (newPort != null && !MCUtil.isGoodPort(newPortNumber)) {
+            Log.w(`Invalid ${portType} port ${newPort} given to project ${this.name}, ignoring it`);
             return false;
         }
-        else if (this._appPort !== newAppPort) {
-            this._appPort = newAppPort;
-            Log.d(`New app port for ${this.name} is ${newAppPort}`);
+        else if (currentPort !== newPort) {
+            this._ports[portType] = newPortNumber;
+            if (newPortNumber !== currentPort) {
+                Log.d(`New ${portType} for ${this.name} is ${newPortNumber}`);
+            }
+            else if (newPort == null) {
+                Log.d(`Unset ${portType} for ${this.name}`);
+            }
+            // the third case is that (the new port === the old port) and neither are null - we don't log anything in this case.
             return true;
         }
+        // Log.d(`${portType} port is already ${currentPort}`);
         return false;
     }
 
-    /**
-     *
-     * @return If this project's debug port was changed.
-     */
-    private setDebugPort(newDebugPort: number | undefined): boolean {
-        newDebugPort = Number(newDebugPort);
-
-        if (isNaN(newDebugPort)) {
-            // Should happen when the app stops or exits debug mode
-            if (this._debugPort != null) {
-                Log.d("Unset debug port for " + this.name);
-                this._debugPort = undefined;
-                return true;
-            }
-        }
-        else if (!MCUtil.isGoodPort(newDebugPort)) {
-            Log.w(`Invalid debug port ${newDebugPort} given to project ${this.name}, ignoring it`);
-            return false;
-        }
-        else if (this._debugPort !== newDebugPort) {
-            this._debugPort = newDebugPort;
-            Log.d(`New debug port for ${this.name} is ${newDebugPort}`);
-            return true;
-        }
-        return false;
-    }
-
-    private setContainerID(newContainerID: string | undefined): boolean {
+    private setContainerID(newContainerID: OptionalString): boolean {
         const oldContainerID = this._containerID;
         this._containerID = newContainerID;
 
@@ -439,7 +476,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return changed;
     }
 
-    private setLastBuild(newLastBuild: number | undefined): boolean {
+    private setLastBuild(newLastBuild: OptionalNumber): boolean {
         if (newLastBuild == null) {
             return false;
         }
@@ -453,7 +490,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return changed;
     }
 
-    private setLastImgBuild(newLastImgBuild: number | undefined): boolean {
+    private setLastImgBuild(newLastImgBuild: OptionalNumber): boolean {
         if (newLastImgBuild == null) {
             return false;
         }

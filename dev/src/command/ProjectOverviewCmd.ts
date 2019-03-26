@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 IBM Corporation and others.
+ * Copyright (c) 2018, 2019 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
-import * as ProjectOverview from "../microclimate/project/ProjectOverview";
+import * as ProjectOverview from "../microclimate/project/ProjectOverviewPage";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Requester from "../microclimate/project/Requester";
@@ -23,9 +23,10 @@ import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import requestBuildCmd from "./RequestBuildCmd";
 import Resources from "../constants/Resources";
+import * as MCUtil from "../MCUtil";
 
 export default async function projectOverviewCmd(project: Project): Promise<void> {
-    Log.d("projectOverviewCmd invoked");
+    // Log.d("projectOverviewCmd invoked");
     if (project == null) {
         const selected = await promptForProject();
         if (selected == null) {
@@ -65,55 +66,70 @@ export default async function projectOverviewCmd(project: Project): Promise<void
 
     // const ed = vscode.window.activeTextEditor;
     webPanel.webview.html = ProjectOverview.generateHtml(project);
-    webPanel.webview.onDidReceiveMessage((msg: { type: string, data: { type: string, value: string } }) => {
-        Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type} data ${JSON.stringify(msg.data)}`);
-        try {
-            switch (msg.type) {
-                case ProjectOverview.Messages.OPEN: {
-                    Log.d("Got msg to open, data is ", msg.data);
-                    let uri: vscode.Uri;
-                    if (msg.data.type === ProjectOverview.Openable.FILE || msg.data.type === ProjectOverview.Openable.FOLDER) {
-                        uri = vscode.Uri.file(msg.data.value);
-                    }
-                    else {
-                        // default to web
-                        uri = vscode.Uri.parse(msg.data.value);
-                    }
+    webPanel.webview.onDidReceiveMessage(handleWebviewMessage.bind(project));
+}
 
-                    Log.i("The uri is:", uri);
-                    const cmd: string = msg.data.type === ProjectOverview.Openable.FOLDER ? Commands.VSC_REVEAL_IN_OS : Commands.VSC_OPEN;
-                    vscode.commands.executeCommand(cmd, uri);
-                    break;
-                }
-                case ProjectOverview.Messages.TOGGLE_AUTOBUILD: {
-                    toggleAutoBuildCmd(project);
-                    break;
-                }
-                case ProjectOverview.Messages.TOGGLE_ENABLEMENT: {
-                    toggleEnablementCmd(project, !project.state.isEnabled);
-                    break;
-                }
-                case ProjectOverview.Messages.BUILD: {
-                    requestBuildCmd(project);
-                    break;
-                }
-                case ProjectOverview.Messages.DELETE: {
-                    onRequestDelete(project);
-                    break;
-                }
-                case ProjectOverview.Messages.EDIT: {
-                    onRequestEdit(msg.data.type as ProjectOverview.Editable, project);
-                    break;
-                }
-                default: {
-                    Log.e("Received unknown event from project info webview:", msg);
-                }
+interface IWebViewMsg {
+    type: string;
+    data: {
+        type: string;
+        value: string;
+    };
+}
+
+function handleWebviewMessage(this: Project, msg: IWebViewMsg): void {
+    const project = this;
+    Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type} data ${JSON.stringify(msg.data)}`);
+    try {
+        switch (msg.type) {
+            case ProjectOverview.Messages.OPEN: {
+                onRequestOpen(msg);
+                break;
+            }
+            case ProjectOverview.Messages.TOGGLE_AUTOBUILD: {
+                toggleAutoBuildCmd(project);
+                break;
+            }
+            case ProjectOverview.Messages.TOGGLE_ENABLEMENT: {
+                toggleEnablementCmd(project, !project.state.isEnabled);
+                break;
+            }
+            case ProjectOverview.Messages.BUILD: {
+                requestBuildCmd(project);
+                break;
+            }
+            case ProjectOverview.Messages.DELETE: {
+                onRequestDelete(project);
+                break;
+            }
+            case ProjectOverview.Messages.EDIT: {
+                onRequestEdit(msg.data.type as ProjectOverview.Editable, project);
+                break;
+            }
+            default: {
+                Log.e("Received unknown event from project info webview:", msg);
             }
         }
-        catch (err) {
-            Log.e("Error processing msg from WebView", err);
-        }
-    });
+    }
+    catch (err) {
+        Log.e("Error processing msg from WebView", err);
+    }
+}
+
+async function onRequestOpen(msg: IWebViewMsg): Promise<void> {
+    Log.d("Got msg to open, data is ", msg.data);
+    let uri: vscode.Uri;
+    if (msg.data.type === ProjectOverview.Openable.FILE || msg.data.type === ProjectOverview.Openable.FOLDER) {
+        uri = vscode.Uri.file(msg.data.value);
+    }
+    else {
+        // default to web
+        uri = vscode.Uri.parse(msg.data.value);
+    }
+
+    Log.i("The uri is:", uri);
+    const cmd: string = msg.data.type === ProjectOverview.Openable.FOLDER ? Commands.VSC_REVEAL_IN_OS : Commands.VSC_OPEN;
+    vscode.commands.executeCommand(cmd, uri);
 }
 
 async function onRequestDelete(project: Project): Promise<void> {
@@ -128,26 +144,27 @@ async function onRequestDelete(project: Project): Promise<void> {
 }
 
 async function onRequestEdit(type: ProjectOverview.Editable, project: Project): Promise<void> {
-    let userFriendlyType: string;
-    let propertyToEditKey: string;
-    let currentValue: string | undefined;
+    // https://github.ibm.com/dev-ex/iterative-dev/wiki/File-watcher-External-APIs#post-apiv1projectsprojectidsettings
+    let userFriendlySetting: string;
+    let settingKey: string;
+    let currentValue: OptionalString;
     switch (type) {
         case ProjectOverview.Editable.CONTEXT_ROOT: {
-            userFriendlyType = "application root";
-            propertyToEditKey = "contextroot";
+            userFriendlySetting = "application root";
+            settingKey = "contextroot";
             currentValue = project.contextRoot;
             break;
         }
         case ProjectOverview.Editable.APP_PORT: {
-            userFriendlyType = "application port";
-            propertyToEditKey = "appport??";
-            currentValue = project.appPort ? project.appPort.toString() : undefined;
+            userFriendlySetting = "application port";
+            settingKey = "applicationPort";
+            currentValue = project.ports.appPort ? project.ports.appPort.toString() : undefined;
             break;
         }
         case ProjectOverview.Editable.DEBUG_PORT: {
-            userFriendlyType = "debug port";
-            propertyToEditKey = "debugport??";
-            currentValue = project.debugPort ? project.debugPort.toString() : undefined;
+            userFriendlySetting = "debug port";
+            settingKey = "debugPort";
+            currentValue = project.ports.debugPort ? project.ports.debugPort.toString() : undefined;
             break;
         }
         default: {
@@ -156,19 +173,25 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
         }
     }
 
-    Log.d("propertyToEditKey", propertyToEditKey);
-    const response = await vscode.window.showInputBox({
-        prompt: `Enter a new ${userFriendlyType} for ${project.name}`,
+    const options: vscode.InputBoxOptions = {
+        prompt: `Enter a new ${userFriendlySetting} for ${project.name}`,
         value: currentValue,
         valueSelection: undefined,
-    });
+    };
 
-    if (response != null) {
-        if (response === currentValue) {
-            vscode.window.showWarningMessage("That's the same as the old value, are you messing with me?");
-        }
-        else {
-            vscode.window.showInformationMessage(`OK, you want to change the ${userFriendlyType} to "${response}", that's neat`);
-        }
+    if (type === ProjectOverview.Editable.APP_PORT || type === ProjectOverview.Editable.DEBUG_PORT) {
+        options.validateInput = (inputToValidate: string): OptionalString => {
+            if (!MCUtil.isGoodPort(Number(inputToValidate))) {
+                return Translator.t(StringNamespaces.CMD_NEW_CONNECTION, "invalidPortNumber", { port: inputToValidate });
+            }
+            return undefined;
+        };
     }
+
+    const input = await vscode.window.showInputBox(options);
+    if (input == null) {
+        return;
+    }
+
+    return Requester.requestSettingChange(project, userFriendlySetting, settingKey, input);
 }

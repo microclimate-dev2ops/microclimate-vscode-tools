@@ -66,7 +66,9 @@ export default class MCSocket {
             .on(SocketEvents.Types.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
 
             .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
-            .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated);
+            .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
+            .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged);
+
 
             // We don't actually need the creation event -
             // we can create the project as needed if we get a 'changed' event for a project we don't recognize
@@ -169,6 +171,14 @@ export default class MCSocket {
         else {
             Log.e("Microclimate didn't send result with validation event");
         }
+    }
+
+    private readonly onProjectSettingsChanged = async (payload: SocketEvents.IProjectSettingsEvent): Promise<void> => {
+        const project = await this.getProject(payload);
+        if (project == null) {
+            return;
+        }
+        return project.onSettingsChangedEvent(payload);
     }
 
     private readonly getProject = async (payload: { projectID: string }): Promise<Project | undefined> => {

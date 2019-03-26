@@ -23,15 +23,14 @@ namespace SocketEvents {
         errorMsg?: string;
         startMode?: string;
         ports?: {
-            // these are actually sent as strings, and will be coerced to numbers.
-            exposedPort: number;
-            internalPort: number;
-            exposedDebugPort?: number;
-            internalDebugPort?: number;
+            exposedPort: string;
+            internalPort: string;
+            exposedDebugPort?: string;
+            internalDebugPort?: string;
         };
     }
 
-        // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts#L144
+    // from https://github.ibm.com/dev-ex/microclimate/blob/master/docker/file-watcher/server/src/projects/Validator.ts#L144
     export interface IValidationResult {
         // severity: Severity;
         severity: string;
@@ -47,6 +46,23 @@ namespace SocketEvents {
         };
     }
 
+    // From FileWatcher's Project.ts
+    export interface IProjectSettingsEvent {
+        readonly operationId: string;
+        readonly projectID: string;
+        readonly name: string;
+        readonly status: string;
+        readonly ports?: {
+            readonly exposedPort?: string;
+            readonly internalPort: string;
+        } | {
+            readonly internalDebugPort: string;
+        };
+        readonly error?: string;
+        readonly contextRoot?: string;
+        readonly healthCheck?: string;
+    }
+
     /**
      * Socket events we listen for from Microclimate Portal
      * See MCSocket
@@ -58,7 +74,8 @@ namespace SocketEvents {
         PROJECT_DELETION = "projectDeletion",
         PROJECT_RESTART_RESULT = "projectRestartResult",
         CONTAINER_LOGS = "container-logs",
-        PROJECT_VALIDATED = "projectValidated"
+        PROJECT_VALIDATED = "projectValidated",
+        PROJECT_SETTING_CHANGED = "projectSettingsChanged",
     }
 
     /**
@@ -69,7 +86,7 @@ namespace SocketEvents {
         BUILD_STATE = "buildStatus",
         CLOSED_STATE = "state",
         START_MODE = "startMode",
-        BUILD_DETAIL = "detailedBuildStatus"
+        BUILD_DETAIL = "detailedBuildStatus",
     }
 }
 
