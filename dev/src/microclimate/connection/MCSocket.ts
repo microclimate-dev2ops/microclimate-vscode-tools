@@ -65,9 +65,9 @@ export default class MCSocket {
             .on(SocketEvents.Types.PROJECT_DELETION,        this.onProjectDeleted)
             .on(SocketEvents.Types.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
 
-            .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
             .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
-            .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged);
+            .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged)
+            .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate);
 
 
             // We don't actually need the creation event -
@@ -146,15 +146,14 @@ export default class MCSocket {
         project.onRestartEvent(payload);
     }
 
-    private readonly onContainerLogs = async (payload: { projectID: string, logs: string }): Promise<void> => {
-        const projectID = payload.projectID;
-        // const projectName = payload.projectName;
-        const logContents = payload.logs;
-
-        const log = this.connection.logManager.getAppLog(projectID);
-        if (log != null) {
-            log.update(logContents);
+    private readonly onLogUpdate = async (payload: SocketEvents.ILogUpdateEvent): Promise<void> => {
+        const project = await this.getProject(payload);
+        if (project == null) {
+            return;
         }
+
+        // Log.d(`Received log ${payload.logName} of length ${payload.logs.length} with reset ${payload.reset}`);
+        project.logManager.onNewLogs(payload);
     }
 
     private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
@@ -189,7 +188,11 @@ export default class MCSocket {
             return undefined;
         }
 
-        return this.connection.getProjectByID(projectID);
+        const result = await this.connection.getProjectByID(projectID);
+        if (result == null) {
+            Log.w("Received socket event for nonexistent project", payload.projectID);
+        }
+        return result;
     }
 
     public toString(): string {

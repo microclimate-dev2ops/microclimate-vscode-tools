@@ -63,6 +63,17 @@ namespace SocketEvents {
         readonly healthCheck?: string;
     }
 
+    export interface ILogUpdateEvent {
+        readonly projectName: string;
+        readonly projectID: string;
+        readonly logType: string;
+        readonly logName: string;
+        // this is the empty string for container logs (they have no file)
+        readonly logPath: string;
+        readonly logs: string;
+        readonly reset: boolean;
+    }
+
     /**
      * Socket events we listen for from Microclimate Portal
      * See MCSocket
@@ -73,9 +84,9 @@ namespace SocketEvents {
         PROJECT_CLOSED = "projectClosed",
         PROJECT_DELETION = "projectDeletion",
         PROJECT_RESTART_RESULT = "projectRestartResult",
-        CONTAINER_LOGS = "container-logs",
         PROJECT_VALIDATED = "projectValidated",
         PROJECT_SETTING_CHANGED = "projectSettingsChanged",
+        LOG_UPDATE = "log-update",
     }
 
     /**

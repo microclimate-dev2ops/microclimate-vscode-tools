@@ -24,7 +24,7 @@ const STRING_NS = StringNamespaces.REQUESTS;
 
 namespace Requester {
 
-    export async function requestProjectRestart(project: Project, startMode: StartModes.Modes): Promise<request.RequestPromise<any>> {
+    export async function requestProjectRestart(project: Project, startMode: StartModes.Modes): Promise<request.FullResponse> {
         const body = {
             startMode: startMode.toString()
         };
@@ -42,10 +42,10 @@ namespace Requester {
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
         // return doProjectRequest(project, url, body, request.post, "Build");
         const buildMsg = Translator.t(STRING_NS, "build");
-        return doProjectRequest(project, url, body, request.post, buildMsg)
-            // This is a workaround for the Build action not refreshing validation state.
-            // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
-            .then( () => requestValidate(project, true));
+        await doProjectRequest(project, url, body, request.post, buildMsg);
+        // This is a workaround for the Build action not refreshing validation state.
+        // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
+        await requestValidate(project, true);
     }
 
     export async function requestToggleAutoBuild(project: Project): Promise<void> {
@@ -63,13 +63,11 @@ namespace Requester {
         };
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
-        return doProjectRequest(project, url, body, request.post, newAutoBuildUserStr)
-            .then( (result: any) => {
-                if (result != null && MCUtil.isGoodStatusCode(result.statusCode)) {
-                    Log.d("Received good status from autoBuild request, new auto build is: " + newAutoBuild);
-                    project.setAutoBuild(newAutoBuild);
-                }
-            });
+        const response = await doProjectRequest(project, url, body, request.post, newAutoBuildUserStr);
+        if (MCUtil.isGoodStatusCode(response.statusCode)) {
+            Log.d("Received good status from autoBuild request, new auto build is: " + newAutoBuild);
+            project.setAutoBuild(newAutoBuild);
+        }
     }
 
     export async function requestToggleEnablement(project: Project): Promise<void> {
@@ -79,14 +77,14 @@ namespace Requester {
         const newEnablementStr: string = Translator.t(STRING_NS, newEnablementMsgKey);
 
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.getEnablementAction(newEnablement));
-        return doProjectRequest(project, url, {}, request.put, newEnablementStr);
+        await doProjectRequest(project, url, {}, request.put, newEnablementStr);
     }
 
     export async function requestValidate(project: Project, silent: boolean): Promise<void> {
         const [url, body]: [string, IValidateRequestBody] = assembleValidateRequest(project, false);
 
         const userOperation = silent ? undefined : Translator.t(StringNamespaces.CMD_MISC, "validate");
-        return doProjectRequest(project, url, body, request.post, userOperation);
+        await doProjectRequest(project, url, body, request.post, userOperation);
     }
 
     export async function requestGenerate(project: Project): Promise<void> {
@@ -94,9 +92,9 @@ namespace Requester {
 
         const generateMsg = Translator.t(STRING_NS, "generateMissingFiles");
 
-        return doProjectRequest(project, url, body, request.post, generateMsg)
-            // request a validate after the generate so that the validation errors go away faster
-            .then( () => requestValidate(project, true));
+        await doProjectRequest(project, url, body, request.post, generateMsg);
+        // request a validate after the generate so that the validation errors go away faster
+        await requestValidate(project, true);
     }
 
     interface IValidateRequestBody {
@@ -133,7 +131,7 @@ namespace Requester {
     export async function requestDelete(project: Project): Promise<void> {
         const url = Endpoints.getProjectEndpoint(project.connection, project.id, "");
         const deleteMsg = Translator.t(STRING_NS, "delete");
-        return doProjectRequest(project, url, {}, request.delete, deleteMsg);
+        await doProjectRequest(project, url, {}, request.delete, deleteMsg);
     }
 
     export async function requestSettingChange(project: Project, settingName: string, settingKey: string, newValue: string): Promise<void> {
@@ -142,7 +140,38 @@ namespace Requester {
         const body = {
             [settingKey]: newValue,
         };
-        return doProjectRequest(project, url, body, request.post, updateMsg);
+        await doProjectRequest(project, url, body, request.post, updateMsg);
+    }
+
+    interface ILogResponse {
+        readonly build: ILogObject[];
+        readonly app: ILogObject[];
+    }
+
+    interface ILogObject {
+        readonly logName: string;
+        readonly workspathLogPath?: string;
+    }
+
+    export async function requestAvailableLogs(project: Project): Promise<ILogResponse> {
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.LOGS);
+        try {
+            return (await doProjectRequest(project, url, {}, request.get)).body;
+        }
+        catch (err) {
+            if (err.statusCode === 404) {
+                return {
+                    build: [], app: []
+                };
+            }
+            throw err;
+        }
+    }
+
+    export async function requestToggleLogs(project: Project, enable: boolean): Promise<void> {
+        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.LOGS);
+        const method = enable ? request.post : request.delete;
+        await doProjectRequest(project, url, {}, method);
     }
 
     /**
@@ -153,7 +182,7 @@ namespace Requester {
     async function doProjectRequest(
             project: Project, url: string, body: {},
             requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
-            userOperationName?: string): Promise<any> {
+            userOperationName?: string): Promise<request.FullResponse> {
 
         Log.i(`Doing ${userOperationName != null ? userOperationName + " " : ""}request to ${url}`);
 
@@ -163,8 +192,8 @@ namespace Requester {
             resolveWithFullResponse: true
         };
 
-        return requestFunc(url, options)
-        .then( (result: any) => {
+        try {
+            const result: request.FullResponse = await requestFunc(url, options);
             Log.d(`Response code ${result.statusCode} from ` +
                 `${userOperationName ? userOperationName.toLowerCase() + " " : ""}request for ${project.name}`);
 
@@ -175,8 +204,8 @@ namespace Requester {
                 );
             }
             return result;
-        })
-        .catch( (err: any) => {
+        }
+        catch (err) {
             Log.w(`Error doing ${userOperationName} project request for ${project.name}:`, err);
 
             // If the server provided a specific message, present the user with that,
@@ -188,7 +217,7 @@ namespace Requester {
                 { operationName: userOperationName, projectName: project.name, err: errMsg })
             );
             return err;
-        });
+        }
     }
 }
 

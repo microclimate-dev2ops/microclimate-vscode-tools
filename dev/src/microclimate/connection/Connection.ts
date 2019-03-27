@@ -19,7 +19,6 @@ import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import Resources from "../../constants/Resources";
 import Log from "../../Logger";
-import MCLogManager from "../logs/MCLogManager";
 import DebugUtils from "../project/DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
@@ -35,10 +34,9 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
 
     public readonly socket: MCSocket;
 
-    public readonly logManager: MCLogManager;
-
     private readonly projectsApiUri: string;
 
+    private hasConnected: boolean = false;
     // Is this connection CURRENTLY connected to its Microclimate instance
     private connected: boolean = false;
 
@@ -59,7 +57,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     ) {
         this.projectsApiUri = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
         this.socket = new MCSocket(this, socketNS);
-        this.logManager = new MCLogManager(this);
         this.workspacePath = vscode.Uri.file(workspacePath_);
         this.versionStr = MCEnvironment.getVersionAsString(version);
 
@@ -73,7 +70,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public async destroy(): Promise<void> {
         Log.d("Destroy connection " + this);
         return Promise.all([
-            this.logManager.onConnectionDisconnect(),
             this.socket.destroy()
         ])
         .then(() => Promise.resolve());
@@ -108,10 +104,14 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
             return;
         }
 
+        if (this.hasConnected) {
+            // things to do on reconnect, but not initial connect, go here
+            this.projects.forEach((p) => p.onConnectionReconnect());
+        }
+        this.hasConnected = true;
         this.connected = true;
         Log.d(`${this} is now connected`);
         await this.forceUpdateProjectList();
-        this.logManager.onConnectionReconnect();
 
         this.onChange();
     }
@@ -128,7 +128,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.projects = [];
 
         Log.d(`${this} is now disconnected`);
-        this.logManager.onConnectionDisconnect();
 
         this.onChange();
     }

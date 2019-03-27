@@ -44,26 +44,22 @@ export default async function restartProjectCmd(project: Project, debug: boolean
         return false;
     }
 
-    return Requester.requestProjectRestart(project, startMode)
-        .then( async (result) => {
-            const statusCode = Number((await result).statusCode);
+    const response = await Requester.requestProjectRestart(project, startMode);
+    const statusCode = Number(response.statusCode);
 
-            // Note here that we don't return whether or not the restart actually suceeded,
-            // just whether or not it was accepted by the server and therefore initiated.
-            if (MCUtil.isGoodStatusCode(statusCode)) {
-                Log.d("Restart was accepted by server");
+    // Note here that we don't return whether or not the restart actually suceeded,
+    // just whether or not it was accepted by the server and therefore initiated.
+    if (MCUtil.isGoodStatusCode(statusCode)) {
+        Log.d("Restart was accepted by server");
 
-                const restarting = project.doRestart(startMode);
-                if (!restarting) {
-                    // Should never happen
-                    Log.e("Restart was rejected by Project class");
-                    return false;
-                }
-
-                // open the app's logs so we can watch the restart execute
-                project.connection.logManager.getOrCreateAppLog(project.id, project.name).showOutputChannel();
-                return true;
-            }
+        const restarting = project.doRestart(startMode);
+        if (!restarting) {
+            // Should never happen
+            Log.e("Restart was rejected by Project class");
             return false;
-    });
+        }
+
+        return true;
+    }
+    return false;
 }

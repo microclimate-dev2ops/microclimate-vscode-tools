@@ -47,6 +47,13 @@ export default class ConnectionManager {
         return this._connections;
     }
 
+    // public get allProjects(): Promise<Project[]> {
+    //     return this.connections.reduce(async (allProjects: Promise<Project[]>, connection: Connection): Promise<Project[]> => {
+    //         const projects = await connection.getProjects();
+    //         return (await allProjects).concat(projects);
+    //     }, Promise.resolve([]));
+    // }
+
     public async addConnection(uri: vscode.Uri, host: string, mcVersion: number, socketNS: string, workspace: string): Promise<Connection> {
         if (this.connectionExists(uri)) {
             const alreadyExists = Translator.t(StringNamespaces.DEFAULT, "connectionAlreadyExists", { uri });

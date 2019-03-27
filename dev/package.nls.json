@@ -55,16 +55,8 @@
     "cmdTitle_requestBuild": "Build",
     "cmdDescr_requestBuild": "Manually start a project build in Microclimate",
 
-    "cmdID_openBuildLog": "ext.mc.openBuildLog",
-    "cmdTitle_openBuildLog": "Show Build Log",
-    "cmdDescr_openBuildLog": "Show a project's Microclimate build logs in the Output view",
-
-    "cmdID_openAppLog": "ext.mc.openAppLog",
-    "cmdTitle_openAppLog": "Show Application Log",
-    "cmdDescr_openAppLog": "Show a project's Microclimate application logs in the Output view",
-
-    "cmdID_hideLogs": "ext.mc.hideLogs",
-    "cmdTitle_hideLogs": "Hide Logs",
+    "cmdID_manageLogs": "ext.mc.manageLogs",
+    "cmdTitle_manageLogs": "Manage Logs",
 
     "cmdID_projectOverview": "ext.mc.projectOverview",
     "cmdTitle_projectOverview": "Open Project Overview",

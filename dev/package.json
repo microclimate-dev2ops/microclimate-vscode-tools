@@ -127,18 +127,8 @@
                 "category": "%commandCategory%"
             },
             {
-                "command": "%cmdID_openBuildLog%",
-                "title": "%cmdTitle_openBuildLog%",
-                "category": "%commandCategory%"
-            },
-            {
-                "command": "%cmdID_openAppLog%",
-                "title": "%cmdTitle_openAppLog%",
-                "category": "%commandCategory%"
-            },
-            {
-                "command": "%cmdID_hideLogs%",
-                "title": "%cmdTitle_hideLogs%",
+                "command": "%cmdID_manageLogs%",
+                "title": "%cmdTitle_manageLogs%",
                 "category": "%commandCategory%"
             },
             {
@@ -264,14 +254,9 @@
                     "group": "ext.mc.b"
                 },
                 {
-                    "command": "%cmdID_openAppLog%",
+                    "command": "%cmdID_manageLogs%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.c@1"
-                },
-                {
-                    "command": "%cmdID_openBuildLog%",
-                    "when": "%isEnabledProject%",
-                    "group": "ext.mc.c@2"
                 },
                 {
                     "command": "%cmdID_restartRun%",

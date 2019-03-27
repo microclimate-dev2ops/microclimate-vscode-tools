@@ -56,7 +56,7 @@ export default class ProjectPendingRestart {
 
     // This promise is resolved by calling resolveRestartEvent when this project receives the projectRestartResult event
     // The restart cannot complete until this promise resolves.
-    private restartEventPromise: Promise<void>;
+    private readonly restartEventPromise: Promise<void>;
     // Like resolve above, also set in the constructor. Will never be undefined.
     private resolveRestartEvent: (() => void) | undefined;
 

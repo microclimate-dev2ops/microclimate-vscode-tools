@@ -29,7 +29,6 @@ import removeConnectionCmd from "./RemoveConnectionCmd";
 import containerBashCmd from "./ContainerShellCmd";
 import projectOverviewCmd from "./ProjectOverviewCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
-import openLogCmd from "./OpenLogCmd";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import openAppMonitorCmd from "./OpenAppMonitor";
 import refreshConnectionCmd from "./RefreshConnectionCmd";
@@ -37,7 +36,7 @@ import openCreateOrImportPageCmd from "./NewMCProjectCmd";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 import validateCmd from "./ValidateCmd";
-import hideLogsCmd from "./HideLogsCmd";
+import manageLogsCmd from "./ManageLogsCmd";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -70,9 +69,7 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand(Commands.ENABLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
         vscode.commands.registerCommand(Commands.DISABLE_AUTOBUILD, (selection) => toggleAutoBuildCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.OPEN_APP_LOG,      (selection) => openLogCmd(selection, true)),
-        vscode.commands.registerCommand(Commands.OPEN_BUILD_LOG,    (selection) => openLogCmd(selection, false)),
-        vscode.commands.registerCommand(Commands.HIDE_LOGS,         () => hideLogsCmd()),
+        vscode.commands.registerCommand(Commands.MANAGE_LOGS,       (selection) => manageLogsCmd(selection)),
 
         vscode.commands.registerCommand(Commands.DISABLE_PROJECT,   (selection) => toggleEnablementCmd(selection, false)),
         vscode.commands.registerCommand(Commands.ENABLE_PROJECT,    (selection) => toggleEnablementCmd(selection, true)),

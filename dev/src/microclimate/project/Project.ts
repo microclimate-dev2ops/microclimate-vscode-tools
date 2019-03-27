@@ -26,6 +26,7 @@ import getContextID from "./ProjectContextID";
 import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
 import SocketEvents from "../connection/SocketEvents";
+import MCLogManager from "./logs/MCLogManager";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -70,6 +71,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     // Track this so we can refresh it when update() is called, and prevent multiple webviews being open for one project.
     private activeProjectInfo: vscode.WebviewPanel | undefined;
 
+    public readonly logManager: MCLogManager;
+
     constructor(
         projectInfo: any,
         public readonly connection: Connection,
@@ -108,6 +111,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // QuickPickItem
         this.label = Translator.t(STRING_NS, "quickPickLabel", { projectName: this.name, projectType: this.type.type });
         // this.detail = this.id;
+
+        this.logManager = new MCLogManager(this);
 
         Log.i(`Created project ${this.name}:`, this);
     }
@@ -314,10 +319,17 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.pendingRestart.onReceiveRestartEvent(success, errMsg);
     }
 
+    public onConnectionReconnect(): void {
+        // refresh all logs
+        // this.toggleLogStreaming(true);
+        this.logManager.onConnectionReconnect();
+    }
+
     public onConnectionDisconnect(): void {
         if (this.pendingRestart != null) {
             this.pendingRestart.onConnectionDisconnect();
         }
+        this.logManager.onConnectionDisconnect();
     }
 
     /**
@@ -327,7 +339,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         Log.i("Deleting project " + this.name);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
         this.clearValidationErrors();
-        this.connection.logManager.destroyLogsForProject(this.id);
+        this.logManager.destroy();
         DebugUtils.removeDebugLaunchConfigFor(this);
 
         if (this.activeProjectInfo != null) {
@@ -341,6 +353,8 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     public async clearValidationErrors(): Promise<void> {
         Project.diagnostics.delete(this.localPath);
     }
+
+    ///// ProjectOverview
 
     /**
      * To be called when the user tries to open this project's Project Info page.

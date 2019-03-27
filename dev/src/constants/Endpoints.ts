@@ -35,13 +35,14 @@ export default class Endpoints {
     // Project endpoints, eg "localhost:9090/api/v1/project/81eba580-0aea-11e9-b530-67b2995d0cd9/restart"
     public static readonly RESTART_ACTION:  string = "restart";
     public static readonly BUILD_ACTION:    string = "build";
-    public static readonly BUILD_LOG:       string = "build-log";
     public static readonly VALIDATE:        string = "validate";
     public static readonly GENERATE:        string = "validate/generate";
     public static readonly PROPERTES:       string = "properties";
+    public static readonly LOGS:            string = "logs";
 
-    public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string, useV2: boolean = false): string {
-        return connection.mcUri.toString().concat(`${useV2 ? Endpoints.PROJECTS_V2 : Endpoints.PROJECTS}/${projectID}/${endpoint}`);
+    public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string, projectsV2: boolean = false): string {
+        const projectsPath = projectsV2 ? Endpoints.PROJECTS_V2 : Endpoints.PROJECTS;
+        return connection.mcUri.toString().concat(`${projectsPath}/${projectID}/${endpoint}`);
     }
 
     public static getAppMonitorUrl(connection: Connection, projectID: string): Uri {
