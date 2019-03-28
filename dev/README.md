@@ -17,8 +17,8 @@ Join us [on Slack](https://slack-invite-ibm-cloud-tech.mybluemix.net) if you hav
 ## How to use [(Documentation)](https://microclimate-dev2ops.github.io/mdt-vsc-tutorial)
 - Navigate to the **Explorer** view group and open the **Microclimate** view.
     - Right-click the background of the Microclimate view to access the **New connection** commands.
-    - Right-click a connection or project to access the other commands.
-- Open the **Command Palette** keys and type "Microclimate" to see the actions available.
+    - After creating a connection, right-click a connection or project to access the other commands.
+- Open the [**Command Palette**](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) and type "Microclimate" to see the actions available.
 
 ## Features [(Documentation)](https://microclimate-dev2ops.github.io/mdt-vsc-commands-overview)
 - View all projects in Microclimate, including application and build statuses.
