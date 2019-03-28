@@ -79,7 +79,7 @@ interface IWebViewMsg {
 
 function handleWebviewMessage(this: Project, msg: IWebViewMsg): void {
     const project = this;
-    Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type} data ${JSON.stringify(msg.data)}`);
+    // Log.d(`Got message from ProjectInfo for project ${project.name}: ${msg.type} data ${JSON.stringify(msg.data)}`);
     try {
         switch (msg.type) {
             case ProjectOverview.Messages.OPEN: {

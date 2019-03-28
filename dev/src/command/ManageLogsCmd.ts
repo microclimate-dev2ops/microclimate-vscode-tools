@@ -32,11 +32,7 @@ export default async function manageLogsCmd(project: Project): Promise<void> {
         project = selected;
     }
 
-    // const allProjects = await ConnectionManager.instance.allProjects;
-    // const allOpenLogs: MCLog[] = allProjects.reduce((allLogs_: MCLog[], project: Project): MCLog[] => {
-    //     return allLogs_.concat(project.logs);
-    // }, []);
-
+    // Wait for the logmanager to initialize, just in case it hasn't finished yet
     await project.logManager.initPromise;
     const logs = project.logManager.logs;
 
@@ -45,14 +41,10 @@ export default async function manageLogsCmd(project: Project): Promise<void> {
     };
 
     // https://github.com/Microsoft/vscode/issues/64014
-    // const selection: vscode.QuickPickItem[] | undefined = await vscode.window.showQuickPick(quickPickItems, options);
-
-    // The return type is an array of MCLogs, but we have to mark it as 'any' due to issue linked above
-    const selection: any = await vscode.window.showQuickPick(logs, options);
-    if (selection != null) {
+    const logsToShow: MCLog[] | undefined = await vscode.window.showQuickPick(logs, options) as (MCLog[] | undefined);
+    if (logsToShow != null) {
         // Log.d("selection", selection);
 
-        const logsToShow: MCLog[] = selection as MCLog[];
         logs.forEach((log) => {
             if (logsToShow.includes(log)) {
                 log.showOutput();

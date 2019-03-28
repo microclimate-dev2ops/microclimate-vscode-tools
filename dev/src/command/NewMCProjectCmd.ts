@@ -15,7 +15,7 @@ import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Connection from "../microclimate/connection/Connection";
-import Endpoints from "../constants/Endpoints";
+import EndpointUtil from "../constants/Endpoints";
 
 /**
  * @param create true for Create page, false for Import page
@@ -32,7 +32,7 @@ export default async function openCreateOrImportPage(connection: Connection, cre
         connection = selected;
     }
 
-    const newProjectUrl = Endpoints.getCreateOrImportUrl(connection, create);
+    const newProjectUrl = EndpointUtil.resolveCreateOrImportUrl(connection, create);
     Log.i(`${create ? "Create" : "Import"} new Microclimate project at ${newProjectUrl}`);
     return vscode.commands.executeCommand(Commands.VSC_OPEN, newProjectUrl);
 }

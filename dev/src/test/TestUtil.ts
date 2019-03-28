@@ -17,7 +17,7 @@ import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
-import Endpoints from "../constants/Endpoints";
+import EndpointUtil, { MCEndpoints } from "../constants/Endpoints";
 import ProjectObserver from "./ProjectObserver";
 import ProjectState from "../microclimate/project/ProjectState";
 
@@ -34,7 +34,7 @@ namespace TestUtil {
         const projectName: string = PROJECT_PREFIX + type.type.toLowerCase().replace(".", "") + Date.now().toString().slice(-8);
         Log.t(`Create project of type ${type} at ${connection.mcUri} named ${projectName}`);
 
-        const uri: string = connection.mcUri.with({ path: Endpoints.PROJECTS }).toString();
+        const uri: string = EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECTS);
 
         const payload: any = {
             name: projectName,

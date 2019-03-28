@@ -15,7 +15,7 @@ import Project from "../microclimate/project/Project";
 import { promptForProject } from "./CommandUtil";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
-import Endpoints from "../constants/Endpoints";
+import EndpointUtil from "../constants/Endpoints";
 
 export default async function openAppMonitorCmd(project: Project): Promise<void> {
     Log.d("openAppMonitorCmd invoked");
@@ -29,7 +29,7 @@ export default async function openAppMonitorCmd(project: Project): Promise<void>
         project = selected;
     }
 
-    const monitorPageUrl: vscode.Uri = Endpoints.getAppMonitorUrl(project.connection, project.id);
+    const monitorPageUrl: vscode.Uri = EndpointUtil.resolveAppMonitorUrl(project.connection, project.id);
     Log.i("Open monitor at " + monitorPageUrl);
     vscode.commands.executeCommand(Commands.VSC_OPEN, monitorPageUrl);
 }

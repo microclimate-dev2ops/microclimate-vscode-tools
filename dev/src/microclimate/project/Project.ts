@@ -187,6 +187,16 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             changed = true;
             const startModeMsg = projectInfo.startMode == null ? "" : `, startMode=${projectInfo.startMode}`;
             Log.d(`${this.name} went from ${oldState} to ${this._state}${startModeMsg}`);
+
+            // Check if the project was just enabled or disabled
+            if (oldState != null) {
+                if (oldState.isEnabled && !this._state.isEnabled) {
+                    this.onDisable();
+                }
+                else if (!oldState.isEnabled && this._state.isEnabled) {
+                    this.onEnable();
+                }
+            }
         }
 
         const ports = projectInfo.ports;
@@ -320,26 +330,38 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public onConnectionReconnect(): void {
-        // refresh all logs
-        // this.toggleLogStreaming(true);
-        this.logManager.onConnectionReconnect();
+        this.logManager.onReconnectOrEnable();
     }
 
     public onConnectionDisconnect(): void {
         if (this.pendingRestart != null) {
-            this.pendingRestart.onConnectionDisconnect();
+            this.pendingRestart.onDisconnectOrDisable(true);
         }
-        this.logManager.onConnectionDisconnect();
+        this.logManager.onDisconnectOrDisable(true);
+    }
+
+    public async onEnable(): Promise<void> {
+        Log.i(`${this.name} has been enabled`);
+        this.logManager.onReconnectOrEnable();
+    }
+
+    public async onDisable(): Promise<void> {
+        Log.i(`${this.name} has been disabled`);
+        if (this.pendingRestart != null) {
+            this.pendingRestart.onDisconnectOrDisable(false);
+        }
+        // this.logManager.destroyAllLogs();
+        this.logManager.onDisconnectOrDisable(false);
     }
 
     /**
      * Call when this project is deleted in Microclimate
      */
     public async onDelete(): Promise<void> {
-        Log.i("Deleting project " + this.name);
+        Log.i(`${this.name} was deleted`);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
         this.clearValidationErrors();
-        this.logManager.destroy();
+        this.logManager.destroyAllLogs();
         DebugUtils.removeDebugLaunchConfigFor(this);
 
         if (this.activeProjectInfo != null) {

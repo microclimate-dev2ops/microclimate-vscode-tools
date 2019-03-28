@@ -163,8 +163,9 @@ export default class ProjectPendingRestart {
         }
     }
 
-    public onConnectionDisconnect(): void {
-        this.fulfill(false, Translator.t(STRING_NS, "restartFailedReasonDisconnect"));
+    public onDisconnectOrDisable(disconnect: boolean): void {
+        const msg = disconnect ? Translator.t(STRING_NS, "restartFailedReasonDisconnect") : Translator.t(STRING_NS, "restartFailedReasonDisabled");
+        this.fulfill(false, msg);
     }
 
     /**

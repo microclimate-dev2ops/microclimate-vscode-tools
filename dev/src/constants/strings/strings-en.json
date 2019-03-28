@@ -66,7 +66,7 @@
         "enterMicroclimateHost": "Enter the hostname or IP for the Microclimate instance you want to connect to.",
         "enterMicroclimatePort": "Enter the Port for the local Microclimate instance you want to connect to.",
         "enterDifferentPortBtn": "Enter a different port",
-        "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be an integer between 1024 and 65536.",
+        "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be a positive integer less than 65536.",
         "connectionSucceeded": "New connection to {{- connectionUri }} succeeded. Workspace path is: {{- workspacePath }}.",
         "openWorkspaceBtn": "Open workspace",
         "editConnectionBtn": "Edit",
@@ -92,7 +92,8 @@
         "restartFailureWithReason": "Failed to restart {{ projectName }} in {{ startMode }} mode: {{ reason }}.",
         "restartFailedReasonDebugFailure": "attaching the debugger failed. Try attaching the debugger again",
         "restartFailedReasonTimeout": "failed to restart within {{ timeoutS }} seconds",
-        "restartFailedReasonDisconnect": "Microclimate disconnected"
+        "restartFailedReasonDisconnect": "Microclimate disconnected",
+        "restartFailedReasonDisabled": "The project was disabled"
     },
 
     "openInBrowserCmd": {

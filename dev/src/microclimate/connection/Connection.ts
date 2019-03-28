@@ -14,7 +14,7 @@ import * as request from "request-promise-native";
 
 import ITreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
 import Project from "../project/Project";
-import Endpoints from "../../constants/Endpoints";
+import { MCEndpoints, EndpointUtil } from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
 import ConnectionManager from "./ConnectionManager";
 import Resources from "../../constants/Resources";
@@ -33,8 +33,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
     public readonly versionStr: string;
 
     public readonly socket: MCSocket;
-
-    private readonly projectsApiUri: string;
 
     private hasConnected: boolean = false;
     // Is this connection CURRENTLY connected to its Microclimate instance
@@ -55,7 +53,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         public readonly socketNS: string,
         workspacePath_: string
     ) {
-        this.projectsApiUri = Endpoints.getEndpoint(this, Endpoints.PROJECTS);
         this.socket = new MCSocket(this, socketNS);
         this.workspacePath = vscode.Uri.file(workspacePath_);
         this.versionStr = MCEnvironment.getVersionAsString(version);
@@ -139,7 +136,8 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         }
         Log.d(`Updating projects list from ${this}`);
 
-        const result = await request.get(this.projectsApiUri, { json : true });
+        const projectsUrl = EndpointUtil.resolveMCEndpoint(this, MCEndpoints.PROJECTS);
+        const result = await request.get(projectsUrl, { json : true });
 
         const oldProjects = this.projects;
         this.projects = [];

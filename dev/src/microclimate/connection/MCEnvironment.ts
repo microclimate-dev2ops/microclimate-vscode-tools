@@ -14,7 +14,7 @@ import * as request from "request-promise-native";
 import * as reqErrors from "request-promise-native/errors";
 
 import Log from "../../Logger";
-import Endpoints from "../../constants/Endpoints";
+import { MCEndpoints } from "../../constants/Endpoints";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Connection from "./Connection";
@@ -36,7 +36,7 @@ namespace MCEnvironment {
     }
 
     export async function getEnvData(mcUri: Uri): Promise<IMCEnvData> {
-        const envUri: Uri = mcUri.with({ path: Endpoints.ENVIRONMENT });
+        const envUri: Uri = mcUri.with({ path: MCEndpoints.ENVIRONMENT });
         const connectTimeout = 2500;
 
         try {

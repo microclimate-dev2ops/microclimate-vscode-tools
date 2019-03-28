@@ -65,8 +65,8 @@ export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMS: number, re
         setTimeout( () => reject(rejectMsg), timeoutMS);
 
         promise
-            .then( (result: T) => resolve(result))
-            .catch( (err: any) => reject(err));
+        .then( (result: T) => resolve(result))
+        .catch( (err: any) => reject(err));
     });
 }
 
@@ -74,7 +74,7 @@ export function isGoodDate(date: Date): boolean {
     return !isNaN(date.valueOf());
 }
 
-export function isGoodStatusCode(statusCode: number | undefined): boolean {
+export function isGoodStatusCode(statusCode: OptionalNumber): boolean {
     return statusCode != null && !isNaN(statusCode) && statusCode >= 200 && statusCode < 400;
 }
 
@@ -87,8 +87,8 @@ export interface IConnectionInfo {
     // but at that point it might be cleaner to just save the URI.
 }
 
-export function isGoodPort(port: number | undefined): boolean {
-    return port != null && !isNaN(port) && Number.isInteger(port) && port > 1024 && port < 65536;
+export function isGoodPort(port: OptionalNumber): boolean {
+    return port != null && !isNaN(port) && Number.isInteger(port) && port > 0 && port < 65536;
 }
 
 /**
@@ -119,6 +119,18 @@ export function getConnInfoFrom(url: Uri): IConnectionInfo {
         port: port
     };
     return result;
+}
+
+export function errToString(err: any, isOidc: boolean = false): string {
+    if (isOidc) {
+        return err.error_description || err.error || err.message || JSON.stringify(err);
+    }
+
+    if (err.error) {
+        return err.error.msg || err.error.message || err.error.info.message || JSON.stringify(err.error);
+    }
+
+    return err.message || JSON.stringify(err);
 }
 
 const charsToRemove = "·/_,:;";

@@ -12,52 +12,79 @@
 import { Uri } from "vscode";
 import Connection from "../microclimate/connection/Connection";
 
+export type Endpoint = MCEndpoints | ProjectEndpoints;
+
 // non-nls-file
+/**
+ *  "Regular" endpoints, eg "localhost:9090/api/v1/environment"
+ */
+export enum MCEndpoints {
+    ENVIRONMENT = "api/v1/environment",
+    PROJECTS = "api/v1/projects",
+    PROJECTS_V2 = "api/v2/projects",
+    // Deprecated
+    VALIDATE_OLD = "api/v1/validate",
+    // Deprecated
+    GENERATE_OLD = "api/v1/validate/generate",
+}
 
 /**
- * Class to hold constants that are Portal API endpoint paths
+ * Project endpoints, eg "localhost:9090/api/v1/project/81eba580-0aea-11e9-b530-67b2995d0cd9/restart"
  */
-export default class Endpoints {
+export enum ProjectEndpoints {
+    RESTART_ACTION = "restart",
+    BUILD_ACTION = "build",
+    VALIDATE = "validate",
+    GENERATE = "validate/generate",
+    PROPERTES = "properties",
+    LOGS = "logs",
 
-    // "regular" endpoints, eg "localhost:9090/api/v1/environment"
-    public static readonly ENVIRONMENT: string = "api/v1/environment";
-    public static readonly PROJECTS: string = "api/v1/projects";
-    public static readonly PROJECTS_V2: string = "api/v2/projects";
-    // Deprecated
-    public static readonly VALIDATE_OLD: string = "api/v1/validate";
-    // Deprecated
-    public static readonly GENERATE_OLD: string = "api/v1/validate/generate";
+    OPEN = "open",
+    CLOSE = "close",
+    NONE = "",
+}
 
-    public static getEndpoint(connection: Connection, endpoint: string): string {
+/**
+ * Functions for resolving Portal endpoints
+ */
+export namespace EndpointUtil {
+
+    export function isProjectEndpoint(endpoint: Endpoint): boolean {
+        return Object.values(ProjectEndpoints).includes(endpoint);
+    }
+
+    export function resolveMCEndpoint(connection: Connection, endpoint: MCEndpoints): string {
         return connection.mcUri.toString().concat(endpoint);
     }
 
-    // Project endpoints, eg "localhost:9090/api/v1/project/81eba580-0aea-11e9-b530-67b2995d0cd9/restart"
-    public static readonly RESTART_ACTION:  string = "restart";
-    public static readonly BUILD_ACTION:    string = "build";
-    public static readonly VALIDATE:        string = "validate";
-    public static readonly GENERATE:        string = "validate/generate";
-    public static readonly PROPERTES:       string = "properties";
-    public static readonly LOGS:            string = "logs";
+    /**
+     * Use the v2 API for the following endpoints
+     */
+    const v2Endpoints: Endpoint[] = [
+        ProjectEndpoints.PROPERTES,
+    ];
 
-    public static getProjectEndpoint(connection: Connection, projectID: string, endpoint: string, projectsV2: boolean = false): string {
-        const projectsPath = projectsV2 ? Endpoints.PROJECTS_V2 : Endpoints.PROJECTS;
+    export function resolveProjectEndpoint(
+        connection: Connection, projectID: string, endpoint: ProjectEndpoints): string {
+        const projectsPath = v2Endpoints.includes(endpoint) ? MCEndpoints.PROJECTS_V2 : MCEndpoints.PROJECTS;
         return connection.mcUri.toString().concat(`${projectsPath}/${projectID}/${endpoint}`);
     }
 
-    public static getAppMonitorUrl(connection: Connection, projectID: string): Uri {
+    export function resolveAppMonitorUrl(connection: Connection, projectID: string): Uri {
         return connection.mcUri.with({ query: `project=${projectID}&view=monitor` });
     }
 
-    private static readonly QUERY_NEW_PROJECT:      string = "new-project=true";
-    private static readonly QUERY_IMPORT_PROJECT:   string = "import-project=true";
+    const QUERY_NEW_PROJECT:        string = "new-project=true";
+    const QUERY_IMPORT_PROJECT:     string = "import-project=true";
 
-    public static getCreateOrImportUrl(connection: Connection, create: boolean): Uri {
-        const query = create ? this.QUERY_NEW_PROJECT : this.QUERY_IMPORT_PROJECT;
+    export function resolveCreateOrImportUrl(connection: Connection, create: boolean): Uri {
+        const query = create ? QUERY_NEW_PROJECT : QUERY_IMPORT_PROJECT;
         return connection.mcUri.with({ query });
     }
 
-    public static getEnablementAction(enable: boolean): string {
-        return `${enable ? "open" : "close"}`;
+    export function getEnablementAction(enable: boolean): ProjectEndpoints {
+        return enable ? ProjectEndpoints.OPEN : ProjectEndpoints.CLOSE;
     }
 }
+
+export default EndpointUtil;

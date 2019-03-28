@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import Log from "../../../Logger";
 
 // export enum MCLogTypes {
 //     "app", "build",
@@ -11,7 +10,7 @@ const USER_CONTAINER_LOGS_NAME = "container log";
 
 export default class MCLog implements vscode.QuickPickItem {
 
-    private readonly displayName: string;
+    public readonly displayName: string;
 
     // quickPickItem
     public readonly label: string;
@@ -37,7 +36,7 @@ export default class MCLog implements vscode.QuickPickItem {
         this.label = this.displayName;
         // this.description = `(${this.logType} log)`;
 
-        Log.i(`Initialized log ${this.displayName} internal name ${this.logName}`);
+        // Log.d(`Initialized log ${this.displayName} internal name ${this.logName}`);
     }
 
     public onNewLogs(reset: boolean, logs: string): void {
@@ -80,9 +79,16 @@ export default class MCLog implements vscode.QuickPickItem {
         }
     }
 
-    public onConnectionDisconnect(): void {
+    public onDisconnectOrDisable(disconnect: boolean): void {
         if (this.output) {
-            this.output.appendLine("********* Disconnected from Microclimate");
+            let msg = "*".repeat(8) + " This log is no longer updating: ";
+            if (disconnect) {
+                msg += "Microclimate disconnected.";
+            }
+            else {
+                msg += "the project has been disabled.";
+            }
+            this.output.appendLine(msg);
         }
     }
 

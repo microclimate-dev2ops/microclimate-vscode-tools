@@ -14,11 +14,11 @@ import * as request from "request-promise-native";
 
 import Project from "./Project";
 import StartModes from "../../constants/StartModes";
-import Endpoints from "../../constants/Endpoints";
 import Log from "../../Logger";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Translator from "../../constants/strings/translator";
 import * as MCUtil from "../../MCUtil";
+import EndpointUtil, { ProjectEndpoints, Endpoint, MCEndpoints } from "../../constants/Endpoints";
 
 const STRING_NS = StringNamespaces.REQUESTS;
 
@@ -29,9 +29,8 @@ namespace Requester {
             startMode: startMode.toString()
         };
 
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.RESTART_ACTION);
         const restartMsg = Translator.t(STRING_NS, "restartIntoMode", { startMode: StartModes.getUserFriendlyStartMode(startMode) });
-        return doProjectRequest(project, url, body, request.post, restartMsg);
+        return doProjectRequest(project, ProjectEndpoints.RESTART_ACTION, body, request.post, restartMsg);
     }
 
     export async function requestBuild(project: Project): Promise<void> {
@@ -39,10 +38,9 @@ namespace Requester {
             action: "build"         // non-nls
         };
 
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
         // return doProjectRequest(project, url, body, request.post, "Build");
         const buildMsg = Translator.t(STRING_NS, "build");
-        await doProjectRequest(project, url, body, request.post, buildMsg);
+        await doProjectRequest(project, ProjectEndpoints.BUILD_ACTION, body, request.post, buildMsg);
         // This is a workaround for the Build action not refreshing validation state.
         // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
         await requestValidate(project, true);
@@ -62,8 +60,7 @@ namespace Requester {
             action: newAutoBuildAction
         };
 
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.BUILD_ACTION);
-        const response = await doProjectRequest(project, url, body, request.post, newAutoBuildUserStr);
+        const response = await doProjectRequest(project, ProjectEndpoints.BUILD_ACTION, body, request.post, newAutoBuildUserStr);
         if (MCUtil.isGoodStatusCode(response.statusCode)) {
             Log.d("Received good status from autoBuild request, new auto build is: " + newAutoBuild);
             project.setAutoBuild(newAutoBuild);
@@ -76,23 +73,23 @@ namespace Requester {
         const newEnablementMsgKey = newEnablement ? "projectEnable" : "projectDisable";        // non-nls
         const newEnablementStr: string = Translator.t(STRING_NS, newEnablementMsgKey);
 
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.getEnablementAction(newEnablement));
-        await doProjectRequest(project, url, {}, request.put, newEnablementStr);
+        const endpoint = EndpointUtil.getEnablementAction(newEnablement);
+        await doProjectRequest(project, endpoint, {}, request.put, newEnablementStr);
     }
 
     export async function requestValidate(project: Project, silent: boolean): Promise<void> {
-        const [url, body]: [string, IValidateRequestBody] = assembleValidateRequest(project, false);
+        const [url, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, false);
 
-        const userOperation = silent ? undefined : Translator.t(StringNamespaces.CMD_MISC, "validate");
-        await doProjectRequest(project, url, body, request.post, userOperation);
+        const userOperation = Translator.t(StringNamespaces.CMD_MISC, "validate");
+        await doProjectRequest(project, url, body, request.post, userOperation, silent);
     }
 
     export async function requestGenerate(project: Project): Promise<void> {
-        const [url, body]: [string, IValidateRequestBody] = assembleValidateRequest(project, true);
+        const [endpoint, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, true);
 
         const generateMsg = Translator.t(STRING_NS, "generateMissingFiles");
 
-        await doProjectRequest(project, url, body, request.post, generateMsg);
+        await doProjectRequest(project, endpoint, body, request.post, generateMsg);
         // request a validate after the generate so that the validation errors go away faster
         await requestValidate(project, true);
     }
@@ -108,8 +105,7 @@ namespace Requester {
     /**
      * Get the URL and request body for either a Validate or Generate request, they are very similar.
      */
-    function assembleValidateRequest(project: Project, generate: boolean): [string, IValidateRequestBody] {
-        let url: string;
+    function assembleValidateRequest(project: Project, generate: boolean): [Endpoint, IValidateRequestBody] {
         const body: IValidateRequestBody = {
             projectType: project.type.internalType,
         };
@@ -118,29 +114,28 @@ namespace Requester {
             body.autoGenerate = true;
         }
 
+        let endpoint: Endpoint;
         if (project.connection.version >= validationAPIChangeVersion) {
-            url = Endpoints.getProjectEndpoint(project.connection, project.id, generate ? Endpoints.GENERATE : Endpoints.VALIDATE);
+            endpoint = generate ? ProjectEndpoints.GENERATE : ProjectEndpoints.VALIDATE;
         }
         else {
-            url = Endpoints.getEndpoint(project.connection, generate ? Endpoints.GENERATE_OLD : Endpoints.VALIDATE_OLD);
+            endpoint = generate ? MCEndpoints.GENERATE_OLD : MCEndpoints.VALIDATE_OLD;
             body.projectID = project.id;
         }
-        return [url, body];
+        return [endpoint, body];
     }
 
     export async function requestDelete(project: Project): Promise<void> {
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, "");
         const deleteMsg = Translator.t(STRING_NS, "delete");
-        await doProjectRequest(project, url, {}, request.delete, deleteMsg);
+        await doProjectRequest(project, ProjectEndpoints.NONE, {}, request.delete, deleteMsg);
     }
 
     export async function requestSettingChange(project: Project, settingName: string, settingKey: string, newValue: string): Promise<void> {
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.PROPERTES, true);
         const updateMsg = `Update ${settingName}`;
         const body = {
             [settingKey]: newValue,
         };
-        await doProjectRequest(project, url, body, request.post, updateMsg);
+        await doProjectRequest(project, ProjectEndpoints.PROPERTES, body, request.post, updateMsg);
     }
 
     interface ILogResponse {
@@ -154,50 +149,56 @@ namespace Requester {
     }
 
     export async function requestAvailableLogs(project: Project): Promise<ILogResponse> {
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.LOGS);
-        try {
-            return (await doProjectRequest(project, url, {}, request.get)).body;
+        if (!project.state.isEnabled) {
+            // there are no logs available for disabled projects
+            return {
+                build: [], app: []
+            };
         }
-        catch (err) {
-            if (err.statusCode === 404) {
-                return {
-                    build: [], app: []
-                };
-            }
-            throw err;
-        }
+        return (await doProjectRequest(project, ProjectEndpoints.LOGS, {}, request.get, "available logs", true)).body;
     }
 
     export async function requestToggleLogs(project: Project, enable: boolean): Promise<void> {
-        const url = Endpoints.getProjectEndpoint(project.connection, project.id, Endpoints.LOGS);
         const method = enable ? request.post : request.delete;
-        await doProjectRequest(project, url, {}, method);
+        await doProjectRequest(project, ProjectEndpoints.LOGS, {}, method, `toggle logs ${enable ? "on" : "off"}`, true);
     }
 
     /**
-     * Perform a REST request of the type specific by `requestFunc` to the project endpoint for the given project.
+     * Perform a REST request of the type specified by `requestFunc` to the project endpoint for the given project.
      * Displays a message to the user that the request succeeded if userOperationName is not null.
      * Always displays a message to the user in the case of an error.
+     * @param body - JSON request body for POST, PUT requests. Uses application/json content-type.
+     * @param requestFunc - eg. request.get, request.post...
+     * @param userOperationName - If `!silent`, a message will be displayed to the user that they have requested this operation on this project.
+     * @param silent - If true, an info message will not be displayed when the request is initiated. Error messages are always displayed.
      */
     async function doProjectRequest(
-            project: Project, url: string, body: {},
+            project: Project, endpoint: Endpoint, body: {},
             requestFunc: (uri: string, options: request.RequestPromiseOptions) => request.RequestPromise<any>,
-            userOperationName?: string): Promise<request.FullResponse> {
+            userOperationName: string, silent: boolean = false): Promise<request.FullResponse> {
 
-        Log.i(`Doing ${userOperationName != null ? userOperationName + " " : ""}request to ${url}`);
+        let url: string;
+        if (EndpointUtil.isProjectEndpoint(endpoint)) {
+            url = EndpointUtil.resolveProjectEndpoint(project.connection, project.id, endpoint as ProjectEndpoints);
+        }
+        else {
+            url = EndpointUtil.resolveMCEndpoint(project.connection, endpoint as MCEndpoints);
+        }
+
+        Log.i(`Doing ${userOperationName} request to ${url}`);
 
         const options = {
             json: true,
             body: body,
-            resolveWithFullResponse: true
+            resolveWithFullResponse: true,
         };
 
         try {
             const result: request.FullResponse = await requestFunc(url, options);
             Log.d(`Response code ${result.statusCode} from ` +
-                `${userOperationName ? userOperationName.toLowerCase() + " " : ""}request for ${project.name}`);
+                `${userOperationName.toLowerCase()} request for ${project.name}`);
 
-            if (userOperationName != null) {
+            if (!silent) {
                 vscode.window.showInformationMessage(
                     Translator.t(STRING_NS, "requestSuccess",
                     { operationName: userOperationName, projectName: project.name })
@@ -208,15 +209,11 @@ namespace Requester {
         catch (err) {
             Log.w(`Error doing ${userOperationName} project request for ${project.name}:`, err);
 
-            // If the server provided a specific message, present the user with that,
-            // otherwise show them the whole error (but it will be ugly)
-            // err.error.msg, then err.error, then the whole err
-            const errMsg: string = err.error ? (err.error.msg ? err.error.msg : err.error) : JSON.stringify(err);
             vscode.window.showErrorMessage(
                 Translator.t(STRING_NS, "requestFail",
-                { operationName: userOperationName, projectName: project.name, err: errMsg })
+                { operationName: userOperationName, projectName: project.name, err: MCUtil.errToString(err) })
             );
-            return err;
+            throw err;
         }
     }
 }
