@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 IBM Corporation and others.
+ * Copyright (c) 2019 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,19 @@ import MCLog from "../microclimate/project/logs/MCLog";
 
 // const STRING_NS = StringNamespaces.LOGS;
 
-export default async function manageLogsCmd(project: Project, showAll: boolean = false): Promise<void> {
+export async function showAllLogs(project: Project): Promise<void> {
+    return manageLogsInner(project, "show");
+}
+
+export async function hideAllLogs(project: Project): Promise<void> {
+    return manageLogsInner(project, "hide");
+}
+
+export async function manageLogs(project: Project): Promise<void> {
+    return manageLogsInner(project);
+}
+
+async function manageLogsInner(project: Project, all?: "show" | "hide"): Promise<void> {
     if (project == null) {
         const selected = await promptForProject(...ProjectState.getEnabledStates());
         if (selected == null) {
@@ -41,10 +53,16 @@ export default async function manageLogsCmd(project: Project, showAll: boolean =
         return;
     }
 
-    if (showAll) {
+    if (all === "show") {
         Log.d("Showing all logs for " + project.name);
         project.logManager.logs.forEach((log) => log.showOutput());
         await project.logManager.toggleLogStreaming(true);
+        return;
+    }
+    else if (all === "hide") {
+        Log.d("Hiding all logs for " + project.name);
+        project.logManager.logs.forEach((log) => log.removeOutput());
+        await project.logManager.toggleLogStreaming(false);
         return;
     }
 

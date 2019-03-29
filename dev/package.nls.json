@@ -61,6 +61,9 @@
     "cmdID_showAllLogs": "ext.mc.showAllLogs",
     "cmdTitle_showAllLogs": "Show all logs",
 
+    "cmdID_hideAllLogs": "ext.mc.hideAllLogs",
+    "cmdTitle_hideAllLogs": "Hide all logs",
+
     "cmdID_projectOverview": "ext.mc.projectOverview",
     "cmdTitle_projectOverview": "Open Project Overview",
     "cmdDescr_projectOverview": "Open a project's Microclimate information",

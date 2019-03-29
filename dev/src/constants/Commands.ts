@@ -17,10 +17,12 @@ enum Commands {
     NEW_DEFAULT_CONNECTION = "ext.mc.newDefaultConnection",
     REMOVE_CONNECTION = "ext.mc.removeConnection",
     REFRESH_CONNECTION = "ext.mc.refreshConnection",
+
     CREATE_MC_PROJECT = "ext.mc.createMCProject",
     IMPORT_MC_PROJECT = "ext.mc.importMCProject",
 
     OPEN_WS_FOLDER = "ext.mc.openWorkspaceFolder",
+
     ATTACH_DEBUGGER = "ext.mc.attachDebugger",
     RESTART_RUN = "ext.mc.restartProjectRun",
     RESTART_DEBUG = "ext.mc.restartProjectDebug",
@@ -29,17 +31,19 @@ enum Commands {
     REQUEST_BUILD = "ext.mc.requestBuild",
     TOGGLE_AUTOBUILD = "ext.mc.toggleAutoBuild",
     ENABLE_AUTOBUILD = "ext.mc.enableAutoBuild",
-    DISABLE_AUTOBUILD =  "ext.mc.disableAutoBuild",
-
-    MANAGE_LOGS = "ext.mc.manageLogs",
-    SHOW_ALL_LOGS = "ext.mc.showAllLogs",
-    DISABLE_PROJECT = "ext.mc.disable",
-    ENABLE_PROJECT = "ext.mc.enable",
+    DISABLE_AUTOBUILD = "ext.mc.disableAutoBuild",
     CONTAINER_SHELL = "ext.mc.containerShell",
     PROJECT_OVERVIEW = "ext.mc.projectOverview",
     OPEN_APP_MONITOR = "ext.mc.openAppMonitor",
-    VALIDATE = "ext.mc.validate",
 
+    MANAGE_LOGS = "ext.mc.manageLogs",
+    SHOW_ALL_LOGS = "ext.mc.showAllLogs",
+    HIDE_ALL_LOGS = "ext.mc.hideAllLogs",
+
+    DISABLE_PROJECT = "ext.mc.disable",
+    ENABLE_PROJECT = "ext.mc.enable",
+
+    VALIDATE = "ext.mc.validate",
     // VSCode commands, kept here for easy reference. These will never change.
     VSC_OPEN = "vscode.open",
     VSC_OPEN_FOLDER = "vscode.openFolder",

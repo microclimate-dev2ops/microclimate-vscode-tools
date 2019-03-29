@@ -137,6 +137,11 @@
                 "category": "%commandCategory%"
             },
             {
+                "command": "%cmdID_hideAllLogs%",
+                "title": "%cmdTitle_hideAllLogs%",
+                "category": "%commandCategory%"
+            },
+            {
                 "command": "%cmdID_enable%",
                 "title": "%cmdTitle_enable%",
                 "category": "%commandCategory%"
@@ -267,6 +272,11 @@
                     "command": "%cmdID_showAllLogs%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.c@2"
+                },
+                {
+                    "command": "%cmdID_hideAllLogs%",
+                    "when": "%isEnabledProject%",
+                    "group": "ext.mc.c@3"
                 },
                 {
                     "command": "%cmdID_restartRun%",
