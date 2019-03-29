@@ -14,7 +14,6 @@ import * as vscode from "vscode";
 import Project from "./Project";
 import Resources from "../../constants/Resources";
 import * as MCUtil from "../../MCUtil";
-import Log from "../../Logger";
 
 // This file does have a bunch of strings that should be translated,
 // but the stringfinder is not smart enough to pick them out from the regular html strings. So, do this file by hand.
@@ -116,8 +115,8 @@ export function generateHtml(project: Project): string {
                 ${buildRow("Exposed App Port", normalize(project.ports.appPort, notRunning))}
                 ${buildRow("Internal App Port",
                     normalize(project.ports.internalAppPort, notAvailable), undefined, Editable.APP_PORT)}
-                ${buildRow("Application Root", "/" + project.contextRoot, undefined, Editable.CONTEXT_ROOT)}
-                ${buildRow("Application URL", normalize(project.appBaseUrl, notRunning), (project.appBaseUrl != null ? Openable.WEB : undefined))}
+                ${buildRow("Application Endpoint",
+                    normalize(project.appBaseUrl, notRunning), (project.appBaseUrl != null ? Openable.WEB : undefined), Editable.CONTEXT_ROOT)}
                 ${emptyRow}
                 ${buildRow("Exposed Debug Port", normalize(project.ports.debugPort, notDebugging))}
                 ${buildRow("Internal Debug Port", normalize(project.ports.internalDebugPort, notDebugging), undefined, Editable.DEBUG_PORT)}
@@ -162,45 +161,40 @@ function getIcon(icon: Resources.Icons): string {
 }
 
 function buildRow(label: string, data: string, openable?: Openable, editable?: Editable): string {
-    if (openable && editable) {
-        Log.e(label + " can't be openable and editable");
-    }
-    let td: string;
+    let secondColTdContents: string = "";
+    let thirdColTdContents: string = "";
     if (openable) {
-        td = `
-            <td>
-                <a onclick="vscOpen(this, '${openable}')">${data}</a>
-            </td>
-            `;
+        secondColTdContents += `<a title="${label}" onclick="vscOpen(this, '${openable}')">${data}</a>`;
     }
     else {
-        let editBtn = "";
-        if (editable) {
-            editBtn = `
-            <td>
-                <img id="edit-${MCUtil.slug(label)}" class="edit-btn" title="Edit" onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"` +
-                    `src="${getIcon(Resources.Icons.Edit)}"/>
-            </td>`;
-        }
-        td = `<td>${data}${editBtn}</td>`;
+        secondColTdContents = `${data}`;
     }
 
-    // console.log("The td is ", td);
+    if (editable) {
+        thirdColTdContents = `
+            <img id="edit-${MCUtil.slug(label)}" class="edit-btn" title="Edit" onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"` +
+                `src="${getIcon(Resources.Icons.Edit)}"/>
+        `;
+    }
+
+    const secondTd = `<td title="${label}">${secondColTdContents}</td>`;
+    const thirdTd = thirdColTdContents ? `<td>${thirdColTdContents}</td>` : "";
 
     return `
         <tr class="info-row">
             <td class="info-label">${label}:</td>
-            ${td}
+            ${secondTd}
+            ${thirdTd}
         </tr>
     `;
 }
 
 /**
- * Convert `item` to a user-friendly string, or the fallback if `item` is undefined.
+ * Convert `item` to a user-friendly string, or the fallback if `item` is undefined or invalid.
  */
 function normalize(item: vscode.Uri | number | string | undefined, fallback: string, maxLength?: number): string {
     let result: string;
-    if (item == null || item === "") {
+    if (item == null || item === "" || (typeof item === typeof 0 && isNaN(Number(item)))) {
         result = fallback;
     }
     else if (item instanceof vscode.Uri && (item as vscode.Uri).scheme.includes("file")) {

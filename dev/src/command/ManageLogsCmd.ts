@@ -36,6 +36,11 @@ export default async function manageLogsCmd(project: Project): Promise<void> {
     await project.logManager.initPromise;
     const logs = project.logManager.logs;
 
+    if (logs.length === 0) {
+        vscode.window.showWarningMessage("This project does not have any logs available at this time.");
+        return;
+    }
+
     const options: vscode.QuickPickOptions = {
         canPickMany: true
     };
