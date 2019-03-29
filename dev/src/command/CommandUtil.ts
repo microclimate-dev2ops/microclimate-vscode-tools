@@ -70,6 +70,7 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand(Commands.DISABLE_AUTOBUILD, (selection) => toggleAutoBuildCmd(selection)),
 
         vscode.commands.registerCommand(Commands.MANAGE_LOGS,       (selection) => manageLogsCmd(selection)),
+        vscode.commands.registerCommand(Commands.SHOW_ALL_LOGS,     (selection) => manageLogsCmd(selection, true)),
 
         vscode.commands.registerCommand(Commands.DISABLE_PROJECT,   (selection) => toggleEnablementCmd(selection, false)),
         vscode.commands.registerCommand(Commands.ENABLE_PROJECT,    (selection) => toggleEnablementCmd(selection, true)),

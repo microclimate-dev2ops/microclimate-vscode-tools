@@ -21,7 +21,7 @@ import MCLog from "../microclimate/project/logs/MCLog";
 
 // const STRING_NS = StringNamespaces.LOGS;
 
-export default async function manageLogsCmd(project: Project): Promise<void> {
+export default async function manageLogsCmd(project: Project, showAll: boolean = false): Promise<void> {
     if (project == null) {
         const selected = await promptForProject(...ProjectState.getEnabledStates());
         if (selected == null) {
@@ -38,6 +38,13 @@ export default async function manageLogsCmd(project: Project): Promise<void> {
 
     if (logs.length === 0) {
         vscode.window.showWarningMessage("This project does not have any logs available at this time.");
+        return;
+    }
+
+    if (showAll) {
+        Log.d("Showing all logs for " + project.name);
+        project.logManager.logs.forEach((log) => log.showOutput());
+        await project.logManager.toggleLogStreaming(true);
         return;
     }
 
@@ -59,8 +66,8 @@ export default async function manageLogsCmd(project: Project): Promise<void> {
             }
         });
 
-        // stop the stream if 0 logs are to be shown
+        // stop the stream if 0 logs are to be shown,
+        // or restart the stream if at least one is to be shown (in case one of the ones to be shown is a new one)
         await project.logManager.toggleLogStreaming(logsToShow.length !== 0);
-        // vscode.window.showInformationMessage(Translator.t(STRING_NS, "hidNLogs", { count: logsToHide.length }));
     }
 }

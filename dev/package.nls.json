@@ -56,7 +56,10 @@
     "cmdDescr_requestBuild": "Manually start a project build in Microclimate",
 
     "cmdID_manageLogs": "ext.mc.manageLogs",
-    "cmdTitle_manageLogs": "Manage Logs",
+    "cmdTitle_manageLogs": "Manage logs",
+
+    "cmdID_showAllLogs": "ext.mc.showAllLogs",
+    "cmdTitle_showAllLogs": "Show all logs",
 
     "cmdID_projectOverview": "ext.mc.projectOverview",
     "cmdTitle_projectOverview": "Open Project Overview",

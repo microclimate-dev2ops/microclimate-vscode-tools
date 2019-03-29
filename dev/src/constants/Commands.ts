@@ -32,6 +32,7 @@ enum Commands {
     DISABLE_AUTOBUILD =  "ext.mc.disableAutoBuild",
 
     MANAGE_LOGS = "ext.mc.manageLogs",
+    SHOW_ALL_LOGS = "ext.mc.showAllLogs",
     DISABLE_PROJECT = "ext.mc.disable",
     ENABLE_PROJECT = "ext.mc.enable",
     CONTAINER_SHELL = "ext.mc.containerShell",
