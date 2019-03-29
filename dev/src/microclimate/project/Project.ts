@@ -18,7 +18,6 @@ import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
 import Log from "../../Logger";
 import Commands from "../../constants/Commands";
-import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import { refreshProjectOverview } from "./ProjectOverview";
@@ -26,6 +25,7 @@ import getContextID from "./ProjectContextID";
 import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
 import SocketEvents from "../connection/SocketEvents";
+import DebugUtils from "./DebugUtils";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -265,18 +265,19 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     /**
-     * Callback for when this project is deleted in Microclimate
+     * Call when this project object is dereferenced/removed from the Connection, or deleted in Microclimate
      */
-    public async onDelete(): Promise<void> {
+    public async destroy(): Promise<void> {
         Log.d("Deleting project " + this.name);
-        vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
-        this.clearValidationErrors();
-        this.connection.logManager.destroyLogsForProject(this.id);
-        DebugUtils.removeDebugLaunchConfigFor(this);
+        await this.clearValidationErrors();
+        await this.connection.logManager.destroyLogsForProject(this.id);
+        this.closeProjectInfo();
+    }
 
-        if (this.activeProjectInfo != null) {
-            this.activeProjectInfo.dispose();
-        }
+    public async onDelete(): Promise<void> {
+        await DebugUtils.removeDebugLaunchConfigFor(this);
+        vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
+        await this.destroy();
     }
 
     /**
@@ -303,9 +304,9 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return undefined;
     }
 
-    public onCloseProjectInfo(): void {
-        Log.d(`Dispose project info for project ${this.name}`);
+    public closeProjectInfo(): void {
         if (this.activeProjectInfo != null) {
+            this.activeProjectInfo.dispose();
             this.activeProjectInfo = undefined;
         }
     }

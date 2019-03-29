@@ -58,6 +58,7 @@ export default class MCSocket {
             .on("connect",      this.connection.onConnect)      // non-nls
             .on("disconnect",   this.connection.onDisconnect)   // non-nls
 
+            .on(SocketEvents.Types.PROJECT_CREATED,         this.onProjectCreated)
             .on(SocketEvents.Types.PROJECT_CHANGED,         this.onProjectChanged)
             .on(SocketEvents.Types.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
             .on(SocketEvents.Types.PROJECT_CLOSED,          this.onProjectClosed)
@@ -67,10 +68,6 @@ export default class MCSocket {
 
             .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
             .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated);
-
-            // We don't actually need the creation event -
-            // we can create the project as needed if we get a 'changed' event for a project we don't recognize
-            // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
 
     /**
@@ -82,28 +79,31 @@ export default class MCSocket {
         this.socket.disconnect();
     }
 
-    private readonly onProjectStatusChanged = async (payload: any): Promise<void> => {
+    private readonly onProjectCreated = async (payload: { projectID: string }): Promise<void> => {
+        await this.connection.forceUpdateProjectList();
+
+        const newProject = await this.connection.getProjectByID(payload.projectID);
+        if (newProject == null) {
+            Log.e(`Project ${payload.projectID} was created but not available after a refresh`);
+        }
+        else {
+            Log.i(`Project ${newProject.name} has been created`);
+        }
+    }
+
+    private readonly onProjectStatusChanged = async (payload: { projectID: string }): Promise<void> => {
         // Log.d("onProjectStatusChanged", payload);
         // I don't see any reason why these should be handled differently
         this.onProjectChanged(payload);
     }
 
-    private readonly onProjectChanged = async (payload: any): Promise<void> => {
+    private readonly onProjectChanged = async (payload: { projectID: string }): Promise<void> => {
         // Log.d("onProjectChanged", payload);
         // Log.d(`PROJECT CHANGED name=${payload.name} appState=${payload.appStatus} ` +
                 // `buildState=${payload.buildStatus} startMode=${payload.startMode}`);
 
-        const projectID = payload.projectID;
-        if (projectID == null) {
-            Log.e("No projectID in changed socket event!", payload);
-            return;
-        }
-
         const project = await this.getProject(payload);
         if (project == null) {
-            // This probably means we've got a new project - refresh everything
-            Log.i("Received projectChanged for unknown project; refreshing project list");
-            this.connection.forceUpdateProjectList();
             return;
         }
 
@@ -137,7 +137,6 @@ export default class MCSocket {
 
         const project = await this.getProject(payload);
         if (project == null) {
-            Log.e("Received restart event for unrecognized project:", payload);
             return;
         }
 
