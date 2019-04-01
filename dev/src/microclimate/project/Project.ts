@@ -404,7 +404,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
     private tryRefreshProjectInfoPage(): void {
         if (this.activeProjectInfo != null) {
-            Log.d("Refreshing projectinfo");
+            // Log.d("Refreshing projectinfo");
             refreshProjectOverview(this.activeProjectInfo, this);
         }
     }

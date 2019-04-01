@@ -130,8 +130,14 @@ namespace Requester {
         await doProjectRequest(project, ProjectEndpoints.NONE, {}, request.delete, deleteMsg);
     }
 
-    export async function requestSettingChange(project: Project, settingName: string, settingKey: string, newValue: string): Promise<void> {
+    export async function requestSettingChange(project: Project, settingName: string, settingKey: string, newValue: string | number): Promise<void> {
         const updateMsg = `Update ${settingName}`;
+
+        // convert to number if possible
+        const asNumber = Number(newValue);
+        if (!isNaN(asNumber)) {
+            newValue = asNumber;
+        }
         const body = {
             [settingKey]: newValue,
         };

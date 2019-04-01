@@ -127,7 +127,13 @@ export function errToString(err: any, isOidc: boolean = false): string {
     }
 
     if (err.error) {
-        return err.error.msg || err.error.message || err.error.info.message || JSON.stringify(err.error);
+        if (err.error.info) {
+            const infoMsg = err.error.info.message;
+            if (infoMsg) {
+                return infoMsg;
+            }
+        }
+        return err.error.msg || err.error.message || JSON.stringify(err.error);
     }
 
     return err.message || JSON.stringify(err);

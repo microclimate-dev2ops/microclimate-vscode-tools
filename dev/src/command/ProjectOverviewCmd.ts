@@ -158,13 +158,13 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
         case ProjectOverview.Editable.APP_PORT: {
             userFriendlySetting = "application port";
             settingKey = "applicationPort";
-            currentValue = project.ports.appPort ? project.ports.appPort.toString() : undefined;
+            currentValue = project.ports.internalAppPort ? project.ports.internalAppPort.toString() : undefined;
             break;
         }
         case ProjectOverview.Editable.DEBUG_PORT: {
             userFriendlySetting = "debug port";
             settingKey = "debugPort";
-            currentValue = project.ports.debugPort ? project.ports.debugPort.toString() : undefined;
+            currentValue = project.ports.internalDebugPort ? project.ports.internalDebugPort.toString() : undefined;
             break;
         }
         default: {
@@ -193,5 +193,10 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
         return;
     }
 
-    return Requester.requestSettingChange(project, userFriendlySetting, settingKey, input);
+    try {
+        await Requester.requestSettingChange(project, userFriendlySetting, settingKey, input);
+    }
+    catch (err) {
+        // requester will show the error
+    }
 }

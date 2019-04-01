@@ -264,17 +264,17 @@
                     "group": "ext.mc.b"
                 },
                 {
-                    "command": "%cmdID_manageLogs%",
+                    "command": "%cmdID_showAllLogs%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.c@1"
                 },
                 {
-                    "command": "%cmdID_showAllLogs%",
+                    "command": "%cmdID_hideAllLogs%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.c@2"
                 },
                 {
-                    "command": "%cmdID_hideAllLogs%",
+                    "command": "%cmdID_manageLogs%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.c@3"
                 },
