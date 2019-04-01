@@ -38,6 +38,7 @@ export enum ProjectEndpoints {
     GENERATE = "validate/generate",
     PROPERTES = "properties",
     LOGS = "logs",
+    METRICS_STATUS = "metrics/status",
 
     OPEN = "open",
     CLOSE = "close",

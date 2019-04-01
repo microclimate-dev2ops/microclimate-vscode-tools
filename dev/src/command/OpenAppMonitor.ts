@@ -16,6 +16,7 @@ import { promptForProject } from "./CommandUtil";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import EndpointUtil from "../constants/Endpoints";
+import Requester from "../microclimate/project/Requester";
 
 export default async function openAppMonitorCmd(project: Project): Promise<void> {
     Log.d("openAppMonitorCmd invoked");
@@ -27,6 +28,13 @@ export default async function openAppMonitorCmd(project: Project): Promise<void>
             return;
         }
         project = selected;
+    }
+
+    const supported = await Requester.areMetricsAvailable(project);
+    // Log.d(`${project.name} supports metrics ? ${supported}`);
+    if (!supported) {
+        vscode.window.showWarningMessage(`${project.name} does not support application metrics.`);
+        return;
     }
 
     const monitorPageUrl: vscode.Uri = EndpointUtil.resolveAppMonitorUrl(project.connection, project.id);

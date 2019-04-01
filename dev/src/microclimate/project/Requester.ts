@@ -163,6 +163,12 @@ namespace Requester {
         await doProjectRequest(project, ProjectEndpoints.LOGS, {}, method, `toggle logs ${enable ? "on" : "off"}`, true);
     }
 
+    export async function areMetricsAvailable(project: Project): Promise<boolean> {
+        const res = await doProjectRequest(project, ProjectEndpoints.METRICS_STATUS, {}, request.get, "metrics status", true);
+        const available = res.body.metricsAvailable;
+        return available;
+    }
+
     /**
      * Perform a REST request of the type specified by `requestFunc` to the project endpoint for the given project.
      * Displays a message to the user that the request succeeded if userOperationName is not null.
