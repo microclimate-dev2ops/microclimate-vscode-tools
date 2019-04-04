@@ -27,6 +27,7 @@ import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
 import SocketEvents from "../connection/SocketEvents";
 import MCLogManager from "./logs/MCLogManager";
+import MCLogManagerOld from "./logs/deprecated/MCLogManager-Old";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -71,7 +72,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     // Track this so we can refresh it when update() is called, and prevent multiple webviews being open for one project.
     private activeProjectInfo: vscode.WebviewPanel | undefined;
 
-    public readonly logManager: MCLogManager;
+    public readonly logManager: MCLogManager | MCLogManagerOld;
 
     constructor(
         projectInfo: any,
@@ -112,7 +113,12 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.label = Translator.t(STRING_NS, "quickPickLabel", { projectName: this.name, projectType: this.type.type });
         // this.detail = this.id;
 
-        this.logManager = new MCLogManager(this);
+        if (this.connection.supportsSettingsAndMultiLogs()) {
+            this.logManager = new MCLogManager(this);
+        }
+        else {
+            this.logManager = new MCLogManagerOld(this.connection);
+        }
 
         Log.i(`Created project ${this.name}:`, this);
     }
@@ -251,6 +257,17 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
     public onSettingsChangedEvent(event: SocketEvents.IProjectSettingsEvent): void {
         Log.d("project settings changed " + this.name, event);
+
+        if (event.status !== SocketEvents.STATUS_SUCCESS) {
+            let errMsg = "Project settings update failed";
+            Log.e(errMsg, event.error);
+            if (event.error) {
+                errMsg += " " + event.error;
+            }
+            vscode.window.showErrorMessage(errMsg);
+            return;
+        }
+
         // Only one of contextroot, app port, or debug port should be set
         // but there's no reason to treat it differently if multiple are set
         let changed = false;
@@ -361,7 +378,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         Log.i(`${this.name} was deleted`);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
         this.clearValidationErrors();
-        this.logManager.destroyAllLogs();
+        this.logManager.destroyAllLogs(this.id);
         DebugUtils.removeDebugLaunchConfigFor(this);
 
         if (this.activeProjectInfo != null) {

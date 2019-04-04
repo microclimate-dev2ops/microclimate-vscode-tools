@@ -39,6 +39,7 @@ export enum ProjectEndpoints {
     PROPERTES = "properties",
     LOGS = "logs",
     METRICS_STATUS = "metrics/status",
+    BUILD_LOG_OLD = "build-log",
 
     OPEN = "open",
     CLOSE = "close",

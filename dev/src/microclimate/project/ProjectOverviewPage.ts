@@ -60,6 +60,7 @@ export function generateHtml(project: Project): string {
     const notAvailable = "Not available";
     const notRunning = "Not running";
     const notDebugging = "Not debugging";
+    const supportsEditableSettings = project.connection.supportsSettingsAndMultiLogs();
 
     return `
         <!DOCTYPE html>
@@ -114,12 +115,19 @@ export function generateHtml(project: Project): string {
                 ${emptyRow}
                 ${buildRow("Exposed App Port", normalize(project.ports.appPort, notRunning))}
                 ${buildRow("Internal App Port",
-                    normalize(project.ports.internalAppPort, notAvailable), undefined, Editable.APP_PORT)}
+                    normalize(project.ports.internalAppPort, notAvailable),
+                    undefined,
+                    supportsEditableSettings ? Editable.APP_PORT : undefined)}
                 ${buildRow("Application Endpoint",
-                    normalize(project.appBaseUrl, notRunning), (project.appBaseUrl != null ? Openable.WEB : undefined), Editable.CONTEXT_ROOT)}
+                    normalize(project.appBaseUrl, notRunning),
+                    (project.appBaseUrl != null ? Openable.WEB : undefined),
+                    supportsEditableSettings ? Editable.CONTEXT_ROOT : undefined)}
                 ${emptyRow}
                 ${buildRow("Exposed Debug Port", normalize(project.ports.debugPort, notDebugging))}
-                ${buildRow("Internal Debug Port", normalize(project.ports.internalDebugPort, notDebugging), undefined, Editable.DEBUG_PORT)}
+                ${buildRow("Internal Debug Port",
+                    normalize(project.ports.internalDebugPort, notDebugging),
+                    undefined,
+                    supportsEditableSettings ? Editable.DEBUG_PORT : undefined)}
                 ${buildRow("Debug URL", normalize(project.debugUrl, notDebugging))}
             </table>
 

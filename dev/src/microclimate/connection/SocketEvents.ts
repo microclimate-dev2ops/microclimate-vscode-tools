@@ -86,6 +86,8 @@ namespace SocketEvents {
         PROJECT_RESTART_RESULT = "projectRestartResult",
         PROJECT_VALIDATED = "projectValidated",
         PROJECT_SETTING_CHANGED = "projectSettingsChanged",
+        // deprecated, replaced by log-update
+        CONTAINER_LOGS = "container-logs",
         LOG_UPDATE = "log-update",
     }
 

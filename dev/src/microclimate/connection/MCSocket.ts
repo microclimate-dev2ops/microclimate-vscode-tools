@@ -16,6 +16,8 @@ import Project from "../project/Project";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
 import SocketEvents from "./SocketEvents";
+import MCLogManagerOld from "../project/logs/deprecated/MCLogManager-Old";
+import MCLogManager from "../project/logs/MCLogManager";
 
 /**
  * Receives and reacts to socket events from Portal
@@ -67,6 +69,7 @@ export default class MCSocket {
 
             .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
             .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged)
+            .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
             .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate);
 
 
@@ -146,14 +149,39 @@ export default class MCSocket {
         project.onRestartEvent(payload);
     }
 
+    // deprecated containerlogs event
+    private readonly onContainerLogs = async (payload: { projectID: string, logs: string }): Promise<void> => {
+        const project = await this.getProject(payload);
+        if (project == null) {
+            return;
+        }
+
+        if (this.connection.supportsSettingsAndMultiLogs()) {
+            // Log.e("Received deprecated logs event for a project that should be using the new logs API");
+            return;
+        }
+
+        const logManager = project.logManager as MCLogManagerOld;
+        const appLog = logManager.getAppLog(project.id);
+        if (appLog != null) {
+            appLog.update(payload.logs);
+        }
+    }
+
     private readonly onLogUpdate = async (payload: SocketEvents.ILogUpdateEvent): Promise<void> => {
         const project = await this.getProject(payload);
         if (project == null) {
             return;
         }
 
+        if (!this.connection.supportsSettingsAndMultiLogs()) {
+            Log.e("Received new logs event for a project that should be using the OLD logs API");
+            return;
+        }
+
         // Log.d(`Received log ${payload.logName} of length ${payload.logs.length} with reset ${payload.reset}`);
-        project.logManager.onNewLogs(payload);
+        const logManager = project.logManager as MCLogManager;
+        logManager.onNewLogs(payload);
     }
 
     private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
@@ -177,7 +205,8 @@ export default class MCSocket {
         if (project == null) {
             return;
         }
-        return project.onSettingsChangedEvent(payload);
+        // doesn't work
+        // return project.onSettingsChangedEvent(payload);
     }
 
     private readonly getProject = async (payload: { projectID: string }): Promise<Project | undefined> => {

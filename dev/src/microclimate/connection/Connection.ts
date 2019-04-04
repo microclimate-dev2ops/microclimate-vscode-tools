@@ -237,4 +237,8 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.needProjectUpdate = true;
         this.getProjects();
     }
+
+    public supportsSettingsAndMultiLogs(): boolean {
+        return this.version >= 1905;
+    }
 }
