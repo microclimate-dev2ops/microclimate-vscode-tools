@@ -130,14 +130,18 @@ namespace Requester {
         await doProjectRequest(project, ProjectEndpoints.NONE, {}, request.delete, deleteMsg);
     }
 
-    export async function requestSettingChange(project: Project, settingName: string, settingKey: string, newValue: string | number): Promise<void> {
+    export async function requestSettingChange(
+        project: Project, settingName: string, settingKey: string, newValue: string | number, isNumber: boolean): Promise<void> {
+
         const updateMsg = `Update ${settingName}`;
 
-        // convert to number if possible
-        const asNumber = Number(newValue);
-        if (!isNaN(asNumber)) {
-            newValue = asNumber;
+        if (isNumber) {
+            newValue = Number(newValue);
+            if (isNaN(newValue)) {
+                throw new Error(`Failed to convert ${newValue} to number; ${settingName} must be a number.`);
+            }
         }
+
         const body = {
             [settingKey]: newValue,
         };

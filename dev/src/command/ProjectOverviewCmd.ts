@@ -179,7 +179,9 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
         valueSelection: undefined,
     };
 
-    if (type === ProjectOverview.Editable.APP_PORT || type === ProjectOverview.Editable.DEBUG_PORT) {
+    const isPort: boolean = type === ProjectOverview.Editable.APP_PORT || type === ProjectOverview.Editable.DEBUG_PORT;
+
+    if (isPort) {
         options.validateInput = (inputToValidate: string): OptionalString => {
             if (!MCUtil.isGoodPort(Number(inputToValidate))) {
                 return Translator.t(StringNamespaces.CMD_NEW_CONNECTION, "invalidPortNumber", { port: inputToValidate });
@@ -194,7 +196,7 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
     }
 
     try {
-        await Requester.requestSettingChange(project, userFriendlySetting, settingKey, input);
+        await Requester.requestSettingChange(project, userFriendlySetting, settingKey, input, isPort);
     }
     catch (err) {
         // requester will show the error
