@@ -30,7 +30,16 @@ export default async function openAppMonitorCmd(project: Project): Promise<void>
         project = selected;
     }
 
-    const supported = await Requester.areMetricsAvailable(project);
+    let supported: boolean;
+    if (!project.connection.is1905OrNewer()) {
+        // The 'metrics available' API was added in 1905 too
+        // if the API is not there, we must assume metrics are supported.
+        supported = true;
+    }
+    else {
+        supported = await Requester.areMetricsAvailable(project);
+    }
+
     // Log.d(`${project.name} supports metrics ? ${supported}`);
     if (!supported) {
         vscode.window.showWarningMessage(`${project.name} does not support application metrics.`);

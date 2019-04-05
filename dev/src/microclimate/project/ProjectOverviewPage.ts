@@ -60,7 +60,7 @@ export function generateHtml(project: Project): string {
     const notAvailable = "Not available";
     const notRunning = "Not running";
     const notDebugging = "Not debugging";
-    const supportsEditableSettings = project.connection.supportsSettingsAndMultiLogs();
+    const supportsEditableSettings = project.connection.is1905OrNewer();
 
     return `
         <!DOCTYPE html>

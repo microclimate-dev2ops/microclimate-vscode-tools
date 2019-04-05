@@ -238,7 +238,13 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.getProjects();
     }
 
-    public supportsSettingsAndMultiLogs(): boolean {
+    /**
+     * Microclimate 1905 added:
+     * - multi-logs
+     * - project settings
+     * - app monitor enablement
+     */
+    public is1905OrNewer(): boolean {
         return this.version >= 1905;
     }
 }

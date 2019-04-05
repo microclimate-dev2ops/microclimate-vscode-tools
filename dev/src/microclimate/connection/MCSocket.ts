@@ -156,7 +156,7 @@ export default class MCSocket {
             return;
         }
 
-        if (this.connection.supportsSettingsAndMultiLogs()) {
+        if (this.connection.is1905OrNewer()) {
             // Log.e("Received deprecated logs event for a project that should be using the new logs API");
             return;
         }
@@ -174,7 +174,7 @@ export default class MCSocket {
             return;
         }
 
-        if (!this.connection.supportsSettingsAndMultiLogs()) {
+        if (!this.connection.is1905OrNewer()) {
             Log.e("Received new logs event for a project that should be using the OLD logs API");
             return;
         }

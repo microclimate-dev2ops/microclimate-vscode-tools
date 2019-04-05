@@ -113,7 +113,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.label = Translator.t(STRING_NS, "quickPickLabel", { projectName: this.name, projectType: this.type.type });
         // this.detail = this.id;
 
-        if (this.connection.supportsSettingsAndMultiLogs()) {
+        if (this.connection.is1905OrNewer()) {
             this.logManager = new MCLogManager(this);
         }
         else {
