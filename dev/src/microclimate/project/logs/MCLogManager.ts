@@ -24,12 +24,17 @@ export default class MCLogManager {
             return;
         }
         // Log.d("Initializing logs");
-        const availableLogs = await Requester.requestAvailableLogs(this.project);
-
-        availableLogs.app.concat(availableLogs.build).forEach((log) => {
-            this.logs.push(new MCLog(this.project.name, log.logName, log.workspathLogPath));
-        });
-        Log.i(`${this.managerName} has finished initializing logs: ${this.logs.map((l) => l.displayName).join(", ")}`);
+        try {
+            const availableLogs = await Requester.requestAvailableLogs(this.project);
+            availableLogs.app.concat(availableLogs.build).forEach((log) => {
+                this.logs.push(new MCLog(this.project.name, log.logName, log.workspathLogPath));
+            });
+            Log.i(`${this.managerName} has finished initializing logs: ${this.logs.map((l) => l.displayName).join(", ") || "<none>"}`);
+        }
+        catch (err) {
+            // requester will show the error
+            return;
+        }
     }
 
     /**
@@ -52,13 +57,13 @@ export default class MCLogManager {
     }
 
     public onReconnectOrEnable(): void {
-        Log.d(`${this.managerName} onReconnectOrEnable`);
+        // Log.d(`${this.managerName} onReconnectOrEnable`);
         // refresh all streams
         this.toggleLogStreaming(true);
     }
 
     public onDisconnectOrDisable(disconnect: boolean): void {
-        Log.d(`${this.managerName} onDisconnectOrDisable`);
+        // Log.d(`${this.managerName} onDisconnectOrDisable`);
         this.logs.forEach((log) => log.onDisconnectOrDisable(disconnect));
     }
 

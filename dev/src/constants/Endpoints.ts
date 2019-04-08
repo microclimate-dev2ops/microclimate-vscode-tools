@@ -21,7 +21,12 @@ export type Endpoint = MCEndpoints | ProjectEndpoints;
 export enum MCEndpoints {
     ENVIRONMENT = "api/v1/environment",
     PROJECTS = "api/v1/projects",
+    // 1905+
     PROJECTS_V2 = "api/v2/projects",
+    // 1905+
+    PROJECT_TYPES = "api/v2/project-types",
+    // 1905+
+    // IMPORT = "api/v2/import",
     // Deprecated
     VALIDATE_OLD = "api/v1/validate",
     // Deprecated

@@ -126,7 +126,7 @@ export default class MCSocket {
     }
 
     private readonly onProjectDeleted = async (payload: { projectID: string }): Promise<void> => {
-        Log.d("PROJECT DELETED", payload.projectID);
+        Log.d("Project deleted", payload.projectID);
 
         const project = await this.getProject(payload);
         if (project == null) {
@@ -205,6 +205,7 @@ export default class MCSocket {
         if (project == null) {
             return;
         }
+        Log.d("projectSettingsChanged", payload);
         // doesn't work
         // return project.onSettingsChangedEvent(payload);
     }

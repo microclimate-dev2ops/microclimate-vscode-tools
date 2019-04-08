@@ -150,7 +150,7 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
     let currentValue: OptionalString;
     switch (type) {
         case ProjectOverview.Editable.CONTEXT_ROOT: {
-            userFriendlySetting = "application endpoint";
+            userFriendlySetting = "application endpoint path";
             settingKey = "contextroot";
             currentValue = project.contextRoot;
             break;

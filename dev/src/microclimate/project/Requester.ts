@@ -205,7 +205,7 @@ namespace Requester {
 
         const options = {
             json: true,
-            body: body,
+            body,
             resolveWithFullResponse: true,
         };
 

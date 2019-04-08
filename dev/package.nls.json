@@ -26,7 +26,7 @@
     "cmdDescr_refreshConnection": "Refresh a Microclimate connection",
 
     "cmdID_newMCProject": "ext.mc.createMCProject",
-    "cmdTitle_newMCProject": "Open Create Project Page",
+    "cmdTitle_newMCProject": "Create Project",
 
     "cmdID_importMCProject": "ext.mc.importMCProject",
     "cmdTitle_importMCProject": "Open Import Project Page",

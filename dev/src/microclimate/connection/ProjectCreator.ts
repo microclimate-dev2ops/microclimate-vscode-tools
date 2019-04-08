@@ -1,0 +1,87 @@
+/*******************************************************************************
+ * Copyright (c) 2019 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v20.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
+
+import * as vscode from "vscode";
+import * as request from "request-promise-native";
+
+import Log from "../../Logger";
+import Connection from "./Connection";
+import EndpointUtil, { MCEndpoints } from "../../constants/Endpoints";
+
+interface IMCProjectType {
+    label: string;
+    description: string;
+    extension?: string;
+    language: string;
+}
+
+/**
+ * Functions to create or import new projects into Microclimate
+ */
+namespace ProjectCreator {
+
+    export async function createProject(connection: Connection): Promise<void> {
+        const projectTypesUrl = EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECT_TYPES);
+        const projectTypes: IMCProjectType[] = await request.get(projectTypesUrl, { json: true });
+
+        const projectTypeQpis: Array<(vscode.QuickPickItem & IMCProjectType)> = projectTypes.map((type) => {
+            return {
+                label: type.label,
+                description: type.description,
+                // detail: type.extension,
+                detail: type.language,
+                language: type.language,
+                extension: type.extension,
+            };
+        });
+
+        const projectTypeSelected = await vscode.window.showQuickPick(projectTypeQpis, { placeHolder: "Select the project type to create" });
+        if (projectTypeSelected == null) {
+            return;
+        }
+
+        const projectName = await getProjectName(projectTypeSelected.description);
+
+        if (projectName == null) {
+            return;
+        }
+
+        const payload = {
+            language: projectTypeSelected.language,
+            // metrics: true       // portal-ui sends this, why?
+            name: projectName,
+            extension: projectTypeSelected.extension    // note: null for nodejs right now
+        };
+
+        const creationRes = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECTS_V2), {
+            json: true,
+            body: payload,
+        });
+
+        Log.i(creationRes);
+        vscode.window.showInformationMessage(`Creating ${payload.extension} project ${projectName}`);
+    }
+
+    async function getProjectName(projectTypeName?: string): Promise<string | undefined> {
+        return await vscode.window.showInputBox({
+            placeHolder: `Enter a name for your new ${projectTypeName ? projectTypeName + " " : ""}project`,
+            validateInput: (input: string): OptionalString => {
+                const matches: boolean = /^[a-z0-9]+$/.test(input);
+                if (!matches) {
+                    return `Invalid project name "${input}". Project name can only contain numbers and lowercase letters.`;
+                }
+                return undefined;
+            }
+        });
+    }
+}
+
+export default ProjectCreator;
