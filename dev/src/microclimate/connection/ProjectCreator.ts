@@ -43,7 +43,11 @@ namespace ProjectCreator {
             };
         });
 
-        const projectTypeSelected = await vscode.window.showQuickPick(projectTypeQpis, { placeHolder: "Select the project type to create" });
+        const projectTypeSelected = await vscode.window.showQuickPick(projectTypeQpis, {
+            placeHolder: "Select the project type to create",
+            // matchOnDescription: true,
+            matchOnDetail: true,
+        });
         if (projectTypeSelected == null) {
             return;
         }
