@@ -27,7 +27,6 @@ import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
 import SocketEvents from "../connection/SocketEvents";
 import MCLogManager from "./logs/MCLogManager";
-import MCLogManagerOld from "./logs/deprecated/MCLogManager-Old";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -72,7 +71,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     // Track this so we can refresh it when update() is called, and prevent multiple webviews being open for one project.
     private activeProjectInfo: vscode.WebviewPanel | undefined;
 
-    public readonly logManager: MCLogManager | MCLogManagerOld;
+    public readonly logManager: MCLogManager;
 
     constructor(
         projectInfo: any,
@@ -113,12 +112,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.label = Translator.t(STRING_NS, "quickPickLabel", { projectName: this.name, projectType: this.type.type });
         // this.detail = this.id;
 
-        if (this.connection.is1905OrNewer()) {
-            this.logManager = new MCLogManager(this);
-        }
-        else {
-            this.logManager = new MCLogManagerOld(this.connection);
-        }
+        this.logManager = new MCLogManager(this);
 
         Log.i(`Created project ${this.name}:`, this);
     }
@@ -378,7 +372,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         Log.i(`${this.name} was deleted`);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
         this.clearValidationErrors();
-        this.logManager.destroyAllLogs(this.id);
+        this.logManager.destroyAllLogs();
         DebugUtils.removeDebugLaunchConfigFor(this);
 
         if (this.activeProjectInfo != null) {

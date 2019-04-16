@@ -52,8 +52,7 @@ export function createCommands(): vscode.Disposable[] {
         vscode.commands.registerCommand(Commands.REMOVE_CONNECTION,     (selection) => removeConnectionCmd(selection)),
         vscode.commands.registerCommand(Commands.REFRESH_CONNECTION,    (selection) => refreshConnectionCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.CREATE_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection, true)),
-        vscode.commands.registerCommand(Commands.IMPORT_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection, false)),
+        vscode.commands.registerCommand(Commands.CREATE_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection)),
 
         vscode.commands.registerCommand(Commands.OPEN_WS_FOLDER,    (selection) => openWorkspaceFolderCmd(selection)),
 

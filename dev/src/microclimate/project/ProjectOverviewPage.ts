@@ -60,7 +60,6 @@ export function generateHtml(project: Project): string {
     const notAvailable = "Not available";
     const notRunning = "Not running";
     const notDebugging = "Not debugging";
-    const supportsEditableSettings = project.connection.is1905OrNewer();
 
     return `
         <!DOCTYPE html>
@@ -117,17 +116,17 @@ export function generateHtml(project: Project): string {
                 ${buildRow("Internal App Port",
                     normalize(project.ports.internalAppPort, notAvailable),
                     undefined,
-                    supportsEditableSettings ? Editable.APP_PORT : undefined)}
+                    Editable.APP_PORT)}
                 ${buildRow("Application Endpoint",
                     normalize(project.appBaseUrl, notRunning),
                     (project.appBaseUrl != null ? Openable.WEB : undefined),
-                    supportsEditableSettings ? Editable.CONTEXT_ROOT : undefined)}
+                    Editable.CONTEXT_ROOT)}
                 ${emptyRow}
                 ${buildRow("Exposed Debug Port", normalize(project.ports.debugPort, notDebugging))}
                 ${buildRow("Internal Debug Port",
                     normalize(project.ports.internalDebugPort, notDebugging),
                     undefined,
-                    supportsEditableSettings ? Editable.DEBUG_PORT : undefined)}
+                    Editable.DEBUG_PORT)}
                 ${buildRow("Debug URL", normalize(project.debugUrl, notDebugging))}
             </table>
 

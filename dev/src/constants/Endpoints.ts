@@ -21,16 +21,8 @@ export type Endpoint = MCEndpoints | ProjectEndpoints;
 export enum MCEndpoints {
     ENVIRONMENT = "api/v1/environment",
     PROJECTS = "api/v1/projects",
-    // 1905+
-    PROJECTS_V2 = "api/v2/projects",
-    // 1905+
-    PROJECT_TYPES = "api/v2/project-types",
-    // 1905+
-    // IMPORT = "api/v2/import",
-    // Deprecated
-    VALIDATE_OLD = "api/v1/validate",
-    // Deprecated
-    GENERATE_OLD = "api/v1/validate/generate",
+    PROJECTS_V2 = "api/v1/projects",
+    PROJECT_TYPES = "api/v1/project-types",
 }
 
 /**
@@ -44,7 +36,6 @@ export enum ProjectEndpoints {
     PROPERTES = "properties",
     LOGS = "logs",
     METRICS_STATUS = "metrics/status",
-    BUILD_LOG_OLD = "build-log",
 
     OPEN = "open",
     CLOSE = "close",
@@ -64,17 +55,9 @@ export namespace EndpointUtil {
         return connection.mcUri.toString().concat(endpoint);
     }
 
-    /**
-     * Use the v2 API for the following endpoints
-     */
-    const v2Endpoints: Endpoint[] = [
-        ProjectEndpoints.PROPERTES,
-    ];
-
     export function resolveProjectEndpoint(
         connection: Connection, projectID: string, endpoint: ProjectEndpoints): string {
-        const projectsPath = v2Endpoints.includes(endpoint) ? MCEndpoints.PROJECTS_V2 : MCEndpoints.PROJECTS;
-        return connection.mcUri.toString().concat(`${projectsPath}/${projectID}/${endpoint}`);
+        return connection.mcUri.toString().concat(`${MCEndpoints.PROJECTS}/${projectID}/${endpoint}`);
     }
 
     export function resolveAppMonitorUrl(connection: Connection, projectID: string): Uri {

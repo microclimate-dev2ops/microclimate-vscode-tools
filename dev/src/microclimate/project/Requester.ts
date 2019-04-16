@@ -99,13 +99,11 @@ namespace Requester {
         projectID?: string;
         autoGenerate?: boolean;
     }
-    // In 1901, the validation API changed
-    const validationAPIChangeVersion = 1901;
 
     /**
      * Get the URL and request body for either a Validate or Generate request, they are very similar.
      */
-    function assembleValidateRequest(project: Project, generate: boolean): [Endpoint, IValidateRequestBody] {
+    function assembleValidateRequest(project: Project, generate: boolean): [ProjectEndpoints, IValidateRequestBody] {
         const body: IValidateRequestBody = {
             projectType: project.type.internalType,
         };
@@ -114,14 +112,7 @@ namespace Requester {
             body.autoGenerate = true;
         }
 
-        let endpoint: Endpoint;
-        if (project.connection.version >= validationAPIChangeVersion) {
-            endpoint = generate ? ProjectEndpoints.GENERATE : ProjectEndpoints.VALIDATE;
-        }
-        else {
-            endpoint = generate ? MCEndpoints.GENERATE_OLD : MCEndpoints.VALIDATE_OLD;
-            body.projectID = project.id;
-        }
+        const endpoint = generate ? ProjectEndpoints.GENERATE : ProjectEndpoints.VALIDATE;
         return [endpoint, body];
     }
 

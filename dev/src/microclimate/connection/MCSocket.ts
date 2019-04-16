@@ -16,7 +16,6 @@ import Project from "../project/Project";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
 import SocketEvents from "./SocketEvents";
-import MCLogManagerOld from "../project/logs/deprecated/MCLogManager-Old";
 import MCLogManager from "../project/logs/MCLogManager";
 
 /**
@@ -69,7 +68,6 @@ export default class MCSocket {
 
             .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
             .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged)
-            .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
             .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate);
 
 
@@ -149,33 +147,9 @@ export default class MCSocket {
         project.onRestartEvent(payload);
     }
 
-    // deprecated containerlogs event
-    private readonly onContainerLogs = async (payload: { projectID: string, logs: string }): Promise<void> => {
-        const project = await this.getProject(payload);
-        if (project == null) {
-            return;
-        }
-
-        if (this.connection.is1905OrNewer()) {
-            // Log.e("Received deprecated logs event for a project that should be using the new logs API");
-            return;
-        }
-
-        const logManager = project.logManager as MCLogManagerOld;
-        const appLog = logManager.getAppLog(project.id);
-        if (appLog != null) {
-            appLog.update(payload.logs);
-        }
-    }
-
     private readonly onLogUpdate = async (payload: SocketEvents.ILogUpdateEvent): Promise<void> => {
         const project = await this.getProject(payload);
         if (project == null) {
-            return;
-        }
-
-        if (!this.connection.is1905OrNewer()) {
-            Log.e("Received new logs event for a project that should be using the OLD logs API");
             return;
         }
 
