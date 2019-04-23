@@ -30,11 +30,6 @@ export default async function removeConnectionCmd(connection: Connection): Promi
         connection = selected;
     }
 
-    // const removed: boolean = await ConnectionManager.instance.removeConnection(connection);
-    return ConnectionManager.instance.removeConnection(connection)
-        .then( (result: boolean) => {
-            if (result) {
-                vscode.window.showInformationMessage(Translator.t(StringNamespaces.CMD_MISC, "removedConnection", { uri: connection.mcUri }));
-            }
-        });
+    await ConnectionManager.instance.removeConnection(connection);
+    vscode.window.showInformationMessage(Translator.t(StringNamespaces.CMD_MISC, "removedConnection", { uri: connection.mcUri }));
 }

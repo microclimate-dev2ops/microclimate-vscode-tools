@@ -12,12 +12,11 @@
 import * as vscode from "vscode";
 
 import * as MCUtil from "../../MCUtil";
-import ITreeItemAdaptable from "../../view/TreeItemAdaptable";
 import ProjectState from "./ProjectState";
 import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
 import Log from "../../Logger";
-import Commands from "../../constants/Commands";
+// import Commands from "../../constants/Commands";
 import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
@@ -41,7 +40,7 @@ interface IProjectPorts {
     internalDebugPort: OptionalNumber;
 }
 
-export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem {
+export default class Project implements vscode.QuickPickItem {
 
     // Immutable project data
     public readonly name: string;
@@ -126,11 +125,6 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         Log.i(`Created project ${this.name}:`, this);
     }
 
-    public getChildren(): ITreeItemAdaptable[] {
-        // Projects have no children.
-        return [];
-    }
-
     public toTreeItem(): vscode.TreeItem {
         const ti = new vscode.TreeItem(
             Translator.t(StringNamespaces.TREEVIEW, "projectLabel", { projectName: this.name, state: this.state.toString() }),
@@ -142,13 +136,15 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         // There are different context menu actions available to enabled or disabled or debugging projects
         ti.contextValue = getContextID(this);
         ti.iconPath = this.type.icon;
+        // ti.iconPath = "fa-node-js";
         // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
         // Focuses on this project in the middle of the explorer view. Has no effect if the project is not in the current workspace.
-        ti.command = {
-            command: Commands.VSC_REVEAL_EXPLORER,
-            title: "",      // non-nls
-            arguments: [this.localPath]
-        };
+        // Broken in theia obviously
+        // ti.command = {
+        //     command: Commands.VSC_REVEAL_EXPLORER,
+        //     title: "",      // non-nls
+        //     arguments: [this.localPath]
+        // };
         return ti;
     }
 

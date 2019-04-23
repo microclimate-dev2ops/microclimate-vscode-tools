@@ -4,7 +4,8 @@
 
     "// Items starting with cmdID or viewID are not exposed to user": "",
 
-    "viewName": "Microclimate",
+    "viewName": "Explorer",
+    "viewsContainerID": "ext.mc.mcViewsContainer",
     "viewID": "ext.mc.mcProjectExplorer",
 
     "commandCategory": "Microclimate",

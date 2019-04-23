@@ -9,6 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import * as vscode from "vscode";
 import * as io from "socket.io-client";
 
 import Connection from "./Connection";
@@ -24,7 +25,7 @@ import MCLogManager from "../project/logs/MCLogManager";
  *
  * Each Connection has exactly one socket
  */
-export default class MCSocket {
+export default class MCSocket implements vscode.Disposable {
 
     public readonly uri: string;
     private readonly socket: SocketIOClient.Socket;
@@ -85,7 +86,7 @@ export default class MCSocket {
      * If there are multiple sockets listening on the same connection,
      * the callbacks will be fired multiple times for the same event, which will lead to serious misbehaviour.
      */
-    public async destroy(): Promise<void> {
+    public async dispose(): Promise<void> {
         this.socket.disconnect();
     }
 
@@ -235,9 +236,5 @@ export default class MCSocket {
 
     public toString(): string {
         return "MCSocket @ " + this.uri;        // not displayed to user        // non-nls
-    }
-
-    public toJSON(): string {
-        return this.toString();
     }
 }
