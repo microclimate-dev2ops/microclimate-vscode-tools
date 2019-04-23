@@ -12,7 +12,6 @@
 import * as vscode from "vscode";
 import * as request from "request-promise-native";
 
-import ITreeItemAdaptable, { SimpleTreeItem } from "../../view/TreeItemAdaptable";
 import Project from "../project/Project";
 import { MCEndpoints, EndpointUtil } from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
@@ -24,7 +23,7 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import MCEnvironment from "./MCEnvironment";
 
-export default class Connection implements ITreeItemAdaptable, vscode.QuickPickItem {
+export default class Connection implements vscode.QuickPickItem, vscode.Disposable {
 
     private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";       // must match package.nls.json    // non-nls
     private static readonly CONTEXT_ID_ACTIVE: string = Connection.CONTEXT_ID + ".active";      // non-nls
@@ -58,16 +57,16 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         this.versionStr = MCEnvironment.getVersionAsString(version);
 
         // QuickPickItem
-        this.label = this.getTreeItemLabel();
+        this.label = Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
         // this.description = this.workspacePath.fsPath.toString();
         Log.i(`Created new Connection @ ${this}, workspace ${this.workspacePath}`);
         DebugUtils.cleanDebugLaunchConfigsFor(this);
     }
 
-    public async destroy(): Promise<void> {
+    public async dispose(): Promise<void> {
         Log.d("Destroy connection " + this);
         return Promise.all([
-            this.socket.destroy()
+            this.socket.dispose()
         ])
         .then(() => Promise.resolve());
     }
@@ -81,7 +80,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
      */
     public async onChange(): Promise<void> {
         // Log.d(`Connection ${this.mcUri} changed`);
-        ConnectionManager.instance.onChange();
+        ConnectionManager.instance.onChange(this);
     }
 
     public get isConnected(): boolean {
@@ -181,33 +180,31 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         return result;
     }
 
-    public async getChildren(): Promise<ITreeItemAdaptable[]> {
-        if (!this.connected) {
-            const disconnectedLabel = Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel");
-            // The context ID can be any truthy string.
-            const disconnectedContextID = "disconnectedContextID"; // non-nls;
-            const disconnectedTI = new SimpleTreeItem(
-                disconnectedLabel, undefined, undefined, disconnectedContextID, Resources.getIconPaths(Resources.Icons.Disconnected)
-            );
-            return [ disconnectedTI ];
-        }
-
-        await this.getProjects();
-        // Logger.log(`Connection ${this} has ${this.projects.length} projects`);
-        if (this.projects.length === 0) {
-            const noProjectsTi: SimpleTreeItem = new SimpleTreeItem(Translator.t(StringNamespaces.TREEVIEW, "noProjectsLabel"));
-            return [ noProjectsTi ];
-        }
-        return this.projects;
-    }
-
     public toTreeItem(): vscode.TreeItem {
-        const ti: vscode.TreeItem = new vscode.TreeItem(this.getTreeItemLabel(), vscode.TreeItemCollapsibleState.Expanded);
+        let label: string;
+        let contextValue: string;
+        let iconPath: Resources.IconPaths;
+
+        if (this.connected) {
+            label = Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
+            if (this.projects.length === 0) {
+                label += " (No projects)";
+            }
+            contextValue = Connection.CONTEXT_ID_ACTIVE;
+            iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
+        }
+        else {
+            label = Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel");
+            contextValue = Connection.CONTEXT_ID;
+            iconPath = Resources.getIconPaths(Resources.Icons.Disconnected);
+        }
+
+        const ti: vscode.TreeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Expanded);
         // ti.resourceUri = this.workspacePath;
         ti.tooltip = `${this.versionStr} • ${this.workspacePath.fsPath}`;
-        ti.contextValue = this.getContextID();
-        ti.iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
-        // command run on single-click - https://github.com/Microsoft/vscode/issues/39601
+        ti.contextValue = contextValue;
+        ti.iconPath = iconPath;
+        // command run on click - https://github.com/Microsoft/vscode/issues/39601
         /*
         ti.command = {
             command: Project.ONCLICK_CMD_ID,
@@ -215,17 +212,6 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
             arguments: [ti.resourceUri]
         };*/
         return ti;
-    }
-
-    private getTreeItemLabel(): string {
-        return Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
-    }
-
-    private getContextID(): string {
-        if (this.connected) {
-            return Connection.CONTEXT_ID_ACTIVE;
-        }
-        return Connection.CONTEXT_ID;
     }
 
     public async forceUpdateProjectList(wipeProjects: boolean = false): Promise<void> {

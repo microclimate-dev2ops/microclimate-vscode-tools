@@ -19,13 +19,14 @@ import Settings from "../../constants/Settings";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import MCEnvironment from "./MCEnvironment";
+import { MicroclimateTreeItem } from "../../view/ProjectTree";
 
-export default class ConnectionManager {
+export default class ConnectionManager implements vscode.Disposable {
 
     private static _instance: ConnectionManager;
 
     private readonly _connections: Connection[] = [];
-    private readonly listeners: Array<( () => void )> = [];
+    private readonly listeners: Array<( (changed: MicroclimateTreeItem | undefined) => void )> = [];
 
     private constructor(
 
@@ -41,6 +42,13 @@ export default class ConnectionManager {
 
     public static get instance(): ConnectionManager {
         return ConnectionManager._instance || (ConnectionManager._instance = new this());
+    }
+
+    public async dispose(): Promise<void> {
+        return Promise.all(
+            this.connections.map((conn) => conn.dispose())
+        )
+        .then(() => Promise.resolve());
     }
 
     public get connections(): Connection[] {
@@ -68,7 +76,8 @@ export default class ConnectionManager {
         this._connections.push(newConnection);
         ConnectionManager.saveConnections();
 
-        this.onChange();
+        // pass undefined here to refresh the tree from its root
+        this.onChange(undefined);
         return newConnection;
     }
 
@@ -78,11 +87,11 @@ export default class ConnectionManager {
             Log.e(`Request to remove connection ${connection} but it doesn't exist!`);
             return false;
         }
-        connection.destroy();
+        connection.dispose();
         this.connections.splice(indexToRemove, 1);
         Log.i("Removed connection", connection);
         ConnectionManager.saveConnections();
-        this.onChange();
+        this.onChange(undefined);
         return true;
     }
 
@@ -149,13 +158,13 @@ export default class ConnectionManager {
         });
     }
 
-    public static loadConnections(): MCUtil.IConnectionInfo[] {
+    private static loadConnections(): MCUtil.IConnectionInfo[] {
         const globalState = global.extGlobalState as vscode.Memento;
         const loaded = globalState.get<MCUtil.IConnectionInfo[]>(Settings.CONNECTIONS_KEY) || [];
         return loaded;
     }
 
-    public static async saveConnections(): Promise<void> {
+    private static async saveConnections(): Promise<void> {
         // We save IConnectionInfo objects since they are simpler and more readable than VSCode URIs.
         // This will likely change with ICP support since we would then have to store protocol too.
         const connectionInfos: MCUtil.IConnectionInfo[] = ConnectionManager.instance.connections
@@ -179,16 +188,17 @@ export default class ConnectionManager {
      * eg to trigger a tree update in the UI.
      * Test-friendly.
      */
-    public addOnChangeListener(callback: () => void): void {
+    public addOnChangeListener(callback: (changed: MicroclimateTreeItem | undefined) => void): void {
         Log.i("Adding onChangeListener " + callback.name);
         this.listeners.push(callback);
     }
 
     /**
      * Call this whenever a connection is added, removed, or changed.
+     * Pass the item that changed (Connection or Project) or undefined for the tree's root.
      */
-    public onChange = (): void => {
-        // Logger.log(`Connection ${connection} changed`);
-        this.listeners.forEach( (f) => f());
+    public onChange = (changed: MicroclimateTreeItem | undefined): void => {
+        // Log.d(`There was a change, notifying ${this.listeners.length} listeners`);
+        this.listeners.forEach((cb) => cb(changed));
     }
 }

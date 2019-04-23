@@ -18,6 +18,7 @@ import Log from "./Logger";
 
 import Translator from "./constants/strings/translator";
 import StringNamespaces from "./constants/strings/StringNamespaces";
+import ConnectionManager from "./microclimate/connection/ConnectionManager";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -55,10 +56,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         // ...createDebug()
     ];
 
+    subscriptions.push(ConnectionManager.instance);
+
     subscriptions.forEach((e) => {
-        // Logger.log("Adding subscription " + util.inspect(e));
         context.subscriptions.push(e);
     });
+
+    Log.d("Finished activating");
 }
 
 // this method is called when your extension is deactivated

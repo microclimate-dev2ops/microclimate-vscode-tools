@@ -44,6 +44,7 @@ enum Commands {
     ENABLE_PROJECT = "ext.mc.enable",
 
     VALIDATE = "ext.mc.validate",
+
     // VSCode commands, kept here for easy reference. These will never change.
     VSC_OPEN = "vscode.open",
     VSC_OPEN_FOLDER = "vscode.openFolder",
