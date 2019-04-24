@@ -116,6 +116,17 @@ export default class Project implements vscode.QuickPickItem {
         Log.i(`Created project ${this.name}:`, this);
     }
 
+    public toJSON(): any {
+        const copy = Object.assign({}, this) as any;
+        // Remove objects that feature circular references
+        // This breaks the object if it is stringified and then re-parsed, but this is required
+        // as a workaround for https://github.com/theia-ide/theia/issues/4975, in the context of https://github.com/theia-ide/theia/issues/4978
+        // Also see MCSocket.toJSON
+        copy.connection = this.connection.mcUri.toString();
+        copy.logManager = this.logManager.toString();
+        return copy;
+    }
+
     public toTreeItem(): vscode.TreeItem {
         const ti = new vscode.TreeItem(
             Translator.t(StringNamespaces.TREEVIEW, "projectLabel", { projectName: this.name, state: this.state.toString() }),

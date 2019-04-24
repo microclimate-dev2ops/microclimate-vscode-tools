@@ -59,7 +59,7 @@ export default async function openInBrowserCmd(resource: Project | Connection): 
     }
     else {
         // should never happen
-        Log.e(`Don't know how to open object of type ${typeof(resource)} in browser`);
+        Log.e(`Don't know how to open object of type ${typeof(resource)} in browser`, resource);
         return;
     }
 

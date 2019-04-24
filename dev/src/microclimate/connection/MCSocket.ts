@@ -77,6 +77,13 @@ export default class MCSocket implements vscode.Disposable {
             // .on("projectCreation",       this.onProjectCreatedOrDeleted);
     }
 
+    public toJSON(): any {
+        const copy = Object.assign({}, this) as any;
+        // See Project.toJSON for explanation
+        copy.connection = this.connection.mcUri.toString();
+        return copy;
+    }
+
     /**
      * This MUST be called when the connection is removed.
      * If there are multiple sockets listening on the same connection,

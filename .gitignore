@@ -1,7 +1,7 @@
 out/
 node_modules/
 .vscode-test/
-*.vsix
+dev/*.vsix
 
 .DS_Store
 .nyc_output
@@ -9,3 +9,5 @@ node_modules/
 todo.txt
 unused.txt
 last_build.txt
+
+dev/LICENSE
