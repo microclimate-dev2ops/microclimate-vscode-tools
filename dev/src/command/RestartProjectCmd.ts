@@ -21,14 +21,14 @@ import * as MCUtil from "../MCUtil";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 
-export default async function restartProjectCmd(project: Project, debug: boolean): Promise<boolean> {
+export default async function restartProjectCmd(project: Project, debug: boolean): Promise<void> {
     Log.d("RestartProjectCmd invoked", project);
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTED, ProjectState.AppStates.STARTING);
         if (selected == null) {
             // user cancelled
             Log.d("User cancelled project prompt");
-            return false;
+            return;
         }
         project = selected;
     }
@@ -41,25 +41,26 @@ export default async function restartProjectCmd(project: Project, debug: boolean
         const alreadyRestartingMsg = Translator.t(StringNamespaces.PROJECT, "alreadyRestarting", { projectName: project.name });
         Log.i(alreadyRestartingMsg);
         vscode.window.showWarningMessage(alreadyRestartingMsg);
-        return false;
+        return;
     }
 
-    const response = await Requester.requestProjectRestart(project, startMode);
-    const statusCode = Number(response.statusCode);
+    try {
+        const response = await Requester.requestProjectRestart(project, startMode);
+        const statusCode = Number(response.statusCode);
 
-    // Note here that we don't return whether or not the restart actually suceeded,
-    // just whether or not it was accepted by the server and therefore initiated.
-    if (MCUtil.isGoodStatusCode(statusCode)) {
-        Log.d("Restart was accepted by server");
+        // Note here that we don't return whether or not the restart actually suceeded,
+        // just whether or not it was accepted by the server and therefore initiated.
+        if (MCUtil.isGoodStatusCode(statusCode)) {
+            Log.d("Restart was accepted by server");
 
-        const restarting = project.doRestart(startMode);
-        if (!restarting) {
-            // Should never happen
-            Log.e("Restart was rejected by Project class");
-            return false;
+            const restarting = project.doRestart(startMode);
+            if (!restarting) {
+                // Should never happen
+                Log.e("Restart was rejected by Project class");
+            }
         }
-
-        return true;
     }
-    return false;
+    catch (err) {
+        Log.e(`Error restarting project: ${project.name}`, err);
+    }
 }

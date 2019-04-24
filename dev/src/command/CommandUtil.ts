@@ -37,6 +37,7 @@ import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 import validateCmd from "./ValidateCmd";
 import { manageLogs, showAllLogs, hideAllLogs } from "./ManageLogsCmd";
+import ProjectTreeDataProvider from "../view/ProjectTree";
 
 export function createCommands(): vscode.Disposable[] {
 
@@ -54,35 +55,77 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.CREATE_MC_PROJECT, (selection) => openCreateOrImportPageCmd(selection)),
 
+        vscode.commands.registerCommand(Commands.OPEN_IN_BROWSER,   (selection) => openInBrowserCmd(selection)),
         vscode.commands.registerCommand(Commands.OPEN_WS_FOLDER,    (selection) => openWorkspaceFolderCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.ATTACH_DEBUGGER,   (selection) => attachDebuggerCmd(selection)),
-        vscode.commands.registerCommand(Commands.RESTART_RUN,       (selection) => restartProjectCmd(selection, false)),
-        vscode.commands.registerCommand(Commands.RESTART_DEBUG,     (selection) => restartProjectCmd(selection, true)),
+        vscode.commands.registerCommand(Commands.ATTACH_DEBUGGER,   (selection) => projectCmdExecutor(selection, attachDebuggerCmd)),
+        vscode.commands.registerCommand(Commands.RESTART_RUN,       (selection) => projectCmdExecutor(selection, restartProjectCmd, false)),
+        vscode.commands.registerCommand(Commands.RESTART_DEBUG,     (selection) => projectCmdExecutor(selection, restartProjectCmd, true)),
 
-        vscode.commands.registerCommand(Commands.OPEN_IN_BROWSER,   (selection) => openInBrowserCmd(selection)),
-
-        vscode.commands.registerCommand(Commands.REQUEST_BUILD,     (selection) => requestBuildCmd(selection)),
-        vscode.commands.registerCommand(Commands.TOGGLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
+        vscode.commands.registerCommand(Commands.REQUEST_BUILD,     (selection) => projectCmdExecutor(selection, requestBuildCmd)),
+        vscode.commands.registerCommand(Commands.TOGGLE_AUTOBUILD,  (selection) => projectCmdExecutor(selection, toggleAutoBuildCmd)),
         // Enable and disable AB are the same as Toggle AB - they are just presented to the user differently.
-        vscode.commands.registerCommand(Commands.ENABLE_AUTOBUILD,  (selection) => toggleAutoBuildCmd(selection)),
-        vscode.commands.registerCommand(Commands.DISABLE_AUTOBUILD, (selection) => toggleAutoBuildCmd(selection)),
+        vscode.commands.registerCommand(Commands.ENABLE_AUTOBUILD,  (selection) => projectCmdExecutor(selection, toggleAutoBuildCmd)),
+        vscode.commands.registerCommand(Commands.DISABLE_AUTOBUILD, (selection) => projectCmdExecutor(selection, toggleAutoBuildCmd)),
 
-        vscode.commands.registerCommand(Commands.MANAGE_LOGS,       (selection) => manageLogs(selection)),
-        vscode.commands.registerCommand(Commands.SHOW_ALL_LOGS,     (selection) => showAllLogs(selection)),
-        vscode.commands.registerCommand(Commands.HIDE_ALL_LOGS,     (selection) => hideAllLogs(selection)),
+        vscode.commands.registerCommand(Commands.MANAGE_LOGS,       (selection) => projectCmdExecutor(selection, manageLogs)),
+        vscode.commands.registerCommand(Commands.SHOW_ALL_LOGS,     (selection) => projectCmdExecutor(selection, showAllLogs)),
+        vscode.commands.registerCommand(Commands.HIDE_ALL_LOGS,     (selection) => projectCmdExecutor(selection, hideAllLogs)),
 
-        vscode.commands.registerCommand(Commands.DISABLE_PROJECT,   (selection) => toggleEnablementCmd(selection, false)),
-        vscode.commands.registerCommand(Commands.ENABLE_PROJECT,    (selection) => toggleEnablementCmd(selection, true)),
+        vscode.commands.registerCommand(Commands.DISABLE_PROJECT,   (selection) => projectCmdExecutor(selection, toggleEnablementCmd, false)),
+        vscode.commands.registerCommand(Commands.ENABLE_PROJECT,    (selection) => projectCmdExecutor(selection, toggleEnablementCmd, true)),
 
-        vscode.commands.registerCommand(Commands.CONTAINER_SHELL,   (selection) => containerBashCmd(selection)),
+        vscode.commands.registerCommand(Commands.CONTAINER_SHELL,   (selection) => projectCmdExecutor(selection, containerBashCmd)),
 
-        vscode.commands.registerCommand(Commands.PROJECT_OVERVIEW,  (selection) => projectOverviewCmd(selection)),
+        vscode.commands.registerCommand(Commands.PROJECT_OVERVIEW,  (selection) => projectCmdExecutor(selection, projectOverviewCmd)),
 
-        vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR,  (selection) => openAppMonitorCmd(selection)),
+        vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR,  (selection) => projectCmdExecutor(selection, openAppMonitorCmd)),
 
-        vscode.commands.registerCommand(Commands.VALIDATE,          (selection) => validateCmd(selection))
+        vscode.commands.registerCommand(Commands.VALIDATE,          (selection) => projectCmdExecutor(selection, validateCmd))
     ];
+}
+
+// type CommandTarget = Project | Connection;
+
+async function projectCmdExecutor(
+    project: Project | undefined,
+    handler: (project: Project, ...args: any[]) => Promise<any>,
+    ...args: any[]): Promise<void> {
+
+    if (project == null) {
+        Log.d("Obtaining project from selection, or user");
+
+        const selection = ProjectTreeDataProvider.treeViewInstance.selection;
+        if (selection.length > 1) {
+            // multiple items are selected - this is not supported
+            vscode.window.showErrorMessage("you cannot run commands on multiple items. please select exactly one item in the tree and try again");
+            return;
+        }
+
+        if (selection.length === 0 || !(selection[0] instanceof Project)) {
+            // nothing is selected, or one thing is selected but it is not a project.
+            project = await promptForProject();
+            if (project == null) {
+                return;
+            }
+            ProjectTreeDataProvider.select(project);
+        }
+        else {
+            project = selection[0] as Project;
+        }
+    }
+
+    if (!(project instanceof Project)) {
+        Log.e("Non-project was passed to projectCmdExecutor");
+        return;
+    }
+
+    try {
+        return await handler(project, args);
+    }
+    catch (err) {
+        vscode.window.showErrorMessage(`Unexpected error running command on ${project.name}`);
+    }
 }
 
 // Some commands require a project or connection to be selected,

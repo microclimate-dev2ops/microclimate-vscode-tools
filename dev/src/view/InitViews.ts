@@ -18,6 +18,6 @@ export default function createViews(): vscode.Disposable[] {
     Log.d("Initializing views");
 
     return [
-        (new ProjectTreeDataProvider()).treeView,
+        ProjectTreeDataProvider.treeViewInstance,
     ];
 }
