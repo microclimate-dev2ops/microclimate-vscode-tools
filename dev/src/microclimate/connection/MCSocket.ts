@@ -70,7 +70,9 @@ export default class MCSocket {
             .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
             .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged)
             .on(SocketEvents.Types.CONTAINER_LOGS,          this.onContainerLogs)
-            .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate);
+            .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate)
+            .on(SocketEvents.Types.LOGS_LIST_CHANGED,       this.onLogsListChanged)
+            ;
 
 
             // We don't actually need the creation event -
@@ -165,6 +167,13 @@ export default class MCSocket {
         const appLog = logManager.getAppLog(project.id);
         if (appLog != null) {
             appLog.update(payload.logs);
+        }
+    }
+
+    private readonly onLogsListChanged = async (payload: any): Promise<void> => {
+        const project = await this.getProject(payload);
+        if (project == null) {
+            return;
         }
     }
 

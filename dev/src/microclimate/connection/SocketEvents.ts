@@ -89,6 +89,7 @@ namespace SocketEvents {
         // deprecated, replaced by log-update
         CONTAINER_LOGS = "container-logs",
         LOG_UPDATE = "log-update",
+        LOGS_LIST_CHANGED = "projectLogsListChanged",
     }
 
     /**
