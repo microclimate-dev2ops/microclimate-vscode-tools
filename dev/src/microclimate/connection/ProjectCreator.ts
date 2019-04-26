@@ -71,7 +71,7 @@ namespace ProjectCreator {
         });
 
         Log.i(creationRes);
-        vscode.window.showInformationMessage(`Creating ${payload.extension} project ${projectName}`);
+        vscode.window.showInformationMessage(`Creating ${payload.language} project ${projectName}`);
     }
 
     async function getProjectName(projectTypeName?: string): Promise<string | undefined> {

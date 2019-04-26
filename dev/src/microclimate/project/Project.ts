@@ -371,19 +371,24 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.logManager.onDisconnectOrDisable(false);
     }
 
+    public async dispose(): Promise<void> {
+        return Promise.all([
+            this.clearValidationErrors(),
+            this.logManager.destroyAllLogs(this.id),
+            this.activeProjectInfo != null ? this.activeProjectInfo.dispose() : Promise.resolve(),
+        ])
+        .then(() => Promise.resolve());
+    }
+
     /**
      * Call when this project is deleted in Microclimate
      */
     public async onDelete(): Promise<void> {
         Log.i(`${this.name} was deleted`);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
-        this.clearValidationErrors();
-        this.logManager.destroyAllLogs(this.id);
-        DebugUtils.removeDebugLaunchConfigFor(this);
 
-        if (this.activeProjectInfo != null) {
-            this.activeProjectInfo.dispose();
-        }
+        DebugUtils.removeDebugLaunchConfigFor(this);
+        await this.dispose();
     }
 
     /**

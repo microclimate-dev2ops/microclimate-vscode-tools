@@ -58,7 +58,8 @@ export default class DebugUtils {
 
         if (currentDebugSession == null) {
             Log.w("Debug session failed to launch");
-            debugSuccess = false;
+            // TODO
+            // debugSuccess = false;
         }
         /*
         else if (currentDebugSession.name !== debugConfig.name) {

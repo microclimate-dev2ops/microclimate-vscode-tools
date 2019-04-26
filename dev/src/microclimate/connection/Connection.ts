@@ -232,6 +232,7 @@ export default class Connection implements ITreeItemAdaptable, vscode.QuickPickI
         Log.d("forceUpdateProjectList");
         if (wipeProjects) {
             Log.d(`Connection ${this} wiping ${this.projects.length} projects`);
+            this.projects.forEach((p) => p.dispose());
             this.projects = [];
         }
         this.needProjectUpdate = true;
