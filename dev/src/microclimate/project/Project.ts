@@ -458,7 +458,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public get appBaseUrl(): vscode.Uri | undefined {
-        if (this.ports.appPort == null) {
+        if (this._ports.appPort == null || isNaN(this._ports.appPort)) {
             // app is stopped, disabled, etc.
             return undefined;
         }
@@ -470,7 +470,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public get debugUrl(): OptionalString {
-        if (this._ports.debugPort == null) {
+        if (this._ports.debugPort == null || isNaN(this._ports.debugPort)) {
             return undefined;
         }
 
