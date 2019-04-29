@@ -31,10 +31,13 @@ import MCLogManagerOld from "./logs/deprecated/MCLogManager-Old";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
+/**
+ * Project's ports info. Keys match those provided by Microclimate.
+ */
 interface IProjectPorts {
     appPort: OptionalNumber;
-    debugPort: OptionalNumber;
     internalAppPort: OptionalNumber;
+    debugPort: OptionalNumber;
     internalDebugPort: OptionalNumber;
 }
 
@@ -207,7 +210,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         const ports = projectInfo.ports;
         if (ports != null) {
-            this.updatePorts(ports);
+            changed = this.updatePorts(ports) || changed;
         }
         else if (this._state.isStarted) {
             Log.e("No ports were provided for an app that is supposed to be started");
@@ -282,7 +285,15 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             changed = true;
         }
         if (event.ports) {
-            changed = this.updatePorts(event.ports);
+            if (event.ports.internalAppPort) {
+                changed = this.setPort(event.ports.internalAppPort, "internalAppPort");
+            }
+            else if (event.ports.internalDebugPort) {
+                changed = this.setPort(event.ports.internalDebugPort, "internalDebugPort");
+            }
+            else {
+                Log.e("Received unexpected ports response:", event.ports);
+            }
         }
 
         if (changed) {

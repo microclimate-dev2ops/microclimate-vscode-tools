@@ -215,8 +215,7 @@ export default class MCSocket {
             return;
         }
         Log.d("projectSettingsChanged", payload);
-        // doesn't work
-        // return project.onSettingsChangedEvent(payload);
+        return project.onSettingsChangedEvent(payload);
     }
 
     private readonly getProject = async (payload: { projectID: string }): Promise<Project | undefined> => {

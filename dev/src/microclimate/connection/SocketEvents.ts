@@ -53,10 +53,8 @@ namespace SocketEvents {
         readonly name: string;
         readonly status: string;
         readonly ports?: {
-            readonly exposedPort?: string;
-            readonly internalPort: string;
-        } | {
-            readonly internalDebugPort: string;
+            readonly internalAppPort?: string;
+            readonly internalDebugPort?: string;
         };
         readonly error?: string;
         readonly contextRoot?: string;

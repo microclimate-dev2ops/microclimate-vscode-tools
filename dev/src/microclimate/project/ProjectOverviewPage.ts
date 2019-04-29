@@ -125,7 +125,7 @@ export function generateHtml(project: Project): string {
                 ${emptyRow}
                 ${buildRow("Exposed Debug Port", normalize(project.ports.debugPort, notDebugging))}
                 ${buildRow("Internal Debug Port",
-                    normalize(project.ports.internalDebugPort, notDebugging),
+                    normalize(project.ports.internalDebugPort, notAvailable),
                     undefined,
                     supportsEditableSettings ? Editable.DEBUG_PORT : undefined)}
                 ${buildRow("Debug URL", normalize(project.debugUrl, notDebugging))}
