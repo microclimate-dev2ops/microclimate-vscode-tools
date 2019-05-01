@@ -16,15 +16,13 @@ import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Log from "../Logger";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
-import Resources from "../constants/Resources";
+import TreeItemFactory, { MicroclimateTreeItem } from "./TreeItemFactory";
 
 // const STRING_NS = StringNamespaces.TREEVIEW;
 
-export type MicroclimateTreeItem = Connection | Project | vscode.TreeItem;
-
 export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<MicroclimateTreeItem> {
 
-    private readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";        // must match package.nls.json
+    private readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";                  // must match package.nls.json
     public readonly treeView: vscode.TreeView<MicroclimateTreeItem>;
 
     private readonly onTreeDataChangeEmitter: vscode.EventEmitter<MicroclimateTreeItem> = new vscode.EventEmitter<MicroclimateTreeItem>();
@@ -35,6 +33,10 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
 
         ConnectionManager.instance.addOnChangeListener(this.refresh);
         Log.d("Finished constructing ProjectTree");
+
+        // this.treeView.onDidChangeSelection((e) => {
+        //     Log.d("Selection is now", e.selection[0]);
+        // });
     }
 
     /**
@@ -49,12 +51,8 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
 
     public getTreeItem(node: MicroclimateTreeItem): vscode.TreeItem | Promise<vscode.TreeItem> {
         if (node instanceof Project || node instanceof Connection) {
-            return node.toTreeItem();
+            return TreeItemFactory.toTreeItem(node);
         }
-        else if (node instanceof vscode.TreeItem) {
-            return node;
-        }
-        Log.e("Unexpected object to convert to TreeItem", node);
         return node;
     }
 
@@ -62,20 +60,12 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
         if (node == null) {
             // root
             // connections are the top-level tree items
-            if (ConnectionManager.instance.connections.length === 0) {
-                const noConnectionsTi = new vscode.TreeItem("No connections");
-                noConnectionsTi.iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
-                noConnectionsTi.tooltip = "Run the New Microclimate Connection command";
-                return [ noConnectionsTi ];
-            }
-            return ConnectionManager.instance.connections;
+            return TreeItemFactory.getRootTreeItems();
         }
         else if (node instanceof Connection) {
-            return node.getProjects();
+            return TreeItemFactory.getConnectionChildren(node);
         }
-        // else if (node instanceof Project) {
-        //     return [];
-        // }
+        // projects have no children
         return [];
     }
 

@@ -19,14 +19,16 @@ import Settings from "../../constants/Settings";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import MCEnvironment from "./MCEnvironment";
-import { MicroclimateTreeItem } from "../../view/ProjectTree";
+import Project from "../project/Project";
+
+export type OnChangeCallbackArgs = Connection | Project | undefined;
 
 export default class ConnectionManager implements vscode.Disposable {
 
     private static _instance: ConnectionManager;
 
     private readonly _connections: Connection[] = [];
-    private readonly listeners: Array<( (changed: MicroclimateTreeItem | undefined) => void )> = [];
+    private readonly listeners: Array<( (changed: OnChangeCallbackArgs) => void )> = [];
 
     private constructor(
 
@@ -188,7 +190,7 @@ export default class ConnectionManager implements vscode.Disposable {
      * eg to trigger a tree update in the UI.
      * Test-friendly.
      */
-    public addOnChangeListener(callback: (changed: MicroclimateTreeItem | undefined) => void): void {
+    public addOnChangeListener(callback: (changed: OnChangeCallbackArgs) => void): void {
         Log.i("Adding onChangeListener " + callback.name);
         this.listeners.push(callback);
     }
@@ -197,7 +199,7 @@ export default class ConnectionManager implements vscode.Disposable {
      * Call this whenever a connection is added, removed, or changed.
      * Pass the item that changed (Connection or Project) or undefined for the tree's root.
      */
-    public onChange = (changed: MicroclimateTreeItem | undefined): void => {
+    public onChange = (changed: OnChangeCallbackArgs): void => {
         // Log.d(`There was a change, notifying ${this.listeners.length} listeners`);
         this.listeners.forEach((cb) => cb(changed));
     }

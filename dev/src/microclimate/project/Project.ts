@@ -16,12 +16,10 @@ import ProjectState from "./ProjectState";
 import ProjectType from "./ProjectType";
 import Connection from "../connection/Connection";
 import Log from "../../Logger";
-// import Commands from "../../constants/Commands";
 import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import { refreshProjectOverview } from "./ProjectOverviewPage";
-import getContextID from "./ProjectContextID";
 import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
 import SocketEvents from "../connection/SocketEvents";
@@ -92,8 +90,7 @@ export default class Project implements vscode.QuickPickItem {
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, vscode.Uri.file(projectInfo.locOnDisk).fsPath)
         );
 
-        // try .custom.contextRoot first (new way), then .contextRoot (old way, Liberty only), then just set it to ""
-        this._contextRoot = ((projectInfo.custom) != null ? projectInfo.custom.contextroot : projectInfo.contextroot) || "";       // non-nls
+        this._contextRoot = projectInfo.contextroot || "";
 
         // These will be overridden by the call to update(), but we set them here too so the compiler can see they're always set.
         this._autoBuildEnabled = projectInfo.autoBuild;
@@ -123,29 +120,6 @@ export default class Project implements vscode.QuickPickItem {
         }
 
         Log.i(`Created project ${this.name}:`, this);
-    }
-
-    public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(
-            Translator.t(StringNamespaces.TREEVIEW, "projectLabel", { projectName: this.name, state: this.state.toString() }),
-            vscode.TreeItemCollapsibleState.None
-        );
-
-        // ti.resourceUri = this.localPath;
-        ti.tooltip = this.state.toString();
-        // There are different context menu actions available to enabled or disabled or debugging projects
-        ti.contextValue = getContextID(this);
-        ti.iconPath = this.type.icon;
-        // ti.iconPath = "fa-node-js";
-        // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
-        // Focuses on this project in the middle of the explorer view. Has no effect if the project is not in the current workspace.
-        // Broken in theia obviously
-        // ti.command = {
-        //     command: Commands.VSC_REVEAL_EXPLORER,
-        //     title: "",      // non-nls
-        //     arguments: [this.localPath]
-        // };
-        return ti;
     }
 
     // description used by QuickPickItem
@@ -230,7 +204,7 @@ export default class Project implements vscode.QuickPickItem {
      * to update the tree view and project info pages.
      */
     private onChange(): void {
-        this.connection.onChange();
+        this.connection.onChange(this);
         this.tryRefreshProjectInfoPage();
     }
 
@@ -384,7 +358,10 @@ export default class Project implements vscode.QuickPickItem {
             this.logManager.destroyAllLogs(this.id),
             this.activeProjectInfo != null ? this.activeProjectInfo.dispose() : Promise.resolve(),
         ])
-        .then(() => Promise.resolve());
+        .then(() => {
+            this.connection.onChange(this);
+            Promise.resolve();
+        });
     }
 
     /**
@@ -578,10 +555,9 @@ export default class Project implements vscode.QuickPickItem {
 
         const changed = this._autoBuildEnabled !== oldAutoBuild;
         if (changed) {
-            this.tryRefreshProjectInfoPage();
+            // onChange has to be invoked explicitly because this function can be called outside of update()
             Log.d(`New autoBuild for ${this.name} is ${this._autoBuildEnabled}`);
-            // since setAutoBuild can be called outside of update(), we have to trigger the tree update here too
-            this.connection.onChange();
+            this.onChange();
         }
 
         return changed;

@@ -122,7 +122,7 @@ export default class DebugUtils {
         Log.d("Clean launch configs from " + connection.workspacePath);
 
         // The potential names of the projects' debug configurations, whether or not they exist
-        const projectDebugNames: string[] = (await connection.getProjects()).map( (project) => this.getDebugName(project));
+        const projectDebugNames: string[] = connection.projects.map( (project) => this.getDebugName(project));
 
         const workspaceConfig = this.getWorkspaceConfigFor(connection);
         const launchConfigs = this.getLaunchConfigurationsFrom(workspaceConfig);

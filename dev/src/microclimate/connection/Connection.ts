@@ -15,8 +15,7 @@ import * as request from "request-promise-native";
 import Project from "../project/Project";
 import { MCEndpoints, EndpointUtil } from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
-import ConnectionManager from "./ConnectionManager";
-import Resources from "../../constants/Resources";
+import ConnectionManager, { OnChangeCallbackArgs } from "./ConnectionManager";
 import Log from "../../Logger";
 import DebugUtils from "../project/DebugUtils";
 import Translator from "../../constants/strings/translator";
@@ -25,9 +24,6 @@ import MCEnvironment from "./MCEnvironment";
 
 export default class Connection implements vscode.QuickPickItem, vscode.Disposable {
 
-    private static readonly CONTEXT_ID: string = "ext.mc.connectionItem";       // must match package.nls.json    // non-nls
-    private static readonly CONTEXT_ID_ACTIVE: string = Connection.CONTEXT_ID + ".active";      // non-nls
-
     public readonly workspacePath: vscode.Uri;
     public readonly versionStr: string;
 
@@ -35,9 +31,9 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
 
     private hasConnected: boolean = false;
     // Is this connection CURRENTLY connected to its Microclimate instance
-    private connected: boolean = false;
+    private _isConnected: boolean = false;
 
-    private projects: Project[] = [];
+    private _projects: Project[] = [];
     private needProjectUpdate: boolean = true;
 
     // QuickPickItem
@@ -66,7 +62,8 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
     public async dispose(): Promise<void> {
         Log.d("Destroy connection " + this);
         return Promise.all([
-            this.socket.dispose()
+            this.socket.dispose(),
+            this._projects.map((p) => p.dispose()),
         ])
         .then(() => Promise.resolve());
     }
@@ -78,18 +75,21 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
     /**
      * Call this whenever the tree needs to be updated - ie when this connection or any of its projects changes.
      */
-    public async onChange(): Promise<void> {
+    public async onChange(changed?: OnChangeCallbackArgs): Promise<void> {
+        if (changed == null) {
+            changed = this;
+        }
         // Log.d(`Connection ${this.mcUri} changed`);
-        ConnectionManager.instance.onChange(this);
+        ConnectionManager.instance.onChange(changed);
     }
 
     public get isConnected(): boolean {
-        return this.connected;
+        return this._isConnected;
     }
 
     public onConnect = async (): Promise<void> => {
         Log.d(`${this} onConnect`);
-        if (this.connected) {
+        if (this._isConnected) {
             // we already know we're connected, nothing to do until we disconnect
             return;
         }
@@ -102,10 +102,10 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
 
         if (this.hasConnected) {
             // things to do on reconnect, but not initial connect, go here
-            this.projects.forEach((p) => p.onConnectionReconnect());
+            this._projects.forEach((p) => p.onConnectionReconnect());
         }
         this.hasConnected = true;
-        this.connected = true;
+        this._isConnected = true;
         Log.d(`${this} is now connected`);
         await this.forceUpdateProjectList();
 
@@ -114,32 +114,36 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
 
     public onDisconnect = async (): Promise<void> => {
         Log.d(`${this} onDisconnect`);
-        if (!this.connected) {
+        if (!this._isConnected) {
             // we already know we're disconnected, nothing to do until we reconnect
             return;
         }
-        this.connected = false;
+        this._isConnected = false;
 
-        this.projects.forEach((p) => p.onConnectionDisconnect());
-        this.projects = [];
+        this._projects.forEach((p) => p.onConnectionDisconnect());
+        this._projects = [];
 
         Log.d(`${this} is now disconnected`);
 
         this.onChange();
     }
 
-    public async getProjects(): Promise<Project[]> {
+    public get projects(): Project[] {
+        return this._projects;
+    }
+
+    private async getProjects(): Promise<Project[]> {
         // Log.d("getProjects");
         if (!this.needProjectUpdate) {
-            return this.projects;
+            return this._projects;
         }
         Log.d(`Updating projects list from ${this}`);
 
         const projectsUrl = EndpointUtil.resolveMCEndpoint(this, MCEndpoints.PROJECTS);
         const result = await request.get(projectsUrl, { json : true });
 
-        const oldProjects = this.projects;
-        this.projects = [];
+        const oldProjects = this._projects;
+        this._projects = [];
 
         for (const projectInfo of result) {
             // This is a hard-coded exception for a Microclimate bug, where projects get stuck in the Deleting or Validating state
@@ -164,62 +168,29 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
                 project = new Project(projectInfo, this);
                 Log.d("New project " + project.name);
             }
-            this.projects.push(project);
+            this._projects.push(project);
         }
 
         this.needProjectUpdate = false;
         Log.d("Done projects update");
-        return this.projects;
+        this.onChange();
+        return this._projects;
     }
 
     public async getProjectByID(projectID: string): Promise<Project | undefined> {
-        const result = (await this.getProjects()).find( (project) => project.id === projectID);
+        const result = this._projects.find((project) => project.id === projectID);
         if (result == null) {
             // Logger.logE(`Couldn't find project with ID ${projectID} on connection ${this}`);
         }
         return result;
     }
 
-    public toTreeItem(): vscode.TreeItem {
-        let label: string;
-        let contextValue: string;
-        let iconPath: Resources.IconPaths;
-
-        if (this.connected) {
-            label = Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
-            if (this.projects.length === 0) {
-                label += " (No projects)";
-            }
-            contextValue = Connection.CONTEXT_ID_ACTIVE;
-            iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
-        }
-        else {
-            label = Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel");
-            contextValue = Connection.CONTEXT_ID;
-            iconPath = Resources.getIconPaths(Resources.Icons.Disconnected);
-        }
-
-        const ti: vscode.TreeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Expanded);
-        // ti.resourceUri = this.workspacePath;
-        ti.tooltip = `${this.versionStr} • ${this.workspacePath.fsPath}`;
-        ti.contextValue = contextValue;
-        ti.iconPath = iconPath;
-        // command run on click - https://github.com/Microsoft/vscode/issues/39601
-        /*
-        ti.command = {
-            command: Project.ONCLICK_CMD_ID,
-            title: "",      // non-nls
-            arguments: [ti.resourceUri]
-        };*/
-        return ti;
-    }
-
     public async forceUpdateProjectList(wipeProjects: boolean = false): Promise<void> {
         Log.d("forceUpdateProjectList");
         if (wipeProjects) {
-            Log.d(`Connection ${this} wiping ${this.projects.length} projects`);
-            this.projects.forEach((p) => p.dispose());
-            this.projects = [];
+            Log.d(`Connection ${this} wiping ${this._projects.length} projects`);
+            this._projects.forEach((p) => p.dispose());
+            this._projects = [];
         }
         this.needProjectUpdate = true;
         this.getProjects();
@@ -230,6 +201,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
      * - multi-logs
      * - project settings
      * - app monitor enablement
+     * Remove this once we drop backwards compatibility for earlier versions.
      */
     public is1905OrNewer(): boolean {
         return this.version >= 1905;

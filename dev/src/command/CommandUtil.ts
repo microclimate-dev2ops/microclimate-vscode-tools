@@ -186,7 +186,7 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
         // For each connection, get its project list, and filter by projects we're interested in.
         // then add the remaining projects to our QuickPick choices.
         for (const conn of connections) {
-            let projects = await conn.getProjects();
+            let projects = conn.projects;
 
             if (acceptableStates.length > 0) {
                 // Filter out projects that are not in one of the acceptable states
