@@ -41,6 +41,7 @@ export enum Editable {
     CONTEXT_ROOT = "context-root",
     APP_PORT = "app-port",
     DEBUG_PORT = "debug-port",
+    DISABLED = "disabled",
 }
 
 export function refreshProjectOverview(webviewPanel: vscode.WebviewPanel, project: Project): void {
@@ -117,17 +118,17 @@ export function generateHtml(project: Project): string {
                 ${buildRow("Internal App Port",
                     normalize(project.ports.internalAppPort, notAvailable),
                     undefined,
-                    supportsEditableSettings ? Editable.APP_PORT : undefined)}
+                    supportsEditableSettings ? Editable.APP_PORT : Editable.DISABLED)}
                 ${buildRow("Application Endpoint",
                     normalize(project.appBaseUrl, notRunning),
                     (project.appBaseUrl != null ? Openable.WEB : undefined),
-                    supportsEditableSettings ? Editable.CONTEXT_ROOT : undefined)}
+                    supportsEditableSettings ? Editable.CONTEXT_ROOT : Editable.DISABLED)}
                 ${emptyRow}
                 ${buildRow("Exposed Debug Port", normalize(project.ports.debugPort, notDebugging))}
                 ${buildRow("Internal Debug Port",
                     normalize(project.ports.internalDebugPort, notAvailable),
                     undefined,
-                    supportsEditableSettings ? Editable.DEBUG_PORT : undefined)}
+                    supportsEditableSettings ? Editable.DEBUG_PORT : Editable.DISABLED)}
                 ${buildRow("Debug URL", normalize(project.debugUrl, notDebugging))}
             </table>
 
@@ -179,8 +180,12 @@ function buildRow(label: string, data: string, openable?: Openable, editable?: E
     }
 
     if (editable) {
+        const tooltip = `title=` + (editable === Editable.DISABLED ? `"Upgrade your Microclimate version to use this feature"` : "Edit");
+        const cursor = editable ===  Editable.DISABLED ? `style="cursor: not-allowed;"` : "";
+        const onClick = editable === Editable.DISABLED ? "" : `onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"`;
+
         thirdColTdContents = `
-            <img id="edit-${MCUtil.slug(label)}" class="edit-btn" title="Edit" onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"` +
+            <img id="edit-${MCUtil.slug(label)}" class="edit-btn" ${tooltip} ${cursor} ${onClick}` +
                 `src="${getIcon(Resources.Icons.Edit)}"/>
         `;
     }

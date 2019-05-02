@@ -34,7 +34,7 @@
                 "${workspaceFolder}/dev/out/test/**/*.js"
             ],
             "env": {
-                "project_types": "node.js",
+                "project_types": "node.js, spring, go",
                 "test_scope": "extended, restart"
             },
             "preLaunchTask": "build"
