@@ -35,8 +35,8 @@ export default async function openCreateOrImportPage(connection: Connection): Pr
         await ProjectCreator.createProject(connection);
     }
     catch (err) {
-        Log.e("Error importing project", err);
+        Log.e("Error creating project", err);
         const errMsg = MCUtil.errToString(err);
-        vscode.window.showErrorMessage("Error importing project: " + errMsg);
+        vscode.window.showErrorMessage("Error creating project: " + errMsg);
     }
 }

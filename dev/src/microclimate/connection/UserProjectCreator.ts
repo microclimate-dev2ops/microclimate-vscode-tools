@@ -70,7 +70,7 @@ namespace ProjectCreator {
             extension: projectTypeSelected.extension    // note: null for nodejs right now
         };
 
-        const creationRes = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECTS_V2), {
+        const creationRes = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECTS), {
             json: true,
             body: payload,
         });

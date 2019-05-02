@@ -140,7 +140,7 @@ async function onRequestDelete(project: Project): Promise<void> {
     const response = await vscode.window.showWarningMessage(deleteMsg, { modal: true }, deleteBtn);
     if (response === deleteBtn) {
         // Delete the project, then close the webview since the project is gone.
-        Requester.requestDelete(project);
+        Requester.requestUnbind(project);
     }
 }
 

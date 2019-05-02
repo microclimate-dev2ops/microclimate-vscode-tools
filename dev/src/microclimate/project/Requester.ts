@@ -116,9 +116,9 @@ namespace Requester {
         return [endpoint, body];
     }
 
-    export async function requestDelete(project: Project): Promise<void> {
+    export async function requestUnbind(project: Project): Promise<void> {
         const deleteMsg = Translator.t(STRING_NS, "delete");
-        await doProjectRequest(project, ProjectEndpoints.NONE, {}, request.delete, deleteMsg);
+        await doProjectRequest(project, ProjectEndpoints.UNBIND, {}, request.post, deleteMsg);
     }
 
     export async function requestSettingChange(

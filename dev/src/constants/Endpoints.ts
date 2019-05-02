@@ -21,7 +21,6 @@ export type Endpoint = MCEndpoints | ProjectEndpoints;
 export enum MCEndpoints {
     ENVIRONMENT = "api/v1/environment",
     PROJECTS = "api/v1/projects",
-    PROJECTS_V2 = "api/v1/projects",
     PROJECT_TYPES = "api/v1/project-types",
 }
 
@@ -39,7 +38,7 @@ export enum ProjectEndpoints {
 
     OPEN = "open",
     CLOSE = "close",
-    NONE = "",
+    UNBIND = "unbind",
 }
 
 /**

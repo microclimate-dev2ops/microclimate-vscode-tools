@@ -135,7 +135,7 @@ describe(`Restart tests`, async function() {
         it(`should clean up the test project`, async function() {
             if (project != null) {
                 try {
-                    await Requester.requestDelete(project);
+                    await Requester.requestUnbind(project);
                     ProjectObserver.instance.onDelete(project.id);
                 }
                 catch (err) {
