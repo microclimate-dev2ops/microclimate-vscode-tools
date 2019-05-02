@@ -132,7 +132,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
         return this._projects;
     }
 
-    private async getProjects(): Promise<Project[]> {
+    private async updateProjects(): Promise<Project[]> {
         // Log.d("getProjects");
         if (!this.needProjectUpdate) {
             return this._projects;
@@ -193,7 +193,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
             this._projects = [];
         }
         this.needProjectUpdate = true;
-        this.getProjects();
+        this.updateProjects();
     }
 
     /**
@@ -201,6 +201,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
      * - multi-logs
      * - project settings
      * - app monitor enablement
+     * - new project types endpoint, for creation
      * Remove this once we drop backwards compatibility for earlier versions.
      */
     public is1905OrNewer(): boolean {

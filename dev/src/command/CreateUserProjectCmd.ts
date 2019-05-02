@@ -17,8 +17,7 @@ import Commands from "../constants/Commands";
 import Connection from "../microclimate/connection/Connection";
 import EndpointUtil from "../constants/Endpoints";
 import * as MCUtil from "../MCUtil";
-import ProjectCreator from "../microclimate/connection/ProjectCreator";
-
+import ProjectCreator from "../microclimate/connection/UserProjectCreator";
 
 /**
  * @param create true for Create page, false for Import page
@@ -37,6 +36,7 @@ export default async function openCreateOrImportPage(connection: Connection, cre
 
     try {
         if (create && connection.is1905OrNewer()) {
+            // we get to use the new creation feature
             await ProjectCreator.createProject(connection);
         }
         else {

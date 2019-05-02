@@ -32,7 +32,7 @@ import attachDebuggerCmd from "./AttachDebuggerCmd";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import openAppMonitorCmd from "./OpenAppMonitor";
 import refreshConnectionCmd from "./RefreshConnectionCmd";
-import openCreateOrImportPageCmd from "./NewMCProjectCmd";
+import openCreateOrImportPageCmd from "./CreateUserProjectCmd";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 import validateCmd from "./ValidateCmd";
