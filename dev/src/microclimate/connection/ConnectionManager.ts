@@ -35,11 +35,11 @@ export default class ConnectionManager implements vscode.Disposable {
     ) {
         const connectionInfos: MCUtil.IConnectionInfo[] = ConnectionManager.loadConnections();
         Log.i(`Loaded ${connectionInfos.length} connections from settings`);
-        connectionInfos.forEach( (connInfo) =>
+        connectionInfos.forEach( (connInfo) => {
             // Note this is done async
             // We use tryAddConnection over newConnectionCmd because it succeeds silently (but still reports failure)
-            tryAddConnection(connInfo)
-        );
+            tryAddConnection(connInfo, true);
+        });
     }
 
     public static get instance(): ConnectionManager {

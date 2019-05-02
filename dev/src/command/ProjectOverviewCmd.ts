@@ -54,8 +54,9 @@ export default async function projectOverviewCmd(project: Project): Promise<void
     }
 
     webPanel.reveal();
-    webPanel.onDidDispose(() => {
-        project.onCloseProjectInfo();
+    webPanel.onDidDispose( () => {
+        // this will dispose the webview a second time, but that seems to be fine
+        project.closeProjectInfo();
     });
 
     const icons = project.type.icon;

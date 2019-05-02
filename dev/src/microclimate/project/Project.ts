@@ -13,18 +13,18 @@ import * as vscode from "vscode";
 
 import * as MCUtil from "../../MCUtil";
 import ProjectState from "./ProjectState";
-import ProjectType from "./ProjectType";
-import Connection from "../connection/Connection";
 import Log from "../../Logger";
-import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import { refreshProjectOverview } from "./ProjectOverviewPage";
-import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
-import SocketEvents from "../connection/SocketEvents";
 import MCLogManager from "./logs/MCLogManager";
+import DebugUtils from "./DebugUtils";
+import ProjectType from "./ProjectType";
+import ProjectPendingRestart from "./ProjectPendingRestart";
 import MCLogManagerOld from "./logs/deprecated/MCLogManager-Old";
+import Connection from "../connection/Connection";
+import SocketEvents from "../connection/SocketEvents";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -401,9 +401,9 @@ export default class Project implements vscode.QuickPickItem {
         return undefined;
     }
 
-    public onCloseProjectInfo(): void {
-        Log.d(`Dispose project info for project ${this.name}`);
+    public closeProjectInfo(): void {
         if (this.activeProjectInfo != null) {
+            this.activeProjectInfo.dispose();
             this.activeProjectInfo = undefined;
         }
     }

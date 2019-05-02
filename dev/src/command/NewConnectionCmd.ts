@@ -142,7 +142,7 @@ async function offerToOpenWorkspace(connection: Connection): Promise<void> {
  *
  * @returns The new Connection if we formed one, or undefined if we didn't.
  */
-export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promise<Connection | undefined> {
+export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo, silent: boolean = false): Promise<Connection | undefined> {
 
     Log.i("TryAddConnection", connInfo);
 
@@ -155,6 +155,10 @@ export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promis
     catch (err) {
         const errMsg = err.message || err.toString();
         Log.w("Connection test failed: " + errMsg);
+
+        if (silent) {
+            return undefined;
+        }
 
         const editBtn  = Translator.t(STRING_NS, "editConnectionBtn");
         const retryBtn  = Translator.t(STRING_NS, "retryConnectionBtn");
