@@ -41,6 +41,7 @@ export enum Editable {
     CONTEXT_ROOT = "context-root",
     APP_PORT = "app-port",
     DEBUG_PORT = "debug-port",
+    DISABLED = "disabled",
 }
 
 export function refreshProjectOverview(webviewPanel: vscode.WebviewPanel, project: Project): void {
@@ -124,7 +125,7 @@ export function generateHtml(project: Project): string {
                 ${emptyRow}
                 ${buildRow("Exposed Debug Port", normalize(project.ports.debugPort, notDebugging))}
                 ${buildRow("Internal Debug Port",
-                    normalize(project.ports.internalDebugPort, notDebugging),
+                    normalize(project.ports.internalDebugPort, notAvailable),
                     undefined,
                     Editable.DEBUG_PORT)}
                 ${buildRow("Debug URL", normalize(project.debugUrl, notDebugging))}
@@ -178,8 +179,12 @@ function buildRow(label: string, data: string, openable?: Openable, editable?: E
     }
 
     if (editable) {
+        const tooltip = `title=` + (editable === Editable.DISABLED ? `"Upgrade your Microclimate version to use this feature"` : "Edit");
+        const cursor = editable ===  Editable.DISABLED ? `style="cursor: not-allowed;"` : "";
+        const onClick = editable === Editable.DISABLED ? "" : `onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"`;
+
         thirdColTdContents = `
-            <img id="edit-${MCUtil.slug(label)}" class="edit-btn" title="Edit" onclick="sendMsg('${Messages.EDIT}', { type: '${editable}' })"` +
+            <img id="edit-${MCUtil.slug(label)}" class="edit-btn" ${tooltip} ${cursor} ${onClick}` +
                 `src="${getIcon(Resources.Icons.Edit)}"/>
         `;
     }

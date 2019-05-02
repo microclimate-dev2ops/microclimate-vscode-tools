@@ -53,10 +53,8 @@ namespace SocketEvents {
         readonly name: string;
         readonly status: string;
         readonly ports?: {
-            readonly exposedPort?: string;
-            readonly internalPort: string;
-        } | {
-            readonly internalDebugPort: string;
+            readonly internalAppPort?: string;
+            readonly internalDebugPort?: string;
         };
         readonly error?: string;
         readonly contextRoot?: string;
@@ -84,11 +82,13 @@ namespace SocketEvents {
         PROJECT_CLOSED = "projectClosed",
         PROJECT_DELETION = "projectDeletion",
         PROJECT_RESTART_RESULT = "projectRestartResult",
-        PROJECT_VALIDATED = "projectValidated",
         PROJECT_SETTING_CHANGED = "projectSettingsChanged",
         // deprecated, replaced by log-update
         CONTAINER_LOGS = "container-logs",
         LOG_UPDATE = "log-update",
+        LOGS_LIST_CHANGED = "projectLogsListChanged",
+        PROJECT_VALIDATED = "projectValidated",
+        PROJECT_CREATED = "projectCreation",
     }
 
     /**

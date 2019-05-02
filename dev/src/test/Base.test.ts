@@ -133,18 +133,16 @@ describe("Microclimate Tools for VSCode basic test", async function() {
             createPromises.push(createPromise);
 
             createPromise
-                .then( (p) => {
-                    if (p != null) {
-                        testType.projectID = p.id;
-                        Log.t(`Created test project of type ${p.type.type} with name ${p.name} and ID ${p.id}`);
-                    }
-                    else {
-                        Log.e("Failed to create test project of type " + testType.projectType);
-                    }
-                })
-                .catch(
-                    (err) => Log.e("Create test project threw error", err)
-                );
+            .then((p) => {
+                if (p != null) {
+                    testType.projectID = p.id;
+                    Log.t(`Created test project of type ${p.type.type} with name ${p.name} and ID ${p.id}`);
+                }
+                else {
+                    Log.e("Failed to create test project of type " + testType.projectType);
+                }
+            })
+            .catch((err) => Log.e("Create test project threw error", err));
         });
         Log.t("Awaiting test project creation");
         await Promise.all(createPromises);

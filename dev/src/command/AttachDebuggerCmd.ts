@@ -91,11 +91,10 @@ export default async function attachDebuggerCmd(project: Project, isRestart: boo
         }
 
         const extraErrMsg: string = err.message ? err.message : "";         // non-nls
-        Log.e(failMsg, extraErrMsg);
-
-        if (extraErrMsg != null && extraErrMsg.length > 0) {
+        if (extraErrMsg) {
             failMsg += Translator.t(STRING_NS, "errDetailSeparator") + extraErrMsg;
         }
+        Log.e(failMsg, err);
         vscode.window.showErrorMessage(failMsg);
         return false;
     }

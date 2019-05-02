@@ -11,68 +11,72 @@
 
 import * as vscode from "vscode";
 
-import ITreeItemAdaptable, { SimpleTreeItem } from "./TreeItemAdaptable";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
-import Resources from "../constants/Resources";
-import Commands from "../constants/Commands";
-import Translator from "../constants/strings/translator";
-import StringNamespaces from "../constants/strings/StringNamespaces";
+// import Commands from "../constants/Commands";
+import Log from "../Logger";
+import Project from "../microclimate/project/Project";
+import Connection from "../microclimate/connection/Connection";
+import TreeItemFactory, { MicroclimateTreeItem } from "./TreeItemFactory";
 
-const STRING_NS = StringNamespaces.TREEVIEW;
+// const STRING_NS = StringNamespaces.TREEVIEW;
 
-export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<ITreeItemAdaptable> {
+export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<MicroclimateTreeItem> {
 
-    public readonly treeDataProvider: vscode.TreeDataProvider<{}> = this;
-    public readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";        // must match package.json
+    private readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";                  // must match package.nls.json
+    public readonly treeView: vscode.TreeView<MicroclimateTreeItem>;
 
-    private readonly onChangeEmitter: vscode.EventEmitter<ITreeItemAdaptable> = new vscode.EventEmitter<ITreeItemAdaptable>();
-    public readonly onDidChangeTreeData: vscode.Event<ITreeItemAdaptable> = this.onChangeEmitter.event;
+    private readonly onTreeDataChangeEmitter: vscode.EventEmitter<MicroclimateTreeItem> = new vscode.EventEmitter<MicroclimateTreeItem>();
+    public readonly onDidChangeTreeData: vscode.Event<MicroclimateTreeItem> = this.onTreeDataChangeEmitter.event;
 
     constructor() {
+        this.treeView = vscode.window.createTreeView(this.VIEW_ID, { treeDataProvider: this });
+
         ConnectionManager.instance.addOnChangeListener(this.refresh);
+        Log.d("Finished constructing ProjectTree");
+
+        // this.treeView.onDidChangeSelection((e) => {
+        //     Log.d("Selection is now", e.selection[0]);
+        // });
     }
 
     /**
      * Notifies VSCode that this tree has to be refreshed.
      * Used as a call-back for ConnectionManager OnChange.
      */
-    public refresh = (): void => {
-        // Logger.log("Refresh tree");
-        this.onChangeEmitter.fire();
+    public refresh = (treeItem: MicroclimateTreeItem | undefined): void => {
+        // Log.d("refresh tree");
+
+        this.onTreeDataChangeEmitter.fire(treeItem);
     }
 
-    /**
-     * TreeDataProvider method to convert our custom TreeItemAdaptable class to a vscode.TreeItem
-     */
-    public getTreeItem(node: ITreeItemAdaptable): vscode.TreeItem | Promise<vscode.TreeItem> {
-        return node.toTreeItem();
+    public getTreeItem(node: MicroclimateTreeItem): vscode.TreeItem | Promise<vscode.TreeItem> {
+        if (node instanceof Project || node instanceof Connection) {
+            return TreeItemFactory.toTreeItem(node);
+        }
+        return node;
     }
 
-    /**
-     * TreeDataProvider method to get children for a given TreeItemAdaptable node, or provide the tree's root node.
-     */
-    public getChildren(node?: ITreeItemAdaptable): ITreeItemAdaptable[] | Promise<ITreeItemAdaptable[]> {
+    public getChildren(node?: MicroclimateTreeItem): MicroclimateTreeItem[] | Promise<MicroclimateTreeItem[]> {
         if (node == null) {
-            const connections = ConnectionManager.instance.connections;
-            if (connections.length > 0) {
-                // The top-level nodes of this tree are our Connections, and their children are their Projects
-                return connections;
-            }
-            else {
-                // Provide a root node if no Connections have been created
-                const noConnectionsRoot = new SimpleTreeItem(Translator.t(STRING_NS, "noConnectionsLabel"), vscode.TreeItemCollapsibleState.None);
-                noConnectionsRoot.treeItem.iconPath = Resources.getIconPaths(Resources.Icons.Microclimate);
-                noConnectionsRoot.treeItem.tooltip = Translator.t(STRING_NS, "noConnectionsTooltip");
-                // Clicking the no connections item runs the new connection command.
-                noConnectionsRoot.treeItem.command = {
-                    command: Commands.NEW_CONNECTION,
-                    title: ""       // non-nls
-                };
-                return [ noConnectionsRoot ];
-            }
+            // root
+            // connections are the top-level tree items
+            return TreeItemFactory.getRootTreeItems();
         }
-        else {
-            return node.getChildren();
+        else if (node instanceof Connection) {
+            return TreeItemFactory.getConnectionChildren(node);
         }
+        // projects have no children
+        return [];
+    }
+
+    public getParent(node: MicroclimateTreeItem): MicroclimateTreeItem | Promise<MicroclimateTreeItem> | undefined {
+        if (node instanceof Project) {
+            return node.connection;
+        }
+        else if (node instanceof Connection) {
+            return undefined;
+        }
+        Log.e("Unexpected TreeItem!", node);
+        return undefined;
     }
 }

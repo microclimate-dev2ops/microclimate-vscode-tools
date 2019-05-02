@@ -16,7 +16,7 @@ import Log from "../../Logger";
 import Connection from "./Connection";
 import EndpointUtil, { MCEndpoints } from "../../constants/Endpoints";
 
-interface IMCProjectType {
+export interface IMCProjectType {
     label: string;
     description: string;
     extension?: string;
@@ -24,7 +24,7 @@ interface IMCProjectType {
 }
 
 /**
- * Functions to create or import new projects into Microclimate
+ * Functions to create or import new user projects into Microclimate
  */
 namespace ProjectCreator {
 
@@ -48,6 +48,7 @@ namespace ProjectCreator {
             // matchOnDescription: true,
             matchOnDetail: true,
         });
+
         if (projectTypeSelected == null) {
             return;
         }
@@ -58,6 +59,10 @@ namespace ProjectCreator {
             return;
         }
 
+        return issueCreateReq(connection, projectTypeSelected, projectName);
+    }
+
+    export async function issueCreateReq(connection: Connection, projectTypeSelected: IMCProjectType, projectName: string): Promise<void> {
         const payload = {
             language: projectTypeSelected.language,
             // metrics: true       // portal-ui sends this, why?
@@ -71,7 +76,7 @@ namespace ProjectCreator {
         });
 
         Log.i(creationRes);
-        vscode.window.showInformationMessage(`Creating ${payload.extension} project ${projectName}`);
+        vscode.window.showInformationMessage(`Creating ${payload.language} project ${projectName}`);
     }
 
     async function getProjectName(projectTypeName?: string): Promise<string | undefined> {

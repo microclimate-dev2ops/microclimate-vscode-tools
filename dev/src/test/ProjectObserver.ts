@@ -29,7 +29,7 @@ interface IProjectStateAwaiting {
 export default class ProjectObserver {
 
     private projectPendingState: IProjectStateAwaiting | undefined;
-    private projectsPendingCreation: IProjectCreationAwaiting[] = [];
+    private readonly projectsPendingCreation: IProjectCreationAwaiting[] = [];
 
     private static _instance: ProjectObserver;
 
@@ -57,9 +57,9 @@ export default class ProjectObserver {
         }, 30000);
     }
 
-    private onChange = async () => {
+    private readonly onChange = async () => {
 
-        const projects = await this.connection.getProjects();
+        const projects = this.connection.projects;
         // Check if any of the projects pending creation have been created.
         for (let i = this.projectsPendingCreation.length - 1; i >= 0; i--) {
             const pendingCreation = this.projectsPendingCreation[i];

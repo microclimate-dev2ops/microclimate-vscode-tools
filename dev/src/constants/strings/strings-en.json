@@ -126,8 +126,8 @@
         "noConnectionsLabel": "No Microclimate connections",
         "noConnectionsTooltip": "Click to create a new Microclimate connection",
         "connectionLabel": "Microclimate @ {{- uri }}",
+        "noProjectsLabel": "No projects (Click to create)",
         "disconnectedConnectionLabel": "Disconnected",
-        "noProjectsLabel": "No projects",
         "projectLabel": "{{ projectName }} {{- state }}"
     }
 }

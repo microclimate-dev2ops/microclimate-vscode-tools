@@ -37,6 +37,10 @@ export default class MCLogManager {
         }
     }
 
+    public toString(): string {
+        return this.managerName;
+    }
+
     /**
      * @param enable `true` to refresh (ie, restart) all logs for this project, `false` to stop streaming all logs for this project
      */

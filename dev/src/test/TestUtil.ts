@@ -11,15 +11,15 @@
 
 import { expect } from "chai";
 import * as vscode from "vscode";
-import * as request from "request-promise-native";
 
 import Log from "../Logger";
 import ProjectType from "../microclimate/project/ProjectType";
 import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
-import EndpointUtil, { MCEndpoints } from "../constants/Endpoints";
 import ProjectObserver from "./ProjectObserver";
 import ProjectState from "../microclimate/project/ProjectState";
+import ProjectCreator, { IMCProjectType } from "../microclimate/connection/UserProjectCreator";
+import TestConfig from "./TestConfig";
 
 namespace TestUtil {
 
@@ -31,41 +31,20 @@ namespace TestUtil {
 
     export async function createProject(connection: Connection, type: ProjectType): Promise<Project> {
         // acquireProject below will only look for projects starting with the project prefix
-        const projectName: string = PROJECT_PREFIX + type.type.toLowerCase().replace(".", "") + Date.now().toString().slice(-8);
+        const projectName: string = PROJECT_PREFIX + type.type.toLowerCase().replace(".", "") + Date.now().toString().slice(-4);
         Log.t(`Create project of type ${type} at ${connection.mcUri} named ${projectName}`);
 
-        const uri: string = EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECTS);
-
-        const payload: any = {
-            name: projectName,
-            language: type.language
-        };
-
-        if (type.language === ProjectType.Languages.JAVA) {
-            // framework is "microprofile" or "spring"
-            payload["framework"] = type.type.toLowerCase();
-            /*
-            if (type.type === ProjectType.Types.MICROPROFILE) {
-                payload["contextroot"] = projectName;
-            }*/
-        }
-        // These strings must match the extension names in microclimate-workspace/.extensions
-        else if (type.language === ProjectType.Languages.PYTHON) {
-            payload["extension"] = "templateExample";
-        }
-        else if (type.language === ProjectType.Languages.GO) {
-            payload["extension"] = "templateGoExample";
-        }
-
-        const options = {
-            json: true,
-            body: payload,
-            resolveWithFullResponse: true
-        };
-
-        Log.t("Issuing create request:", payload);
         try {
-            await request.post(uri, options);
+            // turn our internal project type into a user project type which we can pass to the project creator
+            const typeForCreation: IMCProjectType = {
+                extension: TestConfig.getTemplateID(type),
+                language: type.language,
+                // label and description are displayed to user but not used by the test.
+                description: "",
+                label: ""
+            };
+            // we use as any here to call this private function
+            await (ProjectCreator).issueCreateReq(connection, typeForCreation, projectName);
         }
         catch (err) {
             Log.t("Create project failure!", err);

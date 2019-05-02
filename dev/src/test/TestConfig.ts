@@ -15,6 +15,9 @@ import Log from "../Logger";
 namespace TestConfig {
     interface ITestableProjectType {
         projectType: ProjectType;
+        // The name of this project type's extension in Microclimate.
+        // Undefined for node
+        templateID: string | undefined;
         // We want to tests projects that can't be restarted too,
         // so tell the test whether or not the restart should succeed here.
         canRestart: boolean;
@@ -23,32 +26,47 @@ namespace TestConfig {
         projectID?: string;
     }
 
-    const allProjectTypes: ITestableProjectType[] = [
+    const testableProjectTypes: ITestableProjectType[] = [
         {
             projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
-            canRestart: true
+            canRestart: true,
+            templateID: undefined,
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
-            canRestart: true
+            canRestart: true,
+            templateID: "springJavaTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
-            canRestart: true
+            canRestart: true,
+            templateID: "springJavaTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.SWIFT, ProjectType.Languages.SWIFT),
-            canRestart: false
+            canRestart: false,
+            templateID: "swiftTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
-            canRestart: false
+            canRestart: false,
+            templateID: "templateExample",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.GO),
-            canRestart: false
+            canRestart: false,
+            templateID: "templateGoExample",
         }
     ];
+
+    export function getTemplateID(projectType: ProjectType): string | undefined {
+        const found = testableProjectTypes.find((tpt) => tpt.projectType === projectType);
+        if (!found) {
+            // The templates we use for tests are expected to always exist in Microclimate
+            throw new Error("Did not find template corresponding to " + projectType);
+        }
+        return found.templateID;
+    }
 
     const TYPES_ENV_VAR = "project_types";
     const SCOPE_ENV_VAR = "test_scope";
@@ -63,7 +81,7 @@ namespace TestConfig {
         }
 
         const rawTypes = splitByComma(envProjectTypes);
-        return allProjectTypes.filter((type) => {
+        return testableProjectTypes.filter((type) => {
             return rawTypes.includes(type.projectType.toString().toLowerCase());
         });
     }

@@ -105,17 +105,16 @@
     ],
 
     "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
-    "isConnectionOrProject": "viewItem =~ /ext\\.mc\\.*/",
-    "isConnection": "viewItem =~ /ext\\.mc\\.connectionItem*/",
-    "isActiveConnection": "viewItem == ext.mc.connectionItem.active",
+    "isConnection": "viewItem =~ /ext\\.mc\\.connection*/",
+    "isActiveConnection": "viewItem == ext.mc.connection.connected",
+    "isNoConnections": "viewItem == ext.mc.noConnections",
+    "isNoProjects": "viewItem == ext.mc.noProjects",
 
-    "notused-isActiveConnectionOrEnabledProject":
-        "viewItem =~ /ext.mc.(projectItem.enabled.*|connectionItem.active)/",
-
-    "isProject":                "viewItem =~ /ext\\.mc\\.projectItem*/",
-    "isEnabledProject":         "viewItem =~ /ext\\.mc\\.projectItem\\.enabled*/",
-    "isDisabledProject":        "viewItem =~ /ext\\.mc\\.projectItem\\.disabled*/",
-    "isDebuggableProject":      "viewItem =~ /ext\\.mc\\.projectItem\\.enabled\\.debuggable*/",
-    "isEnabledAutoBuildOn":     "viewItem =~ /ext\\.mc\\.projectItem\\.enabled.*\\.autoBuildOn/",
-    "isEnabledAutoBuildOff":    "viewItem =~ /ext\\.mc\\.projectItem\\.enabled.*\\.autoBuildOff/"
+    "isProject":                "viewItem =~ /ext\\.mc\\.project.*/",
+    "isEnabledProject":         "viewItem =~ /ext\\.mc\\.project\\.enabled.*/",
+    "isDisabledProject":        "viewItem =~ /ext\\.mc\\.project\\.disabled.*/",
+    "isStartedProject":         "viewItem =~ /ext\\.mc\\.project\\.enabled\\.started.*/",
+    "isDebuggableProject":      "viewItem =~ /ext\\.mc\\.project\\.enabled.*\\.debuggable.*/",
+    "isEnabledAutoBuildOn":     "viewItem =~ /ext\\.mc\\.project\\.enabled.*\\.autoBuildOn/",
+    "isEnabledAutoBuildOff":    "viewItem =~ /ext\\.mc\\.project\\.enabled.*\\.autoBuildOff/"
 }

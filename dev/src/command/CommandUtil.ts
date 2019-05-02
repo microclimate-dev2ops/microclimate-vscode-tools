@@ -32,7 +32,7 @@ import attachDebuggerCmd from "./AttachDebuggerCmd";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import openAppMonitorCmd from "./OpenAppMonitor";
 import refreshConnectionCmd from "./RefreshConnectionCmd";
-import openCreateOrImportPageCmd from "./NewMCProjectCmd";
+import openCreateOrImportPageCmd from "./CreateUserProjectCmd";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 import validateCmd from "./ValidateCmd";
@@ -185,7 +185,7 @@ async function promptForResourceInner(includeConnections: boolean, includeProjec
         // For each connection, get its project list, and filter by projects we're interested in.
         // then add the remaining projects to our QuickPick choices.
         for (const conn of connections) {
-            let projects = await conn.getProjects();
+            let projects = conn.projects;
 
             if (acceptableStates.length > 0) {
                 // Filter out projects that are not in one of the acceptable states

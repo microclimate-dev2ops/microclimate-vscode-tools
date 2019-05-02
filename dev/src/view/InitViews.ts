@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 IBM Corporation and others.
+ * Copyright (c) 2018, 2019 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -12,12 +12,12 @@
 import * as vscode from "vscode";
 
 import ProjectTreeDataProvider from "./ProjectTree";
+import Log from "../Logger";
 
 export default function createViews(): vscode.Disposable[] {
-    const treeDataProvider: ProjectTreeDataProvider = new ProjectTreeDataProvider();
+    Log.d("Initializing views");
 
     return [
-        vscode.window.createTreeView(treeDataProvider.VIEW_ID, treeDataProvider),
-        vscode.window.registerTreeDataProvider(treeDataProvider.VIEW_ID, treeDataProvider)
+        (new ProjectTreeDataProvider()).treeView,
     ];
 }

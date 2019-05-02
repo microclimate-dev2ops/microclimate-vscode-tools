@@ -22,7 +22,7 @@ import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
 
 export default async function restartProjectCmd(project: Project, debug: boolean): Promise<boolean> {
-    Log.d("RestartProjectCmd invoked");
+    Log.d("RestartProjectCmd invoked", project);
     if (project == null) {
         const selected = await promptForProject(ProjectState.AppStates.STARTED, ProjectState.AppStates.STARTING);
         if (selected == null) {

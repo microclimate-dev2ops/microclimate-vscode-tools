@@ -15,8 +15,7 @@ import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
 import * as MCUtil from "../MCUtil";
-import ProjectCreator from "../microclimate/connection/ProjectCreator";
-
+import ProjectCreator from "../microclimate/connection/UserProjectCreator";
 
 /**
  * @param create true for Create page, false for Import page

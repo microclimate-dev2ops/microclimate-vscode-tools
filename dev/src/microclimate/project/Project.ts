@@ -12,32 +12,32 @@
 import * as vscode from "vscode";
 
 import * as MCUtil from "../../MCUtil";
-import ITreeItemAdaptable from "../../view/TreeItemAdaptable";
 import ProjectState from "./ProjectState";
-import ProjectType from "./ProjectType";
-import Connection from "../connection/Connection";
 import Log from "../../Logger";
-import Commands from "../../constants/Commands";
-import DebugUtils from "./DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import { refreshProjectOverview } from "./ProjectOverviewPage";
-import getContextID from "./ProjectContextID";
-import ProjectPendingRestart from "./ProjectPendingRestart";
 import StartModes from "../../constants/StartModes";
-import SocketEvents from "../connection/SocketEvents";
 import MCLogManager from "./logs/MCLogManager";
+import DebugUtils from "./DebugUtils";
+import ProjectType from "./ProjectType";
+import ProjectPendingRestart from "./ProjectPendingRestart";
+import Connection from "../connection/Connection";
+import SocketEvents from "../connection/SocketEvents";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
+/**
+ * Project's ports info. Keys match those provided by Microclimate.
+ */
 interface IProjectPorts {
     appPort: OptionalNumber;
-    debugPort: OptionalNumber;
     internalAppPort: OptionalNumber;
+    debugPort: OptionalNumber;
     internalDebugPort: OptionalNumber;
 }
 
-export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem {
+export default class Project implements vscode.QuickPickItem {
 
     // Immutable project data
     public readonly name: string;
@@ -89,8 +89,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, vscode.Uri.file(projectInfo.locOnDisk).fsPath)
         );
 
-        // try .custom.contextRoot first (new way), then .contextRoot (old way, Liberty only), then just set it to ""
-        this._contextRoot = ((projectInfo.custom) != null ? projectInfo.custom.contextroot : projectInfo.contextroot) || "";       // non-nls
+        this._contextRoot = projectInfo.contextroot || "";
 
         // These will be overridden by the call to update(), but we set them here too so the compiler can see they're always set.
         this._autoBuildEnabled = projectInfo.autoBuild;
@@ -115,32 +114,6 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.logManager = new MCLogManager(this);
 
         Log.i(`Created project ${this.name}:`, this);
-    }
-
-    public getChildren(): ITreeItemAdaptable[] {
-        // Projects have no children.
-        return [];
-    }
-
-    public toTreeItem(): vscode.TreeItem {
-        const ti = new vscode.TreeItem(
-            Translator.t(StringNamespaces.TREEVIEW, "projectLabel", { projectName: this.name, state: this.state.toString() }),
-            vscode.TreeItemCollapsibleState.None
-        );
-
-        // ti.resourceUri = this.localPath;
-        ti.tooltip = this.state.toString();
-        // There are different context menu actions available to enabled or disabled or debugging projects
-        ti.contextValue = getContextID(this);
-        ti.iconPath = this.type.icon;
-        // command run on single-click (or double click - depends on a user setting - https://github.com/Microsoft/vscode/issues/39601)
-        // Focuses on this project in the middle of the explorer view. Has no effect if the project is not in the current workspace.
-        ti.command = {
-            command: Commands.VSC_REVEAL_EXPLORER,
-            title: "",      // non-nls
-            arguments: [this.localPath]
-        };
-        return ti;
     }
 
     // description used by QuickPickItem
@@ -201,7 +174,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         const ports = projectInfo.ports;
         if (ports != null) {
-            this.updatePorts(ports);
+            changed = this.updatePorts(ports) || changed;
         }
         else if (this._state.isStarted) {
             Log.e("No ports were provided for an app that is supposed to be started");
@@ -225,7 +198,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
      * to update the tree view and project info pages.
      */
     private onChange(): void {
-        this.connection.onChange();
+        this.connection.onChange(this);
         this.tryRefreshProjectInfoPage();
     }
 
@@ -276,7 +249,15 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
             changed = true;
         }
         if (event.ports) {
-            changed = this.updatePorts(event.ports);
+            if (event.ports.internalAppPort) {
+                changed = this.setPort(event.ports.internalAppPort, "internalAppPort");
+            }
+            else if (event.ports.internalDebugPort) {
+                changed = this.setPort(event.ports.internalDebugPort, "internalDebugPort");
+            }
+            else {
+                Log.e("Received unexpected ports response:", event.ports);
+            }
         }
 
         if (changed) {
@@ -365,19 +346,26 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         this.logManager.onDisconnectOrDisable(false);
     }
 
+    public async dispose(): Promise<void> {
+        return Promise.all([
+            this.clearValidationErrors(),
+            this.logManager.destroyAllLogs(),
+            this.activeProjectInfo != null ? this.activeProjectInfo.dispose() : Promise.resolve(),
+        ])
+        .then(() => {
+            this.connection.onChange(this);
+            Promise.resolve();
+        });
+    }
+
     /**
      * Call when this project is deleted in Microclimate
      */
     public async onDelete(): Promise<void> {
         Log.i(`${this.name} was deleted`);
         vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
-        this.clearValidationErrors();
-        this.logManager.destroyAllLogs();
         DebugUtils.removeDebugLaunchConfigFor(this);
-
-        if (this.activeProjectInfo != null) {
-            this.activeProjectInfo.dispose();
-        }
+        await this.dispose();
     }
 
     /**
@@ -406,9 +394,9 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
         return undefined;
     }
 
-    public onCloseProjectInfo(): void {
-        Log.d(`Dispose project info for project ${this.name}`);
+    public closeProjectInfo(): void {
         if (this.activeProjectInfo != null) {
+            this.activeProjectInfo.dispose();
             this.activeProjectInfo = undefined;
         }
     }
@@ -447,7 +435,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public get appBaseUrl(): vscode.Uri | undefined {
-        if (this.ports.appPort == null) {
+        if (this._ports.appPort == null || isNaN(this._ports.appPort)) {
             // app is stopped, disabled, etc.
             return undefined;
         }
@@ -459,7 +447,7 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
     }
 
     public get debugUrl(): OptionalString {
-        if (this._ports.debugPort == null) {
+        if (this._ports.debugPort == null || isNaN(this._ports.debugPort)) {
             return undefined;
         }
 
@@ -560,10 +548,9 @@ export default class Project implements ITreeItemAdaptable, vscode.QuickPickItem
 
         const changed = this._autoBuildEnabled !== oldAutoBuild;
         if (changed) {
-            this.tryRefreshProjectInfoPage();
+            // onChange has to be invoked explicitly because this function can be called outside of update()
             Log.d(`New autoBuild for ${this.name} is ${this._autoBuildEnabled}`);
-            // since setAutoBuild can be called outside of update(), we have to trigger the tree update here too
-            this.connection.onChange();
+            this.onChange();
         }
 
         return changed;

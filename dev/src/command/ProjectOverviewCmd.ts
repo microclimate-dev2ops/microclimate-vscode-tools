@@ -54,8 +54,9 @@ export default async function projectOverviewCmd(project: Project): Promise<void
     }
 
     webPanel.reveal();
-    webPanel.onDidDispose(() => {
-        project.onCloseProjectInfo();
+    webPanel.onDidDispose( () => {
+        // this will dispose the webview a second time, but that seems to be fine
+        project.closeProjectInfo();
     });
 
     const icons = project.type.icon;
@@ -143,6 +144,7 @@ async function onRequestDelete(project: Project): Promise<void> {
     }
 }
 
+
 async function onRequestEdit(type: ProjectOverview.Editable, project: Project): Promise<void> {
     // https://github.ibm.com/dev-ex/iterative-dev/wiki/File-watcher-External-APIs#post-apiv1projectsprojectidsettings
     let userFriendlySetting: string;
@@ -151,19 +153,22 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
     switch (type) {
         case ProjectOverview.Editable.CONTEXT_ROOT: {
             userFriendlySetting = "application endpoint path";
-            settingKey = "contextroot";
+            settingKey = "contextRoot";
             currentValue = project.contextRoot;
+            if (currentValue.startsWith("/")) {
+                currentValue = currentValue.substring(1, currentValue.length);
+            }
             break;
         }
         case ProjectOverview.Editable.APP_PORT: {
             userFriendlySetting = "application port";
-            settingKey = "applicationPort";
+            settingKey = "internalAppPort";
             currentValue = project.ports.internalAppPort ? project.ports.internalAppPort.toString() : undefined;
             break;
         }
         case ProjectOverview.Editable.DEBUG_PORT: {
             userFriendlySetting = "debug port";
-            settingKey = "debugPort";
+            settingKey = "internalDebugPort";
             currentValue = project.ports.internalDebugPort ? project.ports.internalDebugPort.toString() : undefined;
             break;
         }
@@ -194,6 +199,7 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
     if (input == null) {
         return;
     }
+    Log.i(`Requesting to change ${type} for ${project.name} to ${input}`);
 
     try {
         await Requester.requestSettingChange(project, userFriendlySetting, settingKey, input, isPort);

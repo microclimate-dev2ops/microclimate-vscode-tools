@@ -23,7 +23,6 @@
         "cloud"
     ],
     "activationEvents": [
-        "*",
         "onView:ext.mc.mcProjectExplorer",
         "workspaceContains:**/.idc",
         "workspaceContains:**/.cfignore",
@@ -65,16 +64,16 @@
             {
                 "command": "%cmdID_newConnection%",
                 "title": "%cmdTitle_newConnection%",
-                "category": "%commandCategory%",
-                "icon": {
-                    "light": "res/img/light/new.svg",
-                    "dark": "res/img/dark/new.svg"
-                }
+                "category": "%commandCategory%"
             },
             {
                 "command": "%cmdID_newDefaultConn%",
                 "title": "%cmdTitle_newDefaultConn%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/link.svg",
+                    "dark": "res/img/dark/link.svg"
+                }
             },
             {
                 "command": "%cmdID_removeConn%",
@@ -84,12 +83,20 @@
             {
                 "command": "%cmdID_refreshConnection%",
                 "title": "%cmdTitle_refreshConnection%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/refresh.svg",
+                    "dark": "res/img/dark/refresh.svg"
+                }
             },
             {
                 "command": "%cmdID_newMCProject%",
                 "title": "%cmdTitle_newMCProject%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/new.svg",
+                    "dark": "res/img/dark/new.svg"
+                }
             },
             {
                 "command": "%cmdID_openFolder%",
@@ -99,12 +106,20 @@
             {
                 "command": "%cmdID_openInBrowser%",
                 "title": "%cmdTitle_openInBrowser%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/launch.svg",
+                    "dark": "res/img/dark/launch.svg"
+                }
             },
             {
                 "command": "ext.mc.attachDebugger",
                 "title": "%cmdTitle_attachDebugger%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/debug.svg",
+                    "dark": "res/img/dark/debug.svg"
+                }
             },
             {
                 "command": "%cmdID_restartRun%",
@@ -154,7 +169,11 @@
             {
                 "command": "%cmdID_projectOverview%",
                 "title": "%cmdTitle_projectOverview%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/info.svg",
+                    "dark": "res/img/dark/info.svg"
+                }
             },
             {
                 "command": "%cmdID_toggleAutoBuild%",
@@ -204,6 +223,19 @@
                     "when": "%isInViewWithNothingSelected%"
                 },
                 {
+                    "command": "%cmdID_newConnection%",
+                    "when": "%isNoConnections%"
+                },
+                {
+                    "command": "%cmdID_newDefaultConn%",
+                    "when": "%isNoConnections%"
+                },
+                {
+                    "command": "%cmdID_newDefaultConn%",
+                    "when": "%isNoConnections%",
+                    "group": "inline"
+                },
+                {
                     "command": "%cmdID_openInBrowser%",
                     "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.a@0"
@@ -212,6 +244,16 @@
                     "command": "%cmdID_newMCProject%",
                     "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.a@1"
+                },
+                {
+                    "command": "%cmdID_newMCProject%",
+                    "when": "%isActiveConnection%",
+                    "group": "inline"
+                },
+                {
+                    "command": "%cmdID_newMCProject%",
+                    "when": "%isNoProjects%",
+                    "group": "inline"
                 },
                 {
                     "command": "%cmdID_openFolder%",
@@ -234,9 +276,19 @@
                     "group": "ext.mc.a@0"
                 },
                 {
+                    "command": "%cmdID_openInBrowser%",
+                    "when": "%isStartedProject%",
+                    "group": "inline"
+                },
+                {
                     "command": "%cmdID_projectOverview%",
                     "when": "%isProject%",
                     "group": "ext.mc.a@1"
+                },
+                {
+                    "command": "%cmdID_projectOverview%",
+                    "when": "%isProject%",
+                    "group": "inline"
                 },
                 {
                     "command": "%cmdID_containerShell%",
@@ -284,6 +336,11 @@
                     "group": "ext.mc.d@2"
                 },
                 {
+                    "command": "%cmdID_attachDebugger%",
+                    "when": "%isDebuggableProject%",
+                    "group": "inline"
+                },
+                {
                     "command": "%cmdID_requestBuild%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.e@0"
@@ -312,7 +369,7 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "npm ci && npm run compile && npm run copy-strings && npm run copy-license",
+        "vscode:prepublish": "npm i && npm run compile && npm run copy-strings && npm run copy-license",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
