@@ -72,6 +72,8 @@ namespace SocketEvents {
         readonly reset: boolean;
     }
 
+    export type ILogsListChangedEvent = { projectID: string } & ILogResponse;
+
     /**
      * Socket events we listen for from Microclimate Portal
      * See MCSocket
@@ -101,6 +103,16 @@ namespace SocketEvents {
         START_MODE = "startMode",
         BUILD_DETAIL = "detailedBuildStatus",
     }
+}
+
+export interface ILogResponse {
+    readonly build?: ILogObject[];
+    readonly app?: ILogObject[];
+}
+
+export interface ILogObject {
+    readonly logName: string;
+    readonly workspathLogPath?: string;
 }
 
 export default SocketEvents;

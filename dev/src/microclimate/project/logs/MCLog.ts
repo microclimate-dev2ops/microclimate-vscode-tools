@@ -1,12 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2019 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v20.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
 import * as vscode from "vscode";
-
-// export enum MCLogTypes {
-//     "app", "build",
-// }
-
-const FW_CONTAINER_LOGS_NAME = "-";
-const PORTAL_CONTAINER_LOGS_NAME = "container";
-const USER_CONTAINER_LOGS_NAME = "container log";
 
 export default class MCLog implements vscode.QuickPickItem {
 
@@ -14,29 +16,22 @@ export default class MCLog implements vscode.QuickPickItem {
 
     // quickPickItem
     public readonly label: string;
+    // public readonly detail: string;
 
     private output: vscode.OutputChannel | undefined;
 
     constructor(
         projectName: string,
-        // MUST match the logName provided in the events
+        // MUST match the logName provided in the log-update events
         public readonly logName: string,
-        // public readonly logType: MCLogTypes,
-        // path is not used at this time
         public readonly logPath?: string,
     ) {
-        // portal sends the logName for container logs (in log-update events) as "container", but filewatcher sends "-" (in REST requests)
-        // so we have to deal with that here, normalize to the portal name
-        const isContainerLog = logName === FW_CONTAINER_LOGS_NAME;
-        if (isContainerLog) {
-            this.logName = PORTAL_CONTAINER_LOGS_NAME;
-        }
-
-        this.displayName = projectName + " - " + (isContainerLog ? USER_CONTAINER_LOGS_NAME : this.logName);
+        this.displayName = `${projectName} - ${this.logName}`;
         this.label = this.displayName;
+        // this.detail = logPath;
         // this.description = `(${this.logType} log)`;
 
-        // Log.d(`Initialized log ${this.displayName} internal name ${this.logName}`);
+        // Log.d(`Initialized log ${this.displayName} internal name ${this.logName} from ${}`);
     }
 
     public onNewLogs(reset: boolean, logs: string): void {
@@ -86,7 +81,7 @@ export default class MCLog implements vscode.QuickPickItem {
                 msg += "Microclimate disconnected.";
             }
             else {
-                msg += "the project has been disabled.";
+                msg += "the project has been disabled. The log will be recreated when there is new output.";
             }
             this.output.appendLine(msg);
         }

@@ -169,11 +169,18 @@ export default class MCSocket implements vscode.Disposable {
         }
     }
 
-    private readonly onLogsListChanged = async (payload: any): Promise<void> => {
+    private readonly onLogsListChanged = async (payload: SocketEvents.ILogsListChangedEvent): Promise<void> => {
         const project = await this.getProject(payload);
         if (project == null) {
             return;
         }
+
+        if (!this.connection.is1905OrNewer()) {
+            Log.e("Received new logs LIST event for a project that should be using the OLD logs API");
+            return;
+        }
+
+        (project.logManager as MCLogManager).onLogsListChanged(payload);
     }
 
     private readonly onLogUpdate = async (payload: SocketEvents.ILogUpdateEvent): Promise<void> => {
@@ -188,8 +195,7 @@ export default class MCSocket implements vscode.Disposable {
         }
 
         // Log.d(`Received log ${payload.logName} of length ${payload.logs.length} with reset ${payload.reset}`);
-        const logManager = project.logManager as MCLogManager;
-        logManager.onNewLogs(payload);
+        (project.logManager as MCLogManager).onNewLogs(payload);
     }
 
     private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
