@@ -11,6 +11,7 @@
 
 // import * as vscode from "vscode";
 
+/*
 import { promptForProject } from "./CommandUtil";
 import Log from "../Logger";
 import ProjectState from "../microclimate/project/ProjectState";
@@ -31,3 +32,4 @@ export default async function validateCmd(project: Project): Promise<void> {
 
     return Requester.requestValidate(project, false);
 }
+*/

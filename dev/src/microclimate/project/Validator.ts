@@ -13,7 +13,6 @@ import * as vscode from "vscode";
 
 import Log from "../../Logger";
 import Project from "./Project";
-import Requester from "./Requester";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import ProjectType from "./ProjectType";
@@ -70,12 +69,13 @@ namespace Validator {
 
                 vscode.window.showErrorMessage(popupErrMsg, generateBtn, problemsBtn)
                     .then( (response: string | undefined) => {
-                        if (response === generateBtn) {
-                            Requester.requestGenerate(project);
-                        }
+                        // if (response === generateBtn) {
+                        //     Requester.requestGenerate(project);
+                        // }
                         // If the user clicks this, they miss their chance to Generate, which might be frustrating.
                         // Might not want to show this if we can Generate.
-                        else if (response === problemsBtn) {
+                        // else if (response === problemsBtn) {
+                        if (response === problemsBtn) {
                             vscode.commands.executeCommand(Commands.VSC_FOCUS_PROBLEMS);
                         }
                     });

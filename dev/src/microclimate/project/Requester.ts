@@ -44,7 +44,7 @@ namespace Requester {
         await doProjectRequest(project, ProjectEndpoints.BUILD_ACTION, body, request.post, buildMsg);
         // This is a workaround for the Build action not refreshing validation state.
         // Will be fixed by https://github.ibm.com/dev-ex/iterative-dev/issues/530
-        await requestValidate(project, true);
+        // await requestValidate(project, true);
     }
 
     export async function requestToggleAutoBuild(project: Project): Promise<void> {
@@ -78,44 +78,45 @@ namespace Requester {
         await doProjectRequest(project, endpoint, {}, request.put, newEnablementStr);
     }
 
-    export async function requestValidate(project: Project, silent: boolean): Promise<void> {
-        const [endpoint, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, false);
+    // Validation appears to have been removed
+    // export async function requestValidate(project: Project, silent: boolean): Promise<void> {
+    //     const [endpoint, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, false);
 
-        const userOperation = Translator.t(StringNamespaces.CMD_MISC, "validate");
-        await doProjectRequest(project, endpoint, body, request.post, userOperation, silent);
-    }
+    //     const userOperation = Translator.t(StringNamespaces.CMD_MISC, "validate");
+    //     await doProjectRequest(project, endpoint, body, request.post, userOperation, silent);
+    // }
 
-    export async function requestGenerate(project: Project): Promise<void> {
-        const [endpoint, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, true);
+    // export async function requestGenerate(project: Project): Promise<void> {
+    //     const [endpoint, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, true);
 
-        const generateMsg = Translator.t(STRING_NS, "generateMissingFiles");
+    //     const generateMsg = Translator.t(STRING_NS, "generateMissingFiles");
 
-        await doProjectRequest(project, endpoint, body, request.post, generateMsg);
-        // request a validate after the generate so that the validation errors go away faster
-        await requestValidate(project, true);
-    }
+    //     await doProjectRequest(project, endpoint, body, request.post, generateMsg);
+    //     // request a validate after the generate so that the validation errors go away faster
+    //     await requestValidate(project, true);
+    // }
 
-    interface IValidateRequestBody {
-        projectType: string;
-        projectID?: string;
-        autoGenerate?: boolean;
-    }
+    // interface IValidateRequestBody {
+    //     projectType: string;
+    //     projectID?: string;
+    //     autoGenerate?: boolean;
+    // }
 
-    /**
-     * Get the URL and request body for either a Validate or Generate request, they are very similar.
-     */
-    function assembleValidateRequest(project: Project, generate: boolean): [ProjectEndpoints, IValidateRequestBody] {
-        const body: IValidateRequestBody = {
-            projectType: project.type.internalType,
-        };
+    // /**
+    //  * Get the URL and request body for either a Validate or Generate request, they are very similar.
+    //  */
+    // function assembleValidateRequest(project: Project, generate: boolean): [ProjectEndpoints, IValidateRequestBody] {
+    //     const body: IValidateRequestBody = {
+    //         projectType: project.type.internalType,
+    //     };
 
-        if (generate) {
-            body.autoGenerate = true;
-        }
+    //     if (generate) {
+    //         body.autoGenerate = true;
+    //     }
 
-        const endpoint = generate ? ProjectEndpoints.GENERATE : ProjectEndpoints.VALIDATE;
-        return [endpoint, body];
-    }
+    //     const endpoint = generate ? ProjectEndpoints.GENERATE : ProjectEndpoints.VALIDATE;
+    //     return [endpoint, body];
+    // }
 
     export async function requestUnbind(project: Project): Promise<void> {
         const deleteMsg = Translator.t(STRING_NS, "delete");

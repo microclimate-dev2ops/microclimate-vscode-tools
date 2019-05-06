@@ -35,7 +35,7 @@ import refreshConnectionCmd from "./RefreshConnectionCmd";
 import openCreateOrImportPageCmd from "./CreateUserProjectCmd";
 import Translator from "../constants/strings/translator";
 import StringNamespaces from "../constants/strings/StringNamespaces";
-import validateCmd from "./ValidateCmd";
+// import validateCmd from "./ValidateCmd";
 import { manageLogs, showAllLogs, hideAllLogs } from "./ManageLogsCmd";
 
 export function createCommands(): vscode.Disposable[] {
@@ -81,7 +81,7 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR,  (selection) => openAppMonitorCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.VALIDATE,          (selection) => validateCmd(selection))
+        // vscode.commands.registerCommand(Commands.VALIDATE,          (selection) => validateCmd(selection))
     ];
 }
 
