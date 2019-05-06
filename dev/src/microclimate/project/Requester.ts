@@ -19,6 +19,7 @@ import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Translator from "../../constants/strings/translator";
 import * as MCUtil from "../../MCUtil";
 import EndpointUtil, { ProjectEndpoints, Endpoint, MCEndpoints } from "../../constants/Endpoints";
+import { ILogResponse } from "../connection/SocketEvents";
 
 const STRING_NS = StringNamespaces.REQUESTS;
 
@@ -78,10 +79,10 @@ namespace Requester {
     }
 
     export async function requestValidate(project: Project, silent: boolean): Promise<void> {
-        const [url, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, false);
+        const [endpoint, body]: [Endpoint, IValidateRequestBody] = assembleValidateRequest(project, false);
 
         const userOperation = Translator.t(StringNamespaces.CMD_MISC, "validate");
-        await doProjectRequest(project, url, body, request.post, userOperation, silent);
+        await doProjectRequest(project, endpoint, body, request.post, userOperation, silent);
     }
 
     export async function requestGenerate(project: Project): Promise<void> {
@@ -137,16 +138,6 @@ namespace Requester {
             [settingKey]: newValue,
         };
         await doProjectRequest(project, ProjectEndpoints.PROPERTES, body, request.post, updateMsg);
-    }
-
-    interface ILogResponse {
-        readonly build: ILogObject[];
-        readonly app: ILogObject[];
-    }
-
-    interface ILogObject {
-        readonly logName: string;
-        readonly workspathLogPath?: string;
     }
 
     export async function requestAvailableLogs(project: Project): Promise<ILogResponse> {

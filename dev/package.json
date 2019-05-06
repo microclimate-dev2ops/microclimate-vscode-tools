@@ -154,7 +154,11 @@
             {
                 "command": "%cmdID_enable%",
                 "title": "%cmdTitle_enable%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/play.svg",
+                    "dark": "res/img/dark/play.svg"
+                }
             },
             {
                 "command": "%cmdID_disable%",
@@ -267,7 +271,7 @@
                 },
                 {
                     "command": "%cmdID_refreshConnection%",
-                    "when": "%isActiveConnection%",
+                    "when": "%isConnection%",
                     "group": "ext.mc.conn.c@1"
                 },
                 {
@@ -361,9 +365,19 @@
                     "group": "ext.mc.e@2"
                 },
                 {
+                    "command": "%cmdID_disable%",
+                    "when": "%isEnabledProject%",
+                    "group": "ext.mc.z"
+                },
+                {
                     "command": "%cmdID_enable%",
                     "when": "%isDisabledProject%",
                     "group": "ext.mc.z"
+                },
+                {
+                    "command": "%cmdID_enable%",
+                    "when": "%isDisabledProject%",
+                    "group": "inline"
                 }
             ]
         }

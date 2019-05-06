@@ -17,7 +17,6 @@ import Project from "../project/Project";
 import Log from "../../Logger";
 import Validator from "../project/Validator";
 import SocketEvents from "./SocketEvents";
-import MCLogManager from "../project/logs/MCLogManager";
 
 /**
  * Receives and reacts to socket events from Portal
@@ -71,6 +70,7 @@ export default class MCSocket implements vscode.Disposable {
             .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
             .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged)
             .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate)
+            .on(SocketEvents.Types.LOGS_LIST_CHANGED,       this.onLogsListChanged)
             ;
     }
 
@@ -147,6 +147,15 @@ export default class MCSocket implements vscode.Disposable {
         project.onRestartEvent(payload);
     }
 
+    private readonly onLogsListChanged = async (payload: SocketEvents.ILogsListChangedEvent): Promise<void> => {
+        const project = await this.getProject(payload);
+        if (project == null) {
+            return;
+        }
+
+        project.logManager.onLogsListChanged(payload);
+    }
+
     private readonly onLogUpdate = async (payload: SocketEvents.ILogUpdateEvent): Promise<void> => {
         const project = await this.getProject(payload);
         if (project == null) {
@@ -154,8 +163,7 @@ export default class MCSocket implements vscode.Disposable {
         }
 
         // Log.d(`Received log ${payload.logName} of length ${payload.logs.length} with reset ${payload.reset}`);
-        const logManager = project.logManager as MCLogManager;
-        logManager.onNewLogs(payload);
+        project.logManager.onNewLogs(payload);
     }
 
     private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })

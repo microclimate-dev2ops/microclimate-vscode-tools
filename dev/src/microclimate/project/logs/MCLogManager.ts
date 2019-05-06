@@ -1,8 +1,20 @@
+/*******************************************************************************
+ * Copyright (c) 2019 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v20.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
+// import * as vscode from "vscode";
+
 import Project from "../Project";
 import MCLog from "./MCLog";
 import Log from "../../../Logger";
 import Requester from "../Requester";
-import SocketEvents from "../../connection/SocketEvents";
+import SocketEvents, { ILogResponse } from "../../connection/SocketEvents";
 
 export default class MCLogManager {
 
@@ -26,9 +38,7 @@ export default class MCLogManager {
         // Log.d("Initializing logs");
         try {
             const availableLogs = await Requester.requestAvailableLogs(this.project);
-            availableLogs.app.concat(availableLogs.build).forEach((log) => {
-                this.logs.push(new MCLog(this.project.name, log.logName, log.workspathLogPath));
-            });
+            this.onLogsListChanged(availableLogs);
             Log.i(`${this.managerName} has finished initializing logs: ${this.logs.map((l) => l.displayName).join(", ") || "<none>"}`);
         }
         catch (err) {
@@ -39,6 +49,34 @@ export default class MCLogManager {
 
     public toString(): string {
         return this.managerName;
+    }
+
+    public onLogsListChanged(logs: ILogResponse): void {
+        const appLogs = logs.app || [];
+        const buildLogs = logs.build || [];
+
+        appLogs.concat(buildLogs).forEach((newLogData) => {
+            // skip useless container log
+            if (!(newLogData.logName === "-" || newLogData.logName === "container")) {
+                return;
+            }
+
+            const existingIndex = this.logs.findIndex((l) => l.logName === newLogData.logName);
+            const existed = existingIndex !== -1;
+            let openOnCreate = false;
+            if (existed) {
+                // destroy the old log and replace it with this one
+                const existingLog = this.logs.splice(existingIndex, 1)[0];
+                openOnCreate = existingLog.isOpen;
+                existingLog.destroy();
+            }
+
+            const newLog = new MCLog(this.project.name, newLogData.logName, newLogData.workspathLogPath);
+            this.logs.push(newLog);
+            if (openOnCreate) {
+                newLog.showOutput();
+            }
+        });
     }
 
     /**

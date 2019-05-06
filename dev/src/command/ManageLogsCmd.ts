@@ -72,7 +72,7 @@ async function manageLogsInner(project: Project, all?: "show" | "hide"): Promise
     };
 
     // https://github.com/Microsoft/vscode/issues/64014
-    const logsToShow: MCLog[] | undefined = await vscode.window.showQuickPick(logs, options) as (MCLog[] | undefined);
+    const logsToShow: MCLog[] | undefined = await vscode.window.showQuickPick<MCLog>(logs, options) as (MCLog[] | undefined);
     if (logsToShow != null) {
         // Log.d("selection", selection);
 
