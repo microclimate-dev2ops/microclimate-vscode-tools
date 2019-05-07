@@ -64,15 +64,19 @@
             {
                 "command": "%cmdID_newConnection%",
                 "title": "%cmdTitle_newConnection%",
-                "category": "%commandCategory%"
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/connect.svg",
+                    "dark": "res/img/dark/connect.svg"
+                }
             },
             {
                 "command": "%cmdID_newDefaultConn%",
                 "title": "%cmdTitle_newDefaultConn%",
                 "category": "%commandCategory%",
                 "icon": {
-                    "light": "res/img/light/link.svg",
-                    "dark": "res/img/dark/link.svg"
+                    "light": "res/img/light/connect.svg",
+                    "dark": "res/img/dark/connect.svg"
                 }
             },
             {
@@ -90,12 +94,21 @@
                 }
             },
             {
-                "command": "%cmdID_newMCProject%",
-                "title": "%cmdTitle_newMCProject%",
+                "command": "%cmdID_newProject%",
+                "title": "%cmdTitle_newProject%",
                 "category": "%commandCategory%",
                 "icon": {
                     "light": "res/img/light/new.svg",
                     "dark": "res/img/dark/new.svg"
+                }
+            },
+            {
+                "command": "%cmdID_bindProject%",
+                "title": "%cmdTitle_bindProject%",
+                "category": "%commandCategory%",
+                "icon": {
+                    "light": "res/img/light/link.svg",
+                    "dark": "res/img/dark/link.svg"
                 }
             },
             {
@@ -198,11 +211,6 @@
                 "command": "%cmdID_openAppMonitor%",
                 "title": "%cmdTitle_openAppMonitor%",
                 "category": "%commandCategory%"
-            },
-            {
-                "command": "%cmdID_validate%",
-                "title": "%cmdTitle_validate%",
-                "category": "%commandCategory%"
             }
         ],
         "menus": {
@@ -245,18 +253,28 @@
                     "group": "ext.mc.conn.a@0"
                 },
                 {
-                    "command": "%cmdID_newMCProject%",
+                    "command": "%cmdID_newProject%",
                     "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.a@1"
                 },
                 {
-                    "command": "%cmdID_newMCProject%",
+                    "command": "%cmdID_newProject%",
                     "when": "%isActiveConnection%",
                     "group": "inline"
                 },
                 {
-                    "command": "%cmdID_newMCProject%",
+                    "command": "%cmdID_newProject%",
                     "when": "%isNoProjects%",
+                    "group": "inline"
+                },
+                {
+                    "command": "%cmdID_bindProject%",
+                    "when": "%isActiveConnection%",
+                    "group": "ext.mc.conn.a@2"
+                },
+                {
+                    "command": "%cmdID_bindProject%",
+                    "when": "%isActiveConnection%",
                     "group": "inline"
                 },
                 {
@@ -265,12 +283,12 @@
                     "group": "ext.mc.conn.b"
                 },
                 {
-                    "command": "%cmdID_removeConn%",
+                    "command": "%cmdID_refreshConnection%",
                     "when": "%isConnection%",
                     "group": "ext.mc.conn.c@0"
                 },
                 {
-                    "command": "%cmdID_refreshConnection%",
+                    "command": "%cmdID_removeConn%",
                     "when": "%isConnection%",
                     "group": "ext.mc.conn.c@1"
                 },
@@ -348,11 +366,6 @@
                     "command": "%cmdID_requestBuild%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.e@0"
-                },
-                {
-                    "command": "%cmdID_validate%",
-                    "when": "%isEnabledAutoBuildOff%",
-                    "group": "ext.mc.e@1"
                 },
                 {
                     "command": "%cmdID_enableAutoBuild%",

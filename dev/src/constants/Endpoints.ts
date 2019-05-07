@@ -20,8 +20,10 @@ export type Endpoint = MCEndpoints | ProjectEndpoints;
  */
 export enum MCEndpoints {
     ENVIRONMENT = "api/v1/environment",
+    TEMPLATES = "api/v1/templates",
     PROJECTS = "api/v1/projects",
-    PROJECT_TYPES = "api/v1/project-types",
+    CREATE_FROM_TEMPLATE = "api/v1/projects/create",
+    BIND = "api/v1/projects/bind",
 }
 
 /**

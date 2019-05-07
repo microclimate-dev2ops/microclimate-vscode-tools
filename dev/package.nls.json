@@ -25,11 +25,11 @@
     "cmdTitle_refreshConnection": "Refresh Connection",
     "cmdDescr_refreshConnection": "Refresh a Microclimate connection",
 
-    "cmdID_newMCProject": "ext.mc.createMCProject",
-    "cmdTitle_newMCProject": "Create Project",
+    "cmdID_newProject": "ext.mc.createProject",
+    "cmdTitle_newProject": "Create New Project",
 
-    "cmdID_importMCProject": "ext.mc.importMCProject",
-    "cmdTitle_importMCProject": "Open Import Project Page",
+    "cmdID_bindProject": "ext.mc.bindProject",
+    "cmdTitle_bindProject": "Add Project",
 
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open Folder as Workspace",

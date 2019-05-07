@@ -363,7 +363,7 @@ export default class Project implements vscode.QuickPickItem {
      */
     public async onDelete(): Promise<void> {
         Log.i(`${this.name} was deleted`);
-        vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
+        // vscode.window.showInformationMessage(Translator.t(STRING_NS, "onDeletion", { projectName: this.name }));
         DebugUtils.removeDebugLaunchConfigFor(this);
         await this.dispose();
     }

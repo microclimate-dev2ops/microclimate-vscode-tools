@@ -96,7 +96,7 @@ namespace TreeItemFactory {
                     tooltip: "Click here to create a new project",
                     contextValue: buildContextValue([TreeContextValues.NO_PROJECTS]),
                     command: {
-                        command: Commands.CREATE_MC_PROJECT,
+                        command: Commands.CREATE_PROJECT,
                         title: "",
                         arguments: [connection]
                     }

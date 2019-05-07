@@ -20,7 +20,7 @@ import UserProjectCreator from "../microclimate/connection/UserProjectCreator";
 /**
  * @param create true for Create page, false for Import page
  */
-export default async function createProject(connection: Connection): Promise<void> {
+export default async function bindProject(connection: Connection): Promise<void> {
     if (connection == null) {
         const selected = await promptForConnection(true);
         if (selected == null) {
@@ -32,17 +32,14 @@ export default async function createProject(connection: Connection): Promise<voi
     }
 
     try {
-        const response = await UserProjectCreator.createProject(connection);
+        const response = await UserProjectCreator.bindProject(connection);
         if (response == null) {
-            // user cancelled something
             return;
         }
-        // TODO remove me!
-        await UserProjectCreator.issueBindReq(connection, response.projectName, response.fullUserDir, response.template);
-        // vscode.window.showInformationMessage(`Created project ${response.projectName} at ${response.targetDir}`);
+        vscode.window.showInformationMessage(`Adding ${response.projectName} from ${response.locOnDisk}`);
     }
     catch (err) {
-        const errMsg = "Error creating project from template: ";
+        const errMsg = "Error binding project: ";
         Log.e(errMsg, err);
         vscode.window.showErrorMessage(errMsg + MCUtil.errToString(err));
     }

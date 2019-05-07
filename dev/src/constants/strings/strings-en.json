@@ -13,7 +13,7 @@
     "command": {
         "noContainerForShell": "{{ projectName }} does not have an application container running. Wait until the project is Running.",
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
-        "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Microclimate?",
+        "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Microclimate? This will not delete the directory on disk.",
         "confirmDeleteBtn": "Delete project",
         "refreshingConnection": "Refreshed Microclimate at {{- uri }}.",
         "projectAlreadyBuilding": "{{ projectName }} is already building. Build request cancelled.",

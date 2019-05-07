@@ -60,6 +60,7 @@ export default class MCSocket implements vscode.Disposable {
             .on("disconnect",   this.connection.onDisconnect)   // non-nls
 
             .on(SocketEvents.Types.PROJECT_CREATED,         this.onProjectCreated)
+            .on(SocketEvents.Types.PROJECT_BOUND,           this.onProjectCreated)
             .on(SocketEvents.Types.PROJECT_CHANGED,         this.onProjectChanged)
             .on(SocketEvents.Types.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
             .on(SocketEvents.Types.PROJECT_CLOSED,          this.onProjectClosed)
@@ -84,6 +85,7 @@ export default class MCSocket implements vscode.Disposable {
     }
 
     private readonly onProjectCreated = async (payload: { projectID: string }): Promise<void> => {
+        Log.d("Project Created event", payload);
         await this.connection.forceUpdateProjectList();
 
         const newProject = await this.connection.getProjectByID(payload.projectID);

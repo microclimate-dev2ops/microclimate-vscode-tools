@@ -18,8 +18,8 @@ enum Commands {
     REMOVE_CONNECTION = "ext.mc.removeConnection",
     REFRESH_CONNECTION = "ext.mc.refreshConnection",
 
-    CREATE_MC_PROJECT = "ext.mc.createMCProject",
-    IMPORT_MC_PROJECT = "ext.mc.importMCProject",
+    CREATE_PROJECT = "ext.mc.createProject",
+    BIND_PROJECT = "ext.mc.bindProject",
 
     OPEN_WS_FOLDER = "ext.mc.openWorkspaceFolder",
 

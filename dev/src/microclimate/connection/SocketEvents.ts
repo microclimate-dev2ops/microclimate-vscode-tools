@@ -91,6 +91,7 @@ namespace SocketEvents {
         LOGS_LIST_CHANGED = "projectLogsListChanged",
         PROJECT_VALIDATED = "projectValidated",
         PROJECT_CREATED = "projectCreation",
+        PROJECT_BOUND = "projectBind",
     }
 
     /**

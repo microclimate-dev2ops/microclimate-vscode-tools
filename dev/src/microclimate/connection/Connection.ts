@@ -194,5 +194,6 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
         }
         this.needProjectUpdate = true;
         this.updateProjects();
+        this.onChange();
     }
 }

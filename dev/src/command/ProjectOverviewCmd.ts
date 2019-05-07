@@ -144,7 +144,6 @@ async function onRequestDelete(project: Project): Promise<void> {
     }
 }
 
-
 async function onRequestEdit(type: ProjectOverview.Editable, project: Project): Promise<void> {
     // https://github.ibm.com/dev-ex/iterative-dev/wiki/File-watcher-External-APIs#post-apiv1projectsprojectidsettings
     let userFriendlySetting: string;

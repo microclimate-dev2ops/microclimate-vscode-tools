@@ -18,7 +18,7 @@ import Project from "../microclimate/project/Project";
 import Connection from "../microclimate/connection/Connection";
 import ProjectObserver from "./ProjectObserver";
 import ProjectState from "../microclimate/project/ProjectState";
-import ProjectCreator, { IMCProjectType } from "../microclimate/connection/UserProjectCreator";
+import UserProjectCreator, { IMCTemplateData } from "../microclimate/connection/UserProjectCreator";
 import TestConfig from "./TestConfig";
 
 namespace TestUtil {
@@ -36,15 +36,18 @@ namespace TestUtil {
 
         try {
             // turn our internal project type into a user project type which we can pass to the project creator
-            const typeForCreation: IMCProjectType = {
+            const typeForCreation: IMCTemplateData = {
                 extension: TestConfig.getTemplateID(type),
                 language: type.language,
                 // label and description are displayed to user but not used by the test.
                 description: "",
                 label: ""
             };
-            // we use as any here to call this private function
-            await (ProjectCreator).issueCreateReq(connection, typeForCreation, projectName);
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            if (workspaceFolders == null) {
+                throw new Error("No active workspace folder!");
+            }
+            await UserProjectCreator.issueCreateReq(connection, typeForCreation, projectName, workspaceFolders[0].uri.fsPath);
         }
         catch (err) {
             Log.t("Create project failure!", err);
