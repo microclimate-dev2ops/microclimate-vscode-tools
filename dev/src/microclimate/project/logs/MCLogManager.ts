@@ -57,7 +57,7 @@ export default class MCLogManager {
 
         appLogs.concat(buildLogs).forEach((newLogData) => {
             // skip useless container log
-            if (!(newLogData.logName === "-" || newLogData.logName === "container")) {
+            if (newLogData.logName === "-" || newLogData.logName === "container") {
                 return;
             }
 

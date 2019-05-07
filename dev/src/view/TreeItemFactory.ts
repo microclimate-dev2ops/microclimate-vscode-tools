@@ -107,6 +107,7 @@ namespace TreeItemFactory {
             return [{
                 label: Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel"),
                 iconPath: Resources.getIconPaths(Resources.Icons.Disconnected),
+                contextValue: "nothing",        // anything truthy works
                 // Consider putting refresh as the command on this item
             }];
         }
