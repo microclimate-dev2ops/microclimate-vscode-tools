@@ -15,8 +15,10 @@ import * as io from "socket.io-client";
 import Connection from "./Connection";
 import Project from "../project/Project";
 import Log from "../../Logger";
-import Validator from "../project/Validator";
+// import Validator from "../project/Validator";
 import SocketEvents from "./SocketEvents";
+
+interface ICreationEvent
 
 /**
  * Receives and reacts to socket events from Portal
@@ -61,6 +63,7 @@ export default class MCSocket implements vscode.Disposable {
 
             .on(SocketEvents.Types.PROJECT_CREATED,         this.onProjectCreated)
             .on(SocketEvents.Types.PROJECT_BOUND,           this.onProjectCreated)
+            .on("projectCreatedFromTemplate",               this.onProjectCreated)
             .on(SocketEvents.Types.PROJECT_CHANGED,         this.onProjectChanged)
             .on(SocketEvents.Types.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
             .on(SocketEvents.Types.PROJECT_CLOSED,          this.onProjectClosed)
@@ -84,16 +87,24 @@ export default class MCSocket implements vscode.Disposable {
         this.socket.disconnect();
     }
 
-    private readonly onProjectCreated = async (payload: { projectID: string }): Promise<void> => {
+    private readonly onProjectCreated = async (payload: { success: boolean; projectID?: string; error?: string; }): Promise<void> => {
         Log.d("Project Created event", payload);
         await this.connection.forceUpdateProjectList();
 
-        const newProject = await this.connection.getProjectByID(payload.projectID);
-        if (newProject == null) {
-            Log.e(`Project ${payload.projectID} was created but not available after a refresh`);
+        if (payload.projectID) {
+            const newProject = await this.connection.getProjectByID(payload.projectID);
+            if (newProject == null) {
+                Log.e(`Project ${payload.projectID} was created but not available after a refresh`);
+            }
+            else {
+                const msg = `Project ${newProject.name} has been created`;
+                Log.i(msg);
+                vscode.window.showInformationMessage(msg);
+            }
         }
         else {
-            Log.i(`Project ${newProject.name} has been created`);
+            const err = payload.error || "Unknown error";
+            vscode.window.showErrorMessage("Project creation failed: " + err);
         }
     }
 
@@ -168,7 +179,7 @@ export default class MCSocket implements vscode.Disposable {
         project.logManager.onNewLogs(payload);
     }
 
-    private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
+    private readonly onProjectValidated = async (payload: { projectID: string, validationResult: any })
         : Promise<void> => {
 
         const project = await this.getProject(payload);
@@ -176,12 +187,13 @@ export default class MCSocket implements vscode.Disposable {
             return;
         }
 
-        if (payload.validationResults != null) {
-            Validator.validate(project, payload.validationResults);
-        }
-        else {
-            Log.e("Microclimate didn't send result with validation event");
-        }
+        // if (payload.validationResults != null) {
+        //     Validator.validate(project, payload.validationResults);
+        // }
+        // else {
+        //     Log.e("Microclimate didn't send result with validation event");
+        // }
+        Log.d("validation event", payload);
     }
 
     private readonly onProjectSettingsChanged = async (payload: SocketEvents.IProjectSettingsEvent): Promise<void> => {

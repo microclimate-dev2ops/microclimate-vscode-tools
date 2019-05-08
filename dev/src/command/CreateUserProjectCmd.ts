@@ -32,13 +32,9 @@ export default async function createProject(connection: Connection): Promise<voi
     }
 
     try {
-        const response = await UserProjectCreator.createProject(connection);
-        if (response == null) {
-            // user cancelled something
-            return;
-        }
+        await UserProjectCreator.createProject(connection);
         // TODO remove me!
-        await UserProjectCreator.issueBindReq(connection, response.projectName, response.fullUserDir, response.template);
+        // await UserProjectCreator.issueBindReq(connection, response.projectName, response.fullUserDir, response.template);
         // vscode.window.showInformationMessage(`Created project ${response.projectName} at ${response.targetDir}`);
     }
     catch (err) {

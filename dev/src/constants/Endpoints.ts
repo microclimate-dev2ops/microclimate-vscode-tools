@@ -22,7 +22,8 @@ export enum MCEndpoints {
     ENVIRONMENT = "api/v1/environment",
     TEMPLATES = "api/v1/templates",
     PROJECTS = "api/v1/projects",
-    CREATE_FROM_TEMPLATE = "api/v1/projects/create",
+    CREATE_FROM_TEMPLATE = "api/v1/projects/",
+    BIND_VALIDATE = "api/v1/validate",
     BIND = "api/v1/projects/bind",
 }
 
@@ -32,8 +33,6 @@ export enum MCEndpoints {
 export enum ProjectEndpoints {
     RESTART_ACTION = "restart",
     BUILD_ACTION = "build",
-    VALIDATE = "validate",
-    GENERATE = "validate/generate",
     PROPERTES = "properties",
     LOGS = "logs",
     METRICS_STATUS = "metrics/status",

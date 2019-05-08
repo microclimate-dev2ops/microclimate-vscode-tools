@@ -36,7 +36,7 @@ export default async function bindProject(connection: Connection): Promise<void>
         if (response == null) {
             return;
         }
-        vscode.window.showInformationMessage(`Adding ${response.projectName} from ${response.locOnDisk}`);
+        vscode.window.showInformationMessage(`Bind accepted`);
     }
     catch (err) {
         const errMsg = "Error binding project: ";

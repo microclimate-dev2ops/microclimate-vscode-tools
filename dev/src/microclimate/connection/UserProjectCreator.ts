@@ -10,10 +10,10 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
-import * as path from "path";
+// import * as path from "path";
 import * as request from "request-promise-native";
 
-import * as MCUtil from "../../MCUtil";
+// import * as MCUtil from "../../MCUtil";
 import Log from "../../Logger";
 import Connection from "./Connection";
 import EndpointUtil, { MCEndpoints } from "../../constants/Endpoints";
@@ -25,22 +25,19 @@ export interface IMCTemplateData {
     language: string;
 }
 
-export interface IProjectCreationResponse {
-    // status: string;
-    projectName: string;
-    // projectID: string;
-    locOnDisk: string;
-}
+// export interface IProjectCreationResponse {
+//     // status: string;
+//     projectName: string;
+//     // projectID: string;
+//     locOnDisk: string;
+// }
 
 /**
  * Functions to create or import new user projects into Microclimate
  */
 namespace UserProjectCreator {
 
-    export async function createProject(connection: Connection)
-        : Promise<{ template: IMCTemplateData, fullUserDir: string, projectName: string } | undefined> {
-
-    // export async function createProject(connection: Connection): Promise<IProjectCreationResponse | undefined> {
+    export async function createProject(connection: Connection): Promise<void> {
         const templateSelected = await promptForTemplate(connection);
         if (templateSelected == null) {
             return;
@@ -51,21 +48,18 @@ namespace UserProjectCreator {
             return;
         }
 
-        const targetDirUri = await promptForDir(true);
-        if (targetDirUri == null) {
+        const parentDirUri = await promptForDir(true);
+        if (parentDirUri == null) {
             return;
         }
-        // abs path on user system
-        const userTargetPath = targetDirUri.fsPath;
+        // abs path on user system under which the project will be created
+        const userParentDir = parentDirUri.fsPath;
 
         // caller must handle errors
-        const creationRes: IProjectCreationResponse = await issueCreateReq(connection, templateSelected, projectName, userTargetPath);
-
-        const fullUserDir = MCUtil.appendPathWithoutDupe(userTargetPath, creationRes.locOnDisk);
-        return { template: templateSelected, fullUserDir, projectName, };
+        await issueCreateReq(connection, templateSelected, projectName, userParentDir);
     }
 
-    export async function bindProject(connection: Connection): Promise<IProjectCreationResponse | undefined> {
+    export async function bindProject(connection: Connection): Promise<void> {
         const dirToBindUri = await promptForDir(false);
         if (dirToBindUri == null) {
             return;
@@ -74,16 +68,24 @@ namespace UserProjectCreator {
         Log.i("dirToBind", dirToBind);
 
         // here we should be doing /initialize instead
-        const template = await promptForTemplate(connection);
-        if (template == null) {
-            return;
-        }
-        const projectName = path.basename(dirToBind);
+        const validateResponse = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.BIND_VALIDATE), {
+            json: true,
+            body: {
+                path: dirToBind,
+            }
+        });
+        Log.d("validate response", validateResponse);
 
-        const bindRes = issueBindReq(connection, projectName, dirToBind, template);
+        // const template = await promptForTemplate(connection);
+        // if (template == null) {
+        //     return;
+        // }
+        // const projectName = path.basename(dirToBind);
 
-        Log.d("Bind response", bindRes);
-        return bindRes;
+        // const bindRes = issueBindReq(connection, projectName, dirToBind, template);
+
+        // Log.d("Bind response", bindRes);
+        // return bindRes;
     }
 
     async function promptForDir(isCreate: boolean): Promise<vscode.Uri | undefined> {
@@ -137,7 +139,7 @@ namespace UserProjectCreator {
 
     export async function issueCreateReq(
         connection: Connection, projectTypeSelected: IMCTemplateData, projectName: string, projectLocation: string)
-        : Promise<IProjectCreationResponse> {
+        : Promise<any> {
 
         const payload = {
             language: projectTypeSelected.language,
@@ -145,6 +147,8 @@ namespace UserProjectCreator {
             id: projectTypeSelected.extension,    // note: null for nodejs right now
             path: projectLocation,
         };
+
+        Log.d("Creation request", payload);
 
         const creationRes = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.CREATE_FROM_TEMPLATE), {
             json: true,
@@ -156,7 +160,7 @@ namespace UserProjectCreator {
     }
 
     export async function issueBindReq(connection: Connection, projectName: string, dirToBind: string, template: IMCTemplateData)
-        : Promise<IProjectCreationResponse | undefined> {
+        : Promise<any> {
 
         const bindEndpoint = EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.BIND);
         const bindRes = request.post(bindEndpoint, {
