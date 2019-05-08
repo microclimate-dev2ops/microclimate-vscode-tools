@@ -109,6 +109,7 @@ namespace TreeItemFactory {
             return [{
                 label: Translator.t(STRING_NS, "disconnectedConnectionLabel"),
                 iconPath: Resources.getIconPaths(Resources.Icons.Disconnected),
+                contextValue: "nothing",        // anything truthy works
                 // Consider putting refresh as the command on this item
             }];
         }

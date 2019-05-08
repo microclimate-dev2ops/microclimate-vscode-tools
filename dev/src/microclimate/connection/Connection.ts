@@ -193,6 +193,10 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
             this._projects = [];
         }
         this.needProjectUpdate = true;
-        this.updateProjects();
+        await this.updateProjects();
+        if (wipeProjects) {
+            // refresh whole tree
+            this.onChange();
+        }
     }
 }

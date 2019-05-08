@@ -115,7 +115,7 @@ export function generateHtml(project: Project): string {
                 ${emptyRow}
                 ${buildRow("Exposed App Port", normalize(project.ports.appPort, notRunning))}
                 ${buildRow("Internal App Port",
-                    normalize(project.ports.internalAppPort, notAvailable),
+                    normalize(project.ports.internalPort, notAvailable),
                     undefined,
                     Editable.APP_PORT)}
                 ${buildRow("Application Endpoint",

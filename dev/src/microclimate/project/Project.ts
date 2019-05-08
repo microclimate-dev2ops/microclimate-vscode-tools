@@ -33,7 +33,7 @@ const STRING_NS = StringNamespaces.PROJECT;
  */
 interface IProjectPorts {
     appPort: OptionalNumber;
-    internalAppPort: OptionalNumber;
+    internalPort: OptionalNumber;
     debugPort: OptionalNumber;
     internalDebugPort: OptionalNumber;
 }
@@ -102,7 +102,7 @@ export default class Project implements vscode.QuickPickItem {
         this._ports = {
             appPort: undefined,
             debugPort: undefined,
-            internalAppPort: undefined,
+            internalPort: undefined,
             internalDebugPort: undefined,
         };
 
@@ -217,7 +217,7 @@ export default class Project implements vscode.QuickPickItem {
         let changed = false;
         changed = this.setPort(ports.exposedPort, "appPort");
         changed = this.setPort(ports.exposedDebugPort, "debugPort") || changed;
-        changed = this.setPort(ports.internalPort, "internalAppPort") || changed;
+        changed = this.setPort(ports.internalPort, "internalPort") || changed;
         changed = this.setPort(ports.internalDebugPort, "internalDebugPort") || changed;
 
         return changed;
@@ -250,8 +250,8 @@ export default class Project implements vscode.QuickPickItem {
             changed = true;
         }
         if (event.ports) {
-            if (event.ports.internalAppPort) {
-                changed = this.setPort(event.ports.internalAppPort, "internalAppPort");
+            if (event.ports.internalPort) {
+                changed = this.setPort(event.ports.internalPort, "internalPort");
             }
             else if (event.ports.internalDebugPort) {
                 changed = this.setPort(event.ports.internalDebugPort, "internalDebugPort");
@@ -475,20 +475,24 @@ export default class Project implements vscode.QuickPickItem {
      * @returns true if at least one port was changed.
      */
     private setPort(newPort: OptionalString, portType: keyof IProjectPorts): boolean {
+        if (newPort === "") {
+            newPort = undefined;
+        }
         const newPortNumber = Number(newPort);
         const currentPort = this._ports[portType];
 
-        if (newPort != null && !MCUtil.isGoodPort(newPortNumber)) {
+        if (newPort && !MCUtil.isGoodPort(newPortNumber)) {
             Log.w(`Invalid ${portType} port ${newPort} given to project ${this.name}, ignoring it`);
             return false;
         }
-        else if (currentPort !== newPort) {
-            this._ports[portType] = newPortNumber;
-            if (newPortNumber !== currentPort) {
-                Log.d(`New ${portType} for ${this.name} is ${newPortNumber}`);
+        else if (currentPort !== newPortNumber) {
+            if (isNaN(newPortNumber)) {
+                this._ports[portType] = undefined;
+                // Log.d(`Unset ${portType} for ${this.name}`);
             }
-            else if (newPort == null) {
-                Log.d(`Unset ${portType} for ${this.name}`);
+            else if (newPortNumber !== currentPort) {
+                Log.d(`New ${portType} for ${this.name} is ${newPortNumber}`);
+                this._ports[portType] = newPortNumber;
             }
             // the third case is that (the new port === the old port) and neither are null - we don't log anything in this case.
             return true;
