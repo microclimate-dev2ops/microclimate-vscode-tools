@@ -223,7 +223,7 @@ const STRING_NS = StringNamespaces.CMD_RES_PROMPT;
 /**
  * Show a message stating that the command to be run can't be run on the current state of the workspace.
  * The message will be something like:
- * "There is no Microclimate connection, or Starting - Debug or Debugging project, to run this command on."
+ * "There is no connection, or Starting - Debug or Debugging project, to run this command on."
  */
 function showNoValidResourcesMsg(includeProjects: boolean, includeConnections: boolean, acceptableStates: ProjectState.AppStates[]): void {
     let requiredStatesStr: string = "";     // non-nls

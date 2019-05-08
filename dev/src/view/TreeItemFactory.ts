@@ -21,6 +21,8 @@ import Log from "../Logger";
 import Commands from "../constants/Commands";
 import ConnectionManager from "../microclimate/connection/ConnectionManager";
 
+const STRING_NS = StringNamespaces.TREEVIEW;
+
 /**
  * All of these values must match the viewItem regexes in package.nls.json
  */
@@ -58,7 +60,7 @@ namespace TreeItemFactory {
         if (ConnectionManager.instance.connections.length === 0) {
             return [{
                 label: "No connections (Click to connect)",
-                iconPath: Resources.getIconPaths(Resources.Icons.Microclimate),
+                iconPath: Resources.getIconPaths(Resources.Icons.Logo),
                 contextValue: buildContextValue([TreeContextValues.NO_CONNECTIONS]),
                 command: {
                     command: Commands.NEW_DEFAULT_CONNECTION,
@@ -91,7 +93,7 @@ namespace TreeItemFactory {
             }
             else {
                 return [{
-                    label: Translator.t(StringNamespaces.TREEVIEW, "noProjectsLabel"),
+                    label: Translator.t(STRING_NS, "noProjectsLabel"),
                     iconPath: Resources.getIconPaths(Resources.Icons.Error),
                     tooltip: "Click here to create a new project",
                     contextValue: buildContextValue([TreeContextValues.NO_PROJECTS]),
@@ -105,7 +107,7 @@ namespace TreeItemFactory {
         }
         else {
             return [{
-                label: Translator.t(StringNamespaces.TREEVIEW, "disconnectedConnectionLabel"),
+                label: Translator.t(STRING_NS, "disconnectedConnectionLabel"),
                 iconPath: Resources.getIconPaths(Resources.Icons.Disconnected),
                 // Consider putting refresh as the command on this item
             }];
@@ -114,19 +116,22 @@ namespace TreeItemFactory {
 }
 
 function getConnectionTI(connection: Connection): vscode.TreeItem {
+    // always local for now
+    const connectionType: string =  Translator.t(STRING_NS, "connectionTypeLocal");
+
     return {
-        label: Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: connection.mcUri }),
+        label: Translator.t(STRING_NS, "connectionLabel", { type: connectionType }),
         collapsibleState: vscode.TreeItemCollapsibleState.Expanded,
         tooltip: `${connection.versionStr} • ${connection.workspacePath.fsPath}`,
         contextValue: getConnectionContext(connection),
-        iconPath: Resources.getIconPaths(Resources.Icons.Microclimate),
-        // command:
+        iconPath: Resources.getIconPaths(Resources.Icons.Logo),
+        // command:Logo
     };
 }
 
 function getProjectTI(project: Project): vscode.TreeItem {
     return {
-        label: Translator.t(StringNamespaces.TREEVIEW, "projectLabel", { projectName: project.name, state: project.state.toString() }),
+        label: Translator.t(STRING_NS, "projectLabel", { projectName: project.name, state: project.state.toString() }),
         collapsibleState: vscode.TreeItemCollapsibleState.None,
         tooltip: project.state.toString(),
         contextValue: getProjectContext(project),

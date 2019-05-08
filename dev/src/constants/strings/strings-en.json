@@ -1,9 +1,9 @@
 {
-    "microclimateName": "Microclimate",
-    "activeMsg": "Microclimate Tools for VSCode are active!",
+    "productName": "Codewind",
+    "activeMsg": "Codewind Tools for VSCode are active!",
     "connectionAlreadyExists": "Connection already exists at {{- uri }}.",
-    "failedToReconnect": "Couldn't reconnect to Microclimate at {{- uri }}. Try re-creating the connection.",
-    "versionChanged": "Microclimate at {{- uri }} was previously version {{ oldVersion }}, but is now {{ newVersion }}.",
+    "failedToReconnect": "Couldn't reconnect to Codewind at {{- uri }}. Try re-creating the connection.",
+    "versionChanged": "Codewind at {{- uri }} was previously version {{ oldVersion }}, but is now {{ newVersion }}.",
     "errorSavingConnections": "Error saving connections: {{- err }}.",
 
     "statesSeparator": " or ",
@@ -13,28 +13,28 @@
     "command": {
         "noContainerForShell": "{{ projectName }} does not have an application container running. Wait until the project is Running.",
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
-        "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Microclimate?",
+        "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Codewind?",
         "confirmDeleteBtn": "Delete project",
-        "refreshingConnection": "Refreshed Microclimate at {{- uri }}.",
+        "refreshingConnection": "Refreshed Codewind at {{- uri }}.",
         "projectAlreadyBuilding": "{{ projectName }} is already building. Build request cancelled.",
         "explicitBuildNotNecessary": "{{ projectName }} has auto-build enabled. There is no need to request a build.",
         "seeProblemsView": "See the Problems view for details.",
         "generateFilesBtn": "Generate",
         "validate": "Validate",
-        "removedConnection": "Removed Microclimate connection at {{- uri }}."
+        "removedConnection": "Removed Codewind connection at {{- uri }}."
     },
 
     "cmdResourcePrompt": {
         "noProjToRunOn":
-            "There is no Microclimate project to run this command on.",
+            "There is no Codewind project to run this command on.",
         "noProjToRunOnWithStates":
-            "There is no {{ states }} Microclimate project to run this command on.",
+            "There is no {{ states }} Codewind project to run this command on.",
         "noConnToRunOn":
-            "There is no Microclimate connection to run this command on.",
+            "There is no Codewind connection to run this command on.",
         "noConnOrProjToRunOn":
-            "There is no Microclimate connection or project to run this command on.",
+            "There is no Codewind connection or project to run this command on.",
         "noConnOrProjToRunOnWithStates":
-            "There is no Microclimate connection, or {{ states }} project, to run this command on."
+            "There is no Codewind connection, or {{ states }} project, to run this command on."
     },
 
     "debug": {
@@ -52,36 +52,32 @@
     },
 
     "logs": {
-        "waitingForAppLogs": "Waiting for Microclimate to send application logs for {{ projectName }}...",
-        "waitingForBuildLogs": "Fetching build logs for {{ projectName }}...",
-        "stopUpdatingBtn": "Stop updating",
-        "errUpdatingBuildLog": "Error updating build log: {{- err }}.",
-        "logName": "{{ projectName }} - {{ logType }} Log",
-        "logNotUpdatingNoConnection": "******** The connection to Microclimate was lost, so this {{ logType }} log is no longer updating.",
-        "logNotUpdatingOther": "******** This {{ logType }} log is no longer updating.",
-        "noLogsToHide": "There are no Microclimate logs open."
+        "waitingForLogs": "Waiting for Codewind to send logs...",
+        "noLongerUpdating": "This log is no longer updating: {{ reason }}.",
+        "notUpdatingReasonDisconnect": "Codewind disconnected",
+        "notUpdatingReasonDisabled": "the project has been disabled. The log will be recreated when there is new output"
     },
 
     "newConnectionCmd": {
-        "enterMicroclimateHost": "Enter the hostname or IP for the Microclimate instance you want to connect to.",
-        "enterMicroclimatePort": "Enter the Port for the local Microclimate instance you want to connect to.",
+        "enterHost": "Enter the hostname or IP for the Codewind instance you want to connect to.",
+        "enterPort": "Enter the Port for the local Codewind instance you want to connect to.",
         "enterDifferentPortBtn": "Enter a different port",
         "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be a positive integer less than 65536.",
         "connectionSucceeded": "New connection to {{- connectionUri }} succeeded. Workspace path is: {{- workspacePath }}.",
         "openWorkspaceBtn": "Open workspace",
         "editConnectionBtn": "Edit",
         "retryConnectionBtn": "Retry",
-        "connectFailed": "Connecting to Microclimate at {{- uri }} failed.",
+        "connectFailed": "Connecting to Codewind at {{- uri }} failed.",
 
-        "versionNotProvided": "Your version of Microclimate is not supported. At least {{ requiredVersion }} is required.",
-        "versionNotRecognized": "Could not determine your Microclimate version. The server is running version \"{{ rawVersion }}\". At least {{ requiredVersion }} is required.",
-        "versionTooOld": "You are running Microclimate version {{ rawVersion }}, but at least {{ requiredVersion }} is required."
+        "versionNotProvided": "Your version of Codewind is not supported. At least {{ requiredVersion }} is required.",
+        "versionNotRecognized": "Could not determine your Codewind version. The server is running version \"{{ rawVersion }}\". At least {{ requiredVersion }} is required.",
+        "versionTooOld": "You are running Codewind version {{ rawVersion }}, but at least {{ requiredVersion }} is required."
     },
 
     "project": {
         "quickPickLabel": "{{ projectName }} ({{ projectType }} project)",
         "quickPickNotRunning": "[Not running]",
-        "onDeletion": "{{ projectName }} was deleted in Microclimate.",
+        "onDeletion": "{{ projectName }} was deleted in Codewind.",
 
         "alreadyRestarting": "Restart cancelled: {{ projectName }} is already restarting.",
         "restartingStatusMsg": "Restarting {{ projectName }} into {{ startMode }} mode",
@@ -92,14 +88,14 @@
         "restartFailureWithReason": "Failed to restart {{ projectName }} in {{ startMode }} mode: {{ reason }}.",
         "restartFailedReasonDebugFailure": "attaching the debugger failed. Try attaching the debugger again",
         "restartFailedReasonTimeout": "failed to restart within {{ timeoutS }} seconds",
-        "restartFailedReasonDisconnect": "Microclimate disconnected",
+        "restartFailedReasonDisconnect": "Codewind disconnected",
         "restartFailedReasonDisabled": "The project was disabled"
     },
 
     "openInBrowserCmd": {
         "canOnlyOpenStartedProjects": "You can only open projects that are Started in the browser.",
         "failedDetermineAppUrl": "Could not determine application URL for {{ projectName }}.",
-        "cantOpenDisconnected": "This connection is Disconnected. You cannot open Microclimate if it is not running."
+        "cantOpenDisconnected": "This connection is Disconnected. You cannot open Codewind if it is not running."
     },
 
     "openLogCmd": {
@@ -123,9 +119,10 @@
     },
 
     "treeView": {
-        "noConnectionsLabel": "No Microclimate connections",
-        "noConnectionsTooltip": "Click to create a new Microclimate connection",
-        "connectionLabel": "Microclimate @ {{- uri }}",
+        "noConnectionsLabel": "No Codewind connections",
+        "noConnectionsTooltip": "Click to create a new Codewind connection",
+        "connectionLabel": "Codewind ({{ type }})",
+        "connectionTypeLocal": "Local",
         "noProjectsLabel": "No projects (Click to create)",
         "disconnectedConnectionLabel": "Disconnected",
         "projectLabel": "{{ projectName }} {{- state }}"

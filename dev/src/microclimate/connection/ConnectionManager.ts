@@ -135,7 +135,7 @@ export default class ConnectionManager implements vscode.Disposable {
             return true;
         }
         else {
-            Log.d("Microclimate instance changed on reconnect!");
+            Log.d("Instance changed on reconnect!");
             await this.removeConnection(connection);
 
             // will also add the new Connection to this ConnectionManager

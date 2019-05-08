@@ -36,22 +36,6 @@
     },
     "icon": "res/img/microclimate.png",
     "contributes": {
-        "configuration": {
-            "type": "object",
-            "title": "Microclimate Tools",
-            "properties": {
-                "microclimate.openLogsOnChange.app": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "%settingDesc_showLogOnChange_app%"
-                },
-                "microclimate.openLogsOnChange.build": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "%settingDesc_showLogOnChange_build%"
-                }
-            }
-        },
         "views": {
             "explorer": [
                 {
@@ -238,11 +222,6 @@
                     "command": "%cmdID_newDefaultConn%",
                     "when": "%isNoConnections%",
                     "group": "inline"
-                },
-                {
-                    "command": "%cmdID_openInBrowser%",
-                    "when": "%isActiveConnection%",
-                    "group": "ext.mc.conn.a@0"
                 },
                 {
                     "command": "%cmdID_newMCProject%",

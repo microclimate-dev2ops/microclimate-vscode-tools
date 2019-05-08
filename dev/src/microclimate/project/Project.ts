@@ -24,6 +24,7 @@ import ProjectType from "./ProjectType";
 import ProjectPendingRestart from "./ProjectPendingRestart";
 import Connection from "../connection/Connection";
 import SocketEvents from "../connection/SocketEvents";
+import Validator from "./Validator";
 
 const STRING_NS = StringNamespaces.PROJECT;
 
@@ -56,7 +57,7 @@ export default class Project implements vscode.QuickPickItem {
     private _lastImgBuild: Date;
 
     public static readonly diagnostics: vscode.DiagnosticCollection
-        = vscode.languages.createDiagnosticCollection("Microclimate");
+        = vscode.languages.createDiagnosticCollection(Validator.DIAGNOSTIC_COLLECTION_NAME);
 
     // QuickPickItem fields
     public readonly label: string;

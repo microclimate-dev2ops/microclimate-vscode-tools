@@ -24,7 +24,7 @@ export interface IMCProjectType {
 }
 
 /**
- * Functions to create or import new user projects into Microclimate
+ * Functions to create or import new user projects into Codewind
  */
 namespace ProjectCreator {
 

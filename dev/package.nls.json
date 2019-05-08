@@ -1,43 +1,34 @@
 {
-    "displayName": "Microclimate Developer Tools for VS Code",
-    "description": "Develop your Microclimate projects from within the comfort of your IDE.",
+    "displayName": "Codewind Developer Tools for VS Code",
+    "description": "Develop your Codewind projects from within the comfort of your IDE.",
 
     "// Items starting with cmdID or viewID are not exposed to user": "",
 
-    "viewName": "Microclimate",
+    "viewName": "Codewind",
     "viewID": "ext.mc.mcProjectExplorer",
 
-    "commandCategory": "Microclimate",
+    "commandCategory": "Codewind",
 
     "cmdID_newConnection": "ext.mc.newConnection",
     "cmdTitle_newConnection": "New Microclimate Connection",
-    "cmdDescr_newConnection": "Connect to a Microclimate instance",
 
     "cmdID_newDefaultConn": "ext.mc.newDefaultConnection",
     "cmdTitle_newDefaultConn": "New Default Local Microclimate Connection",
-    "cmdDescr_newDefaultConn": "Connect to Microclimate at the default local URL http://localhost:9090",
 
     "cmdID_removeConn": "ext.mc.removeConnection",
     "cmdTitle_removeConn": "Remove Connection",
-    "cmdDescr_removeConn": "Remove a Microclimate connection",
 
     "cmdID_refreshConnection": "ext.mc.refreshConnection",
     "cmdTitle_refreshConnection": "Refresh Connection",
-    "cmdDescr_refreshConnection": "Refresh a Microclimate connection",
 
     "cmdID_newMCProject": "ext.mc.createMCProject",
     "cmdTitle_newMCProject": "Create Project",
 
-    "cmdID_importMCProject": "ext.mc.importMCProject",
-    "cmdTitle_importMCProject": "Open Import Project Page",
-
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open Folder as Workspace",
-    "cmdDescr_openFolder": "Open a folder as your VSCode workspace",
 
     "cmdID_openInBrowser": "ext.mc.openInBrowser",
-    "cmdTitle_openInBrowser": "Open in Browser",
-    "cmdDescr_openInBrowser": "Open a Microclimate instance or project in a browser",
+    "cmdTitle_openInBrowser": "Open App",
 
     "cmdID_attachDebugger": "ext.mc.attachDebugger",
     "cmdTitle_attachDebugger": "Attach Debugger",

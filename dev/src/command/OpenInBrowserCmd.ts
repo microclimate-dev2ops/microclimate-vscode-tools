@@ -12,8 +12,7 @@
 import * as vscode from "vscode";
 
 import Project from "../microclimate/project/Project";
-import Connection from "../microclimate/connection/Connection";
-import { promptForResource } from "./CommandUtil";
+import { promptForProject } from "./CommandUtil";
 import { ProjectState } from "../microclimate/project/ProjectState";
 import { Log } from "../Logger";
 import Commands from "../constants/Commands";
@@ -22,46 +21,36 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 
 const STRING_NS = StringNamespaces.CMD_OPEN_IN_BROWSER;
 
-export default async function openInBrowserCmd(resource: Project | Connection): Promise<void> {
+export default async function openInBrowserCmd(project: Project): Promise<void> {
     Log.d("OpenInBrowserCmd invoked");
-    if (resource == null) {
-        const selected = await promptForResource(true, ProjectState.AppStates.STARTED);
+    if (project == null) {
+        const selected = await promptForProject(...ProjectState.getStartedStates());
         if (selected == null) {
             Log.d("User cancelled prompt for resource");
             // user cancelled
             return;
         }
-        resource = selected;
+        project = selected;
     }
 
     let uriToOpen: vscode.Uri;
     // This will open the project or Microclimate in the external web browser.
-    if (resource instanceof Project) {
-        const project: Project = resource as Project;
-        if (!project.state.isStarted) {
-            vscode.window.showWarningMessage(Translator.t(STRING_NS, "canOnlyOpenStartedProjects"));
-            return;
-        }
-        else if (project.appBaseUrl == null) {
-            Log.e("Project is started but has no appBaseUrl: " + project.name);
-            vscode.window.showErrorMessage(Translator.t(STRING_NS, "failedDetermineAppUrl", { projectName: project.name }));
-            return;
-        }
-        uriToOpen = project.appBaseUrl;
-    }
-    else if (resource instanceof Connection) {
-        const conn: Connection = resource as Connection;
-        if (!conn.isConnected) {
-            vscode.window.showErrorMessage(Translator.t(STRING_NS, "cantOpenDisconnected"));
-            return;
-        }
-        uriToOpen = conn.mcUri;
-    }
-    else {
+    if (!(project instanceof Project)) {
         // should never happen
-        Log.e(`Don't know how to open object of type ${typeof(resource)} in browser`);
+        Log.e(`Don't know how to open object of type ${typeof(project)} in browser`);
         return;
     }
+    if (!project.state.isStarted) {
+        vscode.window.showWarningMessage(Translator.t(STRING_NS, "canOnlyOpenStartedProjects"));
+        return;
+    }
+    else if (project.appBaseUrl == null) {
+        Log.e("Project is started but has no appBaseUrl: " + project.name);
+        vscode.window.showErrorMessage(Translator.t(STRING_NS, "failedDetermineAppUrl", { projectName: project.name }));
+        return;
+    }
+    uriToOpen = project.appBaseUrl;
+
 
     Log.i("Open in browser: " + uriToOpen);
     // vscode.window.showInformationMessage("Opening " + uriToOpen);

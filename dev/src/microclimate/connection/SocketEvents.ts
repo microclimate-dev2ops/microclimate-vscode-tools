@@ -75,7 +75,7 @@ namespace SocketEvents {
     export type ILogsListChangedEvent = { projectID: string } & ILogResponse;
 
     /**
-     * Socket events we listen for from Microclimate Portal
+     * Socket events we listen for from Portal
      * See MCSocket
      */
     export enum Types {
@@ -94,7 +94,7 @@ namespace SocketEvents {
     }
 
     /**
-     * Property keys we check in Microclimate socket events
+     * Property keys we check in socket events
      */
     export enum Keys {
         APP_STATE = "appStatus",
