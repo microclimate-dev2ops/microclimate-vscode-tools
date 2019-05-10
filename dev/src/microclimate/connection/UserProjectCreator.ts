@@ -19,7 +19,7 @@ import EndpointUtil, { MCEndpoints } from "../../constants/Endpoints";
 export interface IMCProjectType {
     label: string;
     description: string;
-    extension?: string;
+    extension: string;
     language: string;
 }
 
@@ -34,11 +34,8 @@ namespace ProjectCreator {
 
         const projectTypeQpis: Array<(vscode.QuickPickItem & IMCProjectType)> = projectTypes.map((type) => {
             return {
-                label: type.label,
-                description: type.description,
-                // detail: type.extension,
+                ...type,
                 detail: type.language,
-                language: type.language,
                 extension: type.extension,
             };
         });
@@ -65,9 +62,8 @@ namespace ProjectCreator {
     export async function issueCreateReq(connection: Connection, projectTypeSelected: IMCProjectType, projectName: string): Promise<void> {
         const payload = {
             language: projectTypeSelected.language,
-            // metrics: true       // portal-ui sends this, why?
             name: projectName,
-            extension: projectTypeSelected.extension    // note: null for nodejs right now
+            extension: projectTypeSelected.extension
         };
 
         const creationRes = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECTS), {

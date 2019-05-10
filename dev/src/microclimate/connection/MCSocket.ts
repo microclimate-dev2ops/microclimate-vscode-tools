@@ -15,7 +15,6 @@ import * as io from "socket.io-client";
 import Connection from "./Connection";
 import Project from "../project/Project";
 import Log from "../../Logger";
-import Validator from "../project/Validator";
 import SocketEvents from "./SocketEvents";
 
 /**
@@ -67,7 +66,7 @@ export default class MCSocket implements vscode.Disposable {
             .on(SocketEvents.Types.PROJECT_DELETION,        this.onProjectDeleted)
             .on(SocketEvents.Types.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
 
-            .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
+            // .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
             .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged)
             .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate)
             .on(SocketEvents.Types.LOGS_LIST_CHANGED,       this.onLogsListChanged)
@@ -166,21 +165,21 @@ export default class MCSocket implements vscode.Disposable {
         project.logManager.onNewLogs(payload);
     }
 
-    private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
-        : Promise<void> => {
+    // private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
+    //     : Promise<void> => {
 
-        const project = await this.getProject(payload);
-        if (project == null) {
-            return;
-        }
+    //     const project = await this.getProject(payload);
+    //     if (project == null) {
+    //         return;
+    //     }
 
-        if (payload.validationResults != null) {
-            Validator.validate(project, payload.validationResults);
-        }
-        else {
-            Log.e("Microclimate didn't send result with validation event");
-        }
-    }
+    //     if (payload.validationResults != null) {
+    //         Validator.validate(project, payload.validationResults);
+    //     }
+    //     else {
+    //         Log.e("Microclimate didn't send result with validation event");
+    //     }
+    // }
 
     private readonly onProjectSettingsChanged = async (payload: SocketEvents.IProjectSettingsEvent): Promise<void> => {
         const project = await this.getProject(payload);

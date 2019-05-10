@@ -17,7 +17,7 @@ namespace TestConfig {
         projectType: ProjectType;
         // The name of this project type's extension in Microclimate.
         // Undefined for node
-        templateID: string | undefined;
+        templateID: string;
         // We want to tests projects that can't be restarted too,
         // so tell the test whether or not the restart should succeed here.
         canRestart: boolean;
@@ -30,7 +30,7 @@ namespace TestConfig {
         {
             projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
             canRestart: true,
-            templateID: undefined,
+            templateID: "nodeExpressTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
@@ -59,7 +59,7 @@ namespace TestConfig {
         }
     ];
 
-    export function getTemplateID(projectType: ProjectType): string | undefined {
+    export function getTemplateID(projectType: ProjectType): string {
         const found = testableProjectTypes.find((tpt) => tpt.projectType === projectType);
         if (!found) {
             // The templates we use for tests are expected to always exist in Microclimate
