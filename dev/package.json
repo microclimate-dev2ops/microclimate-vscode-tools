@@ -46,15 +46,6 @@
         },
         "commands": [
             {
-                "command": "%cmdID_newConnection%",
-                "title": "%cmdTitle_newConnection%",
-                "category": "%commandCategory%",
-                "icon": {
-                    "light": "res/img/light/connect.svg",
-                    "dark": "res/img/dark/connect.svg"
-                }
-            },
-            {
                 "command": "%cmdID_newDefaultConn%",
                 "title": "%cmdTitle_newDefaultConn%",
                 "category": "%commandCategory%",
@@ -211,16 +202,8 @@
             "view/title": [],
             "view/item/context": [
                 {
-                    "command": "%cmdID_newConnection%",
-                    "when": "%isInViewWithNothingSelected%"
-                },
-                {
                     "command": "%cmdID_newDefaultConn%",
                     "when": "%isInViewWithNothingSelected%"
-                },
-                {
-                    "command": "%cmdID_newConnection%",
-                    "when": "%isNoConnections%"
                 },
                 {
                     "command": "%cmdID_newDefaultConn%",

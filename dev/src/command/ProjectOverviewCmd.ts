@@ -163,7 +163,12 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
             userFriendlySetting = "application port";
             settingKey = "internalAppPort";
             currentValue = project.ports.internalPort ? project.ports.internalPort.toString() : undefined;
-            break;
+
+            // TODO !
+            // When you remove this, also fix the isPort condition below
+            vscode.window.showErrorMessage("Editing application port is not yet supported.");
+            return;
+            // break;
         }
         case ProjectOverview.Editable.DEBUG_PORT: {
             userFriendlySetting = "debug port";
@@ -183,7 +188,9 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
         valueSelection: undefined,
     };
 
-    const isPort: boolean = type === ProjectOverview.Editable.APP_PORT || type === ProjectOverview.Editable.DEBUG_PORT;
+    // TODO
+    // const isPort: boolean = type === ProjectOverview.Editable.APP_PORT || type === ProjectOverview.Editable.DEBUG_PORT;
+    const isPort: boolean = type === ProjectOverview.Editable.DEBUG_PORT;
 
     if (isPort) {
         options.validateInput = (inputToValidate: string): OptionalString => {

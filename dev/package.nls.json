@@ -9,11 +9,8 @@
 
     "commandCategory": "Codewind",
 
-    "cmdID_newConnection": "ext.mc.newConnection",
-    "cmdTitle_newConnection": "New Microclimate Connection",
-
     "cmdID_newDefaultConn": "ext.mc.newDefaultConnection",
-    "cmdTitle_newDefaultConn": "New Default Local Microclimate Connection",
+    "cmdTitle_newDefaultConn": "New Local Codewind Connection",
 
     "cmdID_removeConn": "ext.mc.removeConnection",
     "cmdTitle_removeConn": "Remove Connection",

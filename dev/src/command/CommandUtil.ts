@@ -46,7 +46,6 @@ export function createCommands(): vscode.Disposable[] {
     // - undefined (if run from command palette)
     // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
-        vscode.commands.registerCommand(Commands.NEW_CONNECTION, () => NewConnectionCmd.newConnectionCmd()),
         vscode.commands.registerCommand(Commands.NEW_DEFAULT_CONNECTION, () => NewConnectionCmd.newConnectionCmd(NewConnectionCmd.DEFAULT_CONNINFO)),
 
         vscode.commands.registerCommand(Commands.REMOVE_CONNECTION,     (selection) => removeConnectionCmd(selection)),
