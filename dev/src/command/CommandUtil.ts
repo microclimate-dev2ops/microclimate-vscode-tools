@@ -80,8 +80,8 @@ export function createCommands(): vscode.Disposable[] {
 
         vscode.commands.registerCommand(Commands.PROJECT_OVERVIEW,  (selection) => projectOverviewCmd(selection)),
 
-        vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR,  (selection) => openAppMonitorCmd(selection)),
-        vscode.commands.registerCommand(Commands.OPEN_PERF_DASHBOARD,  (selection) => openPerformanceDashboard(selection)),
+        vscode.commands.registerCommand(Commands.OPEN_APP_MONITOR,      (selection) => openAppMonitorCmd(selection)),
+        vscode.commands.registerCommand(Commands.OPEN_PERF_DASHBOARD,   (selection) => openPerformanceDashboard(selection)),
     ];
 }
 

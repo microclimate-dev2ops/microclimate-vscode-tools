@@ -18,11 +18,6 @@ import Commands from "../constants/Commands";
 import * as MCUtil from "../MCUtil";
 import EndpointUtil from "../constants/Endpoints";
 
-const langToPathMap = new Map<string, string>();
-langToPathMap.set("java", "javametrics-dash");
-langToPathMap.set("nodejs", "appmetrics-dash");
-langToPathMap.set("swift", "swiftmetrics-dash");
-
 export default async function openPerformanceDashboard(project: Project): Promise<void> {
     if (project == null) {
         const selected = await promptForProject();
