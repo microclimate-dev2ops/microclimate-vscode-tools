@@ -30,7 +30,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
     public readonly socket: MCSocket;
 
     private hasConnected: boolean = false;
-    // Is this connection CURRENTLY connected to its Microclimate instance
+    // Is this connection CURRENTLY connected
     private _isConnected: boolean = false;
 
     private _projects: Project[] = [];
@@ -146,7 +146,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
         this._projects = [];
 
         for (const projectInfo of result) {
-            // This is a hard-coded exception for a Microclimate bug, where projects get stuck in the Deleting or Validating state
+            // This is a hard-coded exception for a backend bug where projects get stuck in the Deleting or Validating state
             // and don't go away until they're deleted from the workspace and MC is restarted.
             if (projectInfo.action === "deleting" || projectInfo.action === "validating") {     // non-nls
                 Log.e("Project is in a bad state and won't be displayed:", projectInfo);
@@ -193,7 +193,10 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
             this._projects = [];
         }
         this.needProjectUpdate = true;
-        this.updateProjects();
-        this.onChange();
+        await this.updateProjects();
+        if (wipeProjects) {
+            // refresh whole tree
+            this.onChange();
+        }
     }
 }

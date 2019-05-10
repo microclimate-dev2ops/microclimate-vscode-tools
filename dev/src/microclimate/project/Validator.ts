@@ -21,6 +21,8 @@ import SocketEvents from "../connection/SocketEvents";
 
 namespace Validator {
 
+    export const DIAGNOSTIC_COLLECTION_NAME = "Codewind";
+
     export async function validate(project: Project, validationResult: SocketEvents.IValidationResult[]): Promise<void> {
 
         Log.d(`Validating ${project.name}`);
@@ -53,7 +55,7 @@ namespace Validator {
             const sev = validationProblem.severity === "error" ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning;       // non-nls
 
             const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(new vscode.Range(0, 0, 0, 0), diagnosticMsg, sev);
-            diagnostic.source = Translator.t(StringNamespaces.DEFAULT, "microclimateName");
+            diagnostic.source = DIAGNOSTIC_COLLECTION_NAME;
             newDiagnostics.push(diagnostic);
 
             const seeProblemsViewMsg = Translator.t(StringNamespaces.CMD_MISC, "seeProblemsView");

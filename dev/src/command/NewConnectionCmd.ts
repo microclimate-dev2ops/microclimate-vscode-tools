@@ -53,26 +53,13 @@ export async function newConnectionCmd(connInfo?: MCUtil.IConnectionInfo): Promi
 async function getConnectInfo(): Promise<MCUtil.IConnectionInfo | undefined> {
     Log.d("Prompting for connect info");
 
-    // Only localhost is permitted. Uncomment this to (start to) support other hosts
-    /*
-    const inputOpts: vscode.InputBoxOptions = {
-        prompt: Translator.t(STRING_NS, "enterMicroclimateHost"),
-        value: DEFAULT_CONNINFO.host,
-    };
-    const hostname: string | undefined = await vscode.window.showInputBox(inputOpts);
-
-    if (hostname == null) {
-        // user cancelled
-        return;
-    }*/
-
     const host = DEFAULT_CONNINFO.host;
 
     let tryAgain = true;
     let port: number | undefined;
     while (tryAgain) {
         const portStr = await vscode.window.showInputBox( {
-            prompt: Translator.t(STRING_NS, "enterMicroclimatePort"),
+            prompt: Translator.t(STRING_NS, "enterPort"),
             value: DEFAULT_CONNINFO.port.toString()
         });
 
@@ -148,9 +135,9 @@ export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo, silent:
 
     try {
         const uri = MCUtil.buildMCUrl(connInfo);
-        const microclimateData = await MCEnvironment.getEnvData(uri);
+        const envData = await MCEnvironment.getEnvData(uri);
         // Connected successfully, now validate it's a good instance
-        return await onSuccessfulConnection(uri, connInfo.host, microclimateData);
+        return await onSuccessfulConnection(uri, connInfo.host, envData);
     }
     catch (err) {
         const errMsg = err.message || err.toString();
@@ -181,7 +168,7 @@ export async function tryAddConnection(connInfo: MCUtil.IConnectionInfo, silent:
  * but we have to validate now that it's a new enough version.
  */
 export async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: MCEnvironment.IMCEnvData): Promise<Connection> {
-    Log.i("Microclimate ENV data:", mcEnvData);
+    Log.i("ENV data:", mcEnvData);
 
     const rawVersion: string = mcEnvData.microclimate_version;
     const rawWorkspace: string = mcEnvData.workspace_location;
@@ -192,12 +179,12 @@ export async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mc
     // const rawUser: string = mcEnvData.user_string || "";
     const rawSocketNS: string = mcEnvData.socket_namespace || "";
 
-    Log.d("rawVersion from Microclimate is", rawVersion);
-    Log.d("rawWorkspace from Microclimate is", rawWorkspace);
-    Log.d("rawPlatform from Microclimate is", rawPlatform);
-    Log.d("rawSocketNS from Microclimate is", rawSocketNS);
+    Log.d("rawVersion is", rawVersion);
+    Log.d("rawWorkspace is", rawWorkspace);
+    Log.d("rawPlatform is", rawPlatform);
+    Log.d("rawSocketNS is", rawSocketNS);
     if (rawVersion == null || rawWorkspace == null) {
-        Log.e("Microclimate environment did not provide either version or workspace. Data provided is:", mcEnvData);
+        Log.e("Environment did not provide either version or workspace. Data provided is:", mcEnvData);
         throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
     }
 

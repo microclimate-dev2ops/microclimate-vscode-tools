@@ -9,6 +9,10 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 import * as vscode from "vscode";
+import Translator from "../../../constants/strings/translator";
+import StringNamespaces from "../../../constants/strings/StringNamespaces";
+
+const STRING_NS = StringNamespaces.LOGS;
 
 export default class MCLog implements vscode.QuickPickItem {
 
@@ -70,19 +74,21 @@ export default class MCLog implements vscode.QuickPickItem {
             // Log.d("Creating output for log " + this.displayName);
             this.output = vscode.window.createOutputChannel(this.displayName);
             this.output.show();
-            this.output.appendLine("Waiting for Microclimate to send logs...");
+            this.output.appendLine(Translator.t(STRING_NS, "waitingForLogs"));
         }
     }
 
     public onDisconnectOrDisable(disconnect: boolean): void {
         if (this.output) {
-            let msg = "*".repeat(8) + " This log is no longer updating: ";
+            let notUpdatingReason: string;
             if (disconnect) {
-                msg += "Microclimate disconnected.";
+                notUpdatingReason = Translator.t(STRING_NS, "notUpdatingReasonDisconnect");
             }
             else {
-                msg += "the project has been disabled. The log will be recreated when there is new output.";
+                notUpdatingReason = Translator.t(STRING_NS, "notUpdatingReasonDisabled");
             }
+            const msg = "*".repeat(8) + Translator.t(STRING_NS, "logNoLongerUpdating", { reason: notUpdatingReason });
+
             this.output.appendLine(msg);
         }
     }

@@ -15,7 +15,10 @@ import * as io from "socket.io-client";
 import Connection from "./Connection";
 import Project from "../project/Project";
 import Log from "../../Logger";
+<<<<<<< HEAD
 // import Validator from "../project/Validator";
+=======
+>>>>>>> next
 import SocketEvents from "./SocketEvents";
 
 interface ICreationEvent
@@ -61,9 +64,8 @@ export default class MCSocket implements vscode.Disposable {
             .on("connect",      this.connection.onConnect)      // non-nls
             .on("disconnect",   this.connection.onDisconnect)   // non-nls
 
-            .on(SocketEvents.Types.PROJECT_CREATED,         this.onProjectCreated)
+            // .on(SocketEvents.Types.PROJECT_CREATED,         this.onProjectCreated)
             .on(SocketEvents.Types.PROJECT_BOUND,           this.onProjectCreated)
-            .on("projectCreatedFromTemplate",               this.onProjectCreated)
             .on(SocketEvents.Types.PROJECT_CHANGED,         this.onProjectChanged)
             .on(SocketEvents.Types.PROJECT_STATUS_CHANGED,  this.onProjectStatusChanged)
             .on(SocketEvents.Types.PROJECT_CLOSED,          this.onProjectClosed)
@@ -71,7 +73,7 @@ export default class MCSocket implements vscode.Disposable {
             .on(SocketEvents.Types.PROJECT_DELETION,        this.onProjectDeleted)
             .on(SocketEvents.Types.PROJECT_RESTART_RESULT,  this.onProjectRestarted)
 
-            .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
+            // .on(SocketEvents.Types.PROJECT_VALIDATED,       this.onProjectValidated)
             .on(SocketEvents.Types.PROJECT_SETTING_CHANGED, this.onProjectSettingsChanged)
             .on(SocketEvents.Types.LOG_UPDATE,              this.onLogUpdate)
             .on(SocketEvents.Types.LOGS_LIST_CHANGED,       this.onLogsListChanged)
@@ -179,6 +181,7 @@ export default class MCSocket implements vscode.Disposable {
         project.logManager.onNewLogs(payload);
     }
 
+<<<<<<< HEAD
     private readonly onProjectValidated = async (payload: { projectID: string, validationResult: any })
         : Promise<void> => {
 
@@ -195,6 +198,23 @@ export default class MCSocket implements vscode.Disposable {
         // }
         Log.d("validation event", payload);
     }
+=======
+    // private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
+    //     : Promise<void> => {
+
+    //     const project = await this.getProject(payload);
+    //     if (project == null) {
+    //         return;
+    //     }
+
+    //     if (payload.validationResults != null) {
+    //         Validator.validate(project, payload.validationResults);
+    //     }
+    //     else {
+    //         Log.e("Microclimate didn't send result with validation event");
+    //     }
+    // }
+>>>>>>> next
 
     private readonly onProjectSettingsChanged = async (payload: SocketEvents.IProjectSettingsEvent): Promise<void> => {
         const project = await this.getProject(payload);

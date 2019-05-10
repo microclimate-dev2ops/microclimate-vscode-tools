@@ -77,7 +77,7 @@ export function generateHtml(project: Project): string {
 
         <div id="main">
             <div id="top-section">
-                <img id="mc-icon" width="30px" src="${getIcon(Resources.Icons.Microclimate)}"/>
+                <img id="mc-icon" width="30px" src="${getIcon(Resources.Icons.Logo)}"/>
                 <h2>Project ${project.name}</h2>
                 <input id="build-btn" type="button" value="Build"
                     onclick="${project.state.isEnabled ? `sendMsg('${Messages.BUILD}')` : ""}"
@@ -115,7 +115,7 @@ export function generateHtml(project: Project): string {
                 ${emptyRow}
                 ${buildRow("Exposed App Port", normalize(project.ports.appPort, notRunning))}
                 ${buildRow("Internal App Port",
-                    normalize(project.ports.internalAppPort, notAvailable),
+                    normalize(project.ports.internalPort, notAvailable),
                     undefined,
                     Editable.APP_PORT)}
                 ${buildRow("Application Endpoint",

@@ -25,7 +25,6 @@ import TestUtil from "./TestUtil";
 import Project from "../microclimate/project/Project";
 import SocketTestUtil from "./SocketTestUtil";
 import SocketEvents from "../microclimate/connection/SocketEvents";
-// import Requester from "../microclimate/project/Requester";
 
 describe(`Extended tests`, async function() {
 
@@ -133,7 +132,7 @@ describe(`Extended tests`, async function() {
 
             const diagnostic = diagnostics[newDiagnosticIndex];
             expect(diagnostic, "New diagnostic is missing").to.exist;
-            expect(diagnostic!.source!.toLowerCase(), "Diagnostic did not have the right source").to.equal("microclimate");
+            expect(diagnostic!.source!.toLowerCase(), "Diagnostic did not have the right source").to.equal("codewind");
             validatorWorked = true;
         });
 

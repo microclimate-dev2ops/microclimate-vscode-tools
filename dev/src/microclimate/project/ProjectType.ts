@@ -36,7 +36,7 @@ export class ProjectType {
 
     /**
      *
-     * @param interalType A Microclimate internal project type.
+     * @param interalType A Microclimate/Codewind internal project type.
      */
     private static getType(interalType: string, language: string): ProjectType.Types {
         if (interalType === this.InternalTypes.MICROPROFILE) {

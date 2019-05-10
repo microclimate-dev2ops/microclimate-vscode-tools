@@ -21,19 +21,21 @@ import EndpointUtil, { MCEndpoints } from "../../constants/Endpoints";
 export interface IMCTemplateData {
     label: string;
     description: string;
-    extension?: string;
+    extension: string;
     language: string;
 }
 
-// export interface IProjectCreationResponse {
-//     // status: string;
-//     projectName: string;
-//     // projectID: string;
-//     locOnDisk: string;
-// }
+interface ICreationResponse {
+    status: string;
+    projectPath: string;
+    result: {
+        projectType?: { language: string, buildType: string };
+        error?: string;
+    };
+}
 
 /**
- * Functions to create or import new user projects into Microclimate
+ * Functions to create or import new user projects into Codewind
  */
 namespace UserProjectCreator {
 
@@ -121,11 +123,8 @@ namespace UserProjectCreator {
 
         const projectTypeQpis: Array<(vscode.QuickPickItem & IMCTemplateData)> = templates.map((type) => {
             return {
-                label: type.label,
-                description: type.description,
-                // detail: type.extension,
+                ...type,
                 detail: type.language,
-                language: type.language,
                 extension: type.extension,
             };
         });
@@ -139,18 +138,19 @@ namespace UserProjectCreator {
 
     export async function issueCreateReq(
         connection: Connection, projectTypeSelected: IMCTemplateData, projectName: string, projectLocation: string)
-        : Promise<any> {
+        : Promise<ICreationResponse> {
 
         const payload = {
             language: projectTypeSelected.language,
             name: projectName,
-            id: projectTypeSelected.extension,    // note: null for nodejs right now
+            id: projectTypeSelected.extension,
             path: projectLocation,
+            extension: projectTypeSelected.extension
         };
 
         Log.d("Creation request", payload);
 
-        const creationRes = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.CREATE_FROM_TEMPLATE), {
+        const creationRes = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PROJECTS), {
             json: true,
             body: payload,
         });

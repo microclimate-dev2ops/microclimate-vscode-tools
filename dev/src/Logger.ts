@@ -24,7 +24,7 @@ import Project from "./microclimate/project/Project";
 
 export class Log {
 
-    private static readonly LOG_NAME: string = "microclimate-tools.log";
+    private static readonly LOG_NAME: string = "codewind-tools.log";
 
     private static logFilePath: string;
 
@@ -46,7 +46,7 @@ export class Log {
             // logDir doesn't exist, we must create it
             try {
                 fs.mkdirSync(logDir, mode);
-                console.log("Microclimate Tools created logs dir", logDir);
+                console.log("Codewind Tools created logs dir", logDir);
             }
             catch (err) {
                 // This shouldn't happen, but fall back to console.log if it does.
@@ -57,7 +57,7 @@ export class Log {
 
         const fullPath = path.join(context.logPath, this.LOG_NAME);
         this.logFilePath = fullPath;
-        console.log("Microclimate Tools log file is at " + this.logFilePath);
+        console.log("Codewind Tools log file is at " + this.logFilePath);
         this.i("Logger initialized at " + this.logFilePath);
     }
 

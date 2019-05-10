@@ -74,7 +74,7 @@ namespace Resources {
     }
 
     export enum Icons {
-        Microclimate = "microclimate.svg",
+        Logo = "microclimate.svg",
         Disconnected = "server_error.svg",
         Error = "error.svg",
         Edit = "edit.svg",

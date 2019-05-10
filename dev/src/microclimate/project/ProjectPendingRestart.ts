@@ -121,7 +121,7 @@ export default class ProjectPendingRestart {
         Log.d(`${this.project.name}: pending restart received restart event, success=${success}`);
 
         if (!success) {
-            // The restart failed in Microclimate
+            // The restart failed
             this.fulfill(success, error);
         }
         else {
