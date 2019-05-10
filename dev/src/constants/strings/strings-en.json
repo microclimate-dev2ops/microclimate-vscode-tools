@@ -13,7 +13,7 @@
     "command": {
         "noContainerForShell": "{{ projectName }} does not have an application container running. Wait until the project is Running.",
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
-        "confirmDeleteProjectMsg": "Are you sure you want to delete {{ projectName }} in Codewind? This will not delete the files on disk.",
+        "confirmDeleteProjectMsg": "Are you sure you want to unbind {{ projectName }} in Codewind? This will not delete the files on disk.",
         "confirmDeleteBtn": "Delete project",
         "refreshingConnection": "Refreshed Codewind at {{- uri }}.",
         "projectAlreadyBuilding": "{{ projectName }} is already building. Build request cancelled.",
