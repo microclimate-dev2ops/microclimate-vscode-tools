@@ -32,11 +32,21 @@ export default async function bindProject(connection: Connection): Promise<void>
     }
 
     try {
-        const response = await UserProjectCreator.bindProject(connection);
+        const dirToBindUri = await UserProjectCreator.promptForDir("Bind", connection.workspacePath);
+        if (dirToBindUri == null) {
+            return;
+        }
+        if (!dirToBindUri.fsPath.startsWith(connection.workspacePath.fsPath)) {
+            Log.d(`${dirToBindUri.fsPath} is not under workspace ${connection.workspacePath.fsPath}`);
+            vscode.window.showErrorMessage(
+                `Currently, The project to be bound must be located under the workspace at ${connection.workspacePath.fsPath}`);
+            return;
+        }
+        const response = await UserProjectCreator.validateAndBind(connection, dirToBindUri);
         if (response == null) {
             return;
         }
-        vscode.window.showInformationMessage(`Bind accepted`);
+        vscode.window.showInformationMessage(`Binding ${response.projectPath} as ${response.projectName}`);
     }
     catch (err) {
         const errMsg = "Error binding project: ";

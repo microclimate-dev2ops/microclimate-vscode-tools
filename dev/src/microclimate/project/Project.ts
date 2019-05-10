@@ -82,9 +82,7 @@ export default class Project implements vscode.QuickPickItem {
         this.name = projectInfo.name;
         this.id = projectInfo.projectID;
 
-        // should use projectType not buildType but it's missing sometimes
-        // https://github.ibm.com/dev-ex/portal/issues/520
-        this.type = new ProjectType(projectInfo.buildType, projectInfo.language);
+        this.type = new ProjectType(projectInfo.projectType, projectInfo.language);
 
         this.localPath = vscode.Uri.file(
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, vscode.Uri.file(projectInfo.locOnDisk).fsPath)

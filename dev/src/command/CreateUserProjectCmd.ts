@@ -10,12 +10,14 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
+import * as request from "request-promise-native";
 
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
 import Connection from "../microclimate/connection/Connection";
 import * as MCUtil from "../MCUtil";
-import UserProjectCreator from "../microclimate/connection/UserProjectCreator";
+import UserProjectCreator, { IMCTemplateData } from "../microclimate/connection/UserProjectCreator";
+import EndpointUtil, { MCEndpoints } from "../constants/Endpoints";
 
 /**
  * @param create true for Create page, false for Import page
@@ -32,14 +34,59 @@ export default async function createProject(connection: Connection): Promise<voi
     }
 
     try {
-        await UserProjectCreator.createProject(connection);
-        // TODO remove me!
-        // await UserProjectCreator.issueBindReq(connection, response.projectName, response.fullUserDir, response.template);
-        // vscode.window.showInformationMessage(`Created project ${response.projectName} at ${response.targetDir}`);
+        const template = await promptForTemplate(connection);
+        if (template == null) {
+            return;
+        }
+        const projectName = await promptForProjectName(template);
+        if (projectName == null) {
+            return;
+        }
+        const response = await UserProjectCreator.createProject(connection, template, projectName);
+        if (!response) {
+            // user cancelled
+            return;
+        }
+        vscode.window.showInformationMessage(`Created project ${response.projectName} at ${response.projectPath}`);
     }
     catch (err) {
         const errMsg = "Error creating project from template: ";
         Log.e(errMsg, err);
         vscode.window.showErrorMessage(errMsg + MCUtil.errToString(err));
     }
+}
+
+
+async function promptForTemplate(connection: Connection): Promise<IMCTemplateData | undefined> {
+    const templatesUrl = EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.TEMPLATES);
+    const templates: IMCTemplateData[] = await request.get(templatesUrl, { json: true });
+
+    const projectTypeQpis: Array<(vscode.QuickPickItem & IMCTemplateData)> = templates.map((type) => {
+        return {
+            ...type,
+            detail: type.language,
+            extension: type.extension,
+        };
+    });
+
+    return vscode.window.showQuickPick(projectTypeQpis, {
+        placeHolder: "Select the project type to create",
+        // matchOnDescription: true,
+        matchOnDetail: true,
+    });
+}
+
+async function promptForProjectName(template: IMCTemplateData): Promise<OptionalString> {
+    return await vscode.window.showInputBox({
+        placeHolder: `Enter a name for your new ${template.language} project`,
+        validateInput: validateProjectName,
+    });
+}
+
+function validateProjectName(projectName: string): OptionalString {
+    const matches: boolean = /^[a-z0-9]+$/.test(projectName);
+    if (!matches) {
+        return `Invalid project name "${projectName}". Project name can only contain numbers and lowercase letters.`;
+    }
+    return undefined;
 }

@@ -47,7 +47,7 @@ namespace TestUtil {
             if (workspaceFolders == null) {
                 throw new Error("No active workspace folder!");
             }
-            await UserProjectCreator.issueCreateReq(connection, typeForCreation, projectName, workspaceFolders[0].uri.fsPath);
+            await UserProjectCreator.requestCreate(connection, typeForCreation, projectName, workspaceFolders[0].uri.fsPath);
         }
         catch (err) {
             Log.t("Create project failure!", err);

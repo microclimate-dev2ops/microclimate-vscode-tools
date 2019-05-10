@@ -15,13 +15,7 @@ import * as io from "socket.io-client";
 import Connection from "./Connection";
 import Project from "../project/Project";
 import Log from "../../Logger";
-<<<<<<< HEAD
-// import Validator from "../project/Validator";
-=======
->>>>>>> next
 import SocketEvents from "./SocketEvents";
-
-interface ICreationEvent
 
 /**
  * Receives and reacts to socket events from Portal
@@ -101,7 +95,7 @@ export default class MCSocket implements vscode.Disposable {
             else {
                 const msg = `Project ${newProject.name} has been created`;
                 Log.i(msg);
-                vscode.window.showInformationMessage(msg);
+                // vscode.window.showInformationMessage(msg);
             }
         }
         else {
@@ -181,24 +175,6 @@ export default class MCSocket implements vscode.Disposable {
         project.logManager.onNewLogs(payload);
     }
 
-<<<<<<< HEAD
-    private readonly onProjectValidated = async (payload: { projectID: string, validationResult: any })
-        : Promise<void> => {
-
-        const project = await this.getProject(payload);
-        if (project == null) {
-            return;
-        }
-
-        // if (payload.validationResults != null) {
-        //     Validator.validate(project, payload.validationResults);
-        // }
-        // else {
-        //     Log.e("Microclimate didn't send result with validation event");
-        // }
-        Log.d("validation event", payload);
-    }
-=======
     // private readonly onProjectValidated = async (payload: { projectID: string, validationResults: SocketEvents.IValidationResult[] })
     //     : Promise<void> => {
 
@@ -214,7 +190,6 @@ export default class MCSocket implements vscode.Disposable {
     //         Log.e("Microclimate didn't send result with validation event");
     //     }
     // }
->>>>>>> next
 
     private readonly onProjectSettingsChanged = async (payload: SocketEvents.IProjectSettingsEvent): Promise<void> => {
         const project = await this.getProject(payload);

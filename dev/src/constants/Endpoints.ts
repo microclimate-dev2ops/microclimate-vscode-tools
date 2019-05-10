@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import { Uri } from "vscode";
+// import { Uri } from "vscode";
 import Connection from "../microclimate/connection/Connection";
 
 export type Endpoint = MCEndpoints | ProjectEndpoints;
@@ -23,7 +23,7 @@ export enum MCEndpoints {
     TEMPLATES = "api/v1/templates",
     PROJECTS = "api/v1/projects",
     CREATE_FROM_TEMPLATE = "api/v1/projects/",
-    BIND_VALIDATE = "api/v1/validate",
+    PREBIND_VALIDATE = "api/v1/validate",
     BIND = "api/v1/projects/bind",
 }
 
@@ -58,18 +58,6 @@ export namespace EndpointUtil {
     export function resolveProjectEndpoint(
         connection: Connection, projectID: string, endpoint: ProjectEndpoints): string {
         return connection.mcUri.toString().concat(`${MCEndpoints.PROJECTS}/${projectID}/${endpoint}`);
-    }
-
-    export function resolveAppMonitorUrl(connection: Connection, projectID: string): Uri {
-        return connection.mcUri.with({ query: `project=${projectID}&view=monitor` });
-    }
-
-    const QUERY_NEW_PROJECT:        string = "new-project=true";
-    const QUERY_IMPORT_PROJECT:     string = "import-project=true";
-
-    export function resolveCreateOrImportUrl(connection: Connection, create: boolean): Uri {
-        const query = create ? QUERY_NEW_PROJECT : QUERY_IMPORT_PROJECT;
-        return connection.mcUri.with({ query });
     }
 
     export function getEnablementAction(enable: boolean): ProjectEndpoints {

@@ -10,13 +10,13 @@
  *******************************************************************************/
 
 import * as vscode from "vscode";
-// import * as path from "path";
+import * as path from "path";
 import * as request from "request-promise-native";
 
-// import * as MCUtil from "../../MCUtil";
 import Log from "../../Logger";
 import Connection from "./Connection";
 import EndpointUtil, { MCEndpoints } from "../../constants/Endpoints";
+import SocketEvents from "./SocketEvents";
 
 export interface IMCTemplateData {
     label: string;
@@ -25,13 +25,20 @@ export interface IMCTemplateData {
     language: string;
 }
 
-interface ICreationResponse {
+interface IProjectInitializeInfo {
+    language: string;
+    projectType: string;
+}
+
+interface IInitializationResponse {
     status: string;
+    result: IProjectInitializeInfo | { error: string; };
     projectPath: string;
-    result: {
-        projectType?: { language: string, buildType: string };
-        error?: string;
-    };
+}
+
+interface INewProjectInfo {
+    projectName: string;
+    projectPath: string;
 }
 
 /**
@@ -39,75 +46,66 @@ interface ICreationResponse {
  */
 namespace UserProjectCreator {
 
-    export async function createProject(connection: Connection): Promise<void> {
-        const templateSelected = await promptForTemplate(connection);
-        if (templateSelected == null) {
-            return;
-        }
+    export async function createProject(connection: Connection, template: IMCTemplateData, projectName: string): Promise<INewProjectInfo> {
 
-        const projectName = await promptForProjectName(templateSelected);
-        if (projectName == null) {
-            return;
-        }
-
-        const parentDirUri = await promptForDir(true);
-        if (parentDirUri == null) {
-            return;
-        }
+        // right now projects must be created under the microclimate-workspace so users can't cohoose the parentDir
+        const parentDirUri = connection.workspacePath;
         // abs path on user system under which the project will be created
         const userParentDir = parentDirUri.fsPath;
 
         // caller must handle errors
-        await issueCreateReq(connection, templateSelected, projectName, userParentDir);
+        const creationRes = await requestCreate(connection, template, projectName, userParentDir);
+        if (creationRes.status !== SocketEvents.STATUS_SUCCESS) {
+            // failed
+            const failedResult = (creationRes.result as { error: string });
+            throw new Error(failedResult.error);
+        }
+
+        const result = creationRes.result as IProjectInitializeInfo;
+
+        // create succeeded, now we bind
+        // const bindRes = await requestBind(connection, projectName, creationRes.projectPath, result.language, result.buildType);
+        await requestBind(connection, projectName, creationRes.projectPath, result.language, result.projectType);
+        return { projectName, projectPath: creationRes.projectPath };
     }
 
-    export async function bindProject(connection: Connection): Promise<void> {
-        const dirToBindUri = await promptForDir(false);
-        if (dirToBindUri == null) {
-            return;
-        }
-        const dirToBind = dirToBindUri.fsPath;
-        Log.i("dirToBind", dirToBind);
+    export async function validateAndBind(connection: Connection, pathToBindUri: vscode.Uri): Promise<INewProjectInfo> {
+        const pathToBind = pathToBindUri.fsPath;
+        Log.i("Binding to", pathToBind);
 
-        // here we should be doing /initialize instead
-        const validateResponse = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.BIND_VALIDATE), {
+        const projectName = path.basename(pathToBind);
+        const validateRes = await preBindValidate(connection, pathToBind);
+        if (validateRes.status !== SocketEvents.STATUS_SUCCESS) {
+            // failed
+            const failedResult = (validateRes.result as { error: string });
+            throw new Error(failedResult.error);
+        }
+        const result = validateRes.result as IProjectInitializeInfo;
+        await requestBind(connection, projectName, pathToBind, result.language, result.projectType);
+        return { projectName, projectPath: pathToBind };
+    }
+
+    async function preBindValidate(connection: Connection, pathToBind: string): Promise<IInitializationResponse> {
+        const validateResponse = await request.post(EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.PREBIND_VALIDATE), {
             json: true,
             body: {
-                path: dirToBind,
+                projectPath: pathToBind,
             }
         });
         Log.d("validate response", validateResponse);
-
-        // const template = await promptForTemplate(connection);
-        // if (template == null) {
-        //     return;
-        // }
-        // const projectName = path.basename(dirToBind);
-
-        // const bindRes = issueBindReq(connection, projectName, dirToBind, template);
-
-        // Log.d("Bind response", bindRes);
-        // return bindRes;
+        return validateResponse;
     }
 
-    async function promptForDir(isCreate: boolean): Promise<vscode.Uri | undefined> {
-        let btn: string;
-        let defaultUri: vscode.Uri | undefined;
-        if (isCreate) {
-            btn = "Create";
-        }
-        else {
-            btn = "Bind";
-        }
-        if (vscode.workspace.workspaceFolders != null) {
-            defaultUri = vscode.workspace.workspaceFolders[0].uri;
-        }
+    export async function promptForDir(btnLabel: string, defaultUri: vscode.Uri): Promise<vscode.Uri | undefined> {
+        // if (!defaultUri && vscode.workspace.workspaceFolders != null) {
+        //     defaultUri = vscode.workspace.workspaceFolders[0].uri;
+        // }
 
         const selectedDirs = await vscode.window.showOpenDialog({
             canSelectFiles: false,
             canSelectFolders: true,
             canSelectMany: false,
-            openLabel: btn,
+            openLabel: btnLabel,
             defaultUri
         });
         if (selectedDirs == null) {
@@ -117,35 +115,14 @@ namespace UserProjectCreator {
         return selectedDirs[0];
     }
 
-    async function promptForTemplate(connection: Connection): Promise<IMCTemplateData | undefined> {
-        const templatesUrl = EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.TEMPLATES);
-        const templates: IMCTemplateData[] = await request.get(templatesUrl, { json: true });
-
-        const projectTypeQpis: Array<(vscode.QuickPickItem & IMCTemplateData)> = templates.map((type) => {
-            return {
-                ...type,
-                detail: type.language,
-                extension: type.extension,
-            };
-        });
-
-        return await vscode.window.showQuickPick(projectTypeQpis, {
-            placeHolder: "Select the project type to create",
-            // matchOnDescription: true,
-            matchOnDetail: true,
-        });
-    }
-
-    export async function issueCreateReq(
+    export async function requestCreate(
         connection: Connection, projectTypeSelected: IMCTemplateData, projectName: string, projectLocation: string)
-        : Promise<ICreationResponse> {
+        : Promise<IInitializationResponse> {
 
         const payload = {
-            language: projectTypeSelected.language,
-            name: projectName,
-            id: projectTypeSelected.extension,
-            path: projectLocation,
-            extension: projectTypeSelected.extension
+            projectName: projectName,
+            templateID: projectTypeSelected.extension,
+            parentPath: projectLocation,
         };
 
         Log.d("Creation request", payload);
@@ -159,47 +136,26 @@ namespace UserProjectCreator {
         return creationRes;
     }
 
-    export async function issueBindReq(connection: Connection, projectName: string, dirToBind: string, template: IMCTemplateData)
-        : Promise<any> {
+    async function requestBind(connection: Connection, projectName: string, dirToBind: string, language: string, projectType: string)
+        : Promise<void> {
+
+        const bindReq = {
+            name: projectName,
+            language,
+            projectType,
+            path: dirToBind,
+        };
+
+        Log.d("Bind request", bindReq);
 
         const bindEndpoint = EndpointUtil.resolveMCEndpoint(connection, MCEndpoints.BIND);
-        const bindRes = request.post(bindEndpoint, {
+        const bindRes = await request.post(bindEndpoint, {
             json: true,
-            body: {
-                name: projectName,
-                language: template.language,
-                buildtype: determineBuildType(template),
-                path: dirToBind,
-            }
+            body: bindReq,
         });
         Log.d("Bind response", bindRes);
-        return bindRes;
-    }
 
-    async function promptForProjectName(template: IMCTemplateData): Promise<OptionalString> {
-        return await vscode.window.showInputBox({
-            placeHolder: `Enter a name for your new ${template.description} project`,
-            validateInput: validateProjectName,
-        });
-    }
-
-    function validateProjectName(projectName: string): OptionalString {
-        const matches: boolean = /^[a-z0-9]+$/.test(projectName);
-        if (!matches) {
-            return `Invalid project name "${projectName}". Project name can only contain numbers and lowercase letters.`;
-        }
-        return undefined;
-    }
-
-    // delet this
-    function determineBuildType(template: IMCTemplateData): OptionalString {
-        if (template.extension === "springJavaTemplate") {
-            return "spring";
-        }
-        else if (template.extension === "javaMicroProfileTemplate") {
-            return "liberty";
-        }
-        return undefined;
+        // return bindRes;
     }
 }
 
