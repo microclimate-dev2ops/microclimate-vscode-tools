@@ -34,6 +34,7 @@ enum Commands {
     CONTAINER_SHELL = "ext.mc.containerShell",
     PROJECT_OVERVIEW = "ext.mc.projectOverview",
     OPEN_APP_MONITOR = "ext.mc.openAppMonitor",
+    OPEN_PERF_DASHBOARD = "ext.mc.openPerfDashboard",
 
     MANAGE_LOGS = "ext.mc.manageLogs",
     SHOW_ALL_LOGS = "ext.mc.showAllLogs",

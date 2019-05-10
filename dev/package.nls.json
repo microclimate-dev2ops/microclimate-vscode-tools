@@ -32,19 +32,15 @@
 
     "cmdID_attachDebugger": "ext.mc.attachDebugger",
     "cmdTitle_attachDebugger": "Attach Debugger",
-    "cmdDescr_attachDebugger": "Attach the VSCode debugger to a Microclimate project",
 
     "cmdID_restartRun": "ext.mc.restartProjectRun",
     "cmdTitle_restartRun": "Restart in Run Mode",
-    "cmdDescr_restartRun": "Restart a Microclimate project in Run (normal) mode",
 
     "cmdID_restartDebug": "ext.mc.restartProjectDebug",
     "cmdTitle_restartDebug": "Restart in Debug Mode",
-    "cmdDescr_restartDebug": "Restart a Microclimate project in Debug mode",
 
     "cmdID_requestBuild": "ext.mc.requestBuild",
     "cmdTitle_requestBuild": "Build",
-    "cmdDescr_requestBuild": "Manually start a project build in Microclimate",
 
     "cmdID_manageLogs": "ext.mc.manageLogs",
     "cmdTitle_manageLogs": "Manage logs",
@@ -57,19 +53,15 @@
 
     "cmdID_projectOverview": "ext.mc.projectOverview",
     "cmdTitle_projectOverview": "Open Project Overview",
-    "cmdDescr_projectOverview": "Open a project's Microclimate information",
 
     "cmdID_enable": "ext.mc.enable",
     "cmdTitle_enable": "Enable Project",
-    "cmdDescr_enable": "Enable a project in Microclimate",
 
     "cmdID_disable": "ext.mc.disable",
     "cmdTitle_disable": "Disable Project",
-    "cmdDescr_disable": "Disable a project in Microclimate",
 
     "cmdID_containerShell": "ext.mc.containerShell",
     "cmdTitle_containerShell": "Open Container Shell",
-    "cmdDescr_containerShell": "Open a shell inside a project's application container",
 
     "cmdID_toggleAutoBuild": "ext.mc.toggleAutoBuild",
     "cmdTitle_toggleAutoBuild": "Toggle Auto Build",
@@ -82,7 +74,9 @@
 
     "cmdID_openAppMonitor": "ext.mc.openAppMonitor",
     "cmdTitle_openAppMonitor": "Open Application Monitor",
-    "cmdDescr_openAppMonitor": "Open a project's Application Monitor page in a browser",
+
+    "cmdID_openPerfDashboard": "ext.mc.openPerfDashboard",
+    "cmdTitle_openPerfDashboard": "Open Performance Dashboard",
 
     "cmdID_validate": "ext.mc.validate",
     "cmdTitle_validate": "Validate",

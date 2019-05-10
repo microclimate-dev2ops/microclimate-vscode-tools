@@ -186,6 +186,11 @@
                 "command": "%cmdID_openAppMonitor%",
                 "title": "%cmdTitle_openAppMonitor%",
                 "category": "%commandCategory%"
+            },
+            {
+                "command": "%cmdID_openPerfDashboard%",
+                "title": "%cmdTitle_openPerfDashboard%",
+                "category": "%commandCategory%"
             }
         ],
         "menus": {
@@ -288,6 +293,11 @@
                     "command": "%cmdID_openAppMonitor%",
                     "when": "%isEnabledProject%",
                     "group": "ext.mc.a@3"
+                },
+                {
+                    "command": "%cmdID_openPerfDashboard%",
+                    "title": "%cmdTitle_openPerfDashboard%",
+                    "group": "ext.mc.a@4"
                 },
                 {
                     "command": "%cmdID_openFolder%",
