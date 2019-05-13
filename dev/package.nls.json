@@ -22,7 +22,7 @@
     "cmdTitle_newProject": "Create New Project",
 
     "cmdID_bindProject": "ext.mc.bindProject",
-    "cmdTitle_bindProject": "Bind Project",
+    "cmdTitle_bindProject": "Bind Existing Project",
 
     "cmdID_openFolder": "ext.mc.openWorkspaceFolder",
     "cmdTitle_openFolder": "Open Folder as Workspace",

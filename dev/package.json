@@ -230,11 +230,6 @@
                     "group": "inline"
                 },
                 {
-                    "command": "%cmdID_newProject%",
-                    "when": "%isNoProjects%",
-                    "group": "inline"
-                },
-                {
                     "command": "%cmdID_bindProject%",
                     "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.a@2"

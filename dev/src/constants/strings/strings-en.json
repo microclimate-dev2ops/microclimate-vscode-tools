@@ -123,7 +123,7 @@
         "noConnectionsTooltip": "Click to create a new Codewind connection",
         "connectionLabel": "Codewind ({{ type }})",
         "connectionTypeLocal": "Local",
-        "noProjectsLabel": "No projects (Click to create)",
+        "noProjectsLabel": "No projects (Click here to create a project)",
         "disconnectedConnectionLabel": "Disconnected",
         "projectLabel": "{{ projectName }} {{- state }}"
     }
