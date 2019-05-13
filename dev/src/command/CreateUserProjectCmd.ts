@@ -83,10 +83,20 @@ async function promptForProjectName(template: IMCTemplateData): Promise<Optional
     });
 }
 
+// const ILLEGAL_CHARS = [
+    // `"`, "/", "\\", "?", "%", "*", ":", "|", "<", ">",
+// ];
+
 function validateProjectName(projectName: string): OptionalString {
-    const matches: boolean = /^[a-z0-9]+$/.test(projectName);
+    // const firstIllegalChar = [...projectName].find((c) => ILLEGAL_CHARS.includes(c));
+
+    // if (firstIllegalChar != null) {
+    //     return `Invalid project name "${projectName}". Project names may not contain "${firstIllegalChar}"`;
+    // }
+
+    const matches: boolean = /^[a-zA-Z0-9_.-]+$/.test(projectName);
     if (!matches) {
-        return `Invalid project name "${projectName}". Project name can only contain numbers and lowercase letters.`;
+        return `Invalid project name "${projectName}". Project name can only contain numbers, letters, underscores, hyphens and periods.`;
     }
     return undefined;
 }
