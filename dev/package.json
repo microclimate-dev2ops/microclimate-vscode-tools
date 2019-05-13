@@ -220,11 +220,6 @@
                     "group": "inline"
                 },
                 {
-                    "command": "%cmdID_openInBrowser%",
-                    "when": "%isActiveConnection%",
-                    "group": "ext.mc.conn.a@0"
-                },
-                {
                     "command": "%cmdID_newProject%",
                     "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.a@1"
@@ -296,7 +291,7 @@
                 },
                 {
                     "command": "%cmdID_openPerfDashboard%",
-                    "title": "%cmdTitle_openPerfDashboard%",
+                    "when": "%isEnabledProject%",
                     "group": "ext.mc.a@4"
                 },
                 {

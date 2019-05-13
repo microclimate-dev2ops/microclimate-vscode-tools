@@ -183,9 +183,11 @@ export async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mc
     Log.d("rawWorkspace is", rawWorkspace);
     Log.d("rawPlatform is", rawPlatform);
     Log.d("rawSocketNS is", rawSocketNS);
-    if (rawVersion == null || rawWorkspace == null) {
-        Log.e("Environment did not provide either version or workspace. Data provided is:", mcEnvData);
-        throw new Error(Translator.t(STRING_NS, "versionNotProvided", { requiredVersion: MCEnvironment.REQUIRED_VERSION_STR }));
+    // if (rawVersion == null) {
+        // throw new Error("No version information was provided by Codewind.");
+    // }
+    if (rawWorkspace == null) {
+        throw new Error("No workspace information was provided by Codewind.");
     }
 
     let workspace = rawWorkspace;

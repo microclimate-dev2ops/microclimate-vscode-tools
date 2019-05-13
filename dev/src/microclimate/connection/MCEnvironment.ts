@@ -51,43 +51,40 @@ namespace MCEnvironment {
             throw err;
         }
     }
-
-    // microclimate_version and workspace_location were both added in Microclimate 18.09
-    // Portal Restart API improvement was added in 18.11
-    export const REQUIRED_VERSION_STR: string = "18.12";     // non-nls
-    const REQUIRED_VERSION: number = 1812;
-    const INTERNAL_BUILD_RX: RegExp = /^\d{4}_M\d+_[EI]/;
+    // const INTERNAL_BUILD_RX: RegExp = /^\d{4}_M\d+_[EI]/;
 
     /**
      * Parses a version number out of the given env data. If it's a development build, returns Number.MAX_SAFE_INTEGER.
      *
      * **Throws an error** if the version is not supported.
      */
-    export function getVersionNumber(envData: IMCEnvData): number {
-        const rawVersion = envData.microclimate_version;
+    export function getVersionNumber(_envData: IMCEnvData): number {
+        // const rawVersion = _envData.microclimate_version;
+        // TODO when we have versioning in codewind
+        return Number.MAX_SAFE_INTEGER;
 
-        if (rawVersion === "latest") {      // non-nls
-            // This means it's being hosted by an internal MC dev.
-            // There's nothing we can do here but assume they have all the features we need.
-            Log.i("Dev version of Microclimate");
-            return Number.MAX_SAFE_INTEGER;
-        }
-        else if (rawVersion.match(INTERNAL_BUILD_RX) != null) {
-            Log.i("Internal build of Microclimate");
-            return Number.MAX_SAFE_INTEGER;
-        }
-        else {
-            const versionNum = Number(rawVersion);
-            if (isNaN(versionNum)) {
-                Log.e("Couldn't convert provided version to Number, version is: " + rawVersion);
-                throw new Error(Translator.t(STRING_NS, "versionNotRecognized", { rawVersion: rawVersion, requiredVersion: REQUIRED_VERSION_STR}));
-            }
-            else if (versionNum < REQUIRED_VERSION) {
-                Log.e(`Microclimate version ${versionNum} is too old.`);
-                throw new Error(Translator.t(STRING_NS, "versionTooOld", { rawVersion: rawVersion, requiredVersion: REQUIRED_VERSION_STR}));
-            }
-            return versionNum;
-        }
+        // if (rawVersion === "latest") {      // non-nls
+        //     // This means it's being hosted by an internal MC dev.
+        //     // There's nothing we can do here but assume they have all the features we need.
+        //     Log.i("Dev version of Microclimate");
+        //     return Number.MAX_SAFE_INTEGER;
+        // }
+        // else if (rawVersion.match(INTERNAL_BUILD_RX) != null) {
+        //     Log.i("Internal build of Microclimate");
+        //     return Number.MAX_SAFE_INTEGER;
+        // }
+        // else {
+        //     const versionNum = Number(rawVersion);
+        //     if (isNaN(versionNum)) {
+        //         Log.e("Couldn't convert provided version to Number, version is: " + rawVersion);
+        //         throw new Error(Translator.t(STRING_NS, "versionNotRecognized", { rawVersion: rawVersion, requiredVersion: REQUIRED_VERSION_STR}));
+        //     }
+        //     else if (versionNum < REQUIRED_VERSION) {
+        //         Log.e(`Microclimate version ${versionNum} is too old.`);
+        //         throw new Error(Translator.t(STRING_NS, "versionTooOld", { rawVersion: rawVersion, requiredVersion: REQUIRED_VERSION_STR}));
+        //     }
+        //     return versionNum;
+        // }
     }
 
     export function getVersionAsString(versionNum: number): string {

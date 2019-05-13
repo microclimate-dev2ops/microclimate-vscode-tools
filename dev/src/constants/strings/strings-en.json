@@ -113,7 +113,7 @@
         "projectDisable": "Disable",
         "generateMissingFiles": "Generate Dockerfile",
 
-        "delete": "Delete",
+        "delete": "Unbind",
         "requestSuccess":   "{{ projectName }}: {{ operationName }} requested.",
         "requestFail":      "{{ projectName }}: {{ operationName }} failed: {{- err }}"
     },
