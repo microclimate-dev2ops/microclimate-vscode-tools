@@ -14,8 +14,8 @@ import * as vscode from "vscode";
 import Connection from "../microclimate/connection/Connection";
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
-// import InstallerWrapper from "../microclimate/connection/InstallerWrapper";
-// import * as MCUtil from "../MCUtil";
+import InstallerWrapper from "../microclimate/connection/InstallerWrapper";
+import * as MCUtil from "../MCUtil";
 
 export default async function deactivateConnectionCmd(connection: Connection): Promise<void> {
     if (connection == null) {
@@ -28,13 +28,10 @@ export default async function deactivateConnectionCmd(connection: Connection): P
         connection = selected;
     }
 
-    vscode.window.showWarningMessage("Deactivating Codewind is currently disabled.");
-    return;
-
-    // try {
-    //     return await InstallerWrapper.stopAll();
-    // }
-    // catch (err) {
-    //     vscode.window.showErrorMessage("Error stopping Codewind: " + MCUtil.errToString(err));
-    // }
+    try {
+        return await InstallerWrapper.stopAll();
+    }
+    catch (err) {
+        vscode.window.showErrorMessage("Error stopping Codewind: " + MCUtil.errToString(err));
+    }
 }

@@ -41,7 +41,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
     // public readonly detail?: string;
 
     constructor(
-        public readonly mcUri: vscode.Uri,
+        public readonly url: vscode.Uri,
         public readonly host: string,
         public readonly version: number,
         public readonly socketNS: string,
@@ -52,7 +52,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
         this.versionStr = MCEnvironment.getVersionAsString(version);
 
         // QuickPickItem
-        this.label = Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
+        this.label = Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.url });
         // this.description = this.workspacePath.fsPath.toString();
         Log.i(`Created new Connection @ ${this}, workspace ${this.workspacePath}`);
     }
@@ -67,7 +67,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
     }
 
     public toString(): string {
-        return `${this.mcUri} ${this.versionStr}`;
+        return `${this.url} ${this.versionStr}`;
     }
 
     /**

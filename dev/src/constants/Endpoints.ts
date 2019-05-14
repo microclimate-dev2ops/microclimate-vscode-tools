@@ -54,12 +54,12 @@ export namespace EndpointUtil {
     }
 
     export function resolveMCEndpoint(connection: Connection, endpoint: MCEndpoints): string {
-        return connection.mcUri.toString().concat(endpoint);
+        return connection.url.toString().concat(endpoint);
     }
 
     export function resolveProjectEndpoint(
         connection: Connection, projectID: string, endpoint: ProjectEndpoints): string {
-        return connection.mcUri.toString().concat(`${MCEndpoints.PROJECTS}/${projectID}/${endpoint}`);
+        return connection.url.toString().concat(`${MCEndpoints.PROJECTS}/${projectID}/${endpoint}`);
     }
 
     export function getEnablementAction(enable: boolean): ProjectEndpoints {
@@ -70,7 +70,7 @@ export namespace EndpointUtil {
         // return value looks like http://localhost:9090/performance/charts?project=bacd4760-70ce-11e9-af94-d39edf21b705
 
         const query = `project=${project.id}`;
-        return project.connection.mcUri.with({ path: "/performance/charts", query });
+        return project.connection.url.with({ path: "/performance/charts", query });
     }
 }
 

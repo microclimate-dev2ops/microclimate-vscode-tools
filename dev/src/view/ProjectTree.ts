@@ -22,7 +22,7 @@ import TreeItemFactory, { MicroclimateTreeItem } from "./TreeItemFactory";
 
 export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<MicroclimateTreeItem> {
 
-    private readonly VIEW_ID: string = "ext.mc.mcProjectExplorer";                  // must match package.nls.json
+    private readonly VIEW_ID: string = "ext.cw.explorer";                  // must match package.nls.json
     public readonly treeView: vscode.TreeView<MicroclimateTreeItem>;
 
     private readonly onTreeDataChangeEmitter: vscode.EventEmitter<MicroclimateTreeItem> = new vscode.EventEmitter<MicroclimateTreeItem>();
@@ -34,9 +34,9 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
         ConnectionManager.instance.addOnChangeListener(this.refresh);
         Log.d("Finished constructing ProjectTree");
 
-        // this.treeView.onDidChangeSelection((e) => {
-        //     Log.d("Selection is now", e.selection[0]);
-        // });
+        this.treeView.onDidChangeSelection((e) => {
+            Log.d("Selection is now", e.selection[0]);
+        });
     }
 
     /**

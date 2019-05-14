@@ -28,7 +28,7 @@ const STRING_NS = StringNamespaces.TREEVIEW;
  */
 enum TreeContextValues {
     // base
-    BASE = "ext.mc",
+    BASE = "ext.cw",
     NO_PROJECTS = "noProjects",
 
     // Connection
@@ -185,8 +185,10 @@ function getProjectContext(project: Project): string {
         contextValues.push(TreeContextValues.PROJ_AUTOBUILD_OFF);
     }
 
-    // The final result will look like eg: "ext.mc.project.enabled.autoBuildOn"
-    return buildContextValue(contextValues);
+    // The final result will look like eg: "ext.cw.project.enabled.autoBuildOn"
+    const cv = buildContextValue(contextValues);
+    Log.d(`The context value for ${project.name} is ${cv}`);
+    return cv;
 }
 
 

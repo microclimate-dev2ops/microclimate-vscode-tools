@@ -153,7 +153,7 @@ export default class ConnectionManager implements vscode.Disposable {
 
     private getExisting(uri: vscode.Uri): Connection | undefined {
         return this._connections.find((conn) => {
-            return conn.mcUri.toString() === uri.toString();
+            return conn.url.toString() === uri.toString();
         });
     }
 

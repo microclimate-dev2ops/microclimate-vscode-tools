@@ -37,7 +37,7 @@ export default class MCSocket implements vscode.Disposable {
         private readonly connection: Connection,
         namespace: string,
     ) {
-        this.uri = connection.mcUri.toString();
+        this.uri = connection.url.toString();
         if (namespace) {
             if (!this.uri.endsWith("/")) {
                 this.uri += "/";

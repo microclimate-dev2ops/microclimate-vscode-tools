@@ -23,10 +23,10 @@
         "cloud"
     ],
     "activationEvents": [
-        "onView:ext.mc.mcProjectExplorer",
+        "onView:ext.cw.explorer",
         "workspaceContains:**/.idc",
         "workspaceContains:**/.cfignore",
-        "onCommand:ext.mc.activateConn"
+        "onCommand:ext.cw.activateConn"
     ],
     "main": "./out/extension",
     "repository": {
@@ -100,7 +100,7 @@
                 }
             },
             {
-                "command": "ext.mc.attachDebugger",
+                "command": "%cmdID_attachDebugger%",
                 "title": "%cmdTitle_attachDebugger%",
                 "category": "%commandCategory%",
                 "icon": {
@@ -216,7 +216,7 @@
                 {
                     "command": "%cmdID_newProject%",
                     "when": "%isActiveConnection%",
-                    "group": "ext.mc.conn.a@1"
+                    "group": "ext.cw.conn.a@1"
                 },
                 {
                     "command": "%cmdID_newProject%",
@@ -226,7 +226,7 @@
                 {
                     "command": "%cmdID_bindProject%",
                     "when": "%isActiveConnection%",
-                    "group": "ext.mc.conn.a@2"
+                    "group": "ext.cw.conn.a@2"
                 },
                 {
                     "command": "%cmdID_bindProject%",
@@ -236,22 +236,22 @@
                 {
                     "command": "%cmdID_openFolder%",
                     "when": "%isConnection%",
-                    "group": "ext.mc.conn.b"
+                    "group": "ext.cw.conn.b"
                 },
                 {
                     "command": "%cmdID_refreshConnection%",
                     "when": "%isActiveConnection%",
-                    "group": "ext.mc.conn.c@0"
+                    "group": "ext.cw.conn.c@0"
                 },
                 {
                     "command": "%cmdID_deactivateConn%",
                     "when": "%isActiveConnection%",
-                    "group": "ext.mc.conn.c@1"
+                    "group": "ext.cw.conn.c@1"
                 },
                 {
                     "command": "%cmdID_openInBrowser%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.a@0"
+                    "group": "ext.cw.a@0"
                 },
                 {
                     "command": "%cmdID_openInBrowser%",
@@ -261,7 +261,7 @@
                 {
                     "command": "%cmdID_projectOverview%",
                     "when": "%isProject%",
-                    "group": "ext.mc.a@1"
+                    "group": "ext.cw.a@1"
                 },
                 {
                     "command": "%cmdID_projectOverview%",
@@ -271,52 +271,52 @@
                 {
                     "command": "%cmdID_containerShell%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.a@2"
+                    "group": "ext.cw.a@2"
                 },
                 {
                     "command": "%cmdID_openAppMonitor%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.a@3"
+                    "group": "ext.cw.a@3"
                 },
                 {
                     "command": "%cmdID_openPerfDashboard%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.a@4"
+                    "group": "ext.cw.a@4"
                 },
                 {
                     "command": "%cmdID_openFolder%",
                     "when": "%isProject%",
-                    "group": "ext.mc.b"
+                    "group": "ext.cw.b"
                 },
                 {
                     "command": "%cmdID_showAllLogs%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.c@1"
+                    "group": "ext.cw.c@1"
                 },
                 {
                     "command": "%cmdID_hideAllLogs%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.c@2"
+                    "group": "ext.cw.c@2"
                 },
                 {
                     "command": "%cmdID_manageLogs%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.c@3"
+                    "group": "ext.cw.c@3"
                 },
                 {
                     "command": "%cmdID_restartRun%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.d@0"
+                    "group": "ext.cw.d@0"
                 },
                 {
                     "command": "%cmdID_restartDebug%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.d@1"
+                    "group": "ext.cw.d@1"
                 },
                 {
                     "command": "%cmdID_attachDebugger%",
                     "when": "%isDebuggableProject%",
-                    "group": "ext.mc.d@2"
+                    "group": "ext.cw.d@2"
                 },
                 {
                     "command": "%cmdID_attachDebugger%",
@@ -326,27 +326,27 @@
                 {
                     "command": "%cmdID_requestBuild%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.e@0"
+                    "group": "ext.cw.e@0"
                 },
                 {
                     "command": "%cmdID_enableAutoBuild%",
                     "when": "%isEnabledAutoBuildOff%",
-                    "group": "ext.mc.e@2"
+                    "group": "ext.cw.e@2"
                 },
                 {
                     "command": "%cmdID_disableAutoBuild%",
                     "when": "%isEnabledAutoBuildOn%",
-                    "group": "ext.mc.e@2"
+                    "group": "ext.cw.e@2"
                 },
                 {
                     "command": "%cmdID_disable%",
                     "when": "%isEnabledProject%",
-                    "group": "ext.mc.z"
+                    "group": "ext.cw.z"
                 },
                 {
                     "command": "%cmdID_enable%",
                     "when": "%isDisabledProject%",
-                    "group": "ext.mc.z"
+                    "group": "ext.cw.z"
                 },
                 {
                     "command": "%cmdID_enable%",

@@ -42,7 +42,7 @@ export default async function activateConnectionCmd(): Promise<Connection | unde
 }
 
 async function offerToOpenWorkspace(connection: Connection): Promise<void> {
-    Log.d(`offerToOpenWorkspace ${connection.mcUri} workspace=${connection.workspacePath}`);
+    Log.d(`offerToOpenWorkspace ${connection.url} workspace=${connection.workspacePath}`);
 
     let inMcWorkspace = false;
     // See if the user has this connection's workspace open
@@ -52,7 +52,7 @@ async function offerToOpenWorkspace(connection: Connection): Promise<void> {
     }
 
     const successMsg = Translator.t(STRING_NS, "connectionSucceeded",
-            { connectionUri: connection.mcUri, workspacePath: connection.workspacePath.fsPath }
+            { connectionUri: connection.url, workspacePath: connection.workspacePath.fsPath }
     );
     Log.i(successMsg);
 

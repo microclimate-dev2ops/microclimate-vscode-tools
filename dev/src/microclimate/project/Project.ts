@@ -439,7 +439,7 @@ export default class Project implements vscode.QuickPickItem {
             return undefined;
         }
 
-        return this.connection.mcUri.with({
+        return this.connection.url.with({
             authority: `${this.connection.host}:${this._ports.appPort}`,      // non-nls
             path: this._contextRoot
         });

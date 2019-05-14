@@ -13,37 +13,37 @@
 
 enum Commands {
     // all of these must match package.nls.json command IDs
-    ACTIVATE_CONNECTION = "ext.mc.activateConn",
-    DEACTIVATE_CONNECTION = "ext.mc.deactivateConn",
-    REFRESH_CONNECTION = "ext.mc.refreshConnection",
+    ACTIVATE_CONNECTION = "ext.cw.activateConn",
+    DEACTIVATE_CONNECTION = "ext.cw.deactivateConn",
+    REFRESH_CONNECTION = "ext.cw.refreshConnection",
 
-    CREATE_PROJECT = "ext.mc.createProject",
-    BIND_PROJECT = "ext.mc.bindProject",
+    CREATE_PROJECT = "ext.cw.createProject",
+    BIND_PROJECT = "ext.cw.bindProject",
 
-    OPEN_WS_FOLDER = "ext.mc.openWorkspaceFolder",
+    OPEN_WS_FOLDER = "ext.cw.openWorkspaceFolder",
 
-    ATTACH_DEBUGGER = "ext.mc.attachDebugger",
-    RESTART_RUN = "ext.mc.restartProjectRun",
-    RESTART_DEBUG = "ext.mc.restartProjectDebug",
+    ATTACH_DEBUGGER = "ext.cw.attachDebugger",
+    RESTART_RUN = "ext.cw.restartProjectRun",
+    RESTART_DEBUG = "ext.cw.restartProjectDebug",
 
-    OPEN_IN_BROWSER = "ext.mc.openInBrowser",
-    REQUEST_BUILD = "ext.mc.requestBuild",
-    TOGGLE_AUTOBUILD = "ext.mc.toggleAutoBuild",
-    ENABLE_AUTOBUILD = "ext.mc.enableAutoBuild",
-    DISABLE_AUTOBUILD = "ext.mc.disableAutoBuild",
-    CONTAINER_SHELL = "ext.mc.containerShell",
-    PROJECT_OVERVIEW = "ext.mc.projectOverview",
-    OPEN_APP_MONITOR = "ext.mc.openAppMonitor",
-    OPEN_PERF_DASHBOARD = "ext.mc.openPerfDashboard",
+    OPEN_IN_BROWSER = "ext.cw.openInBrowser",
+    REQUEST_BUILD = "ext.cw.requestBuild",
+    TOGGLE_AUTOBUILD = "ext.cw.toggleAutoBuild",
+    ENABLE_AUTOBUILD = "ext.cw.enableAutoBuild",
+    DISABLE_AUTOBUILD = "ext.cw.disableAutoBuild",
+    CONTAINER_SHELL = "ext.cw.containerShell",
+    PROJECT_OVERVIEW = "ext.cw.projectOverview",
+    OPEN_APP_MONITOR = "ext.cw.openAppMonitor",
+    OPEN_PERF_DASHBOARD = "ext.cw.openPerfDashboard",
 
-    MANAGE_LOGS = "ext.mc.manageLogs",
-    SHOW_ALL_LOGS = "ext.mc.showAllLogs",
-    HIDE_ALL_LOGS = "ext.mc.hideAllLogs",
+    MANAGE_LOGS = "ext.cw.manageLogs",
+    SHOW_ALL_LOGS = "ext.cw.showAllLogs",
+    HIDE_ALL_LOGS = "ext.cw.hideAllLogs",
 
-    DISABLE_PROJECT = "ext.mc.disable",
-    ENABLE_PROJECT = "ext.mc.enable",
+    DISABLE_PROJECT = "ext.cw.disable",
+    ENABLE_PROJECT = "ext.cw.enable",
 
-    VALIDATE = "ext.mc.validate",
+    VALIDATE = "ext.cw.validate",
 
     // VSCode commands, kept here for easy reference. These will never change.
     VSC_OPEN = "vscode.open",
