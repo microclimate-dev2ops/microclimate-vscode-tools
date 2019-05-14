@@ -94,11 +94,11 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
             return;
         }
 
-        if (!(await ConnectionManager.instance.verifyReconnect(this))) {
-            Log.i(`Connection has changed on reconnect! ${this} is no longer a valid Connection`);
-            // this connection gets destroyed
-            return;
-        }
+        // if (!(await ConnectionManager.instance.verifyReconnect(this))) {
+        //     Log.i(`Connection has changed on reconnect! ${this} is no longer a valid Connection`);
+        //     // this connection gets destroyed
+        //     return;
+        // }
 
         if (this.hasConnected) {
             // things to do on reconnect, but not initial connect, go here

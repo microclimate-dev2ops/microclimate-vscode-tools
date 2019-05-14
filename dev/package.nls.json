@@ -9,11 +9,11 @@
 
     "commandCategory": "Codewind",
 
-    "cmdID_newDefaultConn": "ext.mc.newDefaultConnection",
-    "cmdTitle_newDefaultConn": "New Local Codewind Connection",
+    "cmdID_activateConn": "ext.mc.activateConn",
+    "cmdTitle_activateConn": "Activate Connection",
 
-    "cmdID_removeConn": "ext.mc.removeConnection",
-    "cmdTitle_removeConn": "Remove Connection",
+    "cmdID_deactivateConn": "ext.mc.deactivateConn",
+    "cmdTitle_deactivateConn": "Deactivate Connection",
 
     "cmdID_refreshConnection": "ext.mc.refreshConnection",
     "cmdTitle_refreshConnection": "Refresh Connection",
@@ -90,9 +90,10 @@
     ],
 
     "isInViewWithNothingSelected": "view == ext.mc.mcProjectExplorer && !viewItem",
-    "isConnection": "viewItem =~ /ext\\.mc\\.connection*/",
+    "isConnection": "viewItem =~ /ext\\.mc\\.connection\\.(connected|disconnected)/",
     "isActiveConnection": "viewItem == ext.mc.connection.connected",
-    "isNoConnections": "viewItem == ext.mc.noConnections",
+    "isInactiveConnection": "viewItem == ext.mc.connection.disconnected",
+    "isConnectingConnection": "viewItem == ext.mc.connection.connecting",
     "isNoProjects": "viewItem == ext.mc.noProjects",
 
     "isProject":                "viewItem =~ /ext\\.mc\\.project.*/",

@@ -57,7 +57,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     ];
 
     subscriptions.push(ConnectionManager.instance);
-
     subscriptions.forEach((e) => {
         context.subscriptions.push(e);
     });

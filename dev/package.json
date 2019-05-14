@@ -26,8 +26,7 @@
         "onView:ext.mc.mcProjectExplorer",
         "workspaceContains:**/.idc",
         "workspaceContains:**/.cfignore",
-        "onCommand:ext.mc.newConnection",
-        "onCommand:ext.mc.newDefaultConnection"
+        "onCommand:ext.mc.activateConn"
     ],
     "main": "./out/extension",
     "repository": {
@@ -46,8 +45,8 @@
         },
         "commands": [
             {
-                "command": "%cmdID_newDefaultConn%",
-                "title": "%cmdTitle_newDefaultConn%",
+                "command": "%cmdID_activateConn%",
+                "title": "%cmdTitle_activateConn%",
                 "category": "%commandCategory%",
                 "icon": {
                     "light": "res/img/light/connect.svg",
@@ -55,8 +54,8 @@
                 }
             },
             {
-                "command": "%cmdID_removeConn%",
-                "title": "%cmdTitle_removeConn%",
+                "command": "%cmdID_deactivateConn%",
+                "title": "%cmdTitle_deactivateConn%",
                 "category": "%commandCategory%"
             },
             {
@@ -207,17 +206,12 @@
             "view/title": [],
             "view/item/context": [
                 {
-                    "command": "%cmdID_newDefaultConn%",
-                    "when": "%isInViewWithNothingSelected%"
+                    "command": "%cmdID_activateConn%",
+                    "when": "%isInactiveConnection%"
                 },
                 {
-                    "command": "%cmdID_newDefaultConn%",
-                    "when": "%isNoConnections%"
-                },
-                {
-                    "command": "%cmdID_newDefaultConn%",
-                    "when": "%isNoConnections%",
-                    "group": "inline"
+                    "command": "%cmdID_activateConn%",
+                    "when": "%isConnectingConnection%"
                 },
                 {
                     "command": "%cmdID_newProject%",
@@ -246,12 +240,12 @@
                 },
                 {
                     "command": "%cmdID_refreshConnection%",
-                    "when": "%isConnection%",
+                    "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.c@0"
                 },
                 {
-                    "command": "%cmdID_removeConn%",
-                    "when": "%isConnection%",
+                    "command": "%cmdID_deactivateConn%",
+                    "when": "%isActiveConnection%",
                     "group": "ext.mc.conn.c@1"
                 },
                 {

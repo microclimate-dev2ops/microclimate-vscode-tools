@@ -13,8 +13,8 @@
 
 enum Commands {
     // all of these must match package.nls.json command IDs
-    NEW_DEFAULT_CONNECTION = "ext.mc.newDefaultConnection",
-    REMOVE_CONNECTION = "ext.mc.removeConnection",
+    ACTIVATE_CONNECTION = "ext.mc.activateConn",
+    DEACTIVATE_CONNECTION = "ext.mc.deactivateConn",
     REFRESH_CONNECTION = "ext.mc.refreshConnection",
 
     CREATE_PROJECT = "ext.mc.createProject",

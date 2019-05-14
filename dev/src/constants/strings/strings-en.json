@@ -119,12 +119,10 @@
     },
 
     "treeView": {
-        "noConnectionsLabel": "No Codewind connections",
-        "noConnectionsTooltip": "Click to create a new Codewind connection",
         "connectionLabel": "Codewind ({{ type }})",
         "connectionTypeLocal": "Local",
         "noProjectsLabel": "No projects (Click here to create a project)",
-        "disconnectedConnectionLabel": "Disconnected",
+        "disconnectedConnectionLabel": "Deactivated (Click here to activate)",
         "projectLabel": "{{ projectName }} {{- state }}"
     }
 }

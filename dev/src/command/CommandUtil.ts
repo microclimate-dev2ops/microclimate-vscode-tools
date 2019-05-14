@@ -19,13 +19,13 @@ import ProjectState from "../microclimate/project/ProjectState";
 
 import Commands from "../constants/Commands";
 
-import * as NewConnectionCmd from "./NewConnectionCmd";
+import activateConnectionCmd from "./ActivateConnectionCmd";
 import openWorkspaceFolderCmd from "./OpenWorkspaceFolderCmd";
 import restartProjectCmd from "./RestartProjectCmd";
 import openInBrowserCmd from "./OpenInBrowserCmd";
 import requestBuildCmd from "./RequestBuildCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
-import removeConnectionCmd from "./RemoveConnectionCmd";
+import deactivateConnectionCmd from "./DeactivateConnectionCmd";
 import containerBashCmd from "./ContainerShellCmd";
 import projectOverviewCmd from "./ProjectOverviewCmd";
 import attachDebuggerCmd from "./AttachDebuggerCmd";
@@ -47,9 +47,8 @@ export function createCommands(): vscode.Disposable[] {
     // - undefined (if run from command palette)
     // - or the user's selected TreeView object (if run from the context menu) -> IE either a Project or Connection
     return [
-        vscode.commands.registerCommand(Commands.NEW_DEFAULT_CONNECTION, () => NewConnectionCmd.newConnectionCmd(NewConnectionCmd.DEFAULT_CONNINFO)),
-
-        vscode.commands.registerCommand(Commands.REMOVE_CONNECTION,     (selection) => removeConnectionCmd(selection)),
+        vscode.commands.registerCommand(Commands.ACTIVATE_CONNECTION, () => activateConnectionCmd()),
+        vscode.commands.registerCommand(Commands.DEACTIVATE_CONNECTION, (selection) => deactivateConnectionCmd(selection)),
         vscode.commands.registerCommand(Commands.REFRESH_CONNECTION,    (selection) => refreshConnectionCmd(selection)),
 
         vscode.commands.registerCommand(Commands.CREATE_PROJECT,    (selection) => createProject(selection)),

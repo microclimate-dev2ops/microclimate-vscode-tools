@@ -33,9 +33,10 @@ enum TreeContextValues {
 
     // Connection
     // connection can only be one of these 3
-    NO_CONNECTIONS = "noConnections",
+    // NO_CONNECTIONS = "noConnections",
+    CONN_CONNECTING = "connection.connecting",
     CONN_CONNECTED = "connection.connected",
-    CONN_DISCONNECTED = "connection",
+    CONN_DISCONNECTED = "connection.disconnected",
 
     // Project
     PROJ_BASE = "project",
@@ -59,13 +60,13 @@ namespace TreeItemFactory {
     export function getRootTreeItems(): MicroclimateTreeItem[] {
         if (ConnectionManager.instance.connections.length === 0) {
             return [{
-                label: "No connections (Click to connect)",
+                label: "Connecting to Codewind...",
                 iconPath: Resources.getIconPaths(Resources.Icons.Logo),
-                contextValue: buildContextValue([TreeContextValues.NO_CONNECTIONS]),
-                command: {
-                    command: Commands.NEW_DEFAULT_CONNECTION,
-                    title: "",
-                },
+                contextValue: buildContextValue([TreeContextValues.CONN_CONNECTING]),
+                // command: {
+                //     command: Commands.NEW_DEFAULT_CONNECTION,
+                //     title: "",
+                // },
             }];
         }
         return ConnectionManager.instance.connections;
@@ -110,7 +111,11 @@ namespace TreeItemFactory {
                 label: Translator.t(STRING_NS, "disconnectedConnectionLabel"),
                 iconPath: Resources.getIconPaths(Resources.Icons.Disconnected),
                 contextValue: "nothing",        // anything truthy works
-                // Consider putting refresh as the command on this item
+                command: {
+                    command: Commands.ACTIVATE_CONNECTION,
+                    title: "",
+                    // arguments:
+                }
             }];
         }
     }
