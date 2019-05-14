@@ -84,7 +84,7 @@ async function promptForProjectName(template: IMCTemplateData): Promise<Optional
 }
 
 const ILLEGAL_CHARS = [
-    `"`, "/", "\\", "?", "%", "*", ":", "|", "<", ">",
+    `"`, "/", "\\", "?", "%", "*", ":", "|", "<", ">", " "
 ];
 
 function validateProjectName(projectName: string): OptionalString {
