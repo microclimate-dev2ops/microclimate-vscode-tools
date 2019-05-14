@@ -17,7 +17,6 @@ import { MCEndpoints, EndpointUtil } from "../../constants/Endpoints";
 import MCSocket from "./MCSocket";
 import ConnectionManager, { OnChangeCallbackArgs } from "./ConnectionManager";
 import Log from "../../Logger";
-import DebugUtils from "../project/DebugUtils";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import MCEnvironment from "./MCEnvironment";
@@ -56,7 +55,6 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
         this.label = Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.mcUri });
         // this.description = this.workspacePath.fsPath.toString();
         Log.i(`Created new Connection @ ${this}, workspace ${this.workspacePath}`);
-        DebugUtils.cleanDebugLaunchConfigsFor(this);
     }
 
     public async dispose(): Promise<void> {

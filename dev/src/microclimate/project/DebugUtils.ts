@@ -118,27 +118,27 @@ export default class DebugUtils {
         }
     }
 
-    public static async cleanDebugLaunchConfigsFor(connection: Connection): Promise<void> {
-        Log.d("Clean launch configs from " + connection.workspacePath);
+    // public static async cleanDebugLaunchConfigsFor(connection: Connection): Promise<void> {
+    //     Log.d("Clean launch configs from " + connection.workspacePath);
 
-        // The potential names of the projects' debug configurations, whether or not they exist
-        const projectDebugNames: string[] = connection.projects.map( (project) => this.getDebugName(project));
+    //     // The potential names of the projects' debug configurations, whether or not they exist
+    //     const projectDebugNames: string[] = connection.projects.map( (project) => this.getDebugName(project));
 
-        const workspaceConfig = this.getWorkspaceConfigFor(connection);
-        const launchConfigs = this.getLaunchConfigurationsFrom(workspaceConfig);
+    //     const workspaceConfig = this.getWorkspaceConfigFor(connection);
+    //     const launchConfigs = this.getLaunchConfigurationsFrom(workspaceConfig);
 
-        // Loop backwards so we can remove elements
-        for (let i = launchConfigs.length - 1; i >= 0; i--) {
-            const existingLaunch: vscode.DebugConfiguration = launchConfigs[i];
-            if (!projectDebugNames.includes(existingLaunch.name)) {
-                // This launch config does not map to an existing project, so we delete it.
-                Log.i(`Delete launch config: ${existingLaunch.name}`);
-                launchConfigs.splice(i, 1);
-            }
-        }
+    //     // Loop backwards so we can remove elements
+    //     for (let i = launchConfigs.length - 1; i >= 0; i--) {
+    //         const existingLaunch: vscode.DebugConfiguration = launchConfigs[i];
+    //         if (!projectDebugNames.includes(existingLaunch.name)) {
+    //             // This launch config does not map to an existing project, so we delete it.
+    //             Log.i(`Delete launch config: ${existingLaunch.name}`);
+    //             launchConfigs.splice(i, 1);
+    //         }
+    //     }
 
-        await this.updateWorkspaceLaunchConfigs(workspaceConfig, launchConfigs);
-    }
+    //     await this.updateWorkspaceLaunchConfigs(workspaceConfig, launchConfigs);
+    // }
 
     // keys for launch.json
     private static readonly LAUNCH: string = "launch";                      // non-nls
