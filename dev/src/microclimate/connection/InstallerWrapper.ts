@@ -84,6 +84,8 @@ namespace InstallerWrapper {
             return;
         }
 
+        Log.i(`Running installer command: ${cmd}`);
+
         const userMsg = getUserActionName(cmd) + "...";
         currentOperation = cmd;
 
@@ -98,22 +100,16 @@ namespace InstallerWrapper {
                     timeout: START_TIMEOUT,
                 }, async (err, stdout, stderr) => {
                     if (err) {
-                        Log.e("Error starting with installer", err);
+                        Log.e("Error running with installer", err);
                         Log.e("Stdout:", stdout.toString());
                         Log.e("Stderr:", stderr.toString());
                         currentOperation = undefined;
                         return reject(err);
                     }
-                    Log.i("Successfully started CW with installer");
-
-                    // if (cmd === InstallerCommands.START) {
-                    //     // additional delay
-                    //     await new Promise((resolve2) => setTimeout(resolve2, 5000));
-                    // }
+                    Log.i(`Successfully ran installer command: ${cmd}`);
 
                     currentOperation = undefined;
                     resolve();
-                    Log.d("Finished starting Codewind");
                 });
             });
         });

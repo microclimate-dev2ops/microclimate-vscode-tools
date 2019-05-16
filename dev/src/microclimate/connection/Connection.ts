@@ -105,7 +105,12 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
         this.hasConnected = true;
         this._isConnected = true;
         Log.d(`${this} is now connected`);
-        await this.forceUpdateProjectList();
+        try {
+            await this.forceUpdateProjectList();
+        }
+        catch (err) {
+            Log.e("Error getting projects list after connect event", err)
+        }
 
         this.onChange();
     }

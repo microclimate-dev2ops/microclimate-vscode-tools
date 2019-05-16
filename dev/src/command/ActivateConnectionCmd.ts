@@ -82,10 +82,35 @@ async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promise<Conne
     try {
         try {
             envData = await MCEnvironment.getEnvData(url);
+            Log.d("Initial connect succeeded, no need to start Codewind");
         }
         catch (err) {
             await InstallerWrapper.start();
-            envData = await MCEnvironment.getEnvData(url);
+
+            Log.d("Codewind should have started, pinging for ENV data now...");
+            envData = await new Promise<MCEnvironment.IMCEnvData>((resolve, reject) => {
+                let tries = 0;
+                const interval = setInterval(() => {
+                    tries++;
+
+                    MCEnvironment.getEnvData(url)
+                    .then((envData_) => {
+                        // success
+                        Log.i(`Connected to codewind after ${tries} tries`);
+                        clearInterval(interval);
+                        return resolve(envData_);
+                    })
+                    .catch((_err) => {
+                        if (tries > 10) {
+                            clearInterval(interval);
+                            return reject("Codewind appeared to start, but connecting failed.");
+                        }
+                        else {
+                            Log.d("Failed to contact codewind, will try again");
+                        }
+                     });
+                }, 500);
+            });
         }
     }
     catch (err) {
