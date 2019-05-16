@@ -2,22 +2,26 @@
     "name": "codewind",
     "displayName": "%displayName%",
     "description": "%description%",
-    "version": "19.5.0",
+    "version": "0.1.0",
     "publisher": "IBM",
     "engines": {
         "vscode": "^1.27.0"
     },
     "license": "EPL-2.0",
     "bugs": {
-        "url": "https://github.com/microclimate-dev2ops/microclimate-vscode-tools/issues"
+        "url": "https://github.com/microclimate-dev2ops/codewind-vscode/issues"
     },
-    "homepage": "https://microclimate-dev2ops.github.io/mdt-vsc-overview",
+    "homepage": "https://microclimate.dev/codewindtechpreview",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microclimate-dev2ops/codewind-vscode"
+    },
+    "icon": "res/img/microclimate.png",
     "categories": [
         "Other"
     ],
     "keywords": [
         "IBM",
-        "microclimate",
         "docker",
         "cicd",
         "cloud"
@@ -29,11 +33,6 @@
         "onCommand:ext.cw.activateConn"
     ],
     "main": "./out/extension",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/microclimate-dev2ops/microclimate-vscode-tools"
-    },
-    "icon": "res/img/microclimate.png",
     "contributes": {
         "views": {
             "explorer": [

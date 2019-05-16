@@ -1,6 +1,6 @@
 {
     "displayName": "Codewind",
-    "description": "Develop your Codewind projects from within the comfort of your IDE.",
+    "description": "Create and develop cloud-native, containerized web applications.",
 
     "// Items starting with cmdID or viewID are not exposed to user": "",
 
