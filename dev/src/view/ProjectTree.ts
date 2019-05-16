@@ -34,9 +34,9 @@ export default class ProjectTreeDataProvider implements vscode.TreeDataProvider<
         ConnectionManager.instance.addOnChangeListener(this.refresh);
         Log.d("Finished constructing ProjectTree");
 
-        this.treeView.onDidChangeSelection((e) => {
-            Log.d("Selection is now", e.selection[0]);
-        });
+        // this.treeView.onDidChangeSelection((e) => {
+        //     Log.d("Selection is now", e.selection[0]);
+        // });
     }
 
     /**

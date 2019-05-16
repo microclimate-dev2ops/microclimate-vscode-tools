@@ -80,12 +80,17 @@ async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promise<Conne
 
     let envData: MCEnvironment.IMCEnvData;
     try {
-        await InstallerWrapper.start();
-        envData = await MCEnvironment.getEnvData(url);
+        try {
+            envData = await MCEnvironment.getEnvData(url);
+        }
+        catch (err) {
+            await InstallerWrapper.start();
+            envData = await MCEnvironment.getEnvData(url);
+        }
     }
     catch (err) {
         Log.e("Failed to contact codewind", err);
-        vscode.window.showErrorMessage("Failed to start Codewind. You can try starting it manually using the installer.");
+        vscode.window.showErrorMessage("Failed to start Codewind: " + MCUtil.errToString(err));
         return undefined;
     }
 

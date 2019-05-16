@@ -87,7 +87,7 @@
     ],
 
     "isInViewWithNothingSelected": "view == ext.cw.explorer && !viewItem",
-    "isConnection": "viewItem =~ /ext\\.cw.\\.connection\\.(connected|disconnected)/",
+    "isConnection": "viewItem =~ /ext\\.cw\\.connection\\.(connected|disconnected)/",
     "isActiveConnection": "viewItem == ext.cw.connection.connected",
     "isInactiveConnection": "viewItem == ext.cw.connection.disconnected",
     "isConnectingConnection": "viewItem == ext.cw.connection.connecting",

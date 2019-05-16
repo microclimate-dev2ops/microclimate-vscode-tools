@@ -159,7 +159,9 @@ function getConnectionContext(connection: Connection): string {
     else {
         contextValue = TreeContextValues.CONN_DISCONNECTED;
     }
-    return buildContextValue([contextValue]);
+    const cv = buildContextValue([contextValue]);
+    // Log.d(`The context value for ${connection} is ${cv}`);
+    return cv;
 }
 
 function getProjectContext(project: Project): string {
