@@ -46,8 +46,8 @@ namespace InstallerWrapper {
     function getInternalExecutable(): string {
         const platform = MCUtil.getOS();
         const executable = platform === "windows" ? INSTALLER_EXECUTABLE_WIN : INSTALLER_EXECUTABLE;
-        if (platform === "windows") {
-            throw new Error("The installer does not support Windows at this time.");
+        if (platform !== "macos") {
+            throw new Error("Codewind can only be started on macOS at this time.");
         }
         return path.join(global.__extRoot, BIN_DIR, INSTALLER_DIR, platform, executable);
     }
@@ -92,7 +92,7 @@ namespace InstallerWrapper {
             location: vscode.ProgressLocation.Notification,
             title: userMsg,
         }, (_progress) => {
-            return new Promise((resolve, reject) => {
+            return new Promise<void>((resolve, reject) => {
                 child_process.execFile(executableLoc, [ cmd ], {
                     cwd: tmpDir,
                     timeout: START_TIMEOUT,
@@ -106,10 +106,10 @@ namespace InstallerWrapper {
                     }
                     Log.i("Successfully started CW with installer");
 
-                    if (cmd === InstallerCommands.START) {
-                        // additional delay
-                        await new Promise((resolve2) => setTimeout(resolve2, 5000));
-                    }
+                    // if (cmd === InstallerCommands.START) {
+                    //     // additional delay
+                    //     await new Promise((resolve2) => setTimeout(resolve2, 5000));
+                    // }
 
                     currentOperation = undefined;
                     resolve();
