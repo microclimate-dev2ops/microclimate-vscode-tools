@@ -119,14 +119,14 @@ namespace Requester {
     // }
 
     export async function requestUnbind(project: Project): Promise<void> {
-        const deleteMsg = Translator.t(STRING_NS, "delete");
-        await doProjectRequest(project, ProjectEndpoints.UNBIND, {}, request.post, deleteMsg);
+        const msg = Translator.t(STRING_NS, "unbind");
+        await doProjectRequest(project, ProjectEndpoints.UNBIND, {}, request.post, msg);
     }
 
     export async function requestSettingChange(
         project: Project, settingName: string, settingKey: string, newValue: string | number, isNumber: boolean): Promise<void> {
 
-        const updateMsg = `Update ${settingName}`;
+        const updateMsg = Translator.t(STRING_NS, "updatingSetting", { settingName });
 
         if (isNumber) {
             newValue = Number(newValue);
@@ -148,16 +148,20 @@ namespace Requester {
                 build: [], app: []
             };
         }
-        return (await doProjectRequest(project, ProjectEndpoints.LOGS, {}, request.get, "available logs", true)).body;
+        const msg = Translator.t(STRING_NS, "checkingAvailableLogs");
+        return (await doProjectRequest(project, ProjectEndpoints.LOGS, {}, request.get, msg, true)).body;
     }
 
     export async function requestToggleLogs(project: Project, enable: boolean): Promise<void> {
         const method = enable ? request.post : request.delete;
-        await doProjectRequest(project, ProjectEndpoints.LOGS, {}, method, `toggle logs ${enable ? "on" : "off"}`, true);
+        const onOrOff = enable ? "on" : "off";
+        const msg = Translator.t(STRING_NS, "togglingLogs", { onOrOff });
+        await doProjectRequest(project, ProjectEndpoints.LOGS, {}, method, msg, true);
     }
 
     export async function areMetricsAvailable(project: Project): Promise<boolean> {
-        const res = await doProjectRequest(project, ProjectEndpoints.METRICS_STATUS, {}, request.get, "metrics status", true);
+        const msg = Translator.t(STRING_NS, "checkingMetrics");
+        const res = await doProjectRequest(project, ProjectEndpoints.METRICS_STATUS, {}, request.get, msg, true);
         const available = res.body.metricsAvailable;
         return available;
     }
@@ -168,7 +172,7 @@ namespace Requester {
      * Always displays a message to the user in the case of an error.
      * @param body - JSON request body for POST, PUT requests. Uses application/json content-type.
      * @param requestFunc - eg. request.get, request.post...
-     * @param userOperationName - If `!silent`, a message will be displayed to the user that they have requested this operation on this project.
+     * @param userOperationName - If `!silent`, a message will be displayed to the user that they are doing this operation on this project.
      * @param silent - If true, an info message will not be displayed when the request is initiated. Error messages are always displayed.
      */
     async function doProjectRequest(

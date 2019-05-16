@@ -187,7 +187,7 @@ function getProjectContext(project: Project): string {
 
     // The final result will look like eg: "ext.cw.project.enabled.autoBuildOn"
     const cv = buildContextValue(contextValues);
-    Log.d(`The context value for ${project.name} is ${cv}`);
+    // Log.d(`The context value for ${project.name} is ${cv}`);
     return cv;
 }
 

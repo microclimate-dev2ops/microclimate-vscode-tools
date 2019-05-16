@@ -105,16 +105,20 @@
     },
 
     "requests": {
-        "restartIntoMode": "Restart into {{ startMode }} mode",
-        "build": "Build",
-        "autoBuildEnable": "Enable auto build",
-        "autoBuildDisable": "Disable auto build",
-        "projectEnable": "Enable",
-        "projectDisable": "Disable",
-        "generateMissingFiles": "Generate Dockerfile",
+        "restartIntoMode": "Restarting into {{ startMode }} mode",
+        "build": "Building",
+        "autoBuildEnable": "Enabling auto build",
+        "autoBuildDisable": "Disabling auto build",
+        "projectEnable": "Enabling",
+        "projectDisable": "Disabling",
+        "generateMissingFiles": "Generating Dockerfile",
+        "unbind": "Unbinding",
+        "updatingSetting": "Updating {{ settingName }} for",
+        "checkingAvailableLogs": "checking available logs",
+        "togglingLogs": "toggling logs {{ onOrOff }}",
+        "checkingMetrics": "checking metrics status",
 
-        "delete": "Unbind",
-        "requestSuccess":   "{{ projectName }}: {{ operationName }} requested.",
+        "requestSuccess":   "{{ projectName }}: {{ operationName }}",
         "requestFail":      "{{ projectName }}: {{ operationName }} failed: {{- err }}"
     },
 
