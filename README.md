@@ -11,13 +11,13 @@
 
 - **[Documentation](https://microclimate.dev/codewindtechpreview)**
 - **[Changelog](https://github.com/microclimate-dev2ops/codewind-vscode/blob/master/CHANGELOG.md)**
-- **[Extension README](https://github.com/microclimate-dev2ops/codewind-vscode/blob/master/dev/README.md)**
 
 Create and develop cloud-native, containerized web applications from VS Code.
 
 ## Getting started
 
-1. Install [VS Code version 1.27 or later](https://code.visualstudio.com/download) and [Codewind](https://microclimate.dev/codewindtechpreview).
+1. Install [VS Code version 1.27 or later](https://code.visualstudio.com/download).
+2. Install [Codewind](https://microclimate.dev/codewindtechpreview).
 2. Install Codewind for VS Code from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=IBM.codewind-tools) or by searching for "Codewind" in the [VS Code Extensions view](https://code.visualstudio.com/docs/editor/extension-gallery#_browse-for-extensions).
 
 If you want to host or build the extension yourself, see [Contributing](#contributing).
@@ -39,7 +39,6 @@ If you want to host or build the extension yourself, see [Contributing](#contrib
 ## Limitations
 - This preview is only available to use on Apple Mac (macOS)
 - You must first run the installer, which you can [download here](https://microclimate.dev/codewindtechpreview)
-
 
 ## Contributing
 We welcome [issues](https://github.com/microclimate-dev2ops/codewind-vscode/issues) and contributions. For more information, see [CONTRIBUTING.md](https://github.com/microclimate-dev2ops/codewind-vscode/tree/master/CONTRIBUTING.md).

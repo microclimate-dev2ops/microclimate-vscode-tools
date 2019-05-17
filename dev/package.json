@@ -364,7 +364,7 @@
         "lint": "tslint -p ./tsconfig.json -t verbose",
         "lint-f": "tslint -p ./tsconfig.json -t verbose --force",
         "copy-strings": "mkdir -p ./out/constants/strings/; cp -v ./src/constants/strings/strings-*.json ./out/constants/strings/",
-        "copy-license": "cp -v ../LICENSE ."
+        "copy-license": "cp -v ../LICENSE ../README.md ."
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",
