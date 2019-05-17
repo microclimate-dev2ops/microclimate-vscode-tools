@@ -36,6 +36,11 @@ If you want to host or build the extension yourself, see [Contributing](#contrib
 - Toggle project auto build and manually initiate project builds.
 - Disable, enable, and delete projects.
 
+## Limitations
+- This preview is only available to use on Apple Mac (macOS)
+- You must first run the installer, which you can [download here](https://microclimate.dev/codewindtechpreview)
+
+
 ## Contributing
 We welcome [issues](https://github.com/microclimate-dev2ops/codewind-vscode/issues) and contributions. For more information, see [CONTRIBUTING.md](https://github.com/microclimate-dev2ops/codewind-vscode/tree/master/CONTRIBUTING.md).
 
