@@ -16,6 +16,7 @@
         "type": "git",
         "url": "https://github.com/microclimate-dev2ops/codewind-vscode"
     },
+    "preview": true,
     "icon": "res/img/microclimate.png",
     "categories": [
         "Other"
