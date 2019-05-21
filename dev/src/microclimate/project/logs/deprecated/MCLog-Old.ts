@@ -12,7 +12,6 @@
 import * as vscode from "vscode";
 
 import Log from "../../../../Logger";
-import Settings from "../../../../constants/Settings";
 import StringNamespaces from "../../../../constants/strings/StringNamespaces";
 import Translator from "../../../../constants/strings/translator";
 
@@ -87,18 +86,8 @@ export class MCLogOld implements vscode.QuickPickItem {
         }
     }
 
-    /**
-     * Call this whenever this log gets updated. It will show the log if the user has that preference set.
-     */
     protected onChange(): void {
-        const setting: string = this.logType === MCLogOld.LogTypes.APP ? Settings.OPEN_ON_CHANGE_APP : Settings.OPEN_ON_CHANGE_BUILD;
-
-        const showOnChange: boolean = vscode.workspace.getConfiguration(Settings.CONFIG_SECTION)
-            .get(setting, false);
-
-        if (showOnChange) {
-            this.showOutputChannel();
-        }
+        // nothing now
     }
 }
 
