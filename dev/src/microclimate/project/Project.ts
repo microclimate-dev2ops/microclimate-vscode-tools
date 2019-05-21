@@ -232,7 +232,7 @@ export default class Project implements vscode.QuickPickItem {
         Log.d("project settings changed " + this.name, event);
 
         if (event.status !== SocketEvents.STATUS_SUCCESS) {
-            let errMsg = "Project settings update failed";
+            let errMsg = "Project settings update failed: ";
             Log.e(errMsg, event.error);
             if (event.error) {
                 errMsg += " " + event.error;
