@@ -146,7 +146,7 @@ export default class MCSocket implements vscode.Disposable {
     }
 
     private readonly onProjectRestarted = async (payload: SocketEvents.IProjectRestartedEvent): Promise<void> => {
-        Log.d("PROJECT RESTARTED", payload);
+        // Log.d("PROJECT RESTARTED", payload);
 
         const project = await this.getProject(payload);
         if (project == null) {

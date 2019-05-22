@@ -109,7 +109,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
             await this.forceUpdateProjectList();
         }
         catch (err) {
-            Log.e("Error getting projects list after connect event", err)
+            Log.e("Error getting projects list after connect event", err);
         }
 
         this.onChange();

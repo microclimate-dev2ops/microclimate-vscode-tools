@@ -41,9 +41,10 @@ export default class ConnectionManager implements vscode.Disposable {
     }
 
     public async dispose(): Promise<void> {
-        return Promise.all(
-            this.connections.map((conn) => conn.dispose())
-        )
+        return Promise.all([
+            // InstallerWrapper.stopAll(),
+            this.connections.map((conn) => conn.dispose()),
+        ])
         .then(() => Promise.resolve());
     }
 

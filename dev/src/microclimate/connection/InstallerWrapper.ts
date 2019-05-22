@@ -52,21 +52,24 @@ namespace InstallerWrapper {
         return path.join(global.__extRoot, BIN_DIR, INSTALLER_DIR, platform, executable);
     }
 
-    let tmpDir: string;
-    let executableLoc: string;
+    // abs path to dir containing copied-out executable
+    let executableDir: string;
+    // abs path to copied-out executable
+    let executablePath: string;
     // serves as a lock, only one operation at a time.
     let currentOperation: InstallerCommands | undefined;
 
-    async function prepare(): Promise<string> {
-        // We have to copy the executable to somewhere this user has write permissions so it can write out ./installer-docker-compose
-        tmpDir = os.tmpdir();
+    /**
+     * Copies the installer to somewhere writeable, and sets executableDir and exectablePath.
+     */
+    async function prepare(): Promise<void> {
+        executableDir = os.tmpdir();
         const executable = getInternalExecutable();
         const executableBasename = path.basename(executable);
-        const tmpExecutableLoc = path.join(tmpDir, executableBasename);
-        Log.d(`Copying ${executable} to ${tmpExecutableLoc}`);
-        fs.copyFileSync(executable, path.join(tmpDir, executableBasename));
-        Log.d("Installer copy succeeded");
-        return tmpExecutableLoc;
+        executablePath = path.join(executableDir, executableBasename);
+        Log.d(`Copying ${executable} to ${executablePath}`);
+        fs.copyFileSync(executable, path.join(executableDir, executableBasename));
+        Log.i("Installer copy succeeded");
     }
 
     function getUserActionName(cmd: InstallerCommands): string {
@@ -74,9 +77,9 @@ namespace InstallerWrapper {
     }
 
     async function installerExec(cmd: InstallerCommands): Promise<void> {
-        if (!executableLoc) {
+        if (!executablePath) {
             // do this once only
-            executableLoc = await prepare();
+            await prepare();
         }
         // tmpDir will now be set too
         else if (currentOperation != null) {
@@ -95,8 +98,8 @@ namespace InstallerWrapper {
             title: userMsg,
         }, (_progress) => {
             return new Promise<void>((resolve, reject) => {
-                child_process.execFile(executableLoc, [ cmd ], {
-                    cwd: tmpDir,
+                child_process.execFile(executablePath, [ cmd ], {
+                    cwd: executableDir,
                     timeout: START_TIMEOUT,
                 }, async (err, stdout, stderr) => {
                     if (err) {
