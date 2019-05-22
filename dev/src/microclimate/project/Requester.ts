@@ -120,7 +120,7 @@ namespace Requester {
 
     export async function requestUnbind(project: Project): Promise<void> {
         const msg = Translator.t(STRING_NS, "unbind");
-        await doProjectRequest(project, ProjectEndpoints.UNBIND, {}, request.post, msg);
+        await doProjectRequest(project, ProjectEndpoints.UNBIND, {}, request.post, msg, true);
     }
 
     export async function requestSettingChange(

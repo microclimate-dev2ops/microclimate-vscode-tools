@@ -47,14 +47,14 @@ namespace Resources {
     export function getIconPaths(icon: Icons): IconPaths {
         const darkPath = getResourcePath(IMG_FOLDER_NAME, DARK_FOLDER_NAME, icon);
         // make sure the file exists and is readable
-        fs.access(darkPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
+        fs.access(darkPath, fs.constants.R_OK, (err) => {
             if (err) {
                 Log.e(`Dark icon not found! ${icon} - error:`, err);
             }
         });
 
         const lightPath = getResourcePath(IMG_FOLDER_NAME, LIGHT_FOLDER_NAME, icon);
-        fs.access(lightPath, fs.constants.R_OK, (err: NodeJS.ErrnoException) => {
+        fs.access(lightPath, fs.constants.R_OK, (err) => {
             if (err) {
                 Log.e(`Light icon not found! ${icon} - error:`, err);
             }

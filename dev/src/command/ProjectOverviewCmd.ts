@@ -16,14 +16,11 @@ import { promptForProject } from "./CommandUtil";
 import * as ProjectOverview from "../microclimate/project/ProjectOverviewPage";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
-import Requester from "../microclimate/project/Requester";
-import Translator from "../constants/strings/translator";
-import StringNamespaces from "../constants/strings/StringNamespaces";
 import toggleAutoBuildCmd from "./ToggleAutoBuildCmd";
 import toggleEnablementCmd from "./ToggleEnablementCmd";
 import requestBuildCmd from "./RequestBuildCmd";
 import Resources from "../constants/Resources";
-import * as MCUtil from "../MCUtil";
+import MiscProjectActions from "../microclimate/project/MiscProjectActions";
 
 export default async function projectOverviewCmd(project: Project): Promise<void> {
     // Log.d("projectOverviewCmd invoked");
@@ -99,12 +96,12 @@ function handleWebviewMessage(this: Project, msg: IWebViewMsg): void {
                 requestBuildCmd(project);
                 break;
             }
-            case ProjectOverview.Messages.DELETE: {
-                onRequestDelete(project);
+            case ProjectOverview.Messages.UNBIND: {
+                MiscProjectActions.unbind(project);
                 break;
             }
             case ProjectOverview.Messages.EDIT: {
-                onRequestEdit(msg.data.type as ProjectOverview.Editable, project);
+                MiscProjectActions.editSetting(msg.data.type as ProjectOverview.Editable, project);
                 break;
             }
             default: {
@@ -131,79 +128,4 @@ async function onRequestOpen(msg: IWebViewMsg): Promise<void> {
     Log.i("The uri is:", uri);
     const cmd: string = msg.data.type === ProjectOverview.Openable.FOLDER ? Commands.VSC_REVEAL_IN_OS : Commands.VSC_OPEN;
     vscode.commands.executeCommand(cmd, uri);
-}
-
-async function onRequestDelete(project: Project): Promise<void> {
-    const deleteMsg = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteProjectMsg", { projectName: project.name });
-    const deleteBtn = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteBtn", { projectName: project.name });
-
-    const response = await vscode.window.showWarningMessage(deleteMsg, { modal: true }, deleteBtn);
-    if (response === deleteBtn) {
-        // Delete the project, then close the webview since the project is gone.
-        Requester.requestUnbind(project);
-    }
-}
-
-async function onRequestEdit(type: ProjectOverview.Editable, project: Project): Promise<void> {
-    // https://github.ibm.com/dev-ex/iterative-dev/wiki/File-watcher-External-APIs#post-apiv1projectsprojectidsettings
-    let userFriendlySetting: string;
-    let settingKey: string;
-    let currentValue: OptionalString;
-    switch (type) {
-        case ProjectOverview.Editable.CONTEXT_ROOT: {
-            userFriendlySetting = "application endpoint path";
-            settingKey = "contextRoot";
-            currentValue = project.contextRoot;
-            if (currentValue.startsWith("/")) {
-                currentValue = currentValue.substring(1, currentValue.length);
-            }
-            break;
-        }
-        case ProjectOverview.Editable.APP_PORT: {
-            userFriendlySetting = "application port";
-            settingKey = "internalPort";
-            currentValue = project.ports.internalPort ? project.ports.internalPort.toString() : undefined;
-            break;
-        }
-        case ProjectOverview.Editable.DEBUG_PORT: {
-            userFriendlySetting = "debug port";
-            settingKey = "internalDebugPort";
-            currentValue = project.ports.internalDebugPort ? project.ports.internalDebugPort.toString() : undefined;
-            break;
-        }
-        default: {
-            Log.e("Unrecognized editable type: ", type);
-            return;
-        }
-    }
-
-    const options: vscode.InputBoxOptions = {
-        prompt: `Enter a new ${userFriendlySetting} for ${project.name}`,
-        value: currentValue,
-        valueSelection: undefined,
-    };
-
-    const isPort: boolean = type === ProjectOverview.Editable.APP_PORT || type === ProjectOverview.Editable.DEBUG_PORT;
-
-    if (isPort) {
-        options.validateInput = (inputToValidate: string): OptionalString => {
-            if (!MCUtil.isGoodPort(Number(inputToValidate))) {
-                return Translator.t(StringNamespaces.CMD_NEW_CONNECTION, "invalidPortNumber", { port: inputToValidate });
-            }
-            return undefined;
-        };
-    }
-
-    const input = await vscode.window.showInputBox(options);
-    if (input == null) {
-        return;
-    }
-    Log.i(`Requesting to change ${type} for ${project.name} to ${input}`);
-
-    try {
-        await Requester.requestSettingChange(project, userFriendlySetting, settingKey, input, isPort);
-    }
-    catch (err) {
-        // requester will show the error
-    }
 }
