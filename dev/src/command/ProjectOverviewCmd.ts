@@ -161,7 +161,7 @@ async function onRequestEdit(type: ProjectOverview.Editable, project: Project): 
         }
         case ProjectOverview.Editable.APP_PORT: {
             userFriendlySetting = "application port";
-            settingKey = "internalAppPort";
+            settingKey = "internalPort";
             currentValue = project.ports.internalPort ? project.ports.internalPort.toString() : undefined;
             break;
         }
