@@ -74,28 +74,41 @@ export default async function attachDebuggerCmd(project: Project, isRestart: boo
                 startDebugWithTimeout);
 
         // will throw error if connection fails or timeout
-        const successMsg = await startDebugWithTimeout;
+        const success = await startDebugWithTimeout;
 
-        Log.i("Debugger attach success:", successMsg);
-        vscode.window.showInformationMessage(successMsg);
-        return true;
-    }
-    catch (err) {
-        const debugUrl = project.debugUrl;
-        let failMsg;
-        if (debugUrl != null) {
-            failMsg = Translator.t(STRING_NS, "failedToAttachWithUrl", { projectName: project.name, debugUrl });
+        if (success) {
+            const successMsg = Translator.t(STRING_NS, "debuggerAttachSuccess", { projectName: project.name, debugUrl: project.debugUrl });
+            Log.i("Debugger attach success:", successMsg);
+            vscode.window.showInformationMessage(successMsg);
         }
         else {
-            failMsg = Translator.t(STRING_NS, "failedToAttach", { projectName: project.name });
+            onFailure(project);
         }
+        return success;
+    }
+    catch (err) {
+        onFailure(project, err);
+        return false;
+    }
+}
 
+function onFailure(project: Project, err?: Error): void {
+    const debugUrl = project.debugUrl;
+    let failMsg;
+    if (debugUrl != null) {
+        failMsg = Translator.t(STRING_NS, "failedToAttachWithUrl", { projectName: project.name, debugUrl });
+    }
+    else {
+        failMsg = Translator.t(STRING_NS, "failedToAttach", { projectName: project.name });
+    }
+
+    if (err) {
         const extraErrMsg: string = err.message ? err.message : "";         // non-nls
         if (extraErrMsg) {
             failMsg += Translator.t(STRING_NS, "errDetailSeparator") + extraErrMsg;
         }
-        Log.e(failMsg, err);
-        vscode.window.showErrorMessage(failMsg);
-        return false;
     }
+
+    Log.e(failMsg, err);
+    vscode.window.showErrorMessage(failMsg);
 }

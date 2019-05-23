@@ -26,11 +26,9 @@ export default class DebugUtils {
 
     /**
      * Start a debug session for the given project.
-     * @return
-     *  A promise which resolves to a user-friendly success message,
-     *  or throws an Error with a user-friendly error message.
+     * @return Success status
      */
-    public static async startDebugSession(project: Project): Promise<string> {
+    public static async startDebugSession(project: Project): Promise<boolean> {
         Log.i("startDebugSession for project " + project.name);
         if (project.type.debugType == null) {
             // Just in case.
@@ -45,15 +43,15 @@ export default class DebugUtils {
         const pfName: string = projectFolder != null ? projectFolder.name : "undefined";        // non-nls
         Log.i("Running debug launch on project folder: " + pfName, debugConfig);
 
-        const priorDebugSession = vscode.debug.activeDebugSession;
-        let debugSuccess = await vscode.debug.startDebugging(projectFolder, debugConfig);
+        // const priorDebugSession = vscode.debug.activeDebugSession;
+        const debugSuccess = await vscode.debug.startDebugging(projectFolder, debugConfig);
 
         // startDebugging above will often return 'true' before the debugger actually connects, so it could still fail.
         // EG connection refused / timeout are not handled by startDebugging
         // Do some extra checks here to ensure that a new debug session was actually launched, and report failure if it wasn't.
 
         // optional extra error message
-        let errDetail: string = "";     // non-nls
+        // const errDetail: string = "";     // non-nls
         const currentDebugSession = vscode.debug.activeDebugSession;
 
         if (currentDebugSession == null) {
@@ -66,25 +64,21 @@ export default class DebugUtils {
             Log.w(`There is an active debug session "${currentDebugSession.name}", but it's not the one we just tried to launch`);
             debugSuccess = false;
         }*/
+        /*
         else if (currentDebugSession.name === debugConfig.name && priorDebugSession != null && priorDebugSession.id === currentDebugSession.id) {
             // This means we were already debugging this project but failed to create a new session - the old one is still running
             // This probably happened because we tried to Attach Debugger but the debug port was already blocked by an existing session.
             Log.w("Project already had an active debug session, and a new one was not created");
             debugSuccess = false;
             errDetail = Translator.t(STRING_NS, "maybeAlreadyDebugging");
-        }
+        }*/
         // TODO if they are already debugging node and they try to debug another node, the debug console will only be for the new session
         // There might be other error scenarios I've missed.
         else {
             Log.i("Debugger attach appeared to succeed");
         }
 
-        if (debugSuccess) {
-            return Translator.t(STRING_NS, "debuggerAttachSuccess", { projectName: project.name, debugUrl: project.debugUrl });
-        }
-        else {
-            throw new Error(errDetail);
-        }
+        return debugSuccess;
     }
 
     /**
