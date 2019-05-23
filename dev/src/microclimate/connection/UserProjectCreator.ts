@@ -21,7 +21,7 @@ import SocketEvents from "./SocketEvents";
 export interface IMCTemplateData {
     label: string;
     description: string;
-    extension: string;
+    url: string;
     language: string;
 }
 
@@ -121,7 +121,7 @@ namespace UserProjectCreator {
 
         const payload = {
             projectName: projectName,
-            templateID: projectTypeSelected.extension,
+            url: projectTypeSelected.url,
             parentPath: projectLocation,
         };
 
