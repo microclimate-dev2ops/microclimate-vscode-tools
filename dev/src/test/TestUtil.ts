@@ -37,7 +37,7 @@ namespace TestUtil {
         try {
             // turn our internal project type into a user project type which we can pass to the project creator
             const typeForCreation: IMCTemplateData = {
-                extension: TestConfig.getTemplateID(type),
+                url: TestConfig.getUrl(type),
                 language: type.language,
                 // label and description are displayed to user but not used by the test.
                 description: "",

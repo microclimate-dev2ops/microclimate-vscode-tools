@@ -17,7 +17,7 @@ namespace TestConfig {
         projectType: ProjectType;
         // The name of this project type's extension in Microclimate.
         // Undefined for node
-        templateID: string;
+        url: string;
         // We want to tests projects that can't be restarted too,
         // so tell the test whether or not the restart should succeed here.
         canRestart: boolean;
@@ -26,46 +26,47 @@ namespace TestConfig {
         projectID?: string;
     }
 
+
     const testableProjectTypes: ITestableProjectType[] = [
         {
             projectType: new ProjectType(ProjectType.InternalTypes.NODE, ProjectType.Languages.NODE),
             canRestart: true,
-            templateID: "nodeExpressTemplate",
+            url: "https://github.com/microclimate-dev2ops/nodeExpressTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.SPRING, ProjectType.Languages.JAVA),
             canRestart: true,
-            templateID: "springJavaTemplate",
+            url: "https://github.com/microclimate-dev2ops/springJavaTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.MICROPROFILE, ProjectType.Languages.JAVA),
             canRestart: true,
-            templateID: "springJavaTemplate",
+            url: "https://github.com/microclimate-dev2ops/javaMicroProfileTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.SWIFT, ProjectType.Languages.SWIFT),
             canRestart: false,
-            templateID: "swiftTemplate",
+            url: "https://github.com/microclimate-dev2ops/swiftTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.PYTHON),
             canRestart: false,
-            templateID: "templateExample",
+            url: "https://github.com/microclimate-dev2ops/SVTPythonTemplate",
         },
         {
             projectType: new ProjectType(ProjectType.InternalTypes.DOCKER, ProjectType.Languages.GO),
             canRestart: false,
-            templateID: "templateGoExample",
+            url: "https://github.com/microclimate-dev2ops/microclimateGoTemplate",
         }
     ];
 
-    export function getTemplateID(projectType: ProjectType): string {
+    export function getUrl(projectType: ProjectType): string {
         const found = testableProjectTypes.find((tpt) => tpt.projectType === projectType);
         if (!found) {
             // The templates we use for tests are expected to always exist in Microclimate
             throw new Error("Did not find template corresponding to " + projectType);
         }
-        return found.templateID;
+        return found.url;
     }
 
     const TYPES_ENV_VAR = "project_types";

@@ -65,7 +65,7 @@ async function promptForTemplate(connection: Connection): Promise<IMCTemplateDat
         return {
             ...type,
             detail: type.language,
-            extension: type.extension,
+            extension: type.url,
         };
     });
 
