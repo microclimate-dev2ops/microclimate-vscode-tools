@@ -20,12 +20,15 @@ env:
     - rc=true
 '
 
-if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" && -z "$TRAVIS_TAG" ]]; then
-    echo "$(basename $0): not a release or cronjob, skipping deploy"
-    exit 0
-elif [[ -z "$TRAVIS_TAG" && "$TRAVIS_BRANCH" != "master" ]]; then
-    echo "$(basename $0): not a tag or master branch, skipping deploy"
-    exit 0
+# Set force_deploy=true to skip deploy checks and always deploy.
+if [[ $force_deploy != "true" ]]; then
+    if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" && -z "$TRAVIS_TAG" ]]; then
+        echo "$(basename $0): not a release or cronjob, skipping deploy"
+        exit 0
+    elif [[ -z "$TRAVIS_TAG" && "$TRAVIS_BRANCH" != "master" ]]; then
+        echo "$(basename $0): not a tag or master branch, skipping deploy"
+        exit 0
+    fi
 fi
 
 if [[ -n "$TRAVIS_TAG" ]]; then
