@@ -196,7 +196,7 @@ export default class MCSocket implements vscode.Disposable {
         if (project == null) {
             return;
         }
-        Log.d("projectSettingsChanged", payload);
+        // Log.d("projectSettingsChanged", payload);
         return project.onSettingsChangedEvent(payload);
     }
 
