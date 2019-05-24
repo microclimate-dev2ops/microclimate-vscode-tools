@@ -238,7 +238,7 @@ export default class Project implements vscode.QuickPickItem {
                 errMsg += " " + event.error;
             }
             vscode.window.showErrorMessage(errMsg);
-            return;
+            // We still continue with the update even in the case of error
         }
 
         // Only one of contextroot, app port, or debug port should be set
@@ -360,7 +360,6 @@ export default class Project implements vscode.QuickPickItem {
         ])
         .then(() => {
             this.connection.onChange(this);
-            Promise.resolve();
         });
     }
 
