@@ -115,7 +115,7 @@ namespace UserProjectCreator {
         return selectedDirs[0];
     }
 
-    export async function requestCreate(
+    async function requestCreate(
         connection: Connection, projectTypeSelected: IMCTemplateData, projectName: string, projectLocation: string)
         : Promise<IInitializationResponse> {
 
@@ -132,7 +132,7 @@ namespace UserProjectCreator {
             body: payload,
         });
 
-        Log.i("Creation response", creationRes);
+        Log.d("Creation response", creationRes);
         return creationRes;
     }
 

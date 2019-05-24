@@ -29,9 +29,15 @@
     ],
     "activationEvents": [
         "onView:ext.cw.explorer",
-        "workspaceContains:**/.idc",
-        "workspaceContains:**/.cfignore",
-        "onCommand:ext.cw.activateConn"
+        "onCommand:ext.cw.activateConn",
+        "onCommand:ext.cw.createProject",
+        "workspaceContains:.idc",
+        "workspaceContains:.projects",
+        "workspaceContains:.extensions",
+        "workspaceContains:.mc-settings",
+        "workspaceContains:.cw-settings",
+        "workspaceContains:**/.mc-settings",
+        "workspaceContains:**/.cw-settings"
     ],
     "main": "./out/extension",
     "contributes": {

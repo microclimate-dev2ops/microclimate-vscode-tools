@@ -23,7 +23,7 @@ interface IProjectStateAwaiting {
     projectID: string;
     projectName: string;
     states: ProjectState.AppStates[];
-    resolveFunc: ( () => void );
+    resolveFunc: (() => void );
 }
 
 export default class ProjectObserver {
@@ -47,12 +47,12 @@ export default class ProjectObserver {
         ProjectObserver._instance = this;
         ConnectionManager.instance.addOnChangeListener(this.onChange);
 
-        setInterval( () => {
+        setInterval(() => {
             if (this.projectPendingState != null) {
                 Log.t(`Waiting for ${this.projectPendingState.projectName} to be ${this.projectPendingState.states.join(" or ")}`);
             }
             if (this.projectsPendingCreation.length > 0) {
-                Log.t("Project(s) pending creation: " + this.projectsPendingCreation.join(", "));
+                Log.t("Project(s) pending creation: " + JSON.stringify(this.projectsPendingCreation));
             }
         }, 30000);
     }
@@ -63,7 +63,7 @@ export default class ProjectObserver {
         // Check if any of the projects pending creation have been created.
         for (let i = this.projectsPendingCreation.length - 1; i >= 0; i--) {
             const pendingCreation = this.projectsPendingCreation[i];
-            const findResult = projects.find( (p) => p.name === pendingCreation.projectName);
+            const findResult = projects.find((p) => p.name === pendingCreation.projectName);
             if (findResult != null) {
                 Log.t(`Project ${pendingCreation.projectName} was created`);
                 pendingCreation.resolveFunc(findResult.id);
@@ -73,9 +73,8 @@ export default class ProjectObserver {
 
         if (this.projectPendingState != null) {
             const project = await this.connection.getProjectByID(this.projectPendingState.projectID);
-            if (project == null) {
-                Log.e("Couldn't get project with ID " + this.projectPendingState.projectID);
-                this.projectPendingState = undefined;
+            if (!project) {
+                Log.t(`Error: couldn't get project with ID ${this.projectPendingState.projectID}`);
             }
             else if (this.projectPendingState.states.includes(project.state.appState)) {
                 Log.t(`Project ${project.name} reached pending state ${project.state}`);
@@ -124,7 +123,7 @@ export default class ProjectObserver {
 
         Log.t(`Wait for ${project.name} to be ${JSON.stringify(states)}, is currently ${project.state.appState}`);
 
-        return new Promise<void> ( (resolve) => {
+        return new Promise<void>((resolve) => {
             this.projectPendingState = {
                 projectID: project.id,
                 projectName: project.name,
@@ -137,7 +136,7 @@ export default class ProjectObserver {
     }
 
     public async awaitCreate(name: string): Promise<string> {
-        return new Promise<string> ( (resolve) => {
+        return new Promise<string>((resolve) => {
             this.projectsPendingCreation.push({
                 projectName: name,
                 resolveFunc: resolve

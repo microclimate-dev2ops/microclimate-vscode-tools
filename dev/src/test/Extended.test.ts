@@ -107,7 +107,7 @@ describe(`Extended tests`, async function() {
         });
 
         let validatorWorked = false;
-        it(`${testType.projectType} - should have a validation error after deleting the Dockerfile`, async function() {
+        it.skip(`${testType.projectType} - should have a validation error after deleting the Dockerfile`, async function() {
             expect(project, "Failed to get test project").to.exist;
             this.timeout(TestUtil.getMinutes(1));
 

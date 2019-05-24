@@ -44,8 +44,15 @@ export default async function restartProjectCmd(project: Project, debug: boolean
         return false;
     }
 
-    const response = await Requester.requestProjectRestart(project, startMode);
-    const statusCode = Number(response.statusCode);
+    let restartResponse;
+    try {
+        restartResponse = await Requester.requestProjectRestart(project, startMode);
+    }
+    catch (err) {
+        // requester will display the error
+        return false;
+    }
+    const statusCode = Number(restartResponse.statusCode);
 
     // Note here that we don't return whether or not the restart actually suceeded,
     // just whether or not it was accepted by the server and therefore initiated.

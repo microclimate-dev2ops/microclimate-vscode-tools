@@ -26,8 +26,8 @@ import TestUtil from "./TestUtil";
 import ProjectObserver from "./ProjectObserver";
 import SocketTestUtil from "./SocketTestUtil";
 import SocketEvents from "../microclimate/connection/SocketEvents";
-import Requester from "../microclimate/project/Requester";
 import TestConfig from "./TestConfig";
+import MiscProjectActions from "../microclimate/project/MiscProjectActions";
 
 describe(`Restart tests`, async function() {
 
@@ -40,8 +40,6 @@ describe(`Restart tests`, async function() {
             this.skip();
         }
     });
-
-
 
     for (const testType of TestConfig.getProjectTypesToTest()) {
         // These can't be set here because the base test has to execute first
@@ -78,8 +76,6 @@ describe(`Restart tests`, async function() {
             Log.t(`${testType.projectType} - restart into Run mode test passed`);
         });
 
-        afterEach("Kill active debug session", TestUtil.killActiveDebugSession);
-
         // There's no point in running the next test if this one fails, so track that with this variable.
         let debugReady = false;
         const debugDelay = 10000;
@@ -112,6 +108,8 @@ describe(`Restart tests`, async function() {
             // Now wait for it to enter Debugging state (much slower for Liberty)
             await ProjectObserver.instance.awaitAppState(project.id, ProjectState.AppStates.DEBUGGING);
             Log.t("Debug restart test passed");
+
+            await TestUtil.killActiveDebugSession();
         });
 
         if (canRestart) {
@@ -129,13 +127,15 @@ describe(`Restart tests`, async function() {
                 await assertDebugSessionExists(project.name);
 
                 Log.t("Debugger connect succeeded again");
+
+                await TestUtil.killActiveDebugSession();
             });
         }
 
         it(`should clean up the test project`, async function() {
             if (project != null) {
                 try {
-                    await Requester.requestUnbind(project);
+                    await MiscProjectActions.unbind(project, false);
                     ProjectObserver.instance.onDelete(project.id);
                 }
                 catch (err) {

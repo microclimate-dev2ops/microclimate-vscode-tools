@@ -22,27 +22,29 @@ import * as MCUtil from "../../MCUtil";
 import { Editable } from "../project/ProjectOverviewPage";
 
 /**
- * Code to execute actions on projects, which do not map directly to a Command.
+ * Actions which execute on projects and do not map directly to a Command.
  */
 
 namespace MiscProjectActions {
 
     /**
-     * @param deleteLocalFiles - Should only be provided by test code, we'll prompt the user otherwise.
+     * @param prompt - Set this to `false` to skip prompting the user, and instead just do the unbind & delete silently.
      */
-    export async function unbind(project: Project, deleteLocalFiles?: boolean): Promise<void> {
-        const deleteMsg = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteProjectMsg", { projectName: project.name });
-        const deleteBtn = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteBtn", { projectName: project.name });
+    export async function unbind(project: Project, prompt: boolean = true): Promise<void> {
+        let doDeleteProjectDir: boolean;
 
-        const deleteRes = await vscode.window.showInformationMessage(deleteMsg, { modal: true }, deleteBtn);
-        if (deleteRes !== deleteBtn) {
-            return;
-        }
+        if (prompt) {
+            const deleteMsg = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteProjectMsg", { projectName: project.name });
+            const deleteBtn = Translator.t(StringNamespaces.CMD_MISC, "confirmDeleteBtn", { projectName: project.name });
 
-        const projectDirPath: string = project.localPath.fsPath;
+            const deleteRes = await vscode.window.showInformationMessage(deleteMsg, { modal: true }, deleteBtn);
+            if (deleteRes !== deleteBtn) {
+                // cancelled
+                return;
+            }
 
-        let deleteFiles: boolean = deleteLocalFiles || false;
-        if (deleteLocalFiles == null) {
+            const projectDirPath: string = project.localPath.fsPath;
+
             const deleteDirMsg = Translator.t(StringNamespaces.CMD_MISC, "alsoDeleteDirMsg", { dirPath: projectDirPath });
             const deleteDirBtn = Translator.t(StringNamespaces.CMD_MISC, "alsoDeleteDirBtn");
             // const dontDeleteDirBtn = Translator.t(StringNamespaces.CMD_MISC, "dontDeleteDirBtn");
@@ -51,31 +53,34 @@ namespace MiscProjectActions {
             const deleteDirRes = await vscode.window.showWarningMessage(deleteDirMsg, { modal: true },
                 deleteDirBtn, /* dontDeleteDirBtn  deleteNeverBtn, deleteAlwaysBtn */);
 
-            deleteFiles = deleteDirRes === deleteDirBtn;
+            doDeleteProjectDir = deleteDirRes === deleteDirBtn;
         }
-
-        let deleteFilesProm: Thenable<void> = Promise.resolve();
-        if (deleteFiles) {
-            deleteFilesProm = vscode.window.withProgress({
-                cancellable: false,
-                location: vscode.ProgressLocation.Notification,
-                title: `Deleting ${projectDirPath}...`,
-            }, (_progress) => {
-                return new Promise<void>((resolve, _reject) => {
-                    rmrf(projectDirPath, { glob: false }, (err) => {
-                        if (err) {
-                            vscode.window.showErrorMessage(`Failed to delete ${project.name} directory: ${MCUtil.errToString(err)}`);
-                        }
-                        return resolve();
-                    });
-                });
-            });
+        else {
+            doDeleteProjectDir = true;
         }
 
         await Promise.all([
             Requester.requestUnbind(project),
-            deleteFilesProm,
+            doDeleteProjectDir ? deleteProjectDir(project) : Promise.resolve(),
         ]);
+    }
+
+    async function deleteProjectDir(project: Project): Promise<void> {
+        const projectDirPath = project.localPath.fsPath;
+        return vscode.window.withProgress({
+            cancellable: false,
+            location: vscode.ProgressLocation.Notification,
+            title: `Deleting ${projectDirPath}...`,
+        }, (_progress) => {
+            return new Promise<void>((resolve, _reject) => {
+                rmrf(projectDirPath, { glob: false }, (err) => {
+                    if (err) {
+                        vscode.window.showErrorMessage(`Failed to delete ${project.name} directory: ${MCUtil.errToString(err)}`);
+                    }
+                    return resolve();
+                });
+            });
+        });
     }
 
     export async function editSetting(type: Editable, project: Project): Promise<void> {

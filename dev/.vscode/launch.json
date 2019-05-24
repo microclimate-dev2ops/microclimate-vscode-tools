@@ -27,14 +27,17 @@
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test",
                 // Replace below with your local microclimate-workspace
-                // "/Users/tim/programs/microclimate/microclimate-workspace/"
-                "/Users/tim/microclimate-workspace/"
+                "/Users/tim/programs/tempest/microclimate-workspace"
+                // "/Users/tim/microclimate-workspace/"
             ],
             "outFiles": [
                 "${workspaceFolder}/dev/out/test/**/*.js"
             ],
             "env": {
-                "project_types": "node.js, spring, go",
+                // See ProjectType.ts Types for valid values (case insensitive)
+                "project_types": "node.js, spring, go, python",
+                // "project_types": "spring, microprofile",
+                // Base tests are always run. 'extended' and 'restart' are optional.
                 "test_scope": "extended, restart"
             },
             "preLaunchTask": "build"
