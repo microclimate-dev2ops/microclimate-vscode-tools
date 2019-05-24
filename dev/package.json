@@ -24,8 +24,11 @@
     ],
     "activationEvents": [
         "onView:ext.mc.mcProjectExplorer",
-        "workspaceContains:**/.idc",
-        "workspaceContains:**/.cfignore",
+        "workspaceContains:.idc",
+        "workspaceContains:.projects",
+        "workspaceContains:.extensions",
+        "workspaceContains:.mc-settings",
+        "workspaceContains:**/.mc-settings",
         "onCommand:ext.mc.newConnection",
         "onCommand:ext.mc.newDefaultConnection"
     ],
