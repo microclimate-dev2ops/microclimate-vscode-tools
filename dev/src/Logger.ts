@@ -139,7 +139,7 @@ export class Log {
                 consoleFn(label, s);
             }
 
-            fs.appendFile(this.logFilePath, msg, (err: NodeJS.ErrnoException) => {
+            fs.appendFile(this.logFilePath, msg, (err) => {
                 if (err != null) {
                     console.error("FS error when logging:", err);
                 }

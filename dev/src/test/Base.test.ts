@@ -64,7 +64,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         expect(logPath).to.exist;
         Log.t("The logs are at " + logPath);
 
-        fs.readFile(logPath, (err: NodeJS.ErrnoException, data) => {
+        fs.readFile(logPath, (err, data) => {
             expect(err, "Couldn't read log file, error was " + err).to.be.null;
             const logContents = data.toString("utf8");
             expect(logContents).to.have.length.greaterThan(0, "Log existed but was empty!");
