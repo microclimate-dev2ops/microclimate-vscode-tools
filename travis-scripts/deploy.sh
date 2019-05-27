@@ -14,15 +14,9 @@
 # To be run from the repository root directory
 # $artifact_name must be set and the file it points to must be in the working directory
 
-# In the Travis UI, set the following to do an RC build:
-: '
-env:
-    - rc=true
-'
-
 # Set force_deploy=true to skip deploy checks and always deploy.
 if [[ $force_deploy != "true" ]]; then
-    if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" && -z "$TRAVIS_TAG" ]]; then
+    if [[ "$TRAVIS_EVENT_TYPE" != "cron" && -z "$TRAVIS_TAG" ]]; then
         echo "$(basename $0): not a release or cronjob, skipping deploy"
         exit 0
     elif [[ -z "$TRAVIS_TAG" && "$TRAVIS_BRANCH" != "master" ]]; then
@@ -36,17 +30,14 @@ if [[ -n "$TRAVIS_TAG" ]]; then
     echo "Releasing $TRAVIS_TAG"
     # No extra build_label; just the version eg. 19.1
     build_label=""
-    deploy_dir="release"
-elif [[ "$rc" == "true" ]]; then
-    build_label="_rc-${datetime}"
-    deploy_dir="rc"
-elif [[ $force_deploy == "true" ]]; then
+    deploy_dir="tagged"
+elif [[ "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
+    build_label="_nightly-${datetime}"
+    deploy_dir="nightly"
+else
     branch="$TRAVIS_BRANCH"
     build_label="_${branch}"
     deploy_dir="${branch}"
-else
-    build_label="_nightly-${datetime}"
-    deploy_dir="nightly"
 fi
 
 echo "Build label is \"$build_label\""
