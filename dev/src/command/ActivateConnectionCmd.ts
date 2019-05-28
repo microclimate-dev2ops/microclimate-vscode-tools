@@ -16,12 +16,8 @@ import ConnectionManager from "../microclimate/connection/ConnectionManager";
 import Log from "../Logger";
 import Commands from "../constants/Commands";
 import Connection from "../microclimate/connection/Connection";
-import Translator from "../constants/strings/translator";
-import StringNamespaces from "../constants/strings/StringNamespaces";
 import MCEnvironment from "../microclimate/connection/MCEnvironment";
-import InstallerWrapper from "../microclimate/connection/InstallerWrapper";
-
-const STRING_NS = StringNamespaces.CMD_NEW_CONNECTION;
+import InstallerWrapper, { InstallerCommands } from "../microclimate/connection/InstallerWrapper";
 
 export default async function activateConnectionCmd(): Promise<Connection | undefined> {
     try {
@@ -32,8 +28,10 @@ export default async function activateConnectionCmd(): Promise<Connection | unde
         return connection;
     }
     catch (err) {
-        Log.e("Failed to start/connect to codewind:", err);
-        vscode.window.showErrorMessage("Failed to start Codewind: " + MCUtil.errToString(err));
+        if (!InstallerWrapper.isCancellation(err)) {
+            Log.e("Failed to start/connect to codewind:", err);
+            vscode.window.showErrorMessage("Failed to start Codewind: " + MCUtil.errToString(err));
+        }
         return undefined;
     }
 }
@@ -45,10 +43,30 @@ async function activate(url: vscode.Uri): Promise<MCEnvironment.IMCEnvData> {
         Log.d("Initial connect succeeded, no need to start Codewind");
     }
     catch (err) {
-        await InstallerWrapper.start();
+        if (await InstallerWrapper.isInstallRequired()) {
+            const installAffirmBtn = "Install";
+            const moreInfoBtn = "More Info";
+            const response = await vscode.window.showInformationMessage(
+                `The Codewind backend needs to be installed before the extension can be used. ` +
+                `This downloads the Codewind Docker images, which are about 1GB in size.`,
+                { modal: true }, installAffirmBtn, moreInfoBtn,
+            );
+
+            if (response === installAffirmBtn) {
+                await InstallerWrapper.installerExec(InstallerCommands.INSTALL);
+            }
+            else {
+                if (response === moreInfoBtn) {
+                    vscode.window.showInformationMessage("More info not implemented");
+                }
+                throw new Error("Codewind cannot be used until the backend is installed.");
+            }
+        }
+        await InstallerWrapper.installerExec(InstallerCommands.START);
 
         Log.d("Codewind should have started, getting ENV data now");
         envData = await MCEnvironment.getEnvData(url);
+        // vscode.window.showInformationMessage("Codewind started successfully");
     }
 
     Log.i("ENV data:", envData);
@@ -88,6 +106,7 @@ async function connect(url: vscode.Uri, envData: MCEnvironment.IMCEnvData): Prom
  * Show a 'connection succeeded' message and provide a button to open the connection's workspace. Doesn't need to be awaited.
  */
 async function onConnectSuccess(connection: Connection): Promise<void> {
+    Log.i("Successfully connected to codewind at " + connection.url);
     let inMcWorkspace = false;
     // See if the user has this connection's workspace open
     const wsFolders = vscode.workspace.workspaceFolders;
@@ -95,16 +114,11 @@ async function onConnectSuccess(connection: Connection): Promise<void> {
         inMcWorkspace = wsFolders.some((folder) => folder.uri.fsPath.includes(connection.workspacePath.fsPath));
     }
 
-    const successMsg = Translator.t(STRING_NS, "connectionSucceeded",
-            { connectionUri: connection.url, workspacePath: connection.workspacePath.fsPath }
-    );
-    Log.i(successMsg);
-
     if (!inMcWorkspace) {
-        const openWsBtn = Translator.t(STRING_NS, "openWorkspaceBtn");
+        const openWsBtn = "Open Workspace";
 
         // Provide a button to change their workspace to the microclimate-workspace if they wish
-        vscode.window.showInformationMessage(successMsg, openWsBtn)
+        vscode.window.showInformationMessage(`Open your Codewind workspace at ${connection.workspacePath.fsPath}`, openWsBtn)
         .then((response) => {
             if (response === openWsBtn) {
                 vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, connection.workspacePath);
@@ -113,6 +127,6 @@ async function onConnectSuccess(connection: Connection): Promise<void> {
     }
     else {
         // The user already has the workspace open, we don't have to do it for them.
-        vscode.window.showInformationMessage(successMsg);
+        // vscode.window.showInformationMessage(successMsg);
     }
 }

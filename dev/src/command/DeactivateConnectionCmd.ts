@@ -14,7 +14,7 @@ import * as vscode from "vscode";
 import Connection from "../microclimate/connection/Connection";
 import { promptForConnection } from "./CommandUtil";
 import Log from "../Logger";
-import InstallerWrapper from "../microclimate/connection/InstallerWrapper";
+import InstallerWrapper, { InstallerCommands } from "../microclimate/connection/InstallerWrapper";
 import * as MCUtil from "../MCUtil";
 
 export default async function deactivateConnectionCmd(connection: Connection): Promise<void> {
@@ -29,9 +29,17 @@ export default async function deactivateConnectionCmd(connection: Connection): P
     }
 
     try {
-        return await InstallerWrapper.stopAll();
+        return await InstallerWrapper.installerExec(InstallerCommands.STOP_ALL);
     }
     catch (err) {
-        vscode.window.showErrorMessage("Error stopping Codewind: " + MCUtil.errToString(err));
+        if (!InstallerWrapper.isCancellation(err)) {
+            Log.e("Error stopping codewind", err);
+            if (err.toString() === err) {
+                vscode.window.showErrorMessage("Error stopping Codewind: " + err);
+            }
+            else {
+                vscode.window.showErrorMessage("Error stopping Codewind: " + MCUtil.errToString(err));
+            }
+        }
     }
 }

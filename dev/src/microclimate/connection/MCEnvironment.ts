@@ -19,8 +19,6 @@ import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import Connection from "./Connection";
 
-const STRING_NS = StringNamespaces.CMD_NEW_CONNECTION;
-
 namespace MCEnvironment {
 
     // From https://github.ibm.com/dev-ex/microclimate/blob/master/docker/portal/server.js#L229
@@ -45,8 +43,9 @@ namespace MCEnvironment {
         }
         catch (err) {
             Log.i(`Connection ENV Request fail - ${err}`);
+            // With the new install/start being abstracted away from the user, they should not have to see this message.
             if (err instanceof reqErrors.RequestError) {
-                throw new Error(Translator.t(STRING_NS, "connectFailed", { uri: mcUri }));
+                throw new Error(Translator.t(StringNamespaces.DEFAULT, "connectFailed", { uri: mcUri }));
             }
             throw err;
         }

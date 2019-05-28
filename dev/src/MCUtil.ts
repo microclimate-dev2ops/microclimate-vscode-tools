@@ -96,6 +96,11 @@ export function isGoodPort(port: OptionalNumber): boolean {
 }
 
 export function errToString(err: any, isOidc: boolean = false): string {
+    if (err.toString() === err) {
+        // string errors don't need any change
+        return err.toString();
+    }
+
     if (isOidc) {
         return err.error_description || err.error || err.message || JSON.stringify(err);
     }

@@ -10,6 +10,9 @@
 
     "focusOnProblems": "Go to Problems",
 
+    "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be a positive integer less than 65536.",
+    "connectFailed": "Connecting to Codewind at {{- uri }} failed.",
+
     "command": {
         "noContainerForShell": "{{ projectName }} does not have an application container running. Wait until the project is Running.",
         "alreadyInSelectedFolder": "The selected folder is already your workspace root.",
@@ -61,22 +64,6 @@
         "noLongerUpdating": "This log is no longer updating: {{ reason }}.",
         "notUpdatingReasonDisconnect": "Codewind disconnected",
         "notUpdatingReasonDisabled": "the project has been disabled. The log will be recreated when there is new output"
-    },
-
-    "newConnectionCmd": {
-        "enterHost": "Enter the hostname or IP for the Codewind instance you want to connect to.",
-        "enterPort": "Enter the Port for the local Codewind instance you want to connect to.",
-        "enterDifferentPortBtn": "Enter a different port",
-        "invalidPortNumber": "Invalid port \"{{ port }}\". Port must be a positive integer less than 65536.",
-        "connectionSucceeded": "New connection to {{- connectionUri }} succeeded. Workspace path is: {{- workspacePath }}.",
-        "openWorkspaceBtn": "Open workspace",
-        "editConnectionBtn": "Edit",
-        "retryConnectionBtn": "Retry",
-        "connectFailed": "Connecting to Codewind at {{- uri }} failed.",
-
-        "versionNotProvided": "Your version of Codewind is not supported. At least {{ requiredVersion }} is required.",
-        "versionNotRecognized": "Could not determine your Codewind version. The server is running version \"{{ rawVersion }}\". At least {{ requiredVersion }} is required.",
-        "versionTooOld": "You are running Codewind version {{ rawVersion }}, but at least {{ requiredVersion }} is required."
     },
 
     "project": {

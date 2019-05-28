@@ -127,7 +127,7 @@ namespace MiscProjectActions {
         if (isPort) {
             options.validateInput = (inputToValidate: string): OptionalString => {
                 if (!MCUtil.isGoodPort(Number(inputToValidate))) {
-                    return Translator.t(StringNamespaces.CMD_NEW_CONNECTION, "invalidPortNumber", { port: inputToValidate });
+                    return Translator.t(StringNamespaces.DEFAULT, "invalidPortNumber", { port: inputToValidate });
                 }
                 return undefined;
             };
