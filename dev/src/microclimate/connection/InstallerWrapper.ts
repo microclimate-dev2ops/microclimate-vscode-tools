@@ -147,6 +147,18 @@ namespace InstallerWrapper {
 
         const executableDir = path.dirname(executablePath);
         const isInstallCmd = cmd === InstallerCommands.INSTALL;
+        if (isInstallCmd) {
+            if (process.env.AF_USER) {
+                process.env.USER = process.env.AF_USER;
+            }
+            if (process.env.AF_PASS) {
+                process.env.PASS = process.env.AF_PASS;
+            }
+            if (!process.env.USER || !process.env.PASS) {
+                // Remove this in prod, obviously
+                throw new Error("No Artifactory credentials; install will fail");
+            }
+        }
         // const timeout = isInstallCmd ? undefined : 60000;
 
         await vscode.window.withProgress({
@@ -186,6 +198,7 @@ namespace InstallerWrapper {
                             const stdoutLog = path.join(executableDir, "install-error-stdout.log");
                             fs.writeFileSync(stdoutLog, outStr);
                             const stderrLog = path.join(executableDir, "install-error-stderr.log");
+                            Log.e("Stderr", errStr || "<no stderr>");
                             fs.writeFileSync(stderrLog, errStr);
                             Log.e("Error installing, wrote output to " + executableDir);
                             vscode.commands.executeCommand(Commands.VSC_OPEN, vscode.Uri.file(stdoutLog));
@@ -216,14 +229,28 @@ namespace InstallerWrapper {
     function updateProgress(isInstall: boolean, stdout: Readable, progress: vscode.Progress<{ message?: string, increment?: number }>): void {
         const reader = readline.createInterface(stdout);
         reader.on("line", (line) => {
+            if (!line) {
+                return;
+            }
             if (!isInstall) {
                 // simple case for non-install, just update with the output
                 progress.report({ message: line });
                 return;
             }
+            if (line === "Image Tagging Successful") {
+                return;
+            }
 
             // install output is JSON, see bin/installer/install.log for example
-            const lineObj: { status: string; id: string; } = JSON.parse(line);
+            let lineObj: { status: string; id: string; };
+            try {
+                lineObj = JSON.parse(line);
+            }
+            catch (err) {
+                Log.e(`Error parsing JSON from installer output, line was "${line}"`);
+                return;
+            }
+
             // we're interested in lines like:
             // {"status":"Pulling from codewind-pfe-amd64","id":"latest"}
             const pullingFrom = "Pulling from";

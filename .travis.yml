@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - 10
+  - "10"
   # - node
 
 os:
@@ -9,7 +9,7 @@ os:
 
 env:
   # Will override the Travis web UI settings.
-  - force_deploy="true" skip_tests="true"
+  - force_deploy="true" # skip_tests="true"
 
 sudo: true
 cache: npm
@@ -25,7 +25,7 @@ before_install:
 
 script:
 - cd dev/
-# install and compile
+# install and compile (vsce package does this too, but it won't show the compiler errors)
 - npm run vscode:prepublish || travis_terminate 1
 # run tests
 - ../travis-scripts/run-tests.sh || travis_terminate 1

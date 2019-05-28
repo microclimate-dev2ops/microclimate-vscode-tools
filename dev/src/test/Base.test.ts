@@ -79,7 +79,14 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         });
     });
 
-    it("should automatically connect to the backend", async function() {
+    it("should start the backend, installing it if necessary", async function() {
+        this.timeout(TestUtil.getMinutes(10));
+        this.slow(TestUtil.getMinutes(5));
+        Log.t("Waiting for Codewind to start and/or install...");
+        await ConnectionManager.instance.initPromise;
+    });
+
+    it("should connect to the backend", async function() {
         this.timeout(10 * 1000);
         const connMan = ConnectionManager.instance;
 
@@ -87,19 +94,20 @@ describe("Microclimate Tools for VSCode basic test", async function() {
 
         const connection = connMan.connections[0];
         // expect(connection.isConnected).to.be.true;
-        expect(connection.host).to.equal("localhost");
         expect(connection.url.authority).to.contain("localhost:9090");
         testConnection = connection;
     });
 
     it("should have a test socket connection", async function() {
-        const socketUri = ConnectionManager.instance.connections[0].socket.uri;
+        expect(testConnection, "No Microclimate connection").to.exist;
+        const socketUri = testConnection.socket.uri;
         const testSocket = await SocketTestUtil.createTestSocket(socketUri);
         expect(testSocket.connected, "Socket did not connect").to.be.true;
     });
 
     it("should initialize the ProjectObserver", async function() {
-        const obs = new ProjectObserver(ConnectionManager.instance.connections[0]);
+        expect(testConnection, "No Microclimate connection").to.exist;
+        const obs = new ProjectObserver(testConnection);
         expect(obs, "Failed to initialize ProjectObserver").to.exist;
         expect(obs.connection, "Failed to initialize ProjectObserver connection").to.exist;
     });

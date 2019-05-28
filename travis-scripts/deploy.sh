@@ -42,7 +42,7 @@ fi
 
 echo "Build label is \"$build_label\""
 
-# Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07-2330.vsix"
+# Will resolve to something like "codewind-18.12.0_nightly-2018-12-07-2330.vsix"
 labelled_artifact_name="${artifact_name/.vsix/$build_label.vsix}"
 mv -v "$artifact_name" "$labelled_artifact_name"
 

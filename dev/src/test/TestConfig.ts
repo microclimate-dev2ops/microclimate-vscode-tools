@@ -71,17 +71,16 @@ namespace TestConfig {
 
     const TYPES_ENV_VAR = "project_types";
     const SCOPE_ENV_VAR = "test_scope";
-    const DEFAULT_TYPES = "node.js, spring, microprofile, go";
+    const DEFAULT_TYPES = "node.js, spring, go";
 
     export function getProjectTypesToTest(): ITestableProjectType[] {
-        let envProjectTypes = process.env[TYPES_ENV_VAR];
-
-        if (!envProjectTypes) {
+        if (!process.env[TYPES_ENV_VAR]) {
             Log.w(`No project types set! Using default`);
-            envProjectTypes = DEFAULT_TYPES;
+            process.env[TYPES_ENV_VAR] = DEFAULT_TYPES;
         }
+        const projectTypes = process.env[TYPES_ENV_VAR]!;
 
-        const rawTypes = splitByComma(envProjectTypes);
+        const rawTypes = splitByComma(projectTypes);
         return testableProjectTypes.filter((type) => {
             return rawTypes.includes(type.projectType.toString().toLowerCase());
         });
