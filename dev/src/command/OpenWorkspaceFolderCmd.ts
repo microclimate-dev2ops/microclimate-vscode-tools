@@ -53,7 +53,7 @@ export default async function openWorkspaceFolderCmd(resource: Project | Connect
     }
     else {
         // To change 'in new window' behaviour, use "window.openFoldersInNewWindow": "default",
-        Log.i(`Opening folder ${uri}`);
+        Log.i(`Opening folder ${uri.fsPath}`);
         vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, uri);
     }
 }

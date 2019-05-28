@@ -20,8 +20,11 @@ import Log from "../../Logger";
 import Translator from "../../constants/strings/translator";
 import StringNamespaces from "../../constants/strings/StringNamespaces";
 import MCEnvironment from "./MCEnvironment";
+import * as MCUtil from "../../MCUtil";
 
 export default class Connection implements vscode.QuickPickItem, vscode.Disposable {
+
+    public readonly host: string;
 
     public readonly workspacePath: vscode.Uri;
     public readonly versionStr: string;
@@ -42,7 +45,6 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
 
     constructor(
         public readonly url: vscode.Uri,
-        public readonly host: string,
         public readonly version: number,
         public readonly socketNS: string,
         workspacePath_: string
@@ -50,6 +52,7 @@ export default class Connection implements vscode.QuickPickItem, vscode.Disposab
         this.socket = new MCSocket(this, socketNS);
         this.workspacePath = vscode.Uri.file(workspacePath_);
         this.versionStr = MCEnvironment.getVersionAsString(version);
+        this.host = MCUtil.getHostnameFrom(url);
 
         // QuickPickItem
         this.label = Translator.t(StringNamespaces.TREEVIEW, "connectionLabel", { uri: this.url });

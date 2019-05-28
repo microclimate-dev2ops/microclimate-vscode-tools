@@ -59,7 +59,7 @@ export default class ConnectionManager implements vscode.Disposable {
     //     }, Promise.resolve([]));
     // }
 
-    public async addConnection(uri: vscode.Uri, host: string, mcVersion: number, socketNS: string, workspace: string): Promise<Connection> {
+    public async addConnection(uri: vscode.Uri, mcVersion: number, socketNS: string, workspace: string): Promise<Connection> {
         const existing = this.getExisting(uri);
         if (existing != null) {
             // const alreadyExists = Translator.t(StringNamespaces.DEFAULT, "connectionAlreadyExists", { uri });
@@ -69,7 +69,7 @@ export default class ConnectionManager implements vscode.Disposable {
 
         // all validation that this connection is good must be done by this point
 
-        const newConnection: Connection = new Connection(uri, host, mcVersion, socketNS, workspace);
+        const newConnection: Connection = new Connection(uri, mcVersion, socketNS, workspace);
         Log.i("New Connection @ " + uri);
         this._connections.push(newConnection);
         // ConnectionManager.saveConnections();

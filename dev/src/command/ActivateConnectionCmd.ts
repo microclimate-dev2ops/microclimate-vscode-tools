@@ -21,29 +21,73 @@ import StringNamespaces from "../constants/strings/StringNamespaces";
 import MCEnvironment from "../microclimate/connection/MCEnvironment";
 import InstallerWrapper from "../microclimate/connection/InstallerWrapper";
 
-export const DEFAULT_CONNINFO: MCUtil.IConnectionInfo = {
-    host: "localhost",      // non-nls
-    port: 9090
-};
-
 const STRING_NS = StringNamespaces.CMD_NEW_CONNECTION;
 
 export default async function activateConnectionCmd(): Promise<Connection | undefined> {
-    Log.d("New connection command invoked");
-
-    const connection = await tryAddConnection(DEFAULT_CONNINFO);
-    if (connection == null) {
-        // user gave up
+    try {
+        const url = vscode.Uri.parse("http://localhost:9090");
+        const envData = await activate(url);
+        const connection = await connect(url, envData);
+        onConnectSuccess(connection);
+        return connection;
+    }
+    catch (err) {
+        Log.e("Failed to start/connect to codewind:", err);
+        vscode.window.showErrorMessage("Failed to start Codewind: " + MCUtil.errToString(err));
         return undefined;
     }
-
-    await offerToOpenWorkspace(connection);
-    return connection;
 }
 
-async function offerToOpenWorkspace(connection: Connection): Promise<void> {
-    Log.d(`offerToOpenWorkspace ${connection.url} workspace=${connection.workspacePath}`);
+async function activate(url: vscode.Uri): Promise<MCEnvironment.IMCEnvData> {
+    let envData: MCEnvironment.IMCEnvData;
+    try {
+        envData = await MCEnvironment.getEnvData(url);
+        Log.d("Initial connect succeeded, no need to start Codewind");
+    }
+    catch (err) {
+        await InstallerWrapper.start();
 
+        Log.d("Codewind should have started, getting ENV data now");
+        envData = await MCEnvironment.getEnvData(url);
+    }
+
+    Log.i("ENV data:", envData);
+    return envData;
+}
+
+async function connect(url: vscode.Uri, envData: MCEnvironment.IMCEnvData): Promise<Connection> {
+    // const rawVersion: string = envData.microclimate_version;
+    const rawWorkspace: string = envData.workspace_location;
+    const rawSocketNS: string = envData.socket_namespace || "";
+
+    // if (rawVersion == null) {
+        // throw new Error("No version information was provided by Codewind.");
+    // }
+    if (rawWorkspace == null) {
+        throw new Error("No workspace information was provided by Codewind.");
+    }
+
+    let workspace = rawWorkspace;
+    // on windows, we have to replace the unix-like workspace path with a windows one. /C/Users/... -> C:/Users/ ...
+    // logic copied from Eclipse plugin
+    // MicroclimateConnection.java#L244
+    if (MCUtil.getOS() === "windows" && workspace.startsWith("/")) {
+        const deviceLetter = workspace.substring(1, 2);
+        workspace = deviceLetter + ":" + workspace.substring(2);
+    }
+
+    const versionNum = MCEnvironment.getVersionNumber(envData);
+
+    // normalize namespace so it doesn't start with '/'
+    const socketNS = rawSocketNS.startsWith("/") ? rawSocketNS.substring(1, rawSocketNS.length) : rawSocketNS;
+
+    return await ConnectionManager.instance.addConnection(url, versionNum, socketNS, workspace);
+}
+
+/**
+ * Show a 'connection succeeded' message and provide a button to open the connection's workspace. Doesn't need to be awaited.
+ */
+async function onConnectSuccess(connection: Connection): Promise<void> {
     let inMcWorkspace = false;
     // See if the user has this connection's workspace open
     const wsFolders = vscode.workspace.workspaceFolders;
@@ -61,7 +105,7 @@ async function offerToOpenWorkspace(connection: Connection): Promise<void> {
 
         // Provide a button to change their workspace to the microclimate-workspace if they wish
         vscode.window.showInformationMessage(successMsg, openWsBtn)
-        .then ((response) => {
+        .then((response) => {
             if (response === openWsBtn) {
                 vscode.commands.executeCommand(Commands.VSC_OPEN_FOLDER, connection.workspacePath);
             }
@@ -70,127 +114,5 @@ async function offerToOpenWorkspace(connection: Connection): Promise<void> {
     else {
         // The user already has the workspace open, we don't have to do it for them.
         vscode.window.showInformationMessage(successMsg);
-    }
-}
-
-async function tryAddConnection(connInfo: MCUtil.IConnectionInfo): Promise<Connection | undefined> {
-
-    Log.i("TryAddConnection", connInfo);
-    const url = MCUtil.buildMCUrl(connInfo);
-
-    let envData: MCEnvironment.IMCEnvData;
-    try {
-        try {
-            envData = await MCEnvironment.getEnvData(url);
-            Log.d("Initial connect succeeded, no need to start Codewind");
-        }
-        catch (err) {
-            await InstallerWrapper.start();
-
-            Log.d("Codewind should have started, pinging for ENV data now...");
-            envData = await new Promise<MCEnvironment.IMCEnvData>((resolve, reject) => {
-                let tries = 0;
-                const interval = setInterval(() => {
-                    tries++;
-
-                    MCEnvironment.getEnvData(url)
-                    .then((envData_) => {
-                        // success
-                        Log.i(`Connected to codewind after ${tries} tries`);
-                        clearInterval(interval);
-                        return resolve(envData_);
-                    })
-                    .catch((_err) => {
-                        if (tries > 10) {
-                            clearInterval(interval);
-                            return reject("Codewind appeared to start, but connecting failed.");
-                        }
-                        else {
-                            Log.d("Failed to contact codewind, will try again");
-                        }
-                     });
-                }, 500);
-            });
-        }
-    }
-    catch (err) {
-        Log.e("Failed to contact codewind", err);
-        vscode.window.showErrorMessage("Failed to start Codewind: " + MCUtil.errToString(err));
-        return undefined;
-    }
-
-    try {
-        // Connected successfully, now validate it's a good instance
-        return await onSuccessfulConnection(url, connInfo.host, envData);
-    }
-    catch (err) {
-        const errMsg = err.message || err.toString();
-        Log.w("Connection test failed: " + errMsg);
-
-        // const editBtn  = Translator.t(STRING_NS, "editConnectionBtn");
-        // const retryBtn  = Translator.t(STRING_NS, "retryConnectionBtn");
-        // const response = await vscode.window.showErrorMessage(errMsg, retryBtn);
-        vscode.window.showErrorMessage(errMsg);
-        // if (response === editBtn) {
-        //     // start again from the beginning (and this command instance will terminate after this function call exits)
-        //     newConnectionCmd(connInfo);
-        //     return undefined;
-        // }
-        // if (response === retryBtn) {
-        //     // try to connect with the same host:port
-        //     return await tryAddConnection(connInfo);
-        // }
-        return undefined;
-    }
-}
-
-/**
- * We've determined by this point that Microclimate is running at the given URI,
- * but we have to validate now that it's a new enough version.
- */
-async function onSuccessfulConnection(mcUri: vscode.Uri, host: string, mcEnvData: MCEnvironment.IMCEnvData): Promise<Connection> {
-
-    Log.i("ENV data:", mcEnvData);
-
-    const rawVersion: string = mcEnvData.microclimate_version;
-    const rawWorkspace: string = mcEnvData.workspace_location;
-    const rawPlatform: string = mcEnvData.os_platform;
-
-    // user_string and socket_namespace are the same on ICP, except latter starts with /
-    // on local, user_string is null, and socket_namespace is "/default".
-    // const rawUser: string = mcEnvData.user_string || "";
-    const rawSocketNS: string = mcEnvData.socket_namespace || "";
-
-    Log.d("rawVersion is", rawVersion);
-    Log.d("rawWorkspace is", rawWorkspace);
-    Log.d("rawPlatform is", rawPlatform);
-    Log.d("rawSocketNS is", rawSocketNS);
-    // if (rawVersion == null) {
-        // throw new Error("No version information was provided by Codewind.");
-    // }
-    if (rawWorkspace == null) {
-        throw new Error("No workspace information was provided by Codewind.");
-    }
-
-    let workspace = rawWorkspace;
-    // on windows, we have to replace the unix-like workspace path with a windows one. /C/Users/... -> C:/Users/ ...
-    // logic copied from Eclipse plugin
-    // MicroclimateConnection.java#L244
-    if (rawPlatform.toLowerCase() === "windows" && workspace.startsWith("/")) {
-        const deviceLetter = workspace.substring(1, 2);
-        workspace = deviceLetter + ":" + workspace.substring(2);
-    }
-
-    const versionNum = MCEnvironment.getVersionNumber(mcEnvData);
-
-    // normalize namespace so it doesn't start with '/'
-    const socketNS = rawSocketNS.startsWith("/") ? rawSocketNS.substring(1, rawSocketNS.length) : rawSocketNS;
-
-    try {
-        return await ConnectionManager.instance.addConnection(mcUri, host, versionNum, socketNS, workspace);
-    }
-    catch (err) {
-        Log.i("New connection rejected by ConnectionManager ", err.message || err);
-        throw err;
     }
 }

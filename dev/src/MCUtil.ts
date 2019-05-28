@@ -61,12 +61,12 @@ export function uppercaseFirstChar(input: string): string {
  * the wrapper promise resolves or rejects with the same result as the inner promise.
  */
 export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMS: number, rejectMsg: string): Promise<T> {
-    return new Promise<T>( (resolve, reject) => {
-        setTimeout( () => reject(rejectMsg), timeoutMS);
+    return new Promise<T>((resolve, reject) => {
+        setTimeout(() => reject(rejectMsg), timeoutMS);
 
         promise
-        .then( (result: T) => resolve(result))
-        .catch( (err: any) => reject(err));
+        .then((result: T) => resolve(result))
+        .catch((err: any) => reject(err));
     });
 }
 
@@ -78,47 +78,21 @@ export function isGoodStatusCode(statusCode: OptionalNumber): boolean {
     return statusCode != null && !isNaN(statusCode) && statusCode >= 200 && statusCode < 400;
 }
 
-//// Connection helpers
-
-export interface IConnectionInfo {
-    readonly host: string;
-    readonly port: number;
-    // If we start supporting HTTPS, could add a 'protocol' field,
-    // but at that point it might be cleaner to just save the URI.
+/**
+ * Extract the hostname from a URL with authority hostname:9090, for example.
+ * If there's no port, return the whole authority.
+ */
+export function getHostnameFrom(url: Uri): string {
+    const authority = url.authority;
+    const colonIndex: number = authority.indexOf(":");      // non-nls
+    if (colonIndex === -1) {
+        return authority;
+    }
+    return authority.substring(0, colonIndex);
 }
 
 export function isGoodPort(port: OptionalNumber): boolean {
     return port != null && !isNaN(port) && Number.isInteger(port) && port > 0 && port < 65536;
-}
-
-/**
- * Convert a ConnectionInfo to an HTTP URI.
- */
-export function buildMCUrl(connInfo: IConnectionInfo): Uri {
-    return Uri.parse(`http://${connInfo.host}:${connInfo.port}`);       // non-nls
-}
-
-/**
- * Convert a URI to a ConnectionInfo (for saving to Settings).
- * A URI type with a 'port' field would be preferable, but vscode does not have this.
- */
-export function getConnInfoFrom(url: Uri): IConnectionInfo {
-    const colonIndex: number = url.authority.indexOf(":");      // non-nls
-
-    const host = url.authority.substring(0, colonIndex);
-    const portStr = url.authority.substring(colonIndex + 1, url.authority.length);
-
-    const port: number = Number(portStr);
-    if (!isGoodPort(port)) {
-        Log.e(`Bad port ${portStr} passed to getConnInfoFrom`);
-    }
-    // Log.i(`Loaded connection info host ${host} port ${port}`);
-
-    const result: IConnectionInfo = {
-        host: host,
-        port: port
-    };
-    return result;
 }
 
 export function errToString(err: any, isOidc: boolean = false): string {
