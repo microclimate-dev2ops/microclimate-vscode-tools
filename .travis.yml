@@ -17,8 +17,8 @@ addons:
       - code
 
 env:
-  # Will override the Travis web UI settings.
-  - project_types="node.js"
+  # Will override the Travis web UI settings. Only set deploy=true for one of these.
+  - project_types="node.js" deploy="true"
   - project_types="spring"
   - project_types="microprofile"
   - project_types="go"
@@ -55,7 +55,6 @@ after_success:
 - cd ../travis-scripts/
 # will exit immediately if not a deploy build
 - ./deploy.sh || >&2 echo "Deploy failed!"
-
 
 notifications:
   email:
