@@ -100,24 +100,34 @@ describe(`Restart tests`, async function() {
             Log.t("Restart into debug mode succeeded.");
             debugReady = true;
 
-            // Wait 5 seconds, this helps resolve some timing issues with debugger connection
-            await TestUtil.wait(debugDelay, "Giving debugger connect a chance to complete");
-            await assertDebugSessionExists(project.name);
-            Log.t("Debugger connect succeeded");
-
             // Now wait for it to enter Debugging state (much slower for Liberty)
             await ProjectObserver.instance.awaitAppState(project.id, ProjectState.AppStates.DEBUGGING);
             Log.t("Debug restart test passed");
-
-            await TestUtil.killActiveDebugSession();
         });
+
+        if (canRestart) {
+            it(`${testType.projectType} - should have an active debug session`, async function() {
+                expect(project, "Failed to get test project").to.exist;
+                expect(debugReady, "Restart into debug mode failed, so we can't attach the debugger.").to.be.true;
+
+                this.timeout(TestUtil.getMinutes(1));
+                this.retries(2);
+
+                // Wait briefly, this helps resolve some timing issues with debugger connection
+                await TestUtil.wait(debugDelay, "Giving debugger connect a chance to complete");
+                await assertDebugSessionExists(project.name);
+                Log.t("Debugger connect succeeded");
+                await TestUtil.killActiveDebugSession();
+            });
+        }
 
         if (canRestart) {
             it(`${testType.projectType} - should be able to attach the debugger to the same Debugging project`, async function() {
                 expect(project, "Failed to get test project").to.exist;
                 expect(debugReady, "Restart into debug mode failed, so we can't attach the debugger.").to.be.true;
 
-                this.timeout(TestUtil.getMinutes(2));
+                this.timeout(TestUtil.getMinutes(1));
+                this.retries(2);
 
                 // It should have reached Debugging state in the previous test, so this should be fast
                 await ProjectObserver.instance.awaitAppState(project.id, ProjectState.AppStates.DEBUGGING);
@@ -193,8 +203,8 @@ export async function testRestart(project: Project, debug: boolean, shouldSuccee
 export async function assertDebugSessionExists(projectName: string): Promise<void> {
     Log.t("assertDebugSessionExists containing name " + projectName);
     const debugSession = vscode.debug.activeDebugSession;
+    Log.t(`Active debug session is ${debugSession ? debugSession.name : "undefined"}`);
     expect(debugSession, `${projectName} There should be an active debug session`).to.exist;
-    Log.t(`Active debug session is named "${debugSession!.name}"`);
     expect(debugSession!.name).to.contain(projectName, "Active debug session is not for this project, is: " + debugSession);
     const threads = await debugSession!.customRequest("threads");
     Log.t("Debugger threads", threads);

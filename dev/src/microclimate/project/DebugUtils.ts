@@ -180,7 +180,7 @@ export default class DebugUtils {
                 // updatedLaunch might be the same as existingLaunch.
                 const updatedLaunch: vscode.DebugConfiguration = DebugUtils.updateDebugLaunchConfig(project, existingLaunch);
 
-                Log.d(`Replacing existing debug launch ${debugName}:`, updatedLaunch);
+                Log.d(`Replacing existing debug launch ${debugName}`);
                 launchConfigs[i] = updatedLaunch;
                 launchToWrite = updatedLaunch;
                 break;
@@ -203,7 +203,6 @@ export default class DebugUtils {
         }
 
         await this.updateWorkspaceLaunchConfigs(workspaceConfig, launchConfigs);
-        Log.d("Updated launch configs");
         // Logger.log("New config", launchConfig.get(CONFIGURATIONS));
         return launchToWrite;
     }
