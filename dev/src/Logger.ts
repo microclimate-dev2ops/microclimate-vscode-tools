@@ -182,8 +182,12 @@ function replacer(name: string, val: any): string | undefined {
     if (name === "connection" && val instanceof Project) {
         return undefined;
     }
-    else if (val instanceof Uri) {
+    else if (val instanceof Uri || val.$mid != null) {
         return val.toString();
+    }
+    else if (val.managerName) {
+        // MCLogManager
+        return val.managerName;
     }
     return val;
 }

@@ -112,7 +112,7 @@ export default class Project implements vscode.QuickPickItem {
 
         this.logManager = new MCLogManager(this);
 
-        Log.i(`Created project ${this.name}:`, this);
+        Log.i(`Created ${this.type} project ${this.name} with ID ${this.id} at ${this.localPath}`);
     }
 
     // description used by QuickPickItem

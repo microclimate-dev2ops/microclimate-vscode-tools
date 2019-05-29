@@ -31,7 +31,6 @@ const STRING_NS = StringNamespaces.DEBUG;
  * Show the user our error message here instead, and return a success status since we're also calling this function from the restart project code.
  */
 export default async function attachDebuggerCmd(project: Project, isRestart: boolean = false): Promise<boolean> {
-    Log.d("attachDebuggerCmd");
     if (project == null) {
         const selected = await promptForProject(...ProjectState.getDebuggableStates());
         if (selected == null) {

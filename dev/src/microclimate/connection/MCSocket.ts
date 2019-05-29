@@ -84,7 +84,6 @@ export default class MCSocket implements vscode.Disposable {
     }
 
     private readonly onProjectCreated = async (payload: { success: boolean; projectID?: string; error?: string; }): Promise<void> => {
-        Log.d("Project Created event", payload);
         await this.connection.forceUpdateProjectList();
 
         if (payload.projectID) {
@@ -100,6 +99,7 @@ export default class MCSocket implements vscode.Disposable {
         }
         else {
             const err = payload.error || "Unknown error";
+            Log.e("Error creating project", err);
             vscode.window.showErrorMessage("Project creation failed: " + err);
         }
     }
