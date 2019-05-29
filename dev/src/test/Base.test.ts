@@ -44,7 +44,7 @@ describe("Microclimate Tools for VSCode basic test", async function() {
         const badWsMsg = `Active workspace is not valid. Point the test launch configuration to your ${workspaceDirName}.`;
         expect(wsFolders![0].uri.fsPath.endsWith(workspaceDirName), badWsMsg).to.be.true;
 
-        // Log.t("Loaded extensions:", vscode.extensions.all.map((ext) => ext.id));
+        Log.t("Loaded extensions:", vscode.extensions.all.map((ext) => ext.id).join(", "));
         const extension_ = vscode.extensions.getExtension(extensionID);
         expect(extension_, `Extension ${extensionID} isn't installed!`).to.exist;
         const extension = extension_!;

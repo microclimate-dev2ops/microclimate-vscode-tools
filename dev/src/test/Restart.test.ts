@@ -31,14 +31,29 @@ import MiscProjectActions from "../microclimate/project/MiscProjectActions";
 
 describe(`Restart tests`, async function() {
 
-    before("Check initialization", function() {
-        expect(Base.initializeSucceeded, "Initialize failed in base test").to.be.true;
-        expect(Base.testConnection, "Test Connection is null").to.exist;
-
+    before("Check initialization", async function() {
         if (!TestConfig.isScopeEnabled("restart")) {
             Log.t("SKIPPING RESTART TESTS");
             this.skip();
         }
+
+        expect(Base.initializeSucceeded, "Initialize failed in base test").to.be.true;
+        expect(Base.testConnection, "Test Connection is null").to.exist;
+    });
+
+    before("Check that the Java Debug extension is installed", async function() {
+        if (!TestConfig.getProjectTypesToTest().some((type) => type.projectType.language.toLowerCase() === "java")) {
+            // install not required
+            this.skip();
+            return;
+        }
+        this.timeout(TestUtil.getMinutes(2));
+
+        const javaDebugExt = "vscjava.vscode-java-debug";
+        const javaExt = vscode.extensions.getExtension(javaDebugExt);
+        expect(javaExt, `Java debug extension must be installed`).to.exist;
+        Log.t("Activating Java debug extension...");
+        await javaExt!.activate();
     });
 
     for (const testType of TestConfig.getProjectTypesToTest()) {
@@ -206,8 +221,8 @@ export async function assertDebugSessionExists(projectName: string): Promise<voi
     Log.t(`Active debug session is ${debugSession ? debugSession.name : "undefined"}`);
     expect(debugSession, `${projectName} There should be an active debug session`).to.exist;
     expect(debugSession!.name).to.contain(projectName, "Active debug session is not for this project, is: " + debugSession);
-    const threads = await debugSession!.customRequest("threads");
-    Log.t("Debugger threads", threads);
+    const threads = (await debugSession!.customRequest("threads"))["threads"];
+    Log.t(`There are ${threads.length} threads`);
     // only 1 thread for node projects
-    expect(threads["threads"], "Debug session existed but has no threads").to.exist.and.not.be.empty;
+    expect(threads, "Debug session existed but has no threads").to.exist.and.not.be.empty;
 }
