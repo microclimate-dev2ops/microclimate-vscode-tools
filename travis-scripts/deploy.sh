@@ -14,48 +14,38 @@
 # To be run from the repository root directory
 # $artifact_name must be set and the file it points to must be in the working directory
 
-# In the Travis UI, set the following to do an RC build:
-: '
-env:
-    - rc=true
-'
-
-# Set force_deploy=true to skip deploy checks and always deploy.
-if [[ $force_deploy != "true" ]]; then
-    if [[ "$rc" != "true" && "$TRAVIS_EVENT_TYPE" != "cron" && -z "$TRAVIS_TAG" ]]; then
-        echo "$(basename $0): not a release or cronjob, skipping deploy"
-        exit 0
-    elif [[ -z "$TRAVIS_TAG" && "$TRAVIS_BRANCH" != "master" ]]; then
-        echo "$(basename $0): not a tag or master branch, skipping deploy"
-        exit 0
-    fi
+if [[ $deploy != "true" ]]; then
+    echo "$(basename $0): skipping deploy"
+    exit 0
 fi
 
+datetime="$(date +'%F-%H%M')"
 if [[ -n "$TRAVIS_TAG" ]]; then
     echo "Releasing $TRAVIS_TAG"
-    # No extra tag; just the version eg. 19.1
-    tag=""
-    deploy_dir="release"
-elif [[ "$rc" == "true" ]]; then
-    tag="_rc-$(date +'%F-%H%M')"
-    deploy_dir="rc"
-else
-    tag="_nightly-$(date +'%F-%H%M')"
+    # No extra build_label; just the version eg. 19.1
+    build_label=""
+    deploy_dir="tagged"
+elif [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
+    build_label="_nightly-${datetime}"
     deploy_dir="nightly"
+else
+    branch="$TRAVIS_BRANCH"
+    build_label="_${branch}"
+    deploy_dir="${branch}"
 fi
 
-echo "Build tag is \"$tag\""
+echo "Build label is \"$build_label\""
 
-# Will resolve to something like "microclimate-tools-18.12.0_nightly-2018-12-07-2330.vsix"
-tagged_artifact_name="${artifact_name/.vsix/$tag.vsix}"
-mv -v "$artifact_name" "$tagged_artifact_name"
+# Will resolve to something like "codewind-18.12.0_nightly-2018-12-07-2330.vsix"
+labelled_artifact_name="${artifact_name/.vsix/$build_label.vsix}"
+mv -v "$artifact_name" "$labelled_artifact_name"
 
 # Update the last_build file linking to the most recent vsix
 build_info_file="last_build.html"
 #build_date="$(date +'%F_%H-%M_%Z')"
 commit_info="$(git log $TRAVIS_BRANCH -3 --pretty='%h by %an - %s<br>')"
 # This link is only really useful on DHE
-artifact_link="<a href=\"./$tagged_artifact_name\">$tagged_artifact_name</a>"
+artifact_link="<a href=\"./$labelled_artifact_name\">$labelled_artifact_name</a>"
 printf "Last build: $artifact_link<br><br><b>Latest commits on $TRAVIS_BRANCH:</b><br>$commit_info" > "$build_info_file"
 
 artifactory_path="${artifactory_path}${deploy_dir}"
@@ -64,7 +54,7 @@ echo "artifactory_full_url is $artifactory_full_url"
 
 artifactory_cred_header="X-JFrog-Art-Api: $artifactory_apikey"
 
-artf_resp=$(curl -X PUT -sS -H "$artifactory_cred_header" -T "$tagged_artifact_name" "$artifactory_full_url/$tagged_artifact_name")
+artf_resp=$(curl -X PUT -sS -H "$artifactory_cred_header" -T "$labelled_artifact_name" "$artifactory_full_url/$labelled_artifact_name")
 echo "$artf_resp"
 
 if [[ "$artf_resp" != *"created"* ]]; then

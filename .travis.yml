@@ -9,7 +9,7 @@ os:
 
 env:
   # Will override the Travis web UI settings.
-  - force_deploy="true"
+  - skip_tests="true" deploy="true"
 
 sudo: true
 cache: npm
