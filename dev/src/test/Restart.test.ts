@@ -41,10 +41,8 @@ describe(`Restart tests`, async function() {
         expect(Base.testConnection, "Test Connection is null").to.exist;
     });
 
-    before("Check that the Java Debug extension is installed", async function() {
+    before("Check that the Java Debug extension is installed if necessary", async function() {
         if (!TestConfig.getProjectTypesToTest().some((type) => type.projectType.language.toLowerCase() === "java")) {
-            // install not required
-            this.skip();
             return;
         }
         this.timeout(TestUtil.getMinutes(2));
