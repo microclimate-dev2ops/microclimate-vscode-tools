@@ -90,7 +90,7 @@ export default class Project implements vscode.QuickPickItem {
             MCUtil.appendPathWithoutDupe(connection.workspacePath.fsPath, vscode.Uri.file(projectInfo.locOnDisk).fsPath)
         );
 
-        this._contextRoot = projectInfo.contextroot || "";
+        this._contextRoot = projectInfo.contextRoot || projectInfo.contextroot || "";
 
         // These will be overridden by the call to update(), but we set them here too so the compiler can see they're always set.
         this._autoBuildEnabled = projectInfo.autoBuild;
