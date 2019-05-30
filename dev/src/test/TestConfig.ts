@@ -69,7 +69,7 @@ namespace TestConfig {
         return found.url;
     }
 
-    const TYPES_ENV_VAR = "project_types";
+    const TYPES_ENV_VAR = "test_project_types";
     const SCOPE_ENV_VAR = "test_scope";
     const DEFAULT_TYPES = "node.js, spring, go";
 

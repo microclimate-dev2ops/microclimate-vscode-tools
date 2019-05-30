@@ -18,9 +18,9 @@ addons:
 
 env:
   # Will override the Travis web UI settings. Only set deploy=true for one of these.
-  - project_types="node.js, go" deploy="true"
-  - project_types="spring"
-  - project_types="microprofile"
+  - test_project_types="node.js, go" deploy="true"
+  - test_project_types="spring"
+  - test_project_types="microprofile"
 
 sudo: true
 cache: npm
@@ -35,14 +35,10 @@ before_install:
     fi
 
 script:
-- code --version
-- code --install-extension "vscjava.vscode-java-debug" --force
-- cd dev/
-# install and compile (vsce package does this too, but it won't show the compiler errors)
-- npm run vscode:prepublish || travis_terminate 1
-# run tests
-- ../travis-scripts/run-tests.sh || travis_terminate 1
+- ./travis-scripts/prepare-and-build.sh || travis_terminate 1
+- ./travis-scripts/run-tests.sh || travis_terminate 1
 # package into .vsix
+- cd dev/
 - npm i -g vsce
 - vsce package
 
