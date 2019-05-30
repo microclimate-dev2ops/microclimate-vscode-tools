@@ -22,16 +22,9 @@ if [[ "$skip_tests" != "true" ]]; then
     export AF_USER=${artifactory_user}
     export AF_PASS=${artifactory_apikey}
 
-    # Move node to somewhere that can be found on root user's PATH
-    # https://stackoverflow.com/a/29903645/
-    n=$(which node)
-    n=${n%/bin/node}
-    chmod -R 755 $n/bin/*
-    sudo cp -r $n/{bin,lib,share} /usr/local
-
     set +e
 
-    sudo -E $(which npm) test --verbose
+    sudo -E env PATH="$PATH" $(which npm) test --verbose
     result=$?
 
     cd -
