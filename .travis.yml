@@ -18,11 +18,9 @@ addons:
 
 env:
   # Will override the Travis web UI settings. Only set deploy=true for one of these.
-  - project_types="node.js" deploy="true"
+  - project_types="node.js, go" deploy="true"
   - project_types="spring"
   - project_types="microprofile"
-  - project_types="go"
-  - project_types="python"
 
 sudo: true
 cache: npm
